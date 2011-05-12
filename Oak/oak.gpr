@@ -1,0 +1,33 @@
+with "../e200/e200.gpr";
+limited with "../ARPART/arpart.gpr";
+limited with "../Scheduler_Agent/scheduler_agent.gpr";
+
+project Oak is
+
+   for Source_Dirs use ("src");
+   for Object_Dir use "obj/";
+   for Library_Interface use ();
+   for Languages use ("Ada", "Asm");
+
+   package Builder is
+      for Default_Switches ("ada") use ("-s", "-m", "-j4", "-g");
+   end Builder;
+
+   package Compiler is
+      for Default_Switches ("ada") use ("-gnatwa.X", "-O3", "-gnat05", "-gnatyabcefhiklM89nprstxu3", "-gnatn", "-Wa,-mregnames", "-gnatwl");
+      for Default_Switches ("Asm") use ("-mregnames");
+   end Compiler;
+
+   package Pretty_Printer is
+      for Default_Switches ("ada") use ("-c3", "-c4", "-c5");
+   end Pretty_Printer;
+
+   package Ide is
+      for Gnat use "powerpc-eabispe-gnat";
+      for Gnatlist use "powerpc-eabispe-gnatls";
+      for Debugger_Command use "powerpc-eabispe-gdb";
+      for Documentation_Dir use "doc/";
+   end Ide;
+
+end Oak;
+

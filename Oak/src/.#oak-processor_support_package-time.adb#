@@ -1,0 +1,14 @@
+package body Oak.Processor_Support_Package.Time is
+
+   ---------------
+   -- Get_Clock --
+   ---------------
+
+   function Get_Clock return Oak_Time is
+   begin
+      Asm ("mtdec %0",   -- Load Wake Up Time into decrementer register
+           Inputs   => (Time_Span'Asm_Input ("r", Decrementer_Value)),
+           Volatile => True);
+   end Get_Clock;
+
+end Oak.Processor_Support_Package.Time;

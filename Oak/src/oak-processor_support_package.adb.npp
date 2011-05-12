@@ -1,0 +1,21 @@
+with System.Machine_Code; use System.Machine_Code;
+with System; use System;
+
+package body Oak.Processor_Support_Package is
+
+   --------------------------
+   -- Initialise_Processor --
+   --------------------------
+
+   procedure Initialise_Processor is
+   begin
+      Asm ("lwz    r14, %0"          & ASCII.LF & ASCII.HT &
+          "mtivor8     r14"          & ASCII.LF & ASCII.HT &
+          "lwz     r14, %0"          & ASCII.LF & ASCII.HT &
+          "mtivor10   r14",
+        Inputs => (Storage_Elements.Storage_Offset'Asm_Input ("m", IVOR8_CS_To_Task),
+                   Storage_Elements.Storage_Offset'Asm_Input ("m", IVOR10_Decrementer_Intr)),
+        Volatile => True);
+   end Initialise_Processor;
+
+end Oak.Processor_Support_Package;

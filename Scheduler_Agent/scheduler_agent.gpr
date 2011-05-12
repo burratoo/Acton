@@ -1,0 +1,33 @@
+limited with "../Oak/oak.gpr";
+limited with "../Acton/Acton.gpr";
+
+project Scheduler_Agent is
+
+   for Source_Dirs use ("src");
+   for Object_Dir use "obj/";
+
+   package Ide is
+      for Documentation_Dir use "doc/";
+      for Gnat use "powerpc-eabispe-gnat";
+      for Gnatlist use "powerpc-eabispe-gnatls";
+      for Debugger_Command use "powerpc-eabispe-gdb";
+   end Ide;
+
+   package Builder is
+      for Default_Switches ("ada") use ("-s", "-m", "-j4", "-g", "--RTS=acton-powerpc");
+   end Builder;
+
+   package Compiler is
+      for Default_Switches ("ada") use ("-gnatwa.X", "-g", "-gnat05", "-gnatyabcefhiklM89nprstxu3", "-mcpu=8540", "-mspe", "-gnatn", "-Wa,-mregnames");
+   end Compiler;
+
+   package Pretty_Printer is
+      for Default_Switches ("ada") use ("-c3", "-c4", "-c5", "-M89");
+   end Pretty_Printer;
+
+   package Linker is
+      for Default_Switches ("ada") use ("-g");
+   end Linker;
+
+end Scheduler_Agent;
+
