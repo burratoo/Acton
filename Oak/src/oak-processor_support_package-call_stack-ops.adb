@@ -1,5 +1,4 @@
 with System.Machine_Code; use System.Machine_Code;
-with System.Storage_Elements;
 
 package body Oak.Processor_Support_Package.Call_Stack.Ops is
    use System.Storage_Elements;
@@ -29,6 +28,19 @@ package body Oak.Processor_Support_Package.Call_Stack.Ops is
       Stack.Pointer := Stack.Pointer - Task_Registers_Save_Size;
       Set_Task_Instruction_Pointer (Stack  => Stack,
                                     Instruction_Address => Start_Instruction);
+   end Initialise_Call_Stack;
+
+   procedure Initialise_Call_Stack
+     (Stack             : in out Oak.Memory.Call_Stack.Call_Stack_Handler;
+      Start_Instruction : in System.Address;
+      Stack_Access      : access System.Storage_Elements.Storage_Array) is
+   begin
+      Stack.Top := Stack_Access.all'Address + Stack_Access'Size / Bits_In_A_Byte;
+      Stack.Pointer := Stack.Top;
+      Stack.Bottom := Stack_Access.all'Address;
+
+      Initialise_Call_Stack (Stack             => Stack,
+                             Start_Instruction => Start_Instruction);
    end Initialise_Call_Stack;
 
 end Oak.Processor_Support_Package.Call_Stack.Ops;

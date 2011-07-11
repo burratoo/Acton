@@ -16,8 +16,12 @@ package Oak.Memory.Call_Stack is
    for Call_Stack'Component_Size use Storage_Unit;
 
    type Call_Stack_Handler is record
-      Top, Bottom, Pointer : System.Address;
+      Top, Bottom, Pointer : System.Address := Null_Address;
    end record;
+
+   function Default_Stack_Size return
+     System.Storage_Elements.Storage_Count renames
+     Oak.Processor_Support_Package.Call_Stack.Default_Call_Stack_Size;
 
 private
    --  Warning! This is not a real variable. It is defined in the linker script

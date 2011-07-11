@@ -12,4 +12,10 @@ package Oak.Memory.Call_Stack.Ops is
       Start_Instruction  : in System.Address) renames
      Oak.Processor_Support_Package.Call_Stack.Ops.Initialise_Call_Stack;
 
+   procedure Initialise_Call_Stack
+     (Stack : in out Call_Stack_Handler;
+      Start_Instruction : in System.Address;
+      Stack_Access     : access System.Storage_Elements.Storage_Array) renames
+     Oak.Processor_Support_Package.Call_Stack.Ops.Initialise_Call_Stack;
+
 end Oak.Memory.Call_Stack.Ops;

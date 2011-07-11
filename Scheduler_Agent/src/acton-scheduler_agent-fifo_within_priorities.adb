@@ -4,15 +4,46 @@ use  Oak.Processor_Support_Package.Task_Support;
 with Oak.Oak_Task.Scheduler_Agent;               use Oak.Oak_Task.Scheduler_Agent;
 with Oak.Oak_Task.Data_Access;
 with Ada.Real_Time;
-with System;
-use Oak.Oak_Task;
-with Oak.Oak_Task;
+with Oak.Oak_Task.Activation;
+with Oak.Memory.Call_Stack;
+with Oak.Memory.Call_Stack.Ops;
+with Oak.Scheduler.Agent_List;
 
-package body Acton.Scheduler_Agent.Fixed_Priority_Scheduler is
+package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
    use type Ada.Real_Time.Time;
    package Task_Data renames Oak.Oak_Task.Data_Access;
 
    type Oak_Task_Array is array (System.Priority range <>) of Oak_Task_Handler;
+
+   procedure Create_Agent
+     (Agent                      : Oak_Task_Handler;
+      Min_Priority, Max_Priority : Priority)
+   is
+      Call_Stack : Oak.Memory.Call_Stack.Call_Stack_Handler;
+
+      OI : constant access Oak.Core.Oak_Data := Oak.Core.Get_Oak_Instance;
+
+      Scheduler : constant access Oak.Scheduler.Oak_Scheduler_Info :=
+         Oak.Core.Get_Scheduler_Info (OI);
+
+   begin
+      Oak.Memory.Call_Stack.Ops.Allocate_Call_Stack
+        (Stack            => Call_Stack,
+         Size_In_Elements => Stack_Size);
+
+      Initialise_Agent
+        (Agent        => Agent,
+         Name         => Agent_Name,
+         Call_Stack   => Call_Stack,
+         Max_Priority => Max_Priority,
+         Min_Prioirty => Min_Priority,
+         Run_Loop     => Run_Loop'Address);
+
+      Oak.Scheduler.Agent_List.Add_Scheduler_Agent
+        (Scheduler_Info => Scheduler.all,
+         New_Agent      => Agent);
+
+   end Create_Agent;
 
    -----------------
    -- Remove_Task --
@@ -76,6 +107,13 @@ package body Acton.Scheduler_Agent.Fixed_Priority_Scheduler is
             exit when Selected_Task /= null;
          end loop;
 
+         if Selected_Task /= null
+           and then Task_Data.Get_State (T => Selected_Task) = Activation_Pending
+         then
+            Selected_Task :=
+               Oak.Oak_Task.Activation.Continue_Activation (Activator => Selected_Task);
+         end if;
+
          Set_Chosen_Task (Agent => Self, T => Selected_Task);
 
          if Sleeping_Queue = null then
@@ -107,6 +145,8 @@ package body Acton.Scheduler_Agent.Fixed_Priority_Scheduler is
                when Sleeping =>
                   Runnable_Queues (T_Priority) := Get_Next_In_Queue (Yielded_Task);
                   Insert_Into_Queue (Queue => Sleeping_Queue, T => Yielded_Task);
+               when Activation_Pending =>
+                  null;
                when others =>
                   raise Scheduler_Error1;
             end case;
@@ -223,4 +263,4 @@ package body Acton.Scheduler_Agent.Fixed_Priority_Scheduler is
       end loop;
    end Run_Loop;
 
-end Acton.Scheduler_Agent.Fixed_Priority_Scheduler;
+end Acton.Scheduler_Agent.FIFO_Within_Priorities;

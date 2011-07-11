@@ -1,4 +1,6 @@
 package ISA.Power.e200.z6.HID is
+   pragma Pure;
+
    type Branch_Prediction_Type is (
       Enable,
       Disable_Backwards,

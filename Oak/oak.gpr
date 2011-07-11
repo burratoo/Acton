@@ -14,8 +14,8 @@ project Oak is
    end Builder;
 
    package Compiler is
-      for Default_Switches ("ada") use ("-gnatwa.X", "-O3", "-gnat05", "-gnatyabcefhiklM89nprstxu3", "-gnatn", "-Wa,-mregnames", "-gnatwl");
-      for Default_Switches ("Asm") use ("-mregnames");
+      for Default_Switches ("ada") use ("-gnatwa.Xl", "-O3", "-gnat05", "-gnatyabcefhiklM89nprstxu3", "-gnatn", "-Wa,-mregnames", "-g");
+      for Default_Switches ("asm") use ("-mregnames");
    end Compiler;
 
    package Pretty_Printer is

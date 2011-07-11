@@ -15,7 +15,8 @@ project ARPART is
    end Builder;
 
    package Compiler is
-      for Default_Switches ("ada") use ("-gnatwa.X", "-g", "-gnat05", "-gnatyabcefhiklM89nprstxu3", "-gnatg", "-gnatn");
+      for Default_Switches ("ada") use ("-gnatwa.X", "-g", "-gnat05", "-gnatyabcefhiklM89nprstxu3", "-gnatg", "-gnatn", "-Wa,-mregnames", "-gnatwl");
+      for Default_Switches ("Asm") use ("-mregnames");
    end Compiler;
 
    package Pretty_Printer is

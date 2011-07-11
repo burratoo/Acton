@@ -1,20 +1,33 @@
+with System.Storage_Elements;
+
 package Oak.Oak_Task.Data_Access is
 
    pragma Preelaborate;
 
    procedure Initialise_Task
-     (T               : access Oak_Task;
-      Name            : in Task_Name;
-      Normal_Priority : Priority;
-      Deadline        : Time_Span;
-      Cycle_Period    : Time_Span;
-      Phase           : Time_Span;
-      Run_Loop        : Address;
-      Stack_Access    : Call_Stack_Handler);
+     (T                 : access Oak_Task;
+      Stack             : access System.Storage_Elements.Storage_Array;
+      Stack_Size        : System.Storage_Elements.Storage_Count;
+      Name              : String;
+      Normal_Priority   : Priority;
+      Relative_Deadline : Time_Span;
+      Cycle_Period      : Time_Span;
+      Phase             : Time_Span;
+      Run_Loop          : Address;
+      Elaborated        : Boolean_Access);
+
+   procedure Initialise_Main_Task
+     (T                 : access Oak_Task;
+      Stack_Size        : System.Storage_Elements.Storage_Count;
+      Name              : String;
+      Normal_Priority   : Priority;
+      Relative_Deadline : Time_Span;
+      Cycle_Period      : Time_Span;
+      Run_Loop          : Address);
 
    procedure Set_Scheduler_Agent
      (T               : access Oak_Task;
-      Scheduler_Agent : in Oak_Task_Handler);
+      Scheduler_Agent : Oak_Task_Handler);
 
    function Get_Id (T : access Oak_Task) return Task_Id;
    function Get_Name (T : access Oak_Task) return Task_Name;
@@ -31,4 +44,8 @@ package Oak.Oak_Task.Data_Access is
    function Get_Wake_Time (T : access Oak_Task) return Time;
    procedure Set_Wake_Time (T : access Oak_Task; WT : Time);
 
+   function Is_Elaborated (T : access Oak_Task) return Boolean;
+   function Get_Activation_List
+     (T    : access Oak_Task)
+      return access Oak_Task;
 end Oak.Oak_Task.Data_Access;

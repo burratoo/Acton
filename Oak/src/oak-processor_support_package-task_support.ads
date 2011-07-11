@@ -5,10 +5,13 @@ with System;
 with Ada.Real_Time;
 with Oak.Oak_Task;
 with System.Storage_Elements;
+with Oak.Oak_Task.Activation;
 
 package Oak.Processor_Support_Package.Task_Support is
 
    pragma Preelaborate;
+
+   package Oak_Activation renames Oak.Oak_Task.Activation;
 
    --  This procedure saves the Kernel's registers to its respective store,
    --  loads in the task's registers, enables Oak's wakeup call and then
@@ -30,8 +33,13 @@ package Oak.Processor_Support_Package.Task_Support is
    --  registers to store is the Stack Pointer. Even then, this could just be
    --  set up by the kernel before the context switch... mmmm........
 
-   type TRS_Type is (Sleeping, Runnable, Type_Access, Other); -- Blocked
+   type TRS_Type is (
+      Sleeping,
+      Runnable,
+      Type_Access,
+      Other); --  Blocked
    type Parameter_Array is array (0 .. 1) of Integer;
+   Empty_Parameter : constant Parameter_Array := (0, 0);
 
    type Task_Requested_State (Type_State : TRS_Type := Sleeping) is record
       State : Oak.Oak_Task.Task_State;
@@ -39,22 +47,24 @@ package Oak.Processor_Support_Package.Task_Support is
          when Sleeping =>
             Wake_Up_At : Ada.Real_Time.Time := Ada.Real_Time.Time_Last;
          --  when Blocked =>
-         --  This will hold the ID number fo the protected object we're blocked on
+         --  This will hold the ID number fo the protected object we're
+         --  blocked on
          --   null;
          when others =>
-            Parameter  : Parameter_Array;
+            Parameter : Parameter_Array;
       end case;
    end record;
    pragma Unchecked_Union (Task_Requested_State);
    pragma Warnings (Off, "*Type_State*");
    for Task_Requested_State use record
-      State at 0 range 0 .. 7;
+      State      at 0 range 0 .. 7;
       Wake_Up_At at 4 range 0 .. 63;
-      Parameter at 4 range 0 .. 63;
+      Parameter  at 4 range 0 .. 63;
    end record;
    pragma Warnings (On, "*Type_State*");
 
-   procedure Context_Switch_To_Task (Task_Return_State : out Task_Requested_State);
+   procedure Context_Switch_To_Task
+     (Task_Return_State : out Task_Requested_State);
    procedure Context_Switch_To_Kernel;
    procedure Context_Switch_To_Scheduler_Agent;
 
@@ -67,7 +77,7 @@ package Oak.Processor_Support_Package.Task_Support is
    pragma Inline_Always (Context_Switch_To_Scheduler_Agent);
    pragma Inline_Always (Yield_Processor_To_Kernel);
 
-   procedure Set_Oak_Wake_Up_Timer (Wake_Up_At : in Ada.Real_Time.Time);
+   procedure Set_Oak_Wake_Up_Timer (Wake_Up_At : Ada.Real_Time.Time);
    procedure Disable_Oak_Wake_Up_Interrupt;
    procedure Enable_Oak_Wake_Up_Interrupt;
 

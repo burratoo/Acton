@@ -17,7 +17,11 @@ package Oak.Core is
 
    type Oak_Data is limited private;
 
+   procedure Initialise;
+   pragma Export (Ada, Initialise, "__oak_initialise");
+
    procedure Start; --  System initialisation routine.
+   pragma Export (Ada, Start, "__oak_start");
 
    procedure Start_Oak_Instance (Oak_Instance : in out Oak_Data);
 

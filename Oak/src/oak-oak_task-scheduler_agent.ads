@@ -4,7 +4,7 @@ package Oak.Oak_Task.Scheduler_Agent is
 
    procedure Initialise_Agent
      (Agent                          : access Oak_Task;
-      Name                           : in Task_Name;
+      Name                           : in String;
       Call_Stack                     : in Call_Stack_Handler;
       Max_Priority                   : in Priority;
       Min_Prioirty                   : in Priority;

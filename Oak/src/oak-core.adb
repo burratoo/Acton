@@ -4,10 +4,21 @@ use  Oak.Processor_Support_Package.Task_Support;
 with Oak.Oak_Task.Internal;                      use Oak.Oak_Task.Internal;
 with Oak.Processor_Support_Package.Processor;
 with Oak.Oak_Task.Data_Access;
+with Oak.Oak_Task.Activation;
+with Oak.Processor_Support_Package.Task_Interrupts;
 
 package body Oak.Core is
 
    package Processor renames Oak.Processor_Support_Package.Processor;
+
+   ----------------
+   -- Initialise --
+   ----------------
+
+   procedure Initialise is
+   begin
+      Oak.Processor_Support_Package.Task_Interrupts.Initialise_Task_Enviroment;
+   end Initialise;
 
    -----------
    -- Start --
@@ -53,50 +64,50 @@ package body Oak.Core is
       --  Actually the first step should be to mask the timer interrupt we use
       --  to wake up so that the run loop isn't interrupted.
 
-         --  Then we should check to see if in between the wakeup timer going
-         --  off and the run-loop starting that a deadline may have been
-         --  missed. This means that we can act on the missed dealine much
-         --  quicker than if we had waited until the end of the run-loop to
-         --  check to see if any deadlines have been missed. That said, what is
-         --  the latency between the triggering of an interrupt and reaching
-         --  this point? Probably what we'll catch are deadlines that fall just
-         --  after a Scheduler Agent requesting servicing. We'll be talking
-         --  something very short here. Maybe we will need to test.
+      --  Then we should check to see if in between the wakeup timer going
+      --  off and the run-loop starting that a deadline may have been
+      --  missed. This means that we can act on the missed dealine much
+      --  quicker than if we had waited until the end of the run-loop to
+      --  check to see if any deadlines have been missed. That said, what is
+      --  the latency between the triggering of an interrupt and reaching
+      --  this point? Probably what we'll catch are deadlines that fall just
+      --  after a Scheduler Agent requesting servicing. We'll be talking
+      --  something very short here. Maybe we will need to test.
 
-         --  First step: Check to see why we have been activated.
-         --
-         --  Activation of the run loop can be due to four (five?) things:
-         --   1. Intial activation of the run loop,
-         --   2. Timer expiration due to a task activating (via a Scheduler
-         --  Agent),
-         --   3. Timer expiration due to a missed deadline,
-         --   4. Turns out we forgot this one. Turns out that the run-loop can
-         --  be
-         --  activated by the completion of a task.
-         --  (5. An interrupt may release a task why it is sleeping. This maybe
-         --   covered by the general Proected Object mechanism.)
-         --
-         --  So we can record in a variable before the system sleeps (or busy
-         --  wait if we do not have a sleep option (could we just halt the
-         --  processor?)) (or during the setup routine) or we can check at wake
-         --  up.
-         --  Better to record before sleep because we already know which of the
-         --  three (really 2 options) has caused us to wake up.
-         --
+      --  First step: Check to see why we have been activated.
+      --
+      --  Activation of the run loop can be due to four (five?) things:
+      --   1. Intial activation of the run loop,
+      --   2. Timer expiration due to a task activating (via a Scheduler
+      --  Agent),
+      --   3. Timer expiration due to a missed deadline,
+      --   4. Turns out we forgot this one. Turns out that the run-loop can
+      --  be
+      --  activated by the completion of a task.
+      --  (5. An interrupt may release a task why it is sleeping. This maybe
+      --   covered by the general Proected Object mechanism.)
+      --
+      --  So we can record in a variable before the system sleeps (or busy
+      --  wait if we do not have a sleep option (could we just halt the
+      --  processor?)) (or during the setup routine) or we can check at wake
+      --  up.
+      --  Better to record before sleep because we already know which of the
+      --  three (really 2 options) has caused us to wake up.
+      --
 
-         --  Second Step: Beak into 2 code paths to handle normal scheduling
-         --  and
-         --  missed deadlines? Possible a good idea as it saves having two
-         --  large
-         --  blocks within an if-else statement.
-         --
-         --  What we expect to happen when we run the Run_Scheduler_Agents
-         --  subprogram:
-         --  Each scheduler agent is called one by one. Here they have the
-         --  opportunity to manage their queues and to nominate a task to run.
-         --  They should also set the time that they wish to be activated next.
-         --  On return, Oak's scheduler should have recorded which task should
-         --  run now, if there are any eligible tasks to run at all.
+      --  Second Step: Beak into 2 code paths to handle normal scheduling
+      --  and
+      --  missed deadlines? Possible a good idea as it saves having two
+      --  large
+      --  blocks within an if-else statement.
+      --
+      --  What we expect to happen when we run the Run_Scheduler_Agents
+      --  subprogram:
+      --  Each scheduler agent is called one by one. Here they have the
+      --  opportunity to manage their queues and to nominate a task to run.
+      --  They should also set the time that they wish to be activated next.
+      --  On return, Oak's scheduler should have recorded which task should
+      --  run now, if there are any eligible tasks to run at all.
          case Oak_Instance.Woken_By is
             when First_Run =>
                Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
@@ -111,22 +122,35 @@ package body Oak.Core is
                      Set_State (T => Get_Current_Task, New_State => Sleeping);
                   when Cycle_Completed =>
                      Next_Run_Cycle (T => Get_Current_Task);
-                     Set_State (T => Get_Current_Task, New_State => Cycle_Completed);
+                     Set_State
+                       (T         => Get_Current_Task,
+                        New_State => Cycle_Completed);
+                  when Activation_Complete =>
+                     Oak.Oak_Task.Activation.Finish_Activation
+                       (Activator => Get_Current_Task);
                   when others =>
                      null;
                end case;
 
-               Run_Current_Task_Scheduler_Agent
-                 (Scheduler_Info => Oak_Instance.Scheduler,
-                  Chosen_Task    => Next_Task);
+               case Task_Return_State.State is
+                  when Activation_Complete =>
+                     Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
+                       (Scheduler_Info => Oak_Instance.Scheduler,
+                        Chosen_Task    => Next_Task);
+                  when others =>
+                     Run_Current_Task_Scheduler_Agent
+                       (Scheduler_Info => Oak_Instance.Scheduler,
+                        Chosen_Task    => Next_Task);
+               end case;
+
             when Scheduler_Agent =>
                Run_The_Bloody_Scheduler_Agent_That_Wanted_To_Be_Woken
                  (Scheduler_Info => Oak_Instance.Scheduler,
                   Chosen_Task    => Next_Task);
             when Missed_Deadline =>
---                 Handle_Missed_Deadline
---                   (Scheduler_Info => Oak_Instance.Scheduler,
---                    Chosen_Task    => Next_Task);
+               --                 Handle_Missed_Deadline
+               --                   (Scheduler_Info => Oak_Instance.Scheduler,
+               --                    Chosen_Task    => Next_Task);
                null;
          end case;
 
@@ -144,7 +168,8 @@ package body Oak.Core is
             Get_Earliest_Scheduler_Agent_Time
               (Scheduler_Info => Oak_Instance.Scheduler);
          Earliest_Deadline             := Time_Last;
---              Get_Earliest_Deadline (Scheduler_Info => Oak_Instance.Scheduler);
+         --              Get_Earliest_Deadline (Scheduler_Info =>
+         --  Oak_Instance.Scheduler);
 
          if Earliest_Deadline <= Earliest_Scheduler_Agent_Time then
             Oak_Instance.Woken_By := Missed_Deadline;
@@ -205,8 +230,9 @@ package body Oak.Core is
       return Processor_Kernels (Processor_Kernels'First)'Access;
    end Get_Oak_Instance;
 
-   function Get_Scheduler_Info (Oak_Instance : access Oak_Data)
-                                return access Oak_Scheduler_Info is
+   function Get_Scheduler_Info
+     (Oak_Instance : access Oak_Data)
+      return         access Oak_Scheduler_Info is
    begin
       return Oak_Instance.Scheduler'Access;
    end Get_Scheduler_Info;

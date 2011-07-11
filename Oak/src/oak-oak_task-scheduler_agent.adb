@@ -7,17 +7,24 @@ package body Oak.Oak_Task.Scheduler_Agent is
 
    procedure Initialise_Agent
      (Agent                          : access Oak_Task;
-      Name                           : in Task_Name;
+      Name                           : in String;
       Call_Stack                     : in Call_Stack_Handler;
       Max_Priority                   : in Priority;
       Min_Prioirty                   : in Priority;
       Run_Loop                       : in Address)
    is
    begin
+
+      Agent.Name_Length               :=
+         Integer'Min (Task_Name'Length, Name'Length);
+      Agent.Name (1 .. Agent.Name_Length) :=
+        Task_Name (Name (Name'First .. Name'First + Agent.Name_Length - 1));
+
       Agent.all :=
         (Kind                           => Scheduler,
          Id                             => Internal.New_Task_Id,
-         Name                           => Name,
+         Name                           => Agent.Name,
+         Name_Length                    => Agent.Name_Length,
          Call_Stack                     => Call_Stack,
          Lowest_Prioirty                => Min_Prioirty,
          Highest_Prioirty               => Max_Priority,
@@ -27,7 +34,9 @@ package body Oak.Oak_Task.Scheduler_Agent is
          Manage_Task                    => null,
          Desired_Agent_Run_Time         => Time_Zero,
          Run_Reason                     => Select_Next_Task,
-         Next_Agent                     => null);
+         Next_Agent                     => null,
+         Activation_List                => null,
+         Elaborated                     => null);
 
       Initialise_Call_Stack
         (Stack             => Agent.Call_Stack,

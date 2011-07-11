@@ -2,6 +2,8 @@ with System.Storage_Elements;
 with System;
 
 package Oak.Processor_Support_Package.Task_Interrupts is
+   pragma Preelaborate;
+
    procedure Initialise_Task_Enviroment;
 
    procedure E200_Context_Switch_To_Task;

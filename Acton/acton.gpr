@@ -22,7 +22,7 @@ project Acton is
    end Builder;
 
    package Compiler is
-      for Default_Switches ("ada") use ("-gnatwa.X", "-g", "-gnat05", "-gnatyabcefhiklM89nprstxu3", "-gnatn", "-gnatwl");
+      for Default_Switches ("ada") use ("-gnatwa.Xl", "-g", "-gnat05", "-gnatyabcefhiklM89nprstxu3", "-gnatn");
    end Compiler;
 
    package Linker is

@@ -1,4 +1,3 @@
 package Acton is
-   procedure Start;
-   procedure LED_Flasher;
+   pragma Pure;
 end Acton;

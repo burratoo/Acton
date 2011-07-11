@@ -1,8 +1,7 @@
-with Oak.Processor_Support_Package.Call_Stack.Ops;
-use  Oak.Processor_Support_Package.Call_Stack.Ops;
-
 with Oak.Oak_Task.Internal;
-with Ada.Real_Time;
+with Oak.Core;
+with Oak.Scheduler;             use Oak.Scheduler;
+with Oak.Memory.Call_Stack.Ops; use Oak.Memory.Call_Stack.Ops;
 
 package body Oak.Oak_Task.Data_Access is
 
@@ -10,38 +9,122 @@ package body Oak.Oak_Task.Data_Access is
    -- Set_Up_Task --
    ------------------
    procedure Initialise_Task
-     (T               : access Oak_Task;
-      Name            : in Task_Name;
-      Normal_Priority : Priority;
-      Deadline        : Time_Span;
-      Cycle_Period    : Time_Span;
-      Phase           : Time_Span;
-      Run_Loop        : Address;
-      Stack_Access    : Call_Stack_Handler)
+     (T                 : access Oak_Task;
+      Stack             : access System.Storage_Elements.Storage_Array;
+      Stack_Size        : System.Storage_Elements.Storage_Count;
+      Name              : in String;
+      Normal_Priority   : Priority;
+      Relative_Deadline : Time_Span;
+      Cycle_Period      : Time_Span;
+      Phase             : Time_Span;
+      Run_Loop          : Address;
+      Elaborated        : Boolean_Access)
    is
+      TP : access Oak_Task;
    begin
+      T.Name_Length               :=
+         Integer'Min (Task_Name'Length, Name'Length);
+      T.Name (1 .. T.Name_Length) :=
+        Task_Name (Name (Name'First .. Name'First + T.Name_Length - 1));
+
       T.all :=
         (Kind            => Regular,
          Id              => Internal.New_Task_Id,
-         Name            => Name,
+         Name            => T.Name,
+         Name_Length     => T.Name_Length,
          State           => Sleeping,
          Normal_Priority => Normal_Priority,
-         Deadline        => Deadline,
+         Deadline        => Relative_Deadline,
          Cycle_Period    => Cycle_Period,
          Phase           => Phase,
          Next_Deadline   => Time_Last,
-         Next_Run_Cycle  => Time_Zero + Ada.Real_Time.Seconds (1) + Cycle_Period,
-         Wake_Time       => Time_Zero + Ada.Real_Time.Seconds (1),
+         Next_Run_Cycle  => Time_Last,
+         Wake_Time       => Time_Last,
          Run_Loop        => Run_Loop,
-         Call_Stack      => Stack_Access,
+         Call_Stack      => T.Call_Stack,
          Scheduler_Agent => null,
          Scheduler_Queue => (null, null),
          Deadline_List   => (null, null),
-         Memory_List     => null);
+         Memory_List     => null,
+         Activation_List => null,
+         Elaborated      => Elaborated);
+
+      if Stack = null then
+         Allocate_Call_Stack
+           (Stack            => T.Call_Stack,
+            Size_In_Elements => Stack_Size);
+
+         Initialise_Call_Stack
+           (Stack             => T.Call_Stack,
+            Start_Instruction => Run_Loop);
+      else
+         Initialise_Call_Stack
+           (Stack             => T.Call_Stack,
+            Start_Instruction => Run_Loop,
+            Stack_Access      => Stack);
+      end if;
+
+      TP := Oak.Core.Get_Current_Task;
+      while TP.Activation_List /= null loop
+         TP := TP.Activation_List;
+      end loop;
+      TP.Activation_List := T;
+
+   end Initialise_Task;
+
+   procedure Initialise_Main_Task
+     (T               : access Oak_Task;
+      Stack_Size      : System.Storage_Elements.Storage_Count;
+      Name            : String;
+      Normal_Priority : Priority;
+      Relative_Deadline : Time_Span;
+      Cycle_Period    : Time_Span;
+      Run_Loop        : Address)
+   is
+      OI : constant access Oak.Core.Oak_Data := Oak.Core.Get_Oak_Instance;
+
+      Scheduler : constant access Oak_Scheduler_Info :=
+         Oak.Core.Get_Scheduler_Info (OI);
+   begin
+      T.Name_Length               :=
+         Integer'Min (Task_Name'Length, Name'Length);
+      T.Name (1 .. T.Name_Length) :=
+        Task_Name (Name (Name'First .. Name'First + T.Name_Length - 1));
+
+      T.all :=
+        (Kind            => Regular,
+         Id              => Internal.New_Task_Id,
+         Name            => T.Name,
+         Name_Length     => T.Name_Length,
+         State           => Sleeping,
+         Normal_Priority => Normal_Priority,
+         Deadline        => Relative_Deadline,
+         Cycle_Period    => Cycle_Period,
+         Phase           => Time_Span_Zero,
+         Next_Deadline   => Time_Last,
+         Next_Run_Cycle  => Time_Last,
+         Wake_Time       => Time_Last,
+         Run_Loop        => Run_Loop,
+         Call_Stack      => T.Call_Stack,
+         Scheduler_Agent => null,
+         Scheduler_Queue => (null, null),
+         Deadline_List   => (null, null),
+         Memory_List     => null,
+         Activation_List => null,
+         Elaborated      => null);
+
+      Allocate_Call_Stack
+        (Stack            => T.Call_Stack,
+         Size_In_Elements => Stack_Size);
+
       Initialise_Call_Stack
         (Stack             => T.Call_Stack,
          Start_Instruction => Run_Loop);
-   end Initialise_Task;
+
+      Add_Task_To_Scheduler
+        (Scheduler_Info => Scheduler.all,
+         T              => Oak_Task_Handler (T));
+   end Initialise_Main_Task;
 
    -------------------------
    -- Get_Normal_Priority --
@@ -137,5 +220,17 @@ package body Oak.Oak_Task.Data_Access is
    begin
       T.Wake_Time := WT;
    end Set_Wake_Time;
+
+   function Is_Elaborated (T : access Oak_Task) return Boolean is
+   begin
+      return T.Elaborated.all;
+   end Is_Elaborated;
+
+   function Get_Activation_List
+     (T    : access Oak_Task)
+      return access Oak_Task is
+   begin
+      return T.Activation_List;
+   end Get_Activation_List;
 
 end Oak.Oak_Task.Data_Access;

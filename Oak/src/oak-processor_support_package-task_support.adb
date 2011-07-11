@@ -74,6 +74,7 @@ package body Oak.Processor_Support_Package.Task_Support is
                    Integer'Asm_Input ("r", Resulting_Task_State.Parameter (0)),
                    Integer'Asm_Input ("r", Resulting_Task_State.Parameter (1))),
            Volatile => True);
+      null;
    end Yield_Processor_To_Kernel;
    ---------------------------
    -- Set_Oak_Wake_Up_Timer --
