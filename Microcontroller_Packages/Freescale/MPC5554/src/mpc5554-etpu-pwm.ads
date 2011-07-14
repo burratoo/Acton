@@ -1,6 +1,4 @@
 with MPC5554;           use MPC5554;
-with MPC5554.eTPU;      use MPC5554.eTPU;
-with MPC5554.eTPU.Util; use MPC5554.eTPU.Util;
 
 package MPC5554.eTPU.PWM is
    subtype Time_Unit is Unsigned_32;

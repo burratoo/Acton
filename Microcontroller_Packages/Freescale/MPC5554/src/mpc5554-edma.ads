@@ -4,7 +4,7 @@ with System.Storage_Elements; use System.Storage_Elements;
 package MPC5554.eDMA is
 
    ----------------------------------------------------------------------------
-   -- Memory Addresses
+   --  Memory Addresses
    ----------------------------------------------------------------------------
    eDMA_Base_Address    : constant Integer_Address := 16#FFF4_4000#;
    CR_Offset_Address    : constant Integer_Address := 16#0000#;
@@ -25,7 +25,7 @@ package MPC5554.eDMA is
    TCD_Offset_Address   : constant Integer_Address := 16#1000#;
 
    ----------------------------------------------------------------------------
-   -- Hardware Features
+   --  Hardware Features
    ----------------------------------------------------------------------------
    type DMA_Channel_Number_With_Set_All is range 0 .. 127;
 
@@ -34,10 +34,10 @@ package MPC5554.eDMA is
       0 .. (DMA_Size - 1);
 
    ----------------------------------------------------------------------------
-   -- SIU Types
+   --  SIU Types
    ---------------------------------------------------------------------------
 
-   -- Common Types
+   --  Common Types
    type DMA_Enable_Bit_Array is
      array (DMA_Channel_Number'Range) of Enable_Type;
 
@@ -48,7 +48,7 @@ package MPC5554.eDMA is
    type DMA_Active_Bit_Array is
      array (DMA_Channel_Number'Range) of Enable_Type;
 
-   -- eDMA Control Register (EDMA_CR)
+   --  eDMA Control Register (EDMA_CR)
    type Group_Priority_Type is range 0 .. 3;
    type Arbitration_Type is (Fixed, Round_Robin);
 
@@ -59,7 +59,7 @@ Channel_Group_1_Priority, Channel_Group_0_Priority : Group_Priority_Type;
       Debug : Enable_Type;
    end record;
 
-   -- eDMA Error Status Register
+   --  eDMA Error Status Register
    type Error_Status_Type is record
       Valid_Error               : Occurred_Type;
       Group_Priority_Error      : Occurred_Type;
@@ -75,7 +75,7 @@ Channel_Group_1_Priority, Channel_Group_0_Priority : Group_Priority_Type;
       Destination_Bus_Error     : Occurred_Type;
    end record;
 
-   -- eDMAM Channel n Priority Registers (EDMA_CPRn)
+   --  eDMAM Channel n Priority Registers (EDMA_CPRn)
    type Arbitration_Priority_Type is mod 2 ** 4;
 
    type Channel_Priority_Type is record
@@ -84,7 +84,7 @@ Channel_Group_1_Priority, Channel_Group_0_Priority : Group_Priority_Type;
       Arbitration_Priority   : Arbitration_Priority_Type;
    end record;
 
-   -- Transfer Control Descriptor
+   --  Transfer Control Descriptor
    type Modulo_Type is mod 2 ** 5;
    type SSIZE_Type is (Size_8, Size_16, Size_32, Size_64, Size_256);
    type Signed_Offset_Type is mod 2 ** 16;
@@ -93,7 +93,7 @@ Channel_Group_1_Priority, Channel_Group_0_Priority : Group_Priority_Type;
    subtype Short_Count is Count_Type range 0 .. 2 ** 6 - 1;
    type BW_Type is (Stall_No, Stall_4, Stall_8);
 
-    type TCD_Type (Minor_Channel_To_Channel_Linking : Enable_Type := Disable) is
+   type TCD_Type (Minor_Channel_To_Channel_Linking : Enable_Type := Disable) is
       record
          Source_Address                            : System.Address;
          Source_Address_Modulo                     : Modulo_Type;
@@ -130,7 +130,7 @@ Channel_Group_1_Priority, Channel_Group_0_Priority : Group_Priority_Type;
       end record;
 
    ----------------------------------------------------------------------------
-   -- Hardware Respresentations
+   --  Hardware Respresentations
    ----------------------------------------------------------------------------
    pragma Pack (DMA_Enable_Bit_Array);
    for DMA_Enable_Bit_Array'Size use DMA_Size;
@@ -214,7 +214,7 @@ Channel_Group_1_Priority, Channel_Group_0_Priority : Group_Priority_Type;
       Channel_Start                             at 16#1C# range 31 .. 31;
    end record;
    ----------------------------------------------------------------------------
-   -- SIU Registers
+   --  SIU Registers
    ----------------------------------------------------------------------------
 
    Control_Register : Control_Type;
@@ -282,5 +282,5 @@ Channel_Group_1_Priority, Channel_Group_0_Priority : Group_Priority_Type;
    Transfer_Control_Descriptor : array (DMA_Channel_Number) of  TCD_Type;
    for Transfer_Control_Descriptor'Address use
      To_Address (eDMA_Base_Address + TCD_Offset_Address);
-   --type Transfer_Control_Descriptor_Pointer is access all TCD_Type;
+   --  type Transfer_Control_Descriptor_Pointer is access all TCD_Type;
 end MPC5554.eDMA;

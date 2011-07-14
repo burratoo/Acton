@@ -157,12 +157,12 @@ package body Oak.Oak_Task.Scheduler_Agent is
       return T.Scheduler_Queue.Previous;
    end Get_Prev_In_Queue;
 
-   procedure Set_Next_In_Queue (T, Next : Oak_Task_Handler) is
+   procedure Set_Next_In_Queue (T, Next : in Oak_Task_Handler) is
    begin
       T.Scheduler_Queue.Next := Next;
    end Set_Next_In_Queue;
 
-   procedure Set_Prev_In_Queue (T, Prev : Oak_Task_Handler) is
+   procedure Set_Prev_In_Queue (T, Prev : in Oak_Task_Handler) is
    begin
       T.Scheduler_Queue.Previous := Prev;
    end Set_Prev_In_Queue;
@@ -186,8 +186,8 @@ package body Oak.Oak_Task.Scheduler_Agent is
    end Get_Desired_Run_Time;
 
    procedure Set_Desired_Run_Time
-     (Agent    : Oak_Task_Handler;
-      Run_Time : Time)
+     (Agent    : in Oak_Task_Handler;
+      Run_Time : in Time)
    is
    begin
       Agent.Desired_Agent_Run_Time := Run_Time;

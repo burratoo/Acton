@@ -1,6 +1,5 @@
 with MPC5554;                 use MPC5554;
 with MPC5554.eTPU;            use MPC5554.eTPU;
-with System.Storage_Elements; use System.Storage_Elements;
 
 package MPC5554.eTPU.Util is
 
@@ -68,7 +67,7 @@ package MPC5554.eTPU.Util is
       Channel : in eTPU_ID_Type;
       HSR     : in HSR_Type);
 
-   -- Memory Accessors
+   --  Memory Accessors
    function Local_Data_Adress
      (Engine  : in eTPU_Engine;
       Channel : in eTPU_ID_Type)

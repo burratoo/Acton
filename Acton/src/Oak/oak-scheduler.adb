@@ -239,9 +239,9 @@ package body Oak.Scheduler is
       pragma Unreferenced (Scheduler_Info, Chosen_Task);
    begin
       --  Generated stub: replace with real body!
-      pragma Compile_Time_Warning
-        (True,
-         "Handle_Missed_Deadline unimplemented");
+      --  pragma Compile_Time_Warning
+      --  (True,
+      --   "Handle_Missed_Deadline unimplemented");
       null;
    end Handle_Missed_Deadline;
 

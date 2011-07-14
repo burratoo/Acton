@@ -1,7 +1,8 @@
 with Oak.Core;
 with Oak.Processor_Support_Package.Task_Support;
 use  Oak.Processor_Support_Package.Task_Support;
-with Oak.Oak_Task.Scheduler_Agent;               use Oak.Oak_Task.Scheduler_Agent;
+with Oak.Oak_Task.Scheduler_Agent;
+use  Oak.Oak_Task.Scheduler_Agent;
 with Oak.Oak_Task.Data_Access;
 with Ada.Real_Time;
 with Oak.Oak_Task.Activation;
@@ -13,7 +14,8 @@ package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
    use type Ada.Real_Time.Time;
    package Task_Data renames Oak.Oak_Task.Data_Access;
 
-   type Oak_Task_Array is array (System.Priority range <>) of Oak_Task_Handler;
+   type Oak_Task_Array is
+     array (System.Priority range <>) of Oak_Task_Handler;
 
    procedure Create_Agent
      (Agent                      : Oak_Task_Handler;
@@ -52,7 +54,7 @@ package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
    procedure Remove_Task is
    begin
       --  Generated stub: replace with real body!
-      pragma Compile_Time_Warning (True, "Remove_Task unimplemented");
+      --  pragma Compile_Time_Warning (True, "Remove_Task unimplemented");
       raise Program_Error with "Unimplemented procedure Remove_Task";
    end Remove_Task;
 
@@ -63,7 +65,9 @@ package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
    procedure Change_Task_Priority is
    begin
       --  Generated stub: replace with real body!
-      pragma Compile_Time_Warning (True, "Change_Task_Priority unimplemented");
+      --  pragma Compile_Time_Warning
+      --  (True,
+      --   "Change_Task_Priority unimplemented");
       raise Program_Error with "Unimplemented procedure Change_Task_Priority";
    end Change_Task_Priority;
 
@@ -72,7 +76,8 @@ package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
    --------------------------
 
    procedure Run_Loop is
-      Self            : constant Oak_Task_Handler := Oak.Core.Get_Current_Task;
+      Self            : constant Oak_Task_Handler :=
+         Oak.Core.Get_Current_Task;
       Run_Reason      : Reason_For_Run;
       Runnable_Queues : Oak_Task_Array (0 .. 5);
       Sleeping_Queue  : Oak_Task_Handler;
@@ -90,7 +95,8 @@ package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
         (Queue : in out Oak_Task_Handler;
          T     : in Oak_Task_Handler);
 
-      procedure Add_Task_To_End_Of_Runnable_Queue (Task_To_Add : Oak_Task_Handler);
+      procedure Add_Task_To_End_Of_Runnable_Queue
+        (Task_To_Add : Oak_Task_Handler);
       procedure Move_Woken_Tasks_To_Runnable_Queue;
 
       --------------------------
@@ -108,16 +114,20 @@ package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
          end loop;
 
          if Selected_Task /= null
-           and then Task_Data.Get_State (T => Selected_Task) = Activation_Pending
+           and then Task_Data.Get_State (T => Selected_Task) =
+                    Activation_Pending
          then
             Selected_Task :=
-               Oak.Oak_Task.Activation.Continue_Activation (Activator => Selected_Task);
+               Oak.Oak_Task.Activation.Continue_Activation
+                 (Activator => Selected_Task);
          end if;
 
          Set_Chosen_Task (Agent => Self, T => Selected_Task);
 
          if Sleeping_Queue = null then
-            Set_Desired_Run_Time (Agent => Self, Run_Time => Ada.Real_Time.Time_Last);
+            Set_Desired_Run_Time
+              (Agent    => Self,
+               Run_Time => Ada.Real_Time.Time_Last);
          else
             Set_Desired_Run_Time
               (Agent    => Self,
@@ -130,7 +140,8 @@ package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
       --------------------------
       procedure Task_Yielded is
          T_Priority   : System.Priority;
-         Yielded_Task : constant Oak_Task_Handler := Get_Task_To_Run (Agent => Self);
+         Yielded_Task : constant Oak_Task_Handler :=
+            Get_Task_To_Run (Agent => Self);
       begin
          T_Priority := Task_Data.Get_Normal_Priority (T => Yielded_Task);
          if Runnable_Queues (T_Priority) = Yielded_Task then --  Sanity check.
@@ -138,13 +149,19 @@ package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
                when Cycle_Completed =>
                   Task_Data.Set_State (T => Yielded_Task, State => Sleeping);
                   --  Remove task from Runnable Queues
-                  Runnable_Queues (T_Priority) := Get_Next_In_Queue (Yielded_Task);
-                  Insert_Into_Queue (Queue => Sleeping_Queue, T => Yielded_Task);
+                  Runnable_Queues (T_Priority) :=
+                     Get_Next_In_Queue (Yielded_Task);
+                  Insert_Into_Queue
+                    (Queue => Sleeping_Queue,
+                     T     => Yielded_Task);
                when Blocked =>
                   null;
                when Sleeping =>
-                  Runnable_Queues (T_Priority) := Get_Next_In_Queue (Yielded_Task);
-                  Insert_Into_Queue (Queue => Sleeping_Queue, T => Yielded_Task);
+                  Runnable_Queues (T_Priority) :=
+                     Get_Next_In_Queue (Yielded_Task);
+                  Insert_Into_Queue
+                    (Queue => Sleeping_Queue,
+                     T     => Yielded_Task);
                when Activation_Pending =>
                   null;
                when others =>
@@ -190,7 +207,8 @@ package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
             Current        := Queue;
             Task_Wake_Time := Task_Data.Get_Wake_Time (T => T);
             while Current /= null
-              and then Task_Wake_Time > Task_Data.Get_Wake_Time (T => Current)
+              and then Task_Wake_Time >
+                       Task_Data.Get_Wake_Time (T => Current)
             loop
                Previous := Current;
                Current  := Get_Next_In_Queue (T => Current);
@@ -215,7 +233,9 @@ package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
          end if;
       end Remove_From_Queue;
 
-      procedure Add_Task_To_End_Of_Runnable_Queue (Task_To_Add : Oak_Task_Handler) is
+      procedure Add_Task_To_End_Of_Runnable_Queue
+        (Task_To_Add : Oak_Task_Handler)
+      is
          T             : Oak_Task_Handler;
          Task_Priority : System.Priority;
       begin
@@ -238,7 +258,9 @@ package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
          Current_Time : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
          T, Move_T    : Oak_Task_Handler            := Sleeping_Queue;
       begin
-         while T /= null and then Current_Time > Task_Data.Get_Wake_Time (T => T) loop
+         while T /= null
+           and then Current_Time > Task_Data.Get_Wake_Time (T => T)
+         loop
             Move_T := T;
             T      := Get_Next_In_Queue (T => T);
             Remove_From_Queue (Queue => Sleeping_Queue, T => Move_T);

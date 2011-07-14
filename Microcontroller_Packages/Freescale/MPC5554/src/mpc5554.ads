@@ -1,5 +1,5 @@
 package MPC5554 is
-   pragma Preelaborate;
+   pragma Pure;
 
    type Enable_Type is (Disable, Enable);
    for Enable_Type use (Disable => 0, Enable => 1);

@@ -1,4 +1,5 @@
 with MPC5554.eTPU.PWM.AUTO; use MPC5554.eTPU.PWM.AUTO;
+with MPC5554.eTPU.Util;
 
 package body MPC5554.eTPU.PWM is
 
@@ -62,7 +63,7 @@ package body MPC5554.eTPU.PWM is
       eTPU.Channel (Engine) (Channel).Status_Register.Function_Mode  :=
         PWM_FM;
 
-      -- Write to HSR starts the channel running
+      --  Write to HSR starts the channel running
       eTPU.Util.Request_Channel_Service
         (Engine  => Engine,
          Channel => Channel,
