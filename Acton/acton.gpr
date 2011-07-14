@@ -1,20 +1,28 @@
-with "../MPC5554/mpc5554.gpr";
-with "../Oak/oak.gpr";
-with "../Scheduler_Agent/scheduler_agent.gpr";
-with "../ARPART/arpart.gpr";
-
 project Acton is
 
-   for Source_Dirs use ("src");
+   type Processor_Type is
+      ("Freescale_e200");
+   Processor : Processor_Type := external ("Processor", "Freescale_e200");
+   for Source_Dirs use ("src", "src/ARPART", "src/GNARL", "src/Oak", "src/Scheduler_Agent", "processor_support_packages", "processor_support_packages/" & Processor & "/**");
    for Object_Dir use "obj/";
-   for Main use ("application.adb");
-   for Languages use ("Ada");
+   for Languages use ("Ada", "Asm");
+   for Library_Name use "acton";
+   for Library_Dir use "adalib/";
+   for Library_Version use ".1";
+   for Library_Src_Dir use "adainclude/";
+   for Library_Interface use ("Acton", "Acton.Scheduler_Agent", "Acton.Scheduler_Agent.FIFO_Within_Priorities", "Ada", "Ada.Exceptions", "Ada.Real_Time", "Ada.Unchecked_Conversion", "Interfaces", "Oak", "Oak.Core", "Oak.Memory",
+      "Oak.Memory.Call_Stack", "Oak.Oak_Task", "Oak.Oak_Task.Activation", "System", "System.Machine_Code", "System.Parameters", "System.Storage_Elements", "System.Unsigned_Types");
 
    package Ide is
       for Documentation_Dir use "doc/";
-      for Gnat use "powerpc-eabispe-gnat";
-      for Gnatlist use "powerpc-eabispe-gnatls";
-      for Debugger_Command use "powerpc-eabispe-gdb";
+
+      case Processor is
+
+         when "Freescale_e200" =>
+            for Gnat use "powerpc-eabispe-gnat";
+            for Gnatlist use "powerpc-eabispe-gnatls";
+            for Debugger_Command use "powerpc-eabispe-gdb";
+      end case;
    end Ide;
 
    package Builder is
@@ -22,15 +30,26 @@ project Acton is
    end Builder;
 
    package Compiler is
-      for Default_Switches ("ada") use ("-gnatwa.Xl", "-g", "-gnat05", "-gnatyabcefhiklM89nprstxu3", "-gnatn");
+      Ada_Switches := ("-gnatwa.Xl", "-g", "-gnat05",  "-gnatn", "-gnatg");
+      Asm_Switches := ();
+
+      case Processor is
+         when "Freescale_e200" =>
+            Ada_Switches := Ada_Switches & "-Wa,-mregnames";
+            Asm_Switches := Asm_Switches & "-mregnames";
+      end case;
+
+      for Default_Switches ("ada") use Ada_Switches;
+      for Default_Switches ("asm") use Asm_Switches;
+
    end Compiler;
 
-   package Linker is
-      for Default_Switches ("ada") use ("-g", "-T", "linker/intflash.ld");
-   end Linker;
+   --  package Linker is
+   --   for Default_Switches ("ada") use ("-g", "-T", "linker/intflash.ld");
+   --  end Linker;
 
    package Pretty_Printer is
-      for Default_Switches ("ada") use ("-c3", "-c4", "-c5", "-M89");
+      for Default_Switches ("ada") use ("-c3", "-c4", "-c5", "-M79");
    end Pretty_Printer;
 
 end Acton;
