@@ -51,6 +51,8 @@ package Oak.Oak_Task is
 
    type Boolean_Access is access all Boolean;
 
+   Unspecified_Priority : constant Integer := -1;
+
    -----------------
    --  Not sure if I will need this procedure or not. Mainly this is due to
    --  the the memory structure of the tasks could be defined during

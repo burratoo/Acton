@@ -11,7 +11,11 @@ project Acton is
    for Library_Version use ".1";
    for Library_Src_Dir use "adainclude/";
    for Library_Interface use ("Acton", "Acton.Scheduler_Agent", "Acton.Scheduler_Agent.FIFO_Within_Priorities", "Ada", "Ada.Exceptions", "Ada.Real_Time", "Ada.Unchecked_Conversion", "Interfaces", "Oak", "Oak.Core", "Oak.Memory",
-      "Oak.Memory.Call_Stack", "Oak.Oak_Task", "Oak.Oak_Task.Activation", "System", "System.Machine_Code", "System.Parameters", "System.Storage_Elements", "System.Unsigned_Types");
+                              "Oak.Memory.Call_Stack",
+                              "Oak.Processor_Support_Package",
+                              "Oak.Processor_Support_Package.Call_Stack",
+                              "Oak.Processor_Support_Package.Time",
+                              "Oak.Oak_Task", "Oak.Oak_Task.Activation", "Oak.Oak_Task.Data_Access", "System", "System.Machine_Code", "System.Parameters", "System.Storage_Elements", "System.Unsigned_Types");
 
    package Ide is
       for Documentation_Dir use "doc/";

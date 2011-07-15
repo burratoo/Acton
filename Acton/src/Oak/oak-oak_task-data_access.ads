@@ -9,7 +9,7 @@ package Oak.Oak_Task.Data_Access is
       Stack             : access System.Storage_Elements.Storage_Array;
       Stack_Size        : System.Storage_Elements.Storage_Count;
       Name              : String;
-      Normal_Priority   : Priority;
+      Normal_Priority   : Integer;
       Relative_Deadline : Time_Span;
       Cycle_Period      : Time_Span;
       Phase             : Time_Span;
@@ -20,7 +20,7 @@ package Oak.Oak_Task.Data_Access is
      (T                 : access Oak_Task;
       Stack_Size        : System.Storage_Elements.Storage_Count;
       Name              : String;
-      Normal_Priority   : Priority;
+      Normal_Priority   : Integer;
       Relative_Deadline : Time_Span;
       Cycle_Period      : Time_Span;
       Run_Loop          : Address);

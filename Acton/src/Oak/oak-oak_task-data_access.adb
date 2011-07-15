@@ -13,7 +13,7 @@ package body Oak.Oak_Task.Data_Access is
       Stack             : access System.Storage_Elements.Storage_Array;
       Stack_Size        : System.Storage_Elements.Storage_Count;
       Name              : in String;
-      Normal_Priority   : Priority;
+      Normal_Priority   : Integer;
       Relative_Deadline : Time_Span;
       Cycle_Period      : Time_Span;
       Phase             : Time_Span;
@@ -33,7 +33,7 @@ package body Oak.Oak_Task.Data_Access is
          Name            => T.Name,
          Name_Length     => T.Name_Length,
          State           => Sleeping,
-         Normal_Priority => Normal_Priority,
+         Normal_Priority => T.Normal_Priority,
          Deadline        => Relative_Deadline,
          Cycle_Period    => Cycle_Period,
          Phase           => Phase,
@@ -64,6 +64,15 @@ package body Oak.Oak_Task.Data_Access is
             Stack_Access      => Stack);
       end if;
 
+      if Normal_Priority >= Priority'First and
+        Normal_Priority <= Priority'Last then
+         T.Normal_Priority := System.Any_Priority (Normal_Priority);
+      elsif Normal_Priority = Unspecified_Priority then
+         T.Normal_Priority := Default_Priority;
+      else
+         raise Program_Error with "Priority out of range";
+      end if;
+
       TP := Oak.Core.Get_Current_Task;
       while TP.Activation_List /= null loop
          TP := TP.Activation_List;
@@ -76,7 +85,7 @@ package body Oak.Oak_Task.Data_Access is
      (T               : access Oak_Task;
       Stack_Size      : System.Storage_Elements.Storage_Count;
       Name            : String;
-      Normal_Priority : Priority;
+      Normal_Priority : Integer;
       Relative_Deadline : Time_Span;
       Cycle_Period    : Time_Span;
       Run_Loop        : Address)
@@ -97,7 +106,7 @@ package body Oak.Oak_Task.Data_Access is
          Name            => T.Name,
          Name_Length     => T.Name_Length,
          State           => Sleeping,
-         Normal_Priority => Normal_Priority,
+         Normal_Priority => T.Normal_Priority,
          Deadline        => Relative_Deadline,
          Cycle_Period    => Cycle_Period,
          Phase           => Time_Span_Zero,
@@ -120,6 +129,15 @@ package body Oak.Oak_Task.Data_Access is
       Initialise_Call_Stack
         (Stack             => T.Call_Stack,
          Start_Instruction => Run_Loop);
+
+      if Normal_Priority >= Priority'First and
+        Normal_Priority <= Priority'Last then
+         T.Normal_Priority := System.Any_Priority (Normal_Priority);
+      elsif Normal_Priority = Unspecified_Priority then
+         T.Normal_Priority := Default_Priority;
+      else
+         raise Program_Error with "Priority out of range";
+      end if;
 
       Add_Task_To_Scheduler
         (Scheduler_Info => Scheduler.all,
