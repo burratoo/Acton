@@ -11,6 +11,8 @@ package Oak.Processor_Support_Package.Call_Stack is
    --  Call_Stack_Alignment in bytes
    Call_Stack_Allignment : constant := 8;
 
+   Minimum_Call_Stack_Size : constant := 1 * 1024;
+
    function Default_Call_Stack_Size return
      System.Storage_Elements.Storage_Count;
 

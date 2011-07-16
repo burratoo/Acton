@@ -23,6 +23,10 @@ package Oak.Memory.Call_Stack is
      System.Storage_Elements.Storage_Count renames
      Oak.Processor_Support_Package.Call_Stack.Default_Call_Stack_Size;
 
+   --  Value used to indicate tha no size has been set
+
+   Unspecified_Call_Stack_Size : constant Storage_Count := 0;
+
 private
    --  Warning! This is not a real variable. It is defined in the linker script
    --  and as such does not have any data storage allocated for it. Instead
