@@ -15,7 +15,7 @@ project Acton is
                               "Oak.Processor_Support_Package",
                               "Oak.Processor_Support_Package.Call_Stack",
                               "Oak.Processor_Support_Package.Time",
-                              "Oak.Oak_Task", "Oak.Oak_Task.Activation", "Oak.Oak_Task.Data_Access", "System", "System.Machine_Code", "System.Parameters", "System.Storage_Elements", "System.Unsigned_Types");
+                              "Oak.Oak_Task", "Oak.Oak_Task.Activation", "Oak.Oak_Task.Data_Access", "System", "System.Machine_Code", "System.Storage_Elements", "System.Unsigned_Types");
 
    package Ide is
       for Documentation_Dir use "doc/";
