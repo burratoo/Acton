@@ -5,8 +5,8 @@ package Oak.Oak_Task.Data_Access is
    pragma Preelaborate;
 
    procedure Initialise_Task
-     (T                 : access Oak_Task;
-      Stack             : access System.Storage_Elements.Storage_Array;
+     (T                 : Oak_Task_Handler;
+      Stack_Address     : System.Address;
       Stack_Size        : System.Storage_Elements.Storage_Count;
       Name              : String;
       Normal_Priority   : Integer;
@@ -17,7 +17,7 @@ package Oak.Oak_Task.Data_Access is
       Elaborated        : Boolean_Access);
 
    procedure Initialise_Main_Task
-     (T                 : access Oak_Task;
+     (T                 : Oak_Task_Handler;
       Stack_Size        : System.Storage_Elements.Storage_Count;
       Name              : String;
       Normal_Priority   : Integer;

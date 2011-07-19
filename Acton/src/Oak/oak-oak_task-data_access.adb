@@ -9,8 +9,8 @@ package body Oak.Oak_Task.Data_Access is
    -- Set_Up_Task --
    ------------------
    procedure Initialise_Task
-     (T                 : access Oak_Task;
-      Stack             : access System.Storage_Elements.Storage_Array;
+     (T                 : Oak_Task_Handler;
+      Stack_Address     : System.Address;
       Stack_Size        : System.Storage_Elements.Storage_Count;
       Name              : in String;
       Normal_Priority   : Integer;
@@ -49,7 +49,7 @@ package body Oak.Oak_Task.Data_Access is
          Activation_List => null,
          Elaborated      => Elaborated);
 
-      if Stack = null then
+      if Stack_Address = Null_Address then
          Allocate_Call_Stack
            (Stack            => T.Call_Stack,
             Size_In_Elements => Stack_Size);
@@ -61,7 +61,8 @@ package body Oak.Oak_Task.Data_Access is
          Initialise_Call_Stack
            (Stack             => T.Call_Stack,
             Start_Instruction => Run_Loop,
-            Stack_Access      => Stack);
+            Stack_Address     => Stack_Address,
+            Stack_Size        => Stack_Size);
       end if;
 
       if Normal_Priority >= Priority'First and
@@ -82,7 +83,7 @@ package body Oak.Oak_Task.Data_Access is
    end Initialise_Task;
 
    procedure Initialise_Main_Task
-     (T               : access Oak_Task;
+     (T               : Oak_Task_Handler;
       Stack_Size      : System.Storage_Elements.Storage_Count;
       Name            : String;
       Normal_Priority : Integer;
@@ -141,7 +142,7 @@ package body Oak.Oak_Task.Data_Access is
 
       Add_Task_To_Scheduler
         (Scheduler_Info => Scheduler.all,
-         T              => Oak_Task_Handler (T));
+         T              => T);
    end Initialise_Main_Task;
 
    -------------------------

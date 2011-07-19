@@ -18,6 +18,7 @@ package Oak.Processor_Support_Package.Call_Stack.Ops is
    procedure Initialise_Call_Stack
      (Stack             : in out Oak.Memory.Call_Stack.Call_Stack_Handler;
       Start_Instruction : in System.Address;
-      Stack_Access      : access System.Storage_Elements.Storage_Array);
+      Stack_Address     : in System.Address;
+      Stack_Size        : in System.Storage_Elements.Storage_Count);
 
 end Oak.Processor_Support_Package.Call_Stack.Ops;
