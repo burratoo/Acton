@@ -54,7 +54,7 @@ pragma Restrictions (No_Finalization);
 --  pragma Restrictions (No_Tasking);
 --  Tasking is not supported in this run time
 
-pragma Discard_Names;
+--  pragma Discard_Names;
 --  Disable explicitly the generation of names associated with entities in
 --  order to reduce the amount of storage used. These names are not used anyway
 --  (attributes such as 'Image and 'Value are not supported in this run time).
@@ -153,7 +153,7 @@ private
    Frontend_Layout           : constant Boolean := False;
    Machine_Overflows         : constant Boolean := False;
    Machine_Rounds            : constant Boolean := True;
-   Preallocated_Stacks       : constant Boolean := False;
+   Preallocated_Stacks       : constant Boolean := True;
    Signed_Zeros              : constant Boolean := True;
    Stack_Check_Default       : constant Boolean := False;
    Stack_Check_Probes        : constant Boolean := False;
