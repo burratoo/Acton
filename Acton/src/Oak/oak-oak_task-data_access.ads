@@ -21,8 +21,6 @@ package Oak.Oak_Task.Data_Access is
       Stack_Size        : System.Storage_Elements.Storage_Count;
       Name              : String;
       Normal_Priority   : Integer;
-      Relative_Deadline : Time_Span;
-      Cycle_Period      : Time_Span;
       Run_Loop          : Address);
 
    procedure Set_Scheduler_Agent

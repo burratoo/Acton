@@ -25,7 +25,9 @@ package Oak.Oak_Task is
       Runnable,
       Sleeping,
       Blocked,
-      Cycle_Completed);
+      Cycle_Completed,
+      Change_Cycle_Period,
+      Change_Relative_Deadline);
 
    type Memory_Region;
    type Memory_Region_Link is access all Memory_Region;

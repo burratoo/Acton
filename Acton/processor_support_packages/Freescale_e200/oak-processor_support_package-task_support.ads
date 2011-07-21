@@ -35,6 +35,7 @@ package Oak.Processor_Support_Package.Task_Support is
 
    type TRS_Type is (
       Sleeping,
+      Change_Time_Span,
       Runnable,
       Type_Access,
       Other); --  Blocked
@@ -46,6 +47,9 @@ package Oak.Processor_Support_Package.Task_Support is
       case Type_State is
          when Sleeping =>
             Wake_Up_At : Ada.Real_Time.Time := Ada.Real_Time.Time_Last;
+         when Change_Time_Span =>
+            New_Time_Span : Ada.Real_Time.Time_Span :=
+              Ada.Real_Time.Time_Span_Zero;
          --  when Blocked =>
          --  This will hold the ID number fo the protected object we're
          --  blocked on
@@ -57,9 +61,10 @@ package Oak.Processor_Support_Package.Task_Support is
    pragma Unchecked_Union (Task_Requested_State);
    --  pragma Warnings (Off, "*Type_State*");
    for Task_Requested_State use record
-      State      at 0 range 0 .. 7;
-      Wake_Up_At at 4 range 0 .. 63;
-      Parameter  at 4 range 0 .. 63;
+      State         at 0 range 0 .. 7;
+      Wake_Up_At    at 4 range 0 .. 63;
+      New_Time_Span at 4 range 0 .. 63;
+      Parameter     at 4 range 0 .. 63;
    end record;
    --  pragma Warnings (On, "*Type_State*");
 

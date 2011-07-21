@@ -1,7 +1,7 @@
-with Ada.Real_Time;                              use Ada.Real_Time;
+with Ada.Real_Time;                                 use Ada.Real_Time;
 with Oak.Processor_Support_Package.Task_Support;
 use  Oak.Processor_Support_Package.Task_Support;
-with Oak.Oak_Task.Internal;                      use Oak.Oak_Task.Internal;
+with Oak.Oak_Task.Internal;                         use Oak.Oak_Task.Internal;
 with Oak.Processor_Support_Package.Processor;
 with Oak.Oak_Task.Data_Access;
 with Oak.Oak_Task.Activation;
@@ -120,14 +120,26 @@ package body Oak.Core is
                        (T  => Get_Current_Task,
                         WT => Task_Return_State.Wake_Up_At);
                      Set_State (T => Get_Current_Task, New_State => Sleeping);
+
                   when Cycle_Completed =>
                      Next_Run_Cycle (T => Get_Current_Task);
                      Set_State
                        (T         => Get_Current_Task,
                         New_State => Cycle_Completed);
+
                   when Activation_Complete =>
                      Oak.Oak_Task.Activation.Finish_Activation
                        (Activator => Get_Current_Task);
+
+                  when Change_Cycle_Period =>
+                     Oak.Oak_Task.Internal.Set_Cycle_Period
+                       (T  => Get_Current_Task,
+                        CP => Task_Return_State.New_Time_Span);
+
+                  when Change_Relative_Deadline =>
+                     Oak.Oak_Task.Internal.Set_Relative_Deadline
+                       (T  => Get_Current_Task,
+                        RD => Task_Return_State.New_Time_Span);
                   when others =>
                      null;
                end case;

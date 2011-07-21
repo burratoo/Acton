@@ -78,4 +78,17 @@ package body Oak.Oak_Task.Internal is
       return Chosen_Id;
    end New_Task_Id;
 
+   procedure Set_Cycle_Period (T : in Oak_Task_Handler; CP : in Time_Span) is
+   begin
+      T.Cycle_Period := CP;
+   end Set_Cycle_Period;
+
+   procedure Set_Relative_Deadline
+     (T  : in Oak_Task_Handler;
+      RD : in Time_Span)
+   is
+   begin
+      T.Deadline := RD;
+   end Set_Relative_Deadline;
+
 end Oak.Oak_Task.Internal;

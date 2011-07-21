@@ -87,8 +87,6 @@ package body Oak.Oak_Task.Data_Access is
       Stack_Size      : System.Storage_Elements.Storage_Count;
       Name            : String;
       Normal_Priority : Integer;
-      Relative_Deadline : Time_Span;
-      Cycle_Period    : Time_Span;
       Run_Loop        : Address)
    is
       OI : constant access Oak.Core.Oak_Data := Oak.Core.Get_Oak_Instance;
@@ -108,8 +106,8 @@ package body Oak.Oak_Task.Data_Access is
          Name_Length     => T.Name_Length,
          State           => Sleeping,
          Normal_Priority => T.Normal_Priority,
-         Deadline        => Relative_Deadline,
-         Cycle_Period    => Cycle_Period,
+         Deadline        => Time_Span_Zero,
+         Cycle_Period    => Time_Span_Zero,
          Phase           => Time_Span_Zero,
          Next_Deadline   => Time_Last,
          Next_Run_Cycle  => Time_Last,

@@ -164,6 +164,8 @@ package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
                      T     => Yielded_Task);
                when Activation_Pending =>
                   null;
+               when Change_Cycle_Period | Change_Relative_Deadline =>
+                  null;
                when others =>
                   raise Scheduler_Error1;
             end case;
