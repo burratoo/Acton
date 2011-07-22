@@ -27,7 +27,7 @@
 #* 1.2.1 P. Bernardi   20/Feb/09    Added GNAT Support    	           */
 #***************************************************************************/
 
-    .include "../src/initialization/mpc5500_usrdefs.inc"
+    .include "../src/mpc5500_usrdefs.inc"
 
 #******* Runtime Variables ************
 # Runtime variables: (set in mpc5500_usrdefs.inc)

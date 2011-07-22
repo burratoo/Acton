@@ -28,7 +28,7 @@
 #**************************************************************************/
 
 #    .if __MPC5500_USERDEFS__
-	    .include "../src/initialization/mpc5500_usrdefs.inc"
+      .include "../src/mpc5500_usrdefs.inc"
 #     .endif
     .globl cfg_SRAM_LOAD
 

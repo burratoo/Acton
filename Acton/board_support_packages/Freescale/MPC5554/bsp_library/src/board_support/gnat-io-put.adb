@@ -38,7 +38,7 @@ with MPC5554.eSCI; use MPC5554.eSCI;
 separate (GNAT.IO)
 procedure Put (C : Character) is
 begin
-   while (eSCI.A_Status_Register.Transmit_Data_Register_Empty_Flag = Low) loop
+   while eSCI.A_Status_Register.Transmit_Data_Register_Empty_Flag = Low loop
       null;
    end loop;
    eSCI.A_Status_Register.Transmit_Data_Register_Empty_Flag := High;
