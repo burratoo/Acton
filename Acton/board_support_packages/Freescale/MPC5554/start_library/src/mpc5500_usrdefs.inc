@@ -52,7 +52,7 @@
     .equ _MPC5566_, 0
     .equ _MPC5567_, 0
 
-    .include "../src/initialization/mpc5500_defs.inc"
+    .include "../src/mpc5500_defs.inc"
 
 # Select the compiler toolset
 # Only set one of the following to 1

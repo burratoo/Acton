@@ -1,0 +1,32 @@
+with "../bsp_library/mpc5554.gpr";
+
+project Start_Library is
+
+   for Languages use ("Ada", "Asm");
+   for Source_Dirs use ("src", "../../../../processor_support_packages/", "../../../../processor_support_packages/Freescale_e200/core-e200");
+   for Object_Dir use "obj/";
+   for Library_Name use "acton-crt0";
+   for Library_Dir use "lib";
+   for Library_Version use "1";
+
+   package Naming is
+      for Body_Suffix ("asm") use ".s";
+   end Naming;
+
+   package Builder is
+      for Default_Switches ("ada") use ("-s");
+   end Builder;
+
+   package Compiler is
+      for Default_Switches ("ada") use ("-gnatn", "-gnatg", "-Wa,-mregnames");
+      for Default_Switches ("asm") use ("-mregnames");
+   end Compiler;
+
+   package Ide is
+      for Gnat use "powerpc-eabispe-gnat";
+      for Gnatlist use "powerpc-eabispe-gnatls";
+      for Debugger_Command use "powerpc-eabispe-gdb";
+   end Ide;
+
+end Start_Library;
+
