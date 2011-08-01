@@ -13,4 +13,6 @@ package ARPART.Tasks is
    procedure Change_Relative_Deadline
      (New_Deadline : in Ada.Real_Time.Time_Span);
 
+   procedure Cycle_Completed;
+
 end ARPART.Tasks;

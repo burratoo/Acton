@@ -1,5 +1,6 @@
 with Oak.Processor_Support_Package.Task_Support;
 with Oak.Oak_Task;
+with Oak.Oak_Task.Context;
 with Oak.Oak_Task.Data_Access;
 with Oak.Core;
 
@@ -102,5 +103,10 @@ package body ARPART.Tasks is
    begin
       OTS.Yield_Processor_To_Kernel (Resulting_Task_State => State);
    end Change_Relative_Deadline;
+
+   procedure Cycle_Completed is
+   begin
+      Oak.Oak_Task.Context.Task_Cycle_Completed;
+   end Cycle_Completed;
 
 end ARPART.Tasks;
