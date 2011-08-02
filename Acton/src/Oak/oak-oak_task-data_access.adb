@@ -23,9 +23,9 @@ package body Oak.Oak_Task.Data_Access is
       TP : access Oak_Task;
    begin
       T.Name_Length               :=
-         Integer'Min (Task_Name'Length, Name'Length);
+         Natural'Min (Task_Name'Length, Name'Length);
       T.Name (1 .. T.Name_Length) :=
-        Task_Name (Name (Name'First .. Name'First + T.Name_Length - 1));
+        Task_Name (Name) (Name'First .. Name'First + T.Name_Length - 1);
 
       T.all :=
         (Kind            => Regular,
@@ -95,9 +95,9 @@ package body Oak.Oak_Task.Data_Access is
          Oak.Core.Get_Scheduler_Info (OI);
    begin
       T.Name_Length               :=
-         Integer'Min (Task_Name'Length, Name'Length);
+         Natural'Min (Task_Name'Length, Name'Length);
       T.Name (1 .. T.Name_Length) :=
-        Task_Name (Name (Name'First .. Name'First + T.Name_Length - 1));
+        Task_Name (Name) (Name'First .. Name'First + T.Name_Length - 1);
 
       T.all :=
         (Kind            => Regular,
