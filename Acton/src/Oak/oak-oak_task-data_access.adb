@@ -25,7 +25,7 @@ package body Oak.Oak_Task.Data_Access is
       T.Name_Length               :=
          Natural'Min (Task_Name'Length, Name'Length);
       T.Name (1 .. T.Name_Length) :=
-        Task_Name (Name) (Name'First .. Name'First + T.Name_Length - 1);
+        Name (Name'First .. Name'First + T.Name_Length - 1);
 
       T.all :=
         (Kind            => Regular,

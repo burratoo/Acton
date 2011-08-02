@@ -18,7 +18,7 @@ package body Oak.Oak_Task.Scheduler_Agent is
       Agent.Name_Length               :=
          Natural'Min (Task_Name'Length, Name'Length);
       Agent.Name (1 .. Agent.Name_Length) :=
-        Task_Name (Name) (Name'First .. Name'First + Agent.Name_Length - 1);
+        Name (Name'First .. Name'First + Agent.Name_Length - 1);
 
       Agent.all :=
         (Kind                           => Scheduler,
