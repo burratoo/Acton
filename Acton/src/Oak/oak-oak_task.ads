@@ -13,7 +13,7 @@ package Oak.Oak_Task is
    type Oak_Task_Handler is access all Oak_Task;
 
    type Task_Id is range 0 .. Max_Tasks;
-   type Task_Name is new String (
+   subtype Task_Name is String (
       1 .. Processor_Support_Package.Max_Task_Name_Length);
 
    type Task_State is (
