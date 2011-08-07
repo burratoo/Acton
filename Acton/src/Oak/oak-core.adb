@@ -1,11 +1,13 @@
 with Ada.Real_Time;                                 use Ada.Real_Time;
+with Oak.Memory.Call_Stack.Ops;
 with Oak.Processor_Support_Package.Task_Support;
 use  Oak.Processor_Support_Package.Task_Support;
-with Oak.Oak_Task.Internal;                         use Oak.Oak_Task.Internal;
 with Oak.Processor_Support_Package.Processor;
+with Oak.Oak_Task.Internal;                         use Oak.Oak_Task.Internal;
 with Oak.Oak_Task.Data_Access;
 with Oak.Oak_Task.Activation;
 with Oak.Processor_Support_Package.Task_Interrupts;
+with Oak.Processor_Support_Package.Call_Stack;
 
 package body Oak.Core is
 
@@ -17,6 +19,12 @@ package body Oak.Core is
 
    procedure Initialise is
    begin
+      for J in Processor_Kernels'Range loop
+         Oak.Memory.Call_Stack.Ops.Allocate_Call_Stack
+           (Stack            => Processor_Kernels (J).Call_Stack,
+            Size_In_Elements =>
+              Oak.Processor_Support_Package.Call_Stack.Oak_Call_Stack_Size);
+      end loop;
       Oak.Processor_Support_Package.Task_Interrupts.Initialise_Task_Enviroment;
    end Initialise;
 
