@@ -59,7 +59,7 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
          Outputs  => (Machine_State_Register_Type'Asm_Output ("=r", MSR)),
          Volatile => True);
       MSR.Signal_Processing := ISA.Enable;
-      --  Write the Time Control Register
+      --  Write the Machine State Register
       Asm
         ("mtmsr  %0",
          Inputs   => (Machine_State_Register_Type'Asm_Input ("r", MSR)),
@@ -100,20 +100,20 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
          "stw    r30,  28(r1)" & ASCII.LF & ASCII.HT &
          "stw    r31,  24(r1)" & ASCII.LF & ASCII.HT &
       --  Copy SPRs to GPRs to Stack
-         "mfxer           r26" & ASCII.LF & ASCII.HT & -- Next instruction
-         "mflr            r27" & ASCII.LF & ASCII.HT & -- address
-         "mfcr            r28" & ASCII.LF & ASCII.HT &
-         "mfctr           r29" & ASCII.LF & ASCII.HT &
-         "mfusprg0        r30" & ASCII.LF & ASCII.HT &
-         "mfsrr0          r31" & ASCII.LF & ASCII.HT &
-         "stw    r26,  20(r1)" & ASCII.LF & ASCII.HT & --  Store SPRs to stack
-         "stw    r27,  16(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r28,  12(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r29,   8(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r30,   4(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r31,   0(r1)" & ASCII.LF & ASCII.HT &
+         "mfxer           r25" & ASCII.LF & ASCII.HT & -- Next instruction
+         "mflr            r26" & ASCII.LF & ASCII.HT & -- address
+         "mfcr            r27" & ASCII.LF & ASCII.HT &
+         "mfctr           r28" & ASCII.LF & ASCII.HT &
+         "mfusprg0        r29" & ASCII.LF & ASCII.HT &
+         "mfsrr0          r30" & ASCII.LF & ASCII.HT &
+         "stw    r25,  20(r1)" & ASCII.LF & ASCII.HT & --  Store SPRs to stack
+         "stw    r26,  16(r1)" & ASCII.LF & ASCII.HT &
+         "stw    r27,  12(r1)" & ASCII.LF & ASCII.HT &
+         "stw    r28,   8(r1)" & ASCII.LF & ASCII.HT &
+         "stw    r29,   4(r1)" & ASCII.LF & ASCII.HT &
+         "stw    r30,   0(r1)" & ASCII.LF & ASCII.HT &
          "mtsprg0          r1" & ASCII.LF & ASCII.HT & -- Store kernel stack pt
-      --  Setup IVOR8 to p oint to Switch to Context Kernel handler
+      --  Setup IVOR8 to point to Switch to Context Kernel handler
          "lwz    r20,      %0" & ASCII.LF & ASCII.HT &
          "mtivor8         r20",
          Inputs   => Address'Asm_Input ("m", IVOR8_CS_To_Kernel),
@@ -125,20 +125,20 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
       --  Load task's registers
       Asm
         ("mr     r1,       %0" & ASCII.LF & ASCII.HT & -- load task stack ptr.
-         "lwz    r25,  24(r1)" & ASCII.LF & ASCII.HT & -- Load SPRs to stack
-         "lwz    r26,  20(r1)" & ASCII.LF & ASCII.HT &
-         "lwz    r27,  16(r1)" & ASCII.LF & ASCII.HT &
-         "lwz    r28,  12(r1)" & ASCII.LF & ASCII.HT &
-         "lwz    r29,   8(r1)" & ASCII.LF & ASCII.HT &
-         "lwz    r30,   4(r1)" & ASCII.LF & ASCII.HT &
-         "lwz    r31,   0(r1)" & ASCII.LF & ASCII.HT &
-         "mtspefscr       r25" & ASCII.LF & ASCII.HT &
-         "mtxer           r26" & ASCII.LF & ASCII.HT &
-         "mtlr            r27" & ASCII.LF & ASCII.HT & -- Copy GPRs to SPRs
-         "mtctr           r28" & ASCII.LF & ASCII.HT &
-         "mtcr            r29" & ASCII.LF & ASCII.HT &
-         "mtusprg0        r30" & ASCII.LF & ASCII.HT &
-         "mtsrr0          r31" & ASCII.LF & ASCII.HT & -- Next instruction addr
+         "lwz    r24,  24(r1)" & ASCII.LF & ASCII.HT & -- Load SPRs to stack
+         "lwz    r25,  20(r1)" & ASCII.LF & ASCII.HT &
+         "lwz    r26,  16(r1)" & ASCII.LF & ASCII.HT &
+         "lwz    r27,  12(r1)" & ASCII.LF & ASCII.HT &
+         "lwz    r28,   8(r1)" & ASCII.LF & ASCII.HT &
+         "lwz    r29,   4(r1)" & ASCII.LF & ASCII.HT &
+         "lwz    r30,   0(r1)" & ASCII.LF & ASCII.HT &
+         "mtspefscr       r24" & ASCII.LF & ASCII.HT &
+         "mtxer           r25" & ASCII.LF & ASCII.HT &
+         "mtlr            r26" & ASCII.LF & ASCII.HT & -- Copy GPRs to SPRs
+         "mtctr           r27" & ASCII.LF & ASCII.HT &
+         "mtcr            r28" & ASCII.LF & ASCII.HT &
+         "mtusprg0        r29" & ASCII.LF & ASCII.HT &
+         "mtsrr0          r30" & ASCII.LF & ASCII.HT & -- Next instruction addr
          "evldd  r9,   24(r1)" & ASCII.LF & ASCII.HT & -- Restore accumulator
          "evmra  r10,      r9" & ASCII.LF & ASCII.HT &
          "stwu   r1,   40(r1)" & ASCII.LF & ASCII.HT & -- Drop stack frame (?)
@@ -243,23 +243,23 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
       --  Copy SPRs to GPRs to Stack
       --  Allocate more stack space. Note that it is double word align.
          "stwu   r1,  -40(r1)" & ASCII.LF & ASCII.HT &
-         "li     r23,       0" & ASCII.LF & ASCII.HT &  -- Store Accumulator
-         "evaddusiaaw r24, r23" & ASCII.LF & ASCII.HT & -- register
-         "evstdd r24,  24(r1)" & ASCII.LF & ASCII.HT &
-         "mfspefscr       r25" & ASCII.LF & ASCII.HT & -- Next instruction
-         "mfxer           r26" & ASCII.LF & ASCII.HT & -- address
-         "mflr            r27" & ASCII.LF & ASCII.HT &
-         "mfctr           r28" & ASCII.LF & ASCII.HT &
-         "mfcr            r29" & ASCII.LF & ASCII.HT &
-         "mfusprg0        r30" & ASCII.LF & ASCII.HT &
-         "mfsrr0          r31" & ASCII.LF & ASCII.HT &
-         "stw    r25,  24(r1)" & ASCII.LF & ASCII.HT & -- Store SPRs to stack
-         "stw    r26,  20(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r27,  16(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r28,  12(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r29,   8(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r30,   4(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r31,   0(r1)" & ASCII.LF & ASCII.HT &
+         "li     r22,       0" & ASCII.LF & ASCII.HT &  -- Store Accumulator
+         "evaddusiaaw r23, r22" & ASCII.LF & ASCII.HT & -- register
+         "evstdd r23,  24(r1)" & ASCII.LF & ASCII.HT &
+         "mfspefscr       r24" & ASCII.LF & ASCII.HT & -- Next instruction
+         "mfxer           r25" & ASCII.LF & ASCII.HT & -- address
+         "mflr            r26" & ASCII.LF & ASCII.HT &
+         "mfctr           r27" & ASCII.LF & ASCII.HT &
+         "mfcr            r28" & ASCII.LF & ASCII.HT &
+         "mfusprg0        r29" & ASCII.LF & ASCII.HT &
+         "mfsrr0          r30" & ASCII.LF & ASCII.HT &
+         "stw    r24,  24(r1)" & ASCII.LF & ASCII.HT & -- Store SPRs to stack
+         "stw    r25,  20(r1)" & ASCII.LF & ASCII.HT &
+         "stw    r26,  16(r1)" & ASCII.LF & ASCII.HT &
+         "stw    r27,  12(r1)" & ASCII.LF & ASCII.HT &
+         "stw    r28,   8(r1)" & ASCII.LF & ASCII.HT &
+         "stw    r29,   4(r1)" & ASCII.LF & ASCII.HT &
+         "stw    r30,   0(r1)" & ASCII.LF & ASCII.HT &
       --  Setup IVOR8 to point to Switch to Context Task handler
          "lwz     r20,     %1" & ASCII.LF & ASCII.HT &
          "mtivor8         r20" & ASCII.LF & ASCII.HT &
@@ -274,18 +274,18 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
       Asm
         ("mfsprg0         r1" & ASCII.LF & ASCII.HT & -- load kernel stack ptr
       --  Copy SPRs from Stack to GPRs to SPRs
-         "lwz   r26,  20(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r27,  16(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r28,  12(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r29,   8(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r30,   4(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r31,   0(r1)" & ASCII.LF & ASCII.HT &
-         "mtxer          r26" & ASCII.LF & ASCII.HT &
-         "mtlr           r27" & ASCII.LF & ASCII.HT &
-         "mtcr           r28" & ASCII.LF & ASCII.HT &
-         "mtctr          r29" & ASCII.LF & ASCII.HT &
-         "mtusprg0       r30" & ASCII.LF & ASCII.HT &
-         "mtsrr0         r31" & ASCII.LF & ASCII.HT & -- Next instruction addr
+         "lwz   r25,  20(r1)" & ASCII.LF & ASCII.HT &
+         "lwz   r26,  16(r1)" & ASCII.LF & ASCII.HT &
+         "lwz   r27,  12(r1)" & ASCII.LF & ASCII.HT &
+         "lwz   r28,   8(r1)" & ASCII.LF & ASCII.HT &
+         "lwz   r29,   4(r1)" & ASCII.LF & ASCII.HT &
+         "lwz   r30,   0(r1)" & ASCII.LF & ASCII.HT &
+         "mtxer          r25" & ASCII.LF & ASCII.HT &
+         "mtlr           r26" & ASCII.LF & ASCII.HT &
+         "mtcr           r27" & ASCII.LF & ASCII.HT &
+         "mtctr          r28" & ASCII.LF & ASCII.HT &
+         "mtusprg0       r29" & ASCII.LF & ASCII.HT &
+         "mtsrr0         r30" & ASCII.LF & ASCII.HT & -- Next instruction addr
       --  Restore GPRs
          "lwz   r0,  132(r1)" & ASCII.LF & ASCII.HT &
          "lwz   r2,  128(r1)" & ASCII.LF & ASCII.HT &
