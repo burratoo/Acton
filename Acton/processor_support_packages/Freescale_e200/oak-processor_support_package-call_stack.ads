@@ -6,8 +6,10 @@ package Oak.Processor_Support_Package.Call_Stack is
    --  Call_Stack_Size could be defined in the linker script (Enviroment
    --  defined variables don't make sense in this system) Call_Stack_Size in
    --  Storage_Elements
-   Call_Stack_Size : constant := 4 * 1024;
+   Call_Stack_Size           : constant := 4 * 1024;
    Main_Task_Call_Stack_Size : constant := 48 * 1024;
+   Oak_Call_Stack_Size       : constant := 4 * 1024;
+
    --  Call_Stack_Alignment in bytes
    Call_Stack_Allignment : constant := 8;
 
