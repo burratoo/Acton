@@ -161,7 +161,7 @@ package body Oak.Scheduler is
      (Scheduler_Info : in out Oak_Scheduler_Info;
       T              : in Oak_Task_Handler)
    is
-      Task_Priority : constant Any_Priority := Get_Normal_Priority (T => T);
+      Task_Priority : constant Priority := Get_Normal_Priority (T => T);
       Agent         : Oak_Task_Handler  :=
         Scheduler_Info.Scheduler_Agent_Table;
    begin

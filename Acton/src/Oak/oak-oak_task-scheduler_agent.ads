@@ -6,8 +6,8 @@ package Oak.Oak_Task.Scheduler_Agent is
      (Agent        : access Oak_Task;
       Name         : in String;
       Call_Stack   : in Call_Stack_Handler;
-      Max_Priority : in Any_Priority;
-      Min_Prioirty : in Any_Priority;
+      Max_Priority : in Priority;
+      Min_Prioirty : in Priority;
       Run_Loop     : in Address);
 
    function Get_Task_To_Run
@@ -28,13 +28,13 @@ package Oak.Oak_Task.Scheduler_Agent is
 
    function Get_Lowest_Priority
      (Agent : in Oak_Task_Handler)
-      return  Any_Priority;
+      return  Priority;
    function Get_Highest_Priority
      (Agent : in Oak_Task_Handler)
-      return  Any_Priority;
+      return  Priority;
    procedure Set_Priority_Range
      (Agent    : in Oak_Task_Handler;
-      Min, Max : in Any_Priority);
+      Min, Max : in Priority);
    procedure Set_Task_To_Manage
      (Agent : in Oak_Task_Handler;
       MT    : in Oak_Task_Handler);

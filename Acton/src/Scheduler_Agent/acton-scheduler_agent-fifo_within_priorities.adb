@@ -15,11 +15,11 @@ package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
    package Task_Data renames Oak.Oak_Task.Data_Access;
 
    type Oak_Task_Array is
-     array (System.Any_Priority range <>) of Oak_Task_Handler;
+     array (System.Priority range <>) of Oak_Task_Handler;
 
    procedure Create_Agent
      (Agent                      : Oak_Task_Handler;
-      Min_Priority, Max_Priority : Any_Priority)
+      Min_Priority, Max_Priority : Priority)
    is
       Call_Stack : Oak.Memory.Call_Stack.Call_Stack_Handler;
 
@@ -139,7 +139,7 @@ package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
       -- Task_Yielded         --
       --------------------------
       procedure Task_Yielded is
-         T_Priority   : System.Any_Priority;
+         T_Priority   : System.Priority;
          Yielded_Task : constant Oak_Task_Handler :=
             Get_Task_To_Run (Agent => Self);
       begin
@@ -239,7 +239,7 @@ package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
         (Task_To_Add : Oak_Task_Handler)
       is
          T             : Oak_Task_Handler;
-         Task_Priority : System.Any_Priority;
+         Task_Priority : System.Priority;
       begin
          Task_Data.Set_State (T => Task_To_Add, State => Runnable);
          Task_Priority := Task_Data.Get_Normal_Priority (Task_To_Add);

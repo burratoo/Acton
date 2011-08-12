@@ -33,7 +33,7 @@ package Oak.Oak_Task.Data_Access is
    function Get_State (T : access Oak_Task) return Task_State;
    procedure Set_State (T : access Oak_Task; State : Task_State);
 
-   function Get_Normal_Priority (T : access Oak_Task) return Any_Priority;
+   function Get_Normal_Priority (T : access Oak_Task) return Priority;
    function Get_Deadline (T : access Oak_Task) return Time_Span;
    function Get_Cycle_Period (T : access Oak_Task) return Time_Span;
    function Get_Phase (T : access Oak_Task) return Time_Span;
