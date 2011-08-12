@@ -92,8 +92,7 @@ package body Oak.Oak_Task.Data_Access is
       OI : constant access Oak.Core.Oak_Data := Oak.Core.Get_Oak_Instance;
 
       Scheduler : constant access Oak_Scheduler_Info :=
-                    Oak.Core.Get_Scheduler_Info (OI);
-      Current_Time : constant Time := Clock;
+         Oak.Core.Get_Scheduler_Info (OI);
    begin
       T.Name_Length               :=
          Natural'Min (Task_Name'Length, Name'Length);
@@ -111,8 +110,8 @@ package body Oak.Oak_Task.Data_Access is
          Cycle_Period    => Time_Span_Zero,
          Phase           => Time_Span_Zero,
          Next_Deadline   => Time_Last,
-         Next_Run_Cycle  => Current_Time,
-         Wake_Time       => Current_Time,
+         Next_Run_Cycle  => Time_Last,
+         Wake_Time       => Time_Last,
          Run_Loop        => Run_Loop,
          Call_Stack      => T.Call_Stack,
          Scheduler_Agent => null,
