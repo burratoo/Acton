@@ -15,7 +15,7 @@ package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
    package Task_Data renames Oak.Oak_Task.Data_Access;
 
    type Oak_Task_Array is
-     array (System.Priority range <>) of Oak_Task_Handler;
+     array (System.Any_Priority range <>) of Oak_Task_Handler;
 
    procedure Create_Agent
      (Agent                      : Oak_Task_Handler;

@@ -65,8 +65,8 @@ package body Oak.Oak_Task.Data_Access is
             Stack_Size        => Stack_Size);
       end if;
 
-      if Normal_Priority >= Priority'First and
-        Normal_Priority <= Priority'Last then
+      if Normal_Priority >= Any_Priority'First and
+        Normal_Priority <= Any_Priority'Last then
          T.Normal_Priority := System.Any_Priority (Normal_Priority);
       elsif Normal_Priority = Unspecified_Priority then
          T.Normal_Priority := Default_Priority;

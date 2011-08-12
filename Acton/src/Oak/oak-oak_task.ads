@@ -103,11 +103,11 @@ private
 
       case Kind is
          when Regular =>
-            State           : Task_State := Sleeping;
-            Normal_Priority : Priority   := Default_Priority;
-            Deadline        : Time_Span  := Time_Span_Zero;
-            Cycle_Period    : Time_Span  := Time_Span_Zero;
-            Phase           : Time_Span  := Time_Span_Zero;
+            State           : Task_State   := Sleeping;
+            Normal_Priority : Any_Priority := Default_Priority;
+            Deadline        : Time_Span    := Time_Span_Zero;
+            Cycle_Period    : Time_Span    := Time_Span_Zero;
+            Phase           : Time_Span    := Time_Span_Zero;
 
             Next_Deadline  : Time := Time_Last;
             Next_Run_Cycle : Time := Time_Last;
