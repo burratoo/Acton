@@ -118,14 +118,14 @@ package System is
 
    --  ??? need comments explaining the values below
 
-   Max_Priority           : constant Positive := 245;
-   Max_Interrupt_Priority : constant Positive := 255;
+   Max_Priority           : constant Positive := 25;
+   Max_Interrupt_Priority : constant Positive := 30;
 
-   subtype Any_Priority       is Integer      range   0 .. 255;
-   subtype Priority           is Any_Priority range   0 .. 245;
-   subtype Interrupt_Priority is Any_Priority range 246 .. 255;
+   subtype Any_Priority       is Integer      range   0 .. 30;
+   subtype Priority           is Any_Priority range   0 .. 25;
+   subtype Interrupt_Priority is Any_Priority range  26 .. 30;
 
-   Default_Priority : constant Priority := 122;
+   Default_Priority : constant Priority := 14;
 
 private
 
