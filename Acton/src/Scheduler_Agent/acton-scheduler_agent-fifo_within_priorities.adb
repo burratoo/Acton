@@ -189,10 +189,10 @@ package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
             Add_Task_To_End_Of_Runnable_Queue (Task_To_Add => Task_To_Add);
          else
             Insert_Into_Queue (Queue => Sleeping_Queue, T => Task_To_Add);
+            Set_Desired_Run_Time
+              (Agent    => Self,
+               Run_Time => Task_Data.Get_Wake_Time (T => Sleeping_Queue));
          end if;
-         Set_Desired_Run_Time
-           (Agent    => Self,
-            Run_Time => Task_Data.Get_Wake_Time (T => Sleeping_Queue));
       end Add_Task;
 
       procedure Insert_Into_Queue
