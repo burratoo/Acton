@@ -11,6 +11,10 @@ with ISA.Power.e200.Timer_Registers;
 with ISA;
 
 package body Oak.Processor_Support_Package.Task_Interrupts is
+
+   procedure Enable_SPE_Instructions;
+   pragma Inline_Always (Enable_SPE_Instructions);
+
    procedure Initialise_Task_Enviroment is
       subtype HID0_Type is
         ISA.Power.e200.z6.HID.
@@ -42,15 +46,10 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
         ("mtspr  1008, %0",
          Inputs   => (HID0_Type'Asm_Input ("r", HID0)),
          Volatile => True);
-
    end Initialise_Task_Enviroment;
-   ---------------------------------
-   -- E200_Context_Switch_To_Task --
-   ---------------------------------
-   procedure E200_Context_Switch_To_Task is
+
+   procedure Enable_SPE_Instructions is
       use ISA.Power.e200.Processor_Control_Registers;
-      Task_Stack_Pointer : Address;
-      pragma Suppress (Access_Check);
       MSR : Machine_State_Register_Type;
    begin
       --  Read the Machine State Register
@@ -64,6 +63,17 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
         ("mtmsr  %0",
          Inputs   => (Machine_State_Register_Type'Asm_Input ("r", MSR)),
          Volatile => True);
+   end Enable_SPE_Instructions;
+
+   ---------------------------------
+   -- E200_Context_Switch_To_Task --
+   ---------------------------------
+   procedure E200_Context_Switch_To_Task is
+      Task_Stack_Pointer : Address;
+      pragma Suppress (Access_Check);
+   begin
+
+      Enable_SPE_Instructions;
 
       Asm
         ("stwu   r1, -136(r1)" & ASCII.LF & ASCII.HT &  -- Allocate stack space
@@ -187,23 +197,11 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
    -- E200_Context_Switch_To_Kernel --
    -----------------------------------
    procedure E200_Context_Switch_To_Kernel is
-      use ISA.Power.e200.Processor_Control_Registers;
-
       Task_Stack_Pointer : Address;
-      MSR                : Machine_State_Register_Type;
       pragma Suppress (Access_Check);
    begin
-      --  Read the Machine State Register
-      Asm
-        ("mfmsr  %0",
-         Outputs  => (Machine_State_Register_Type'Asm_Output ("=r", MSR)),
-         Volatile => True);
-      MSR.Signal_Processing := ISA.Enable;
-      --  Write the Time Control Register
-      Asm
-        ("mtmsr  %0",
-         Inputs   => (Machine_State_Register_Type'Asm_Input ("r", MSR)),
-         Volatile => True);
+
+      Enable_SPE_Instructions;
 
       Asm
         ("stwu   r1, -224(r1)" & ASCII.LF & ASCII.HT & -- Allocate stack space
@@ -328,6 +326,8 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
          State      => Oak.Oak_Task.Runnable,
          Parameter  => (0, 0));
    begin
+      Enable_SPE_Instructions;
+
       Asm
         ("stwu   r1, -24(r1)" & ASCII.LF & ASCII.HT &
          "evstdd r14, 16(r1)" & ASCII.LF & ASCII.HT &
