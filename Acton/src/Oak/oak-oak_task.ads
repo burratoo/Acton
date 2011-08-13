@@ -119,7 +119,7 @@ private
 
          when Scheduler =>
             --  Scheduler Agents fields.
-            Lowest_Prioirty, Highest_Prioirty : Priority;
+            Lowest_Prioirty, Highest_Prioirty : Any_Priority;
             Task_To_Run                       : Oak_Task_Handler := null;
             Manage_Task                       : Oak_Task_Handler := null;
             Desired_Agent_Run_Time            : Time             := Time_Last;
