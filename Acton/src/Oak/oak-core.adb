@@ -127,13 +127,9 @@ package body Oak.Core is
                      Oak.Oak_Task.Data_Access.Set_Wake_Time
                        (T  => Get_Current_Task,
                         WT => Task_Return_State.Wake_Up_At);
-                     Set_State (T => Get_Current_Task, New_State => Sleeping);
 
                   when Cycle_Completed =>
                      Next_Run_Cycle (T => Get_Current_Task);
-                     Set_State
-                       (T         => Get_Current_Task,
-                        New_State => Cycle_Completed);
 
                   when Activation_Complete =>
                      Oak.Oak_Task.Activation.Finish_Activation
@@ -148,6 +144,7 @@ package body Oak.Core is
                      Oak.Oak_Task.Internal.Set_Relative_Deadline
                        (T  => Get_Current_Task,
                         RD => Task_Return_State.New_Time_Span);
+
                   when others =>
                      null;
                end case;
@@ -213,6 +210,9 @@ package body Oak.Core is
             Context_Switch_To_Task (Task_Return_State => Task_Return_State);
             if Task_Return_State.State /= Runnable then
                Oak_Instance.Woken_By := Task_Yield;
+               Set_State
+                (T         => Get_Current_Task,
+                 New_State => Task_Return_State.State);
             end if;
          end if;
 
