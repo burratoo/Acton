@@ -19,7 +19,7 @@ package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
 
    procedure Create_Agent
      (Agent                      : Oak_Task_Handler;
-      Min_Priority, Max_Priority : Priority)
+      Min_Priority, Max_Priority : Any_Priority)
    is
       Call_Stack : Oak.Memory.Call_Stack.Call_Stack_Handler;
 
@@ -79,7 +79,8 @@ package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
       Self            : constant Oak_Task_Handler :=
          Oak.Core.Get_Current_Task;
       Run_Reason      : Reason_For_Run;
-      Runnable_Queues : Oak_Task_Array (0 .. 5);
+      Runnable_Queues : Oak_Task_Array (Get_Lowest_Priority (Self)
+                                        .. Get_Highest_Priority (Self));
       Sleeping_Queue  : Oak_Task_Handler;
 
       Scheduler_Error1, Scheduler_Error2 : exception;

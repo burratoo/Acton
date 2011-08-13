@@ -192,7 +192,7 @@ package body Oak.Oak_Task.Data_Access is
    -- Get_Normal_Priority --
    -------------------------
 
-   function Get_Normal_Priority (T : access Oak_Task) return Priority is
+   function Get_Normal_Priority (T : access Oak_Task) return Any_Priority is
    begin
       return T.Normal_Priority;
    end Get_Normal_Priority;

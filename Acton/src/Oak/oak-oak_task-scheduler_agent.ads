@@ -28,13 +28,13 @@ package Oak.Oak_Task.Scheduler_Agent is
 
    function Get_Lowest_Priority
      (Agent : in Oak_Task_Handler)
-      return  Priority;
+      return  Any_Priority;
    function Get_Highest_Priority
      (Agent : in Oak_Task_Handler)
-      return  Priority;
+      return  Any_Priority;
    procedure Set_Priority_Range
      (Agent    : in Oak_Task_Handler;
-      Min, Max : in Priority);
+      Min, Max : in Any_Priority);
    procedure Set_Task_To_Manage
      (Agent : in Oak_Task_Handler;
       MT    : in Oak_Task_Handler);
