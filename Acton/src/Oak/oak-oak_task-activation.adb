@@ -15,7 +15,7 @@ package body Oak.Oak_Task.Activation is
       return         Oak_Task_Handler
    is
    begin
-      return Oak_Task_Handler (Current_Task.Activation_List);
+      return Current_Task.Activation_List;
    end Next_Task;
 
    -------------------------

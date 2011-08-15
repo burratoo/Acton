@@ -12,7 +12,7 @@ package body Oak.Oak_Task.Data_Access is
      (T                 : Oak_Task_Handler;
       Stack_Address     : System.Address;
       Stack_Size        : System.Storage_Elements.Storage_Count;
-      Name              : in String;
+      Name              : String;
       Normal_Priority   : Integer;
       Relative_Deadline : Time_Span;
       Cycle_Period      : Time_Span;
