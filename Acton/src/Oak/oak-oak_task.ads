@@ -88,7 +88,7 @@ private
       Call_Stack : Call_Stack_Handler;
       Run_Loop   : Address := Null_Address;
 
-      Activation_List : access Oak_Task;
+      Activation_List : Oak_Task_Handler;
       Elaborated      : Boolean_Access;
 
       Memory_List : Memory_Region_Link;
