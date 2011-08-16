@@ -76,7 +76,7 @@ private
    type Oak_Task (Kind : Oak_Task_Kind := Regular) is record
       Id          : Task_Id := Task_Id'Last;
       Name        : Task_Name;
-      Name_Length : Natural;
+      Name_Length : Natural := 0;
 
       ----
       --  This gives us a pointer to the starting location of the Stack (is
@@ -88,10 +88,10 @@ private
       Call_Stack : Call_Stack_Handler;
       Run_Loop   : Address := Null_Address;
 
-      Activation_List : Oak_Task_Handler;
-      Elaborated      : Boolean_Access;
+      Activation_List : Oak_Task_Handler := null;
+      Elaborated      : Boolean_Access := null;
 
-      Memory_List : Memory_Region_Link;
+      Memory_List : Memory_Region_Link := null;
       --      Registers   : Register_Store;    --  Um, this can Just go onto
       --  the stack.
       --  Duh! Actually maybe we do...
@@ -113,7 +113,7 @@ private
             Next_Run_Cycle : Time := Time_Last;
             Wake_Time      : Time := Time_Last;
 
-            Scheduler_Agent : Oak_Task_Handler;
+            Scheduler_Agent : Oak_Task_Handler  := null;
             Scheduler_Queue : Task_Link_Element;
             Deadline_List   : Task_Link_Element;
 

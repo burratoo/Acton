@@ -41,12 +41,14 @@ package Oak.Core is
    function Get_Oak_Instance return access Oak_Data;
    function Get_Scheduler_Info (Oak_Instance : access Oak_Data)
                                 return access Oak_Scheduler_Info;
+   function Get_Main_Task return Oak_Task_Handler;
 
    pragma Inline_Always (Get_Current_Task_Stack_Pointer);
    pragma Inline_Always (Set_Current_Task_Stack_Pointer);
    pragma Inline_Always (Get_Scheduler_Info);
 
 private
+   Main_Task_OTCR : aliased Oak.Oak_Task.Oak_Task;
 
    type Oak_Data is record
       Id        : Oak_Instance_Id := 1;

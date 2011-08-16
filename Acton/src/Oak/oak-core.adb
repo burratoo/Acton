@@ -256,4 +256,9 @@ package body Oak.Core is
    begin
       return Oak_Instance.Scheduler'Access;
    end Get_Scheduler_Info;
+
+   function Get_Main_Task return Oak_Task_Handler is
+   begin
+      return Main_Task_OTCR'Access;
+   end Get_Main_Task;
 end Oak.Core;

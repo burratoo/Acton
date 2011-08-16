@@ -17,8 +17,7 @@ package Oak.Oak_Task.Data_Access is
       Elaborated        : Boolean_Access);
 
    procedure Initialise_Main_Task
-     (T                 : Oak_Task_Handler;
-      Stack_Size        : System.Storage_Elements.Storage_Count;
+     (Stack_Size        : System.Storage_Elements.Storage_Count;
       Name              : String;
       Normal_Priority   : Integer;
       Run_Loop          : Address);

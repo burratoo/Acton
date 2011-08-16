@@ -75,6 +75,10 @@ package body Oak.Oak_Task.Data_Access is
       end if;
 
       TP := Oak.Core.Get_Current_Task;
+      if TP = null then
+         TP := Oak.Core.Get_Main_Task;
+      end if;
+
       while TP.Activation_List /= null loop
          TP := TP.Activation_List;
       end loop;
@@ -83,12 +87,12 @@ package body Oak.Oak_Task.Data_Access is
    end Initialise_Task;
 
    procedure Initialise_Main_Task
-     (T               : Oak_Task_Handler;
-      Stack_Size      : System.Storage_Elements.Storage_Count;
+     (Stack_Size      : System.Storage_Elements.Storage_Count;
       Name            : String;
       Normal_Priority : Integer;
       Run_Loop        : Address)
    is
+      T  : constant Oak_Task_Handler := Oak.Core.Get_Main_Task;
       OI : constant access Oak.Core.Oak_Data := Oak.Core.Get_Oak_Instance;
 
       Scheduler : constant access Oak_Scheduler_Info :=
