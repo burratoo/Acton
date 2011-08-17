@@ -1,4 +1,3 @@
-with System.Storage_Elements;
 package Oak.Processor_Support_Package.Call_Stack is
 
    pragma Pure;
@@ -7,6 +6,7 @@ package Oak.Processor_Support_Package.Call_Stack is
    --  defined variables don't make sense in this system) Call_Stack_Size in
    --  Storage_Elements
    Call_Stack_Size           : constant := 4 * 1024;
+   Default_Call_Stack_Size   : constant := Call_Stack_Size;
    Main_Task_Call_Stack_Size : constant := 48 * 1024;
    Oak_Call_Stack_Size       : constant := 4 * 1024;
 
@@ -14,9 +14,6 @@ package Oak.Processor_Support_Package.Call_Stack is
    Call_Stack_Allignment : constant := 8;
 
    Minimum_Call_Stack_Size : constant := 1 * 1024;
-
-   function Default_Call_Stack_Size return
-     System.Storage_Elements.Storage_Count;
 
    Bits_In_A_Byte : constant := 4;
 

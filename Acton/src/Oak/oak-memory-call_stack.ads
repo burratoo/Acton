@@ -19,8 +19,8 @@ package Oak.Memory.Call_Stack is
       Top, Bottom, Pointer : System.Address := Null_Address;
    end record;
 
-   function Default_Stack_Size return  System.Storage_Elements.Storage_Count
-      renames Oak.Processor_Support_Package.Call_Stack.Default_Call_Stack_Size;
+   Default_Stack_Size : constant :=
+      Oak.Processor_Support_Package.Call_Stack.Default_Call_Stack_Size;
 
    --  Value used to indicate tha no size has been set
 
