@@ -1,5 +1,4 @@
 with Oak.Processor_Support_Package.Task_Support;
-with Oak.Oak_Task;
 with Oak.Oak_Task.Context;
 with Oak.Oak_Task.Data_Access;
 with Oak.Core;
@@ -17,7 +16,7 @@ package body ARPART.Tasks is
    -- Called by the Activator --
    -----------------------------
 
-   procedure Engage_Activation is
+   procedure Activate_Tasks (Chain : Oak.Oak_Task.Activation_Chain_Access) is
       Self     : constant access OT.Oak_Task       :=
          Oak.Core.Get_Current_Task;
       AP_State : constant OTS.Task_Requested_State :=
@@ -28,17 +27,9 @@ package body ARPART.Tasks is
         (State      => OT.Activation_Complete,
          Type_State => OTS.Other,
          Parameter  => OTS.Empty_Parameter);
-      TP       : access OT.Oak_Task                :=
-         OT.Data_Access.Get_Activation_List (Self);
    begin
-      while TP /= null and then OT.Data_Access.Is_Elaborated (TP) loop
-         TP := OT.Data_Access.Get_Activation_List (TP);
-      end loop;
-
-      if TP /= null and then OT.Data_Access.Is_Elaborated (TP) = False then
-         raise Program_Error with "task bodies not elaborated";
-      end if;
-
+      OT.Data_Access.Set_Activation_List (T     => Self,
+                                          Chain => Chain);
       OTS.Yield_Processor_To_Kernel (Resulting_Task_State => AP_State);
 
       if OT.Data_Access.Get_State (Self) = OT.Activation_Successful then
@@ -47,7 +38,7 @@ package body ARPART.Tasks is
          raise Tasking_Error with "Failure during activation";
       end if;
 
-   end Engage_Activation;
+   end Activate_Tasks;
 
    -----------------------------
    -- Complete_Activation     --

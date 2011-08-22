@@ -53,6 +53,10 @@ package Oak.Oak_Task is
 
    type Boolean_Access is access all Boolean;
 
+   type Activation_Chain is limited private;
+
+   type Activation_Chain_Access is access all Activation_Chain;
+
    Unspecified_Priority : constant Integer := -1;
 
    -----------------
@@ -128,6 +132,10 @@ private
 
             Next_Agent : Oak_Task_Handler := null;
       end case;
+   end record;
+
+   type Activation_Chain is limited record
+      Head : Oak_Task_Handler := null;
    end record;
 
 end Oak.Oak_Task;

@@ -14,6 +14,7 @@ package Oak.Oak_Task.Data_Access is
       Cycle_Period      : Time_Span;
       Phase             : Time_Span;
       Run_Loop          : Address;
+      Chain             : in out Activation_Chain;
       Elaborated        : Boolean_Access);
 
    procedure Initialise_Main_Task
@@ -42,6 +43,8 @@ package Oak.Oak_Task.Data_Access is
    procedure Set_Wake_Time (T : access Oak_Task; WT : Time);
 
    function Is_Elaborated (T : access Oak_Task) return Boolean;
+   procedure Set_Activation_List (T     : access Oak_Task;
+                                  Chain : in Activation_Chain_Access);
    function Get_Activation_List
      (T    : access Oak_Task)
       return access Oak_Task;

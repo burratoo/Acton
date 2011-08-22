@@ -18,9 +18,9 @@ package body Oak.Oak_Task.Data_Access is
       Cycle_Period      : Time_Span;
       Phase             : Time_Span;
       Run_Loop          : Address;
+      Chain             : in out Activation_Chain;
       Elaborated        : Boolean_Access)
    is
-      TP : access Oak_Task;
    begin
       T.Name_Length               :=
          Natural'Min (Task_Name'Length, Name'Length);
@@ -74,15 +74,8 @@ package body Oak.Oak_Task.Data_Access is
          raise Program_Error with "Priority out of range";
       end if;
 
-      TP := Oak.Core.Get_Current_Task;
-      if TP = null then
-         TP := Oak.Core.Get_Main_Task;
-      end if;
-
-      while TP.Activation_List /= null loop
-         TP := TP.Activation_List;
-      end loop;
-      TP.Activation_List := T;
+      T.Activation_List := Chain.Head;
+      Chain.Head := T;
 
    end Initialise_Task;
 
@@ -247,6 +240,24 @@ package body Oak.Oak_Task.Data_Access is
    begin
       return T.Elaborated.all;
    end Is_Elaborated;
+
+   procedure Set_Activation_List (T     : access Oak_Task;
+                                  Chain : in Activation_Chain_Access) is
+      TP       : access Oak_Task                := Chain.Head;
+   begin
+      --  Only set the task's activation list if all tasks's in the activation
+      --  chain have been activated. Raise Program_Error otherwise.
+
+      while TP /= null and then TP.Elaborated.all loop
+         TP := TP.Activation_List;
+      end loop;
+
+      if TP /= null and then TP.Elaborated.all = False then
+         raise Program_Error with "task bodies not elaborated";
+      end if;
+
+      T.Activation_List := Chain.Head;
+   end Set_Activation_List;
 
    function Get_Activation_List
      (T    : access Oak_Task)
