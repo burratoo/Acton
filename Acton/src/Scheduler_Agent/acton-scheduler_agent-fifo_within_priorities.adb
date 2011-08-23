@@ -118,9 +118,16 @@ package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
            and then Task_Data.Get_State (T => Selected_Task) =
                     Activation_Pending
          then
-            Selected_Task :=
-               Oak.Oak_Task.Activation.Continue_Activation
-                 (Activator => Selected_Task);
+            declare
+               Activating_Task : constant Oak_Task_Handler :=
+                                   Oak.Oak_Task.Activation.Continue_Activation
+                                     (Activator => Selected_Task);
+            begin
+               Selected_Task := (if Activating_Task /= null then
+                                 Activating_Task
+                                 else
+                                 Selected_Task);
+            end;
          end if;
 
          Set_Chosen_Task (Agent => Self, T => Selected_Task);

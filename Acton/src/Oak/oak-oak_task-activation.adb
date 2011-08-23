@@ -34,43 +34,39 @@ package body Oak.Oak_Task.Activation is
          raise Program_Error with "Activator has no tasks to activate!";
       end if;
 
-      --  Check to see if any tasks have failed
+      --  Loop through activation list to find the first task whose state is
+      --  Activation_Pending or Terminated. If we reach the end of the list
+      --  then all tasks have activated successfully.
+
       TP := Next_Task (Activator);
       while TP /= End_Of_List
         and then (TP.State = Activation_Pending or
-                  TP.State = Activation_Successful)
+                  TP.State = Terminated)
       loop
          TP := Next_Task (TP);
       end loop;
 
-      if TP /= End_Of_List then
-         --  Handle task failure
-         TP := Next_Task (Activator);
-         while TP /= End_Of_List and then TP.State /= Activation_Successful
-         loop
-            if TP.State = Activation_Pending then
-               TP.State := Activation_Failed;
-            end if;
-            TP := Next_Task (TP);
-         end loop;
-
-         if TP = End_Of_List then
-            Activator.State := Activation_Failed;
-         else
-            TP.State := Activation_Failed;
-         end if;
-
+      if TP = End_Of_List then
+         Activator.State := Activation_Successful;
       else
-         --  Handle normal task activation
-         TP := Next_Task (Activator);
-         while TP /= End_Of_List and then TP.State /= Activation_Pending loop
-            TP := Next_Task (TP);
-         end loop;
-         if TP = End_Of_List then
-            Activator.State := Activation_Successful;
-         end if;
+         case TP.State is
+            when Activation_Pending =>
+               null;
+            when Terminated =>
+               TP := Next_Task (Activator);
+               while TP /= End_Of_List loop
+                  if TP.State = Activation_Pending then
+                     TP.State := Terminated;
+                  end if;
+               end loop;
+               Activator.State := Activation_Failed;
+            when others =>
+               raise Program_Error;
+         end case;
       end if;
 
+      --  TP returns with the next task to activate or null if all tasks have
+      --  activated or if activation has failed.
       return TP;
    end Continue_Activation;
 

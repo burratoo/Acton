@@ -32,7 +32,7 @@ package body Oak.Oak_Task.Data_Access is
          Id              => Internal.New_Task_Id,
          Name            => T.Name,
          Name_Length     => T.Name_Length,
-         State           => Sleeping,
+         State           => Activation_Pending,
          Normal_Priority => T.Normal_Priority,
          Deadline        => Relative_Deadline,
          Cycle_Period    => Cycle_Period,

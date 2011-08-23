@@ -17,8 +17,8 @@ package Oak.Oak_Task is
       1 .. Processor_Support_Package.Max_Task_Name_Length);
 
    type Task_State is (
-      Activation_Pending,
-      Activation_Failed,
+                       Activation_Pending,
+                       Activation_Failed,
       Activation_Successful,
       Activation_Complete,
       Running,
@@ -27,7 +27,8 @@ package Oak.Oak_Task is
       Blocked,
       Cycle_Completed,
       Change_Cycle_Period,
-      Change_Relative_Deadline);
+      Change_Relative_Deadline,
+      Terminated);
 
    type Memory_Region;
    type Memory_Region_Link is access all Memory_Region;
