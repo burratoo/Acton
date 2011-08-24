@@ -223,11 +223,15 @@ package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
                Previous := Current;
                Current  := Get_Next_In_Queue (T => Current);
             end loop;
-            Set_Next_In_Queue (T => Previous, Next => T);
+            if Previous /= null then
+               Set_Next_In_Queue (T => Previous, Next => T);
+            end if;
             Set_Queue_Link (T    => T,
                             Prev => Previous,
                             Next => Current);
-            Set_Prev_In_Queue (T => Current, Prev => T);
+            if Current /= null then
+               Set_Prev_In_Queue (T => Current, Prev => T);
+            end if;
          end if;
 
       end Insert_Into_Queue;
