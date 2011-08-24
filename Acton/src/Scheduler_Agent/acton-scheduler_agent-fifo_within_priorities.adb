@@ -224,7 +224,10 @@ package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
                Current  := Get_Next_In_Queue (T => Current);
             end loop;
             Set_Next_In_Queue (T => Previous, Next => T);
-            Set_Next_In_Queue (T => T, Next => Current);
+            Set_Queue_Link (T    => T,
+                            Prev => Previous,
+                            Next => Current);
+            Set_Prev_In_Queue (T => Current, Prev => T);
          end if;
 
       end Insert_Into_Queue;
@@ -236,10 +239,13 @@ package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
          Previous : constant Oak_Task_Handler := Get_Prev_In_Queue (T => T);
          Next     : constant Oak_Task_Handler := Get_Next_In_Queue (T => T);
       begin
-         if Previous = null then
+         if T = Queue then
             Queue := Next;
          else
             Set_Next_In_Queue (T => Previous, Next => Next);
+         end if;
+         if Next /= null then
+            Set_Prev_In_Queue (T    => Next, Prev => Previous);
          end if;
       end Remove_From_Queue;
 
