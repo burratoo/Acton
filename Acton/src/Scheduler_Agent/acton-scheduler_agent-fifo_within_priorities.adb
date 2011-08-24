@@ -169,7 +169,8 @@ package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
                   Insert_Into_Queue
                     (Queue => Sleeping_Queue,
                      T     => Yielded_Task);
-               when Activation_Pending =>
+               when Activation_Pending | Activation_Complete
+                  | Activation_Successful =>
                   null;
                when Change_Cycle_Period | Change_Relative_Deadline =>
                   null;
