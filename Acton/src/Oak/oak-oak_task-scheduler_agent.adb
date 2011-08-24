@@ -167,6 +167,12 @@ package body Oak.Oak_Task.Scheduler_Agent is
       T.Scheduler_Queue.Previous := Prev;
    end Set_Prev_In_Queue;
 
+   procedure Set_Queue_Link (T, Prev, Next : in Oak_Task_Handler) is
+   begin
+      T.Scheduler_Queue.Previous := Prev;
+      T.Scheduler_Queue.Next := Next;
+   end Set_Queue_Link;
+
    function Get_Next_Agent (T : Oak_Task_Handler) return Oak_Task_Handler is
    begin
       return T.Next_Agent;
