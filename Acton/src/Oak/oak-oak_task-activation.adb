@@ -1,6 +1,5 @@
 with Oak.Core;
 with Oak.Scheduler;
-
 with Ada.Real_Time;
 
 package body Oak.Oak_Task.Activation is
@@ -10,6 +9,7 @@ package body Oak.Oak_Task.Activation is
       return         Oak_Task_Handler;
 
    End_Of_List : constant Oak_Task_Handler := null;
+
    function Next_Task
      (Current_Task : Oak_Task_Handler)
       return         Oak_Task_Handler
@@ -75,13 +75,13 @@ package body Oak.Oak_Task.Activation is
    -----------------------
 
    procedure Finish_Activation (Activator : Oak_Task_Handler) is
-      TP              : Oak_Task_Handler := Next_Task (Activator);
-      Activation_Time : constant Time    := Ada.Real_Time.Clock;
-
       OI        : constant access Oak.Core.Oak_Data                :=
          Oak.Core.Get_Oak_Instance;
       Scheduler : constant access Oak.Scheduler.Oak_Scheduler_Info :=
-         Oak.Core.Get_Scheduler_Info (OI);
+                    Oak.Core.Get_Scheduler_Info (OI);
+
+      TP              : Oak_Task_Handler := Next_Task (Activator);
+      Activation_Time : constant Time    := Ada.Real_Time.Clock;
    begin
       while TP /= End_Of_List loop
          TP.State          := Runnable;
@@ -99,9 +99,10 @@ package body Oak.Oak_Task.Activation is
          Oak.Scheduler.Add_Task_To_Scheduler
            (Scheduler_Info => Scheduler.all,
             T              => TP);
-         TP := Next_Task (Activator);
+         TP := Next_Task (TP);
       end loop;
       Activator.State := Runnable;
+      Activator.Activation_List := End_Of_List;
    end Finish_Activation;
 
 end Oak.Oak_Task.Activation;
