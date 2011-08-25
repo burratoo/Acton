@@ -30,7 +30,7 @@ package Oak.Scheduler is
       Chosen_Task    : in out Oak_Task_Handler);
    procedure Run_The_Bloody_Scheduler_Agent_That_Wanted_To_Be_Woken
      (Scheduler_Info : in out Oak_Scheduler_Info;
-      Chosen_Task    : out Oak_Task_Handler);
+      Chosen_Task    : in out Oak_Task_Handler);
    procedure Handle_Missed_Deadline
      (Scheduler_Info : in out Oak_Scheduler_Info;
       Chosen_Task    : out Oak_Task_Handler);

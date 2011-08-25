@@ -135,9 +135,10 @@ package body Oak.Scheduler is
    ------------------------------------------------------------
    procedure Run_The_Bloody_Scheduler_Agent_That_Wanted_To_Be_Woken
      (Scheduler_Info : in out Oak_Scheduler_Info;
-      Chosen_Task    : out Oak_Task_Handler)
+      Chosen_Task    : in out Oak_Task_Handler)
    is
       Current_Time : constant Time    := Ada.Real_Time.Clock;
+      Current_Task : constant Oak_Task_Handler := Chosen_Task;
       Agent        : Oak_Task_Handler := Scheduler_Info.Scheduler_Agent_Table;
    begin
       Chosen_Task := null;
@@ -150,7 +151,9 @@ package body Oak.Scheduler is
          end if;
          Agent := SA_Ops.Get_Next_Agent (Agent);
       end loop;
-
+      if Chosen_Task = null then
+         Chosen_Task := Current_Task;
+      end if;
    end Run_The_Bloody_Scheduler_Agent_That_Wanted_To_Be_Woken;
 
    ---------------------------
