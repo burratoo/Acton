@@ -213,6 +213,8 @@ package body Oak.Core is
                Set_State
                 (T         => Get_Current_Task,
                  New_State => Task_Return_State.State);
+            else
+               Oak_Instance.Woken_By := Scheduler_Agent;
             end if;
          end if;
 

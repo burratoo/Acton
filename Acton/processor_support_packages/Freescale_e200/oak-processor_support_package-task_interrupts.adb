@@ -321,10 +321,6 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
    end E200_Context_Switch_To_Kernel;
 
    procedure Decrementer_Interrupt is
-      State : constant Task_Requested_State :=
-        (Type_State => Runnable,
-         State      => Oak.Oak_Task.Runnable,
-         Parameter  => (0, 0));
    begin
       Enable_SPE_Instructions;
 
@@ -336,7 +332,8 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
          "li     r14, %0" & ASCII.LF & ASCII.HT &
          "li     r15, 0" & ASCII.LF & ASCII.HT &
          "li     r16, 0",
-         Inputs   => (Oak.Oak_Task.Task_State'Asm_Input ("r", State.State)),
+         Inputs   => (Oak.Oak_Task.Task_State'Asm_Input
+                      ("i", Oak.Oak_Task.Runnable)),
          Volatile => True);
       E200_Context_Switch_To_Kernel;
    end Decrementer_Interrupt;
