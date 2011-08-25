@@ -165,6 +165,7 @@ package body Oak.Core is
                  (Scheduler_Info => Oak_Instance.Scheduler,
                   Chosen_Task    => Next_Task);
             when Missed_Deadline =>
+               raise Program_Error;
                --                 Handle_Missed_Deadline
                --                   (Scheduler_Info => Oak_Instance.Scheduler,
                --                    Chosen_Task    => Next_Task);
@@ -213,8 +214,6 @@ package body Oak.Core is
                Set_State
                 (T         => Get_Current_Task,
                  New_State => Task_Return_State.State);
-            else
-               Oak_Instance.Woken_By := Scheduler_Agent;
             end if;
          end if;
 

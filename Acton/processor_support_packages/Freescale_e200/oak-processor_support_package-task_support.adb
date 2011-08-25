@@ -190,7 +190,8 @@ package body Oak.Processor_Support_Package.Task_Support is
       end loop;
       Disable_Oak_Wake_Up_Interrupt;
       Asm
-        ("lwz   r14, %0" & ASCII.LF & ASCII.HT & "mtivor10  r14",
+        ("lwz   r14, %0" & ASCII.LF & ASCII.HT &
+         "mtivor10  r14",
          Inputs   => Address'Asm_Input ("m", IVOR10_Decrementer_Intr),
          Clobber  => "r14",
          Volatile => True);
