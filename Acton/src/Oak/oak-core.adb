@@ -165,6 +165,7 @@ package body Oak.Core is
                  (Scheduler_Info => Oak_Instance.Scheduler,
                   Chosen_Task    => Next_Task);
             when Missed_Deadline =>
+               raise Program_Error;
                --                 Handle_Missed_Deadline
                --                   (Scheduler_Info => Oak_Instance.Scheduler,
                --                    Chosen_Task    => Next_Task);
