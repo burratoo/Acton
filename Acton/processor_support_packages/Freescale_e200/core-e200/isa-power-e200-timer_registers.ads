@@ -10,7 +10,7 @@ package ISA.Power.e200.Timer_Registers is
    type WPEXT_Type is mod 2 ** 4;
    type FPEXT_Type is mod 2 ** 4;
 
-   type Time_Control_Register_Type is record
+   type Timer_Control_Register_Type is record
       Watchdog_Timer_Period                 : WP_Type;
       Watchdog_Timer_Reset_Control          : WTRC_Type;
       Watchdog_Timer_Interrupt              : Enable_Type;
@@ -37,7 +37,7 @@ package ISA.Power.e200.Timer_Registers is
    --  Hardware Representation
    ---------------
 
-   for Time_Control_Register_Type use record
+   for Timer_Control_Register_Type use record
       Watchdog_Timer_Period                 at 0 range 0 .. 1;
       Watchdog_Timer_Reset_Control          at 0 range 2 .. 3;
       Watchdog_Timer_Interrupt              at 0 range 4 .. 4;
@@ -49,7 +49,7 @@ package ISA.Power.e200.Timer_Registers is
       Fixed_Interval_Timer_Period_Extension at 0 range 15 .. 18;
    end record;
 
-   for Time_Control_Register_Type'Size use Register_Size_32;
+   for Timer_Control_Register_Type'Size use Register_Size_32;
 
    for Event_Status use (Not_Occurred => 0, Occurred => 1);
 
