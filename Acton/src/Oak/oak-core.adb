@@ -160,15 +160,15 @@ package body Oak.Core is
                         Chosen_Task    => Next_Task);
                end case;
 
-            when Scheduler_Agent =>
+            when Scheduler_Agent | Missed_Deadline =>
                Run_The_Bloody_Scheduler_Agent_That_Wanted_To_Be_Woken
                  (Scheduler_Info => Oak_Instance.Scheduler,
                   Chosen_Task    => Next_Task);
-            when Missed_Deadline =>
+            --  when Missed_Deadline =>
                --                 Handle_Missed_Deadline
                --                   (Scheduler_Info => Oak_Instance.Scheduler,
                --                    Chosen_Task    => Next_Task);
-               null;
+            --   null;
          end case;
 
          ---------------
