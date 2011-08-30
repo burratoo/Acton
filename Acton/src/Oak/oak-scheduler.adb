@@ -152,7 +152,7 @@ package body Oak.Scheduler is
          Agent := SA_Ops.Get_Next_Agent (Agent);
          exit when (Current_Task /= null and Agent /= null) and then
            Get_Normal_Priority (Current_Task)
-               < SA_Ops.Get_Lowest_Priority (Agent);
+               > SA_Ops.Get_Highest_Priority (Agent);
       end loop;
       if Chosen_Task = null then
          Chosen_Task := Current_Task;
