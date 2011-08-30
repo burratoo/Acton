@@ -142,7 +142,7 @@ package body Oak.Scheduler is
       Agent        : Oak_Task_Handler := Scheduler_Info.Scheduler_Agent_Table;
    begin
       Chosen_Task := null;
-      while Agent /= null and then Chosen_Task = null loop
+      while Agent /= null and Chosen_Task = null loop
          if SA_Ops.Get_Desired_Run_Time (Agent) < Current_Time then
             Chosen_Task :=
                Run_Scheduler_Agent
@@ -150,6 +150,9 @@ package body Oak.Scheduler is
                   Reason            => Select_Next_Task);
          end if;
          Agent := SA_Ops.Get_Next_Agent (Agent);
+         exit when Current_Task /= null and then
+           Get_Normal_Priority (Current_Task)
+               < SA_Ops.Get_Highest_Priority (Agent);
       end loop;
       if Chosen_Task = null then
          Chosen_Task := Current_Task;
