@@ -122,18 +122,18 @@ package body Oak.Processor_Support_Package.Task_Support is
       use ISA;
       use ISA.Power.e200.Timer_Registers;
 
-      TCR : Time_Control_Register_Type;
+      TCR : Timer_Control_Register_Type;
    begin
       --  Read the Time Control Register
       Asm
         ("mftcr  %0",
-         Outputs  => (Time_Control_Register_Type'Asm_Output ("=r", TCR)),
+         Outputs  => (Timer_Control_Register_Type'Asm_Output ("=r", TCR)),
          Volatile => True);
       TCR.Decrementer_Interrupt := Disable;
       --  Write the Time Control Register
       Asm
         ("mttcr  %0",
-         Inputs   => (Time_Control_Register_Type'Asm_Input ("r", TCR)),
+         Inputs   => (Timer_Control_Register_Type'Asm_Input ("r", TCR)),
          Volatile => True);
    end Disable_Oak_Wake_Up_Interrupt;
 
@@ -145,18 +145,18 @@ package body Oak.Processor_Support_Package.Task_Support is
       use ISA;
       use ISA.Power.e200.Timer_Registers;
 
-      TCR : Time_Control_Register_Type;
+      TCR : Timer_Control_Register_Type;
    begin
       --  Read the Time Control Register
       Asm
         ("mftcr  %0",
-         Outputs  => (Time_Control_Register_Type'Asm_Output ("=r", TCR)),
+         Outputs  => (Timer_Control_Register_Type'Asm_Output ("=r", TCR)),
          Volatile => True);
       TCR.Decrementer_Interrupt := Enable;
       --  Write the Time Control Register
       Asm
         ("mttcr  %0",
-         Inputs   => (Time_Control_Register_Type'Asm_Input ("r", TCR)),
+         Inputs   => (Timer_Control_Register_Type'Asm_Input ("r", TCR)),
          Volatile => True);
    end Enable_Oak_Wake_Up_Interrupt;
 
