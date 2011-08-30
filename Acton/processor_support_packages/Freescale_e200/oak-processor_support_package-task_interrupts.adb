@@ -16,17 +16,11 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
    pragma Inline_Always (Enable_SPE_Instructions);
 
    procedure Initialise_Task_Enviroment is
-      use ISA.Power.e200.Timer_Registers;
-      use ISA;
-
       subtype HID0_Type is
         ISA.Power.e200.z6.HID.
         Hardware_Implementation_Dependent_Register_0_Type;
       HID0 : HID0_Type;
-      TCR  : Timer_Control_Register_Type;
    begin
-      --  Set up the registers for the decrementer and system call interrupt
-      --  handlers
       Asm
         ("lis       r14, %0@ha" & ASCII.LF & ASCII.HT &
          "addi r14, r14, %0@l" & ASCII.LF & ASCII.HT &
@@ -43,8 +37,6 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
                       System.Address'Asm_Input ("m", IVOR10_Decrementer_Intr)),
          Clobber  => "r14, r15, r16",
          Volatile => True);
-
-      --  Enable the time base
       Asm
         ("mfspr  %0, 1008",
          Outputs  => (HID0_Type'Asm_Output ("=r", HID0)),
@@ -53,21 +45,6 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
       Asm
         ("mtspr  1008, %0",
          Inputs   => (HID0_Type'Asm_Input ("r", HID0)),
-         Volatile => True);
-
-      --  Set up the decrementer auto-reload
-      Asm
-        ("mftcr  %0",
-         Outputs  => (Timer_Control_Register_Type'Asm_Output ("=r", TCR)),
-         Volatile => True);
-      TCR.Auto_Reload := Enable;
-      --  Write the Time Control Register
-      Asm
-        ("mttcr   %0"       & ASCII.LF & ASCII.HT &
-         "li      r14, 50" & ASCII.LF & ASCII.HT &
-         "mtdecar r14",
-           Inputs   => (Timer_Control_Register_Type'Asm_Input ("r", TCR)),
-         Clobber  => "r14",
          Volatile => True);
    end Initialise_Task_Enviroment;
 
