@@ -91,4 +91,13 @@ package body Oak.Oak_Task.Internal is
       T.Deadline := RD;
    end Set_Relative_Deadline;
 
+   function Is_Scheduler_Agent (T : in Oak_Task_Handler) return Boolean is
+   begin
+      return T.Kind = Scheduler;
+   end Is_Scheduler_Agent;
+
+   function Is_Regular_Task (T : in Oak_Task_Handler) return Boolean is
+   begin
+      return T.Kind = Regular;
+   end Is_Regular_Task;
 end Oak.Oak_Task.Internal;

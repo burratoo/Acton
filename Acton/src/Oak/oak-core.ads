@@ -45,6 +45,7 @@ package Oak.Core is
 
    pragma Inline_Always (Get_Current_Task_Stack_Pointer);
    pragma Inline_Always (Set_Current_Task_Stack_Pointer);
+   pragma Inline_Always (Get_Current_Task);
    pragma Inline_Always (Get_Scheduler_Info);
 
 private

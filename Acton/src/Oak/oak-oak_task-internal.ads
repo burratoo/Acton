@@ -39,4 +39,9 @@ package Oak.Oak_Task.Internal is
      (T  : in Oak_Task_Handler;
       RD : in Time_Span);
 
+   function Is_Scheduler_Agent (T : in Oak_Task_Handler) return Boolean;
+   function Is_Regular_Task (T : in Oak_Task_Handler) return Boolean;
+
+   pragma Inline_Always (Is_Scheduler_Agent);
+   pragma Inline_Always (Is_Regular_Task);
 end Oak.Oak_Task.Internal;

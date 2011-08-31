@@ -9,6 +9,7 @@ with ISA.Power.e200.Processor_Control_Registers;
 with ISA.Power.e200.z6.HID;
 with ISA.Power.e200.Timer_Registers;
 with ISA;
+with Oak.Oak_Task.Internal;
 
 package body Oak.Processor_Support_Package.Task_Interrupts is
 
@@ -69,6 +70,9 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
    -- E200_Context_Switch_To_Task --
    ---------------------------------
    procedure E200_Context_Switch_To_Task is
+      use Oak.Oak_Task;
+      use Oak.Processor_Support_Package;
+
       Task_Stack_Pointer : Address;
       pragma Suppress (Access_Check);
    begin
@@ -130,7 +134,9 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
          Volatile => True);
 
       Task_Stack_Pointer := Oak.Core.Get_Current_Task_Stack_Pointer;
-      Oak.Processor_Support_Package.Task_Support.Enable_Oak_Wake_Up_Interrupt;
+      if Internal.Is_Regular_Task (T => Oak.Core.Get_Current_Task) then
+         Task_Support.Enable_Oak_Wake_Up_Interrupt;
+      end if;
 
       --  Load task's registers
       Asm
