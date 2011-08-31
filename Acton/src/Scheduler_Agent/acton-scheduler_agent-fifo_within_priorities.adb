@@ -206,35 +206,29 @@ package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
         (Queue : in out Oak_Task_Handler;
          T     : in Oak_Task_Handler)
       is
+         Current         : Oak_Task_Handler := Queue;
+         Previous        : Oak_Task_Handler := null;
+         Task_Wake_Time  : constant Ada.Real_Time.Time
+           := Task_Data.Get_Wake_Time (T => T);
       begin
-         if Queue = null then
-            Queue := T;
-            Set_Next_In_Queue (T => T, Next => null);
-            Set_Prev_In_Queue (T => T, Prev => null);
+         while Current /= null
+           and then Task_Wake_Time >
+             Task_Data.Get_Wake_Time (T => Current)
+         loop
+            Previous := Current;
+            Current  := Get_Next_In_Queue (T => Current);
+         end loop;
+
+         if Previous /= null then
+            Set_Next_In_Queue (T => Previous, Next => T);
          else
-            declare
-               Current         : Oak_Task_Handler := Queue;
-               Previous        : Oak_Task_Handler := null;
-               Task_Wake_Time  : constant Ada.Real_Time.Time
-                                       := Task_Data.Get_Wake_Time (T => T);
-            begin
-               while Current /= null
-                 and then Task_Wake_Time >
-                   Task_Data.Get_Wake_Time (T => Current)
-               loop
-                  Previous := Current;
-                  Current  := Get_Next_In_Queue (T => Current);
-               end loop;
-               if Previous /= null then
-                  Set_Next_In_Queue (T => Previous, Next => T);
-               end if;
-               Set_Queue_Link (T    => T,
-                               Prev => Previous,
-                               Next => Current);
-               if Current /= null then
-                  Set_Prev_In_Queue (T => Current, Prev => T);
-               end if;
-            end;
+            Queue := T;
+         end if;
+         Set_Queue_Link (T    => T,
+                         Prev => Previous,
+                         Next => Current);
+         if Current /= null then
+            Set_Prev_In_Queue (T => Current, Prev => T);
          end if;
 
       end Insert_Into_Queue;
