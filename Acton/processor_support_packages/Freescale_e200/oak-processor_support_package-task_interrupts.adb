@@ -16,6 +16,9 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
    procedure Enable_SPE_Instructions;
    pragma Inline_Always (Enable_SPE_Instructions);
 
+   procedure Clear_Decrementer_Interrupt;
+   pragma Inline_Always (Clear_Decrementer_Interrupt);
+
    procedure Initialise_Task_Enviroment is
       subtype HID0_Type is
         ISA.Power.e200.z6.HID.
@@ -65,6 +68,23 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
          Inputs   => (Machine_State_Register_Type'Asm_Input ("r", MSR)),
          Volatile => True);
    end Enable_SPE_Instructions;
+
+   procedure Clear_Decrementer_Interrupt is
+      use ISA;
+      use ISA.Power.e200.Timer_Registers;
+      TSR : constant Timer_Status_Register_Type :=
+        (Next_Watchdog_Time       => Disable,
+         Watchdog_Timer_Interrupt => Not_Occurred,
+         Watchdog_Timer_Reset     => 0,
+         Decrement_Interrupt      => Occurred,
+         Fixed_Interval_Interrupt => Not_Occurred);
+   begin
+      --  Clear decrementer interrupt flag
+      Asm
+        ("mttsr %0",
+         Inputs   => (Timer_Status_Register_Type'Asm_Input ("r", TSR)),
+         Volatile => True);
+   end Clear_Decrementer_Interrupt;
 
    ---------------------------------
    -- E200_Context_Switch_To_Task --
@@ -329,6 +349,7 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
    procedure Decrementer_Interrupt is
    begin
       Enable_SPE_Instructions;
+      Clear_Decrementer_Interrupt;
 
       Asm
         ("stwu   r1, -24(r1)" & ASCII.LF & ASCII.HT &
@@ -345,20 +366,11 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
    end Decrementer_Interrupt;
 
    procedure Sleep_Interrupt is
-      use ISA;
-      use ISA.Power.e200.Timer_Registers;
-      TSR : constant Timer_Status_Register_Type :=
-        (Next_Watchdog_Time       => Disable,
-         Watchdog_Timer_Interrupt => Not_Occurred,
-         Watchdog_Timer_Reset     => 0,
-         Decrement_Interrupt      => Occurred,
-         Fixed_Interval_Interrupt => Not_Occurred);
    begin
+      Clear_Decrementer_Interrupt;
       Asm
-        ("mttsr %0" & ASCII.LF & ASCII.HT &
-         "li    r14, 1" & ASCII.LF & ASCII.HT &
+        ("li    r14, 1" & ASCII.LF & ASCII.HT &
          "rfi",
-         Inputs   => (Timer_Status_Register_Type'Asm_Input ("r", TSR)),
          Volatile => True);
    end Sleep_Interrupt;
 
