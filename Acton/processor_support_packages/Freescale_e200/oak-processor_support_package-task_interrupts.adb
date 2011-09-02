@@ -5,9 +5,7 @@ with Oak.Processor_Support_Package.Task_Support;
 use  Oak.Processor_Support_Package.Task_Support;
 with Oak.Oak_Task;
 
-with ISA.Power.e200.Processor_Control_Registers;
 with ISA.Power.e200.z6.HID;
-with ISA.Power.e200.Timer_Registers;
 with ISA;
 with Oak.Oak_Task.Internal;
 
@@ -16,8 +14,9 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
    procedure Enable_SPE_Instructions;
    pragma Inline_Always (Enable_SPE_Instructions);
 
-   procedure Clear_Decrementer_Interrupt;
-   pragma Inline_Always (Clear_Decrementer_Interrupt);
+   procedure Enable_SPE_Instruction_And_Clear_Decrementer_Interrupt;
+   pragma Inline_Always
+     (Enable_SPE_Instruction_And_Clear_Decrementer_Interrupt);
 
    procedure Initialise_Task_Enviroment is
       subtype HID0_Type is
@@ -25,6 +24,13 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
         Hardware_Implementation_Dependent_Register_0_Type;
       HID0 : HID0_Type;
    begin
+      --  Store r2 and r13 to SPRG6 and SPRG7
+      Asm
+        ("mtsprg6   r2"  & ASCII.LF & ASCII.HT &
+         "mtsprg7   r13",
+         Volatile => True);
+
+      --  Setup interrupt pointers
       Asm
         ("lis       r14, %0@ha" & ASCII.LF & ASCII.HT &
          "addi r14, r14, %0@l" & ASCII.LF & ASCII.HT &
@@ -53,38 +59,39 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
    end Initialise_Task_Enviroment;
 
    procedure Enable_SPE_Instructions is
-      use ISA.Power.e200.Processor_Control_Registers;
-      MSR : Machine_State_Register_Type;
    begin
-      --  Read the Machine State Register
+      --  The machine state register is modified as follows:
+      --       MSR.Signal_Processing := ISA.Enable;
       Asm
-        ("mfmsr  %0",
-         Outputs  => (Machine_State_Register_Type'Asm_Output ("=r", MSR)),
-         Volatile => True);
-      MSR.Signal_Processing := ISA.Enable;
-      --  Write the Machine State Register
-      Asm
-        ("mtmsr  %0",
-         Inputs   => (Machine_State_Register_Type'Asm_Input ("r", MSR)),
+        ("li      r2,  1"        & ASCII.LF & ASCII.HT &
+         "mfmsr   r13"           & ASCII.LF & ASCII.HT &
+         "rlwimi  r13,r2,25,6,6" & ASCII.LF & ASCII.HT &
+         "mtmsr   r13"           & ASCII.LF & ASCII.HT &
+         "mfsprg6 r2"            & ASCII.LF & ASCII.HT &
+         "mfsprg7 r13",
          Volatile => True);
    end Enable_SPE_Instructions;
 
-   procedure Clear_Decrementer_Interrupt is
-      use ISA;
-      use ISA.Power.e200.Timer_Registers;
-      TSR : constant Timer_Status_Register_Type :=
-        (Next_Watchdog_Time       => Disable,
-         Watchdog_Timer_Interrupt => Not_Occurred,
-         Watchdog_Timer_Reset     => 0,
-         Decrement_Interrupt      => Occurred,
-         Fixed_Interval_Interrupt => Not_Occurred);
+   procedure Enable_SPE_Instruction_And_Clear_Decrementer_Interrupt is
    begin
-      --  Clear decrementer interrupt flag
+      --  The following is written to the time status register:
+      --  TSR : constant Timer_Status_Register_Type :=
+      --    (Next_Watchdog_Time       => Disable,
+      --     Watchdog_Timer_Interrupt => Not_Occurred,
+      --     Watchdog_Timer_Reset     => 0,
+      --     Decrement_Interrupt      => Occurred,
+      --     Fixed_Interval_Interrupt => Not_Occurred);
       Asm
-        ("mttsr %0",
-         Inputs   => (Timer_Status_Register_Type'Asm_Input ("r", TSR)),
+        ("li      r2,  1"        & ASCII.LF & ASCII.HT &
+         "mfmsr   r13"           & ASCII.LF & ASCII.HT &
+         "rlwimi  r13,r2,25,6,6" & ASCII.LF & ASCII.HT &
+         "mtmsr   r13"           & ASCII.LF & ASCII.HT & -- enable SPE Instr.
+         "lis     r2,  0x800"    & ASCII.LF & ASCII.HT &
+         "mttsr   r2"            & ASCII.LF & ASCII.HT & --  Clear Dec. Inter.
+         "mfsprg6 r2"            & ASCII.LF & ASCII.HT &
+         "mfsprg7 r13",
          Volatile => True);
-   end Clear_Decrementer_Interrupt;
+   end Enable_SPE_Instruction_And_Clear_Decrementer_Interrupt;
 
    ---------------------------------
    -- E200_Context_Switch_To_Task --
@@ -348,8 +355,7 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
 
    procedure Decrementer_Interrupt is
    begin
-      Enable_SPE_Instructions;
-      Clear_Decrementer_Interrupt;
+      Enable_SPE_Instruction_And_Clear_Decrementer_Interrupt;
 
       Asm
         ("stwu   r1, -24(r1)" & ASCII.LF & ASCII.HT &
@@ -367,7 +373,7 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
 
    procedure Sleep_Interrupt is
    begin
-      Clear_Decrementer_Interrupt;
+      Enable_SPE_Instruction_And_Clear_Decrementer_Interrupt;
       Asm
         ("li    r14, 1" & ASCII.LF & ASCII.HT &
          "rfi",
