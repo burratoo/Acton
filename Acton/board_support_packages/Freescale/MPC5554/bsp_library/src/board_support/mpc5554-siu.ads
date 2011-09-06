@@ -20,7 +20,7 @@ package MPC5554.SIU is
    --  Hardware Features
    ----------------------------------------------------------------------------
    type Pad_ID_Type is range 0 .. 230;
-   type GPIO_ID_Type is range 0 .. 213;
+   subtype GPIO_ID_Type is Pad_ID_Type range 0 .. 213;
    GPIO_Register_Size : constant Integer := 8;
 
    IRQ_Size : constant Integer := 16;
