@@ -7,15 +7,13 @@ package Oak.Processor_Support_Package.Call_Stack is
    --  Storage_Elements
    Call_Stack_Size           : constant := 4 * 1024;
    Default_Call_Stack_Size   : constant := Call_Stack_Size;
-   Main_Task_Call_Stack_Size : constant := 48 * 1024;
+   Main_Task_Call_Stack_Size : constant := 4 * 1024;
    Oak_Call_Stack_Size       : constant := 4 * 1024;
 
    --  Call_Stack_Alignment in bytes
    Call_Stack_Allignment : constant := 8;
 
    Minimum_Call_Stack_Size : constant := 1 * 1024;
-
-   Bits_In_A_Byte : constant := 4;
 
    Task_Registers_Save_Size   : constant := 296;
    Kernel_Registers_Save_Size : constant := 152;

@@ -38,7 +38,7 @@ package body Oak.Processor_Support_Package.Call_Stack.Ops is
       Stack_Size        : in System.Storage_Elements.Storage_Count)
    is
    begin
-      Stack.Top     := Stack_Address +  Stack_Size / Bits_In_A_Byte;
+      Stack.Top     := Stack_Address +  Stack_Size;
       Stack.Pointer := Stack.Top;
       Stack.Bottom  := Stack_Address;
 
