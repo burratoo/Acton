@@ -9,13 +9,15 @@ package Oak.Memory.Call_Stack.Ops is
      PSP_Stack.Call_Stack_Size);
 
    procedure Initialise_Call_Stack
-     (Stack             : in out Call_Stack_Handler;
-      Start_Instruction : in System.Address) renames
+     (Stack             : in out Oak.Memory.Call_Stack.Call_Stack_Handler;
+      Start_Instruction : in System.Address;
+      Task_Value_Record : in System.Address) renames
      Oak.Processor_Support_Package.Call_Stack.Ops.Initialise_Call_Stack;
 
    procedure Initialise_Call_Stack
-     (Stack             : in out Call_Stack_Handler;
+     (Stack             : in out Oak.Memory.Call_Stack.Call_Stack_Handler;
       Start_Instruction : in System.Address;
+      Task_Value_Record : in System.Address;
       Stack_Address     : in System.Address;
       Stack_Size        : in System.Storage_Elements.Storage_Count) renames
      Oak.Processor_Support_Package.Call_Stack.Ops.Initialise_Call_Stack;

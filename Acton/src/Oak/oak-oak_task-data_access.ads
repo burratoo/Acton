@@ -5,23 +5,24 @@ package Oak.Oak_Task.Data_Access is
    pragma Preelaborate;
 
    procedure Initialise_Task
-     (T                 : Oak_Task_Handler;
-      Stack_Address     : System.Address;
-      Stack_Size        : System.Storage_Elements.Storage_Count;
-      Name              : String;
-      Normal_Priority   : Integer;
-      Relative_Deadline : Time_Span;
-      Cycle_Period      : Time_Span;
-      Phase             : Time_Span;
-      Run_Loop          : Address;
+     (T                 : in Oak_Task_Handler;
+      Stack_Address     : in System.Address;
+      Stack_Size        : in System.Storage_Elements.Storage_Count;
+      Name              : in String;
+      Normal_Priority   : in Integer;
+      Relative_Deadline : in Time_Span;
+      Cycle_Period      : in Time_Span;
+      Phase             : in Time_Span;
+      Run_Loop          : in Address;
+      Task_Value_Record : in System.Address;
       Chain             : in out Activation_Chain;
-      Elaborated        : Boolean_Access);
+      Elaborated        : in Boolean_Access);
 
    procedure Initialise_Main_Task
-     (Stack_Size        : System.Storage_Elements.Storage_Count;
-      Name              : String;
-      Normal_Priority   : Integer;
-      Run_Loop          : Address);
+     (Stack_Size        : in System.Storage_Elements.Storage_Count;
+      Name              : in String;
+      Normal_Priority   : in Integer;
+      Run_Loop          : in Address);
 
    procedure Set_Scheduler_Agent
      (T               : access Oak_Task;

@@ -9,17 +9,18 @@ package body Oak.Oak_Task.Data_Access is
    -- Set_Up_Task --
    ------------------
    procedure Initialise_Task
-     (T                 : Oak_Task_Handler;
-      Stack_Address     : System.Address;
-      Stack_Size        : System.Storage_Elements.Storage_Count;
-      Name              : String;
-      Normal_Priority   : Integer;
-      Relative_Deadline : Time_Span;
-      Cycle_Period      : Time_Span;
-      Phase             : Time_Span;
-      Run_Loop          : Address;
+     (T                 : in Oak_Task_Handler;
+      Stack_Address     : in System.Address;
+      Stack_Size        : in System.Storage_Elements.Storage_Count;
+      Name              : in String;
+      Normal_Priority   : in Integer;
+      Relative_Deadline : in Time_Span;
+      Cycle_Period      : in Time_Span;
+      Phase             : in Time_Span;
+      Run_Loop          : in Address;
+      Task_Value_Record : in System.Address;
       Chain             : in out Activation_Chain;
-      Elaborated        : Boolean_Access)
+      Elaborated        : in Boolean_Access)
    is
    begin
       T.Name_Length               :=
@@ -56,11 +57,13 @@ package body Oak.Oak_Task.Data_Access is
 
          Initialise_Call_Stack
            (Stack             => T.Call_Stack,
-            Start_Instruction => Run_Loop);
+            Start_Instruction => Run_Loop,
+            Task_Value_Record => Task_Value_Record);
       else
          Initialise_Call_Stack
            (Stack             => T.Call_Stack,
             Start_Instruction => Run_Loop,
+            Task_Value_Record => Task_Value_Record,
             Stack_Address     => Stack_Address,
             Stack_Size        => Stack_Size);
       end if;
@@ -125,7 +128,8 @@ package body Oak.Oak_Task.Data_Access is
 
       Initialise_Call_Stack
         (Stack             => T.Call_Stack,
-         Start_Instruction => Run_Loop);
+         Start_Instruction => Run_Loop,
+         Task_Value_Record => Null_Address);
 
       if Normal_Priority >= Priority'First and
         Normal_Priority <= Priority'Last then

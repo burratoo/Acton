@@ -40,7 +40,8 @@ package body Oak.Oak_Task.Scheduler_Agent is
 
       Initialise_Call_Stack
         (Stack             => Agent.Call_Stack,
-         Start_Instruction => Agent.Run_Loop);
+         Start_Instruction => Agent.Run_Loop,
+         Task_Value_Record => Null_Address);
    end Initialise_Agent;
 
    ---------------------
