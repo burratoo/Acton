@@ -128,8 +128,7 @@ package body Oak.Oak_Task.Data_Access is
 
       Initialise_Call_Stack
         (Stack             => T.Call_Stack,
-         Start_Instruction => Run_Loop,
-         Task_Value_Record => Null_Address);
+         Start_Instruction => Run_Loop);
 
       if Normal_Priority >= Priority'First and
         Normal_Priority <= Priority'Last then

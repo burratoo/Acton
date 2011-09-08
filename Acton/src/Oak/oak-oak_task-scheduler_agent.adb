@@ -1,5 +1,4 @@
-with Oak.Processor_Support_Package.Call_Stack.Ops;
-use  Oak.Processor_Support_Package.Call_Stack.Ops;
+with Oak.Memory.Call_Stack.Ops;  use  Oak.Memory.Call_Stack.Ops;
 
 with Oak.Oak_Task.Internal;
 
@@ -40,8 +39,7 @@ package body Oak.Oak_Task.Scheduler_Agent is
 
       Initialise_Call_Stack
         (Stack             => Agent.Call_Stack,
-         Start_Instruction => Agent.Run_Loop,
-         Task_Value_Record => Null_Address);
+         Start_Instruction => Agent.Run_Loop);
    end Initialise_Agent;
 
    ---------------------
