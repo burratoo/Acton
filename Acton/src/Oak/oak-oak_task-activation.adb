@@ -85,15 +85,15 @@ package body Oak.Oak_Task.Activation is
    begin
       while TP /= End_Of_List loop
          TP.State          := Runnable;
-         TP.Wake_Time      := Activation_Time;
-         TP.Next_Run_Cycle := Activation_Time + TP.Cycle_Period;
+         TP.Wake_Time      := Activation_Time + TP.Phase;
+         TP.Next_Run_Cycle := TP.Wake_Time + TP.Cycle_Period;
 
          --  If the deadline is set to zero, disable the deadline by setting
          --  Next_Deadline to last possible time.
          if TP.Deadline = Time_Span_Zero then
             TP.Next_Deadline := Ada.Real_Time.Time_Last;
          else
-            TP.Next_Deadline  := Activation_Time + TP.Deadline;
+            TP.Next_Deadline  := TP.Wake_Time + TP.Deadline;
          end if;
 
          Oak.Scheduler.Add_Task_To_Scheduler
