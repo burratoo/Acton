@@ -19,10 +19,10 @@ package Oak.Oak_Task.Data_Access is
       Elaborated        : in Boolean_Access);
 
    procedure Initialise_Main_Task
-     (Stack_Size        : in System.Storage_Elements.Storage_Count;
-      Name              : in String;
-      Normal_Priority   : in Integer;
-      Run_Loop          : in Address);
+     (Stack_Size      : in System.Storage_Elements.Storage_Count;
+      Name            : in String;
+      Normal_Priority : in Integer;
+      Run_Loop        : in Address);
 
    procedure Set_Scheduler_Agent
      (T               : access Oak_Task;
@@ -44,8 +44,9 @@ package Oak.Oak_Task.Data_Access is
    procedure Set_Wake_Time (T : access Oak_Task; WT : Time);
 
    function Is_Elaborated (T : access Oak_Task) return Boolean;
-   procedure Set_Activation_List (T     : access Oak_Task;
-                                  Chain : in Activation_Chain_Access);
+   procedure Set_Activation_List
+     (T     : access Oak_Task;
+      Chain : in Activation_Chain_Access);
    function Get_Activation_List
      (T    : access Oak_Task)
       return access Oak_Task;

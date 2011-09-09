@@ -40,8 +40,7 @@ package body Oak.Oak_Task.Activation is
 
       TP := Next_Task (Activator);
       while TP /= End_Of_List
-        and then (TP.State = Activation_Pending or
-                  TP.State = Terminated)
+        and then (TP.State = Activation_Pending or TP.State = Terminated)
       loop
          TP := Next_Task (TP);
       end loop;
@@ -78,7 +77,7 @@ package body Oak.Oak_Task.Activation is
       OI        : constant access Oak.Core.Oak_Data                :=
          Oak.Core.Get_Oak_Instance;
       Scheduler : constant access Oak.Scheduler.Oak_Scheduler_Info :=
-                    Oak.Core.Get_Scheduler_Info (OI);
+         Oak.Core.Get_Scheduler_Info (OI);
 
       TP              : Oak_Task_Handler := Next_Task (Activator);
       Activation_Time : constant Time    := Ada.Real_Time.Clock;
@@ -93,7 +92,7 @@ package body Oak.Oak_Task.Activation is
          if TP.Deadline = Time_Span_Zero then
             TP.Next_Deadline := Ada.Real_Time.Time_Last;
          else
-            TP.Next_Deadline  := TP.Wake_Time + TP.Deadline;
+            TP.Next_Deadline := TP.Wake_Time + TP.Deadline;
          end if;
 
          Oak.Scheduler.Add_Task_To_Scheduler
@@ -101,7 +100,7 @@ package body Oak.Oak_Task.Activation is
             T              => TP);
          TP := Next_Task (TP);
       end loop;
-      Activator.State := Runnable;
+      Activator.State           := Runnable;
       Activator.Activation_List := End_Of_List;
    end Finish_Activation;
 

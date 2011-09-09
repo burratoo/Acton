@@ -1,13 +1,12 @@
 with Oak.Oak_Task.Deadline_List;
-with Oak.Oak_Task.Internal;                        use Oak.Oak_Task.Internal;
-with Oak.Processor_Support_Package;                use
-  Oak.Processor_Support_Package;
-with Oak.Oak_Task.Data_Access;                     use
-  Oak.Oak_Task.Data_Access;
+with Oak.Oak_Task.Internal;                      use Oak.Oak_Task.Internal;
+with Oak.Processor_Support_Package;
+use Oak.Processor_Support_Package;
+with Oak.Oak_Task.Data_Access;                   use Oak.Oak_Task.Data_Access;
 with Oak.Processor_Support_Package.Task_Support;
 with Oak.Oak_Task.Scheduler_Agent;
 with Oak.Core;
-with System; use System;
+with System;                                     use System;
 
 package body Oak.Scheduler is
    package Tasks renames Oak.Processor_Support_Package.Task_Support;
@@ -95,9 +94,7 @@ package body Oak.Scheduler is
       while Agent /= null and then Chosen_Task = null loop
          --  Context switch to Manage Queues Routine.
          Chosen_Task :=
-            Run_Scheduler_Agent
-              (Agent             => Agent,
-               Reason            => Select_Next_Task);
+            Run_Scheduler_Agent (Agent => Agent, Reason => Select_Next_Task);
          Agent       := SA_Ops.Get_Next_Agent (T => Agent);
       end loop;
 
@@ -114,14 +111,12 @@ package body Oak.Scheduler is
          Get_Scheduler_Agent_For_Task (T => Chosen_Task);
    begin
       Chosen_Task :=
-         Run_Scheduler_Agent
-           (Agent             => Agent,
-            Reason            => Task_Yield);
+         Run_Scheduler_Agent (Agent => Agent, Reason => Task_Yield);
 
       if Chosen_Task = null then
          Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
-           (Scheduler_Info       => Scheduler_Info,
-            Chosen_Task          => Chosen_Task);
+           (Scheduler_Info => Scheduler_Info,
+            Chosen_Task    => Chosen_Task);
       end if;
    end Run_Current_Task_Scheduler_Agent;
 
@@ -137,22 +132,23 @@ package body Oak.Scheduler is
      (Scheduler_Info : in out Oak_Scheduler_Info;
       Chosen_Task    : in out Oak_Task_Handler)
    is
-      Current_Time : constant Time    := Ada.Real_Time.Clock;
+      Current_Time : constant Time             := Ada.Real_Time.Clock;
       Current_Task : constant Oak_Task_Handler := Chosen_Task;
-      Agent        : Oak_Task_Handler := Scheduler_Info.Scheduler_Agent_Table;
+      Agent        : Oak_Task_Handler          :=
+        Scheduler_Info.Scheduler_Agent_Table;
    begin
       Chosen_Task := null;
       while Agent /= null and Chosen_Task = null loop
          if SA_Ops.Get_Desired_Run_Time (Agent) < Current_Time then
             Chosen_Task :=
                Run_Scheduler_Agent
-                 (Agent             => Agent,
-                  Reason            => Select_Next_Task);
+                 (Agent  => Agent,
+                  Reason => Select_Next_Task);
          end if;
          Agent := SA_Ops.Get_Next_Agent (Agent);
-         exit when (Current_Task /= null and Agent /= null) and then
-           Get_Normal_Priority (Current_Task)
-               > SA_Ops.Get_Highest_Priority (Agent);
+         exit when (Current_Task /= null and Agent /= null)
+                  and then Get_Normal_Priority (Current_Task) >
+                           SA_Ops.Get_Highest_Priority (Agent);
       end loop;
       if Chosen_Task = null then
          Chosen_Task := Current_Task;
@@ -168,7 +164,7 @@ package body Oak.Scheduler is
       T              : in Oak_Task_Handler)
    is
       Task_Priority : constant Any_Priority := Get_Normal_Priority (T => T);
-      Agent         : Oak_Task_Handler  :=
+      Agent         : Oak_Task_Handler      :=
         Scheduler_Info.Scheduler_Agent_Table;
    begin
       while Agent /= null
@@ -178,9 +174,7 @@ package body Oak.Scheduler is
       end loop;
       Set_Scheduler_Agent_For_Task (T => T, Agent => Agent);
       SA_Ops.Set_Task_To_Manage (Agent => Agent, MT => T);
-      Run_Scheduler_Agent
-        (Agent             => Agent,
-         Reason            => Add_Task);
+      Run_Scheduler_Agent (Agent => Agent, Reason => Add_Task);
    end Add_Task_To_Scheduler;
 
    -------------------------
@@ -188,14 +182,12 @@ package body Oak.Scheduler is
    -------------------------
 
    function Run_Scheduler_Agent
-     (Agent             : in Oak_Task_Handler;
-      Reason            : in Reason_For_Run)
-      return              Oak_Task_Handler
+     (Agent  : in Oak_Task_Handler;
+      Reason : in Reason_For_Run)
+      return   Oak_Task_Handler
    is
    begin
-      Run_Scheduler_Agent
-        (Agent             => Agent,
-         Reason            => Reason);
+      Run_Scheduler_Agent (Agent => Agent, Reason => Reason);
       return SA_Ops.Get_Task_To_Run (Agent => Agent);
    end Run_Scheduler_Agent;
 
@@ -204,8 +196,8 @@ package body Oak.Scheduler is
    -------------------------
 
    procedure Run_Scheduler_Agent
-     (Agent             : in Oak_Task_Handler;
-      Reason            : in Reason_For_Run)
+     (Agent  : in Oak_Task_Handler;
+      Reason : in Reason_For_Run)
    is
    begin
       SA_Ops.Set_Run_Reason (Agent => Agent, Reason => Reason);

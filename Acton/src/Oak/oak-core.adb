@@ -164,11 +164,11 @@ package body Oak.Core is
                Run_The_Bloody_Scheduler_Agent_That_Wanted_To_Be_Woken
                  (Scheduler_Info => Oak_Instance.Scheduler,
                   Chosen_Task    => Next_Task);
-            --  when Missed_Deadline =>
+               --  when Missed_Deadline =>
                --                 Handle_Missed_Deadline
                --                   (Scheduler_Info => Oak_Instance.Scheduler,
                --                    Chosen_Task    => Next_Task);
-            --   null;
+               --   null;
          end case;
 
          ---------------
@@ -211,8 +211,8 @@ package body Oak.Core is
             if Task_Return_State.State /= Runnable then
                Oak_Instance.Woken_By := Task_Yield;
                Set_State
-                (T         => Oak_Instance.Current_Task,
-                 New_State => Task_Return_State.State);
+                 (T         => Oak_Instance.Current_Task,
+                  New_State => Task_Return_State.State);
             end if;
          end if;
 

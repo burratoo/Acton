@@ -1,9 +1,8 @@
-with Oak.Scheduler;                            use Oak.Scheduler;
-with Oak.Processor_Support_Package;            use
-  Oak.Processor_Support_Package;
-with Oak.Oak_Task;                             use Oak.Oak_Task;
-with System; use System;
-with Oak.Memory.Call_Stack; use Oak.Memory.Call_Stack;
+with Oak.Scheduler;                 use Oak.Scheduler;
+with Oak.Processor_Support_Package; use Oak.Processor_Support_Package;
+with Oak.Oak_Task;                  use Oak.Oak_Task;
+with System;                        use System;
+with Oak.Memory.Call_Stack;         use Oak.Memory.Call_Stack;
 
 package Oak.Core is
 
@@ -39,8 +38,9 @@ package Oak.Core is
    function Get_Current_Task return Oak_Task_Handler;
 
    function Get_Oak_Instance return access Oak_Data;
-   function Get_Scheduler_Info (Oak_Instance : access Oak_Data)
-                                return access Oak_Scheduler_Info;
+   function Get_Scheduler_Info
+     (Oak_Instance : access Oak_Data)
+      return         access Oak_Scheduler_Info;
    function Get_Main_Task return Oak_Task_Handler;
 
    pragma Inline_Always (Get_Current_Task_Stack_Pointer);
@@ -52,13 +52,13 @@ private
    Main_Task_OTCR : aliased Oak.Oak_Task.Oak_Task;
 
    type Oak_Data is record
-      Id        : Oak_Instance_Id := 1;
-      Scheduler : aliased Oak_Scheduler_Info;
-      Woken_By  : Activation_Reason := First_Run;
-      Current_Task : Oak_Task_Handler := null;
-      --  Probably need to fix this up so that it gets set somewhere.
-      --  (In case it doesn't already when the task context switches.
-      Call_Stack         : Call_Stack_Handler;
+      Id           : Oak_Instance_Id   := 1;
+      Scheduler    : aliased Oak_Scheduler_Info;
+      Woken_By     : Activation_Reason := First_Run;
+      Current_Task : Oak_Task_Handler  := null;
+      --  Probably need to fix this up so that it gets set somewhere. (In case
+      --  it doesn't already when the task context switches.
+      Call_Stack : Call_Stack_Handler;
    end record;
 
    type Oak_List is array (Oak_Instance_Id) of aliased Oak_Data;
