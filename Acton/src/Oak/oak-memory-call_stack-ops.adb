@@ -15,10 +15,10 @@ package body Oak.Memory.Call_Stack.Ops is
          Size := (Size / PSP_Stack.Call_Stack_Allignment + 1) *
                  PSP_Stack.Call_Stack_Allignment;
       end if;
-      Stack.Top := Stack_Pool_Bottom;
-      Stack.Pointer := Stack_Pool_Bottom;
+      Stack.Top         := Stack_Pool_Bottom;
+      Stack.Pointer     := Stack_Pool_Bottom;
       Stack_Pool_Bottom := Stack_Pool_Bottom - Size;
-      Stack.Bottom := Stack_Pool_Bottom;
+      Stack.Bottom      := Stack_Pool_Bottom;
    end Allocate_Call_Stack;
 
 end Oak.Memory.Call_Stack.Ops;

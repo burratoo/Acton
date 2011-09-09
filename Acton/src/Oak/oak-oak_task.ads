@@ -17,8 +17,8 @@ package Oak.Oak_Task is
       1 .. Processor_Support_Package.Max_Task_Name_Length);
 
    type Task_State is (
-                       Activation_Pending,
-                       Activation_Failed,
+      Activation_Pending,
+      Activation_Failed,
       Activation_Successful,
       Activation_Complete,
       Running,
@@ -94,7 +94,7 @@ private
       Run_Loop   : Address := Null_Address;
 
       Activation_List : Oak_Task_Handler := null;
-      Elaborated      : Boolean_Access := null;
+      Elaborated      : Boolean_Access   := null;
 
       Memory_List : Memory_Region_Link := null;
       --      Registers   : Register_Store;    --  Um, this can Just go onto
@@ -118,7 +118,7 @@ private
             Next_Run_Cycle : Time := Time_Last;
             Wake_Time      : Time := Time_Last;
 
-            Scheduler_Agent : Oak_Task_Handler  := null;
+            Scheduler_Agent : Oak_Task_Handler := null;
             Scheduler_Queue : Task_Link_Element;
             Deadline_List   : Task_Link_Element;
 

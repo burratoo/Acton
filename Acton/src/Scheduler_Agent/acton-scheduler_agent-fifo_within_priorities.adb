@@ -1,8 +1,8 @@
 with Oak.Core;
 with Oak.Processor_Support_Package.Task_Support;
 use  Oak.Processor_Support_Package.Task_Support;
-with Oak.Oak_Task.Scheduler_Agent;
-use  Oak.Oak_Task.Scheduler_Agent;
+with Oak.Oak_Task.Scheduler_Agent;               use
+  Oak.Oak_Task.Scheduler_Agent;
 with Oak.Oak_Task.Data_Access;
 with Ada.Real_Time;
 with Oak.Oak_Task.Activation;
@@ -53,8 +53,8 @@ package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
 
    procedure Remove_Task is
    begin
-      --  Generated stub: replace with real body!
-      --  pragma Compile_Time_Warning (True, "Remove_Task unimplemented");
+      --  Generated stub: replace with real body! pragma Compile_Time_Warning
+      --  (True, "Remove_Task unimplemented");
       raise Program_Error with "Unimplemented procedure Remove_Task";
    end Remove_Task;
 
@@ -79,8 +79,8 @@ package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
       Self            : constant Oak_Task_Handler :=
          Oak.Core.Get_Current_Task;
       Run_Reason      : Reason_For_Run;
-      Runnable_Queues : Oak_Task_Array (Get_Lowest_Priority (Self)
-                                        .. Get_Highest_Priority (Self));
+      Runnable_Queues : Oak_Task_Array (
+         Get_Lowest_Priority (Self) .. Get_Highest_Priority (Self));
       Sleeping_Queue  : Oak_Task_Handler;
 
       Scheduler_Error1, Scheduler_Error2 : exception;
@@ -121,8 +121,8 @@ package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
          then
             declare
                Activating_Task : constant Oak_Task_Handler :=
-                                   Oak.Oak_Task.Activation.Continue_Activation
-                                     (Activator => Selected_Task);
+                  Oak.Oak_Task.Activation.Continue_Activation
+                    (Activator => Selected_Task);
             begin
                Selected_Task := (if Activating_Task /= null then
                                  Activating_Task
@@ -169,8 +169,9 @@ package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
                   Insert_Into_Queue
                     (Queue => Sleeping_Queue,
                      T     => Yielded_Task);
-               when Activation_Pending | Activation_Complete
-                  | Activation_Successful =>
+               when Activation_Pending    |
+                    Activation_Complete   |
+                    Activation_Successful =>
                   null;
                when Change_Cycle_Period | Change_Relative_Deadline =>
                   null;
@@ -206,14 +207,13 @@ package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
         (Queue : in out Oak_Task_Handler;
          T     : in Oak_Task_Handler)
       is
-         Current         : Oak_Task_Handler := Queue;
-         Previous        : Oak_Task_Handler := null;
-         Task_Wake_Time  : constant Ada.Real_Time.Time
-           := Task_Data.Get_Wake_Time (T => T);
+         Current        : Oak_Task_Handler            := Queue;
+         Previous       : Oak_Task_Handler            := null;
+         Task_Wake_Time : constant Ada.Real_Time.Time :=
+            Task_Data.Get_Wake_Time (T => T);
       begin
          while Current /= null
-           and then Task_Wake_Time >
-             Task_Data.Get_Wake_Time (T => Current)
+           and then Task_Wake_Time > Task_Data.Get_Wake_Time (T => Current)
          loop
             Previous := Current;
             Current  := Get_Next_In_Queue (T => Current);
@@ -224,9 +224,7 @@ package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
          else
             Queue := T;
          end if;
-         Set_Queue_Link (T    => T,
-                         Prev => Previous,
-                         Next => Current);
+         Set_Queue_Link (T => T, Prev => Previous, Next => Current);
          if Current /= null then
             Set_Prev_In_Queue (T => Current, Prev => T);
          end if;
@@ -246,7 +244,7 @@ package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
             Set_Next_In_Queue (T => Previous, Next => Next);
          end if;
          if Next /= null then
-            Set_Prev_In_Queue (T    => Next, Prev => Previous);
+            Set_Prev_In_Queue (T => Next, Prev => Previous);
          end if;
       end Remove_From_Queue;
 
@@ -259,22 +257,19 @@ package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
          Task_Priority := Task_Data.Get_Normal_Priority (Task_To_Add);
          if Runnable_Queues (Task_Priority) = null then
             Runnable_Queues (Task_Priority) := Task_To_Add;
-            Set_Queue_Link (T    => Task_To_Add,
-                            Prev => Task_To_Add,
-                            Next => Task_To_Add);
+            Set_Queue_Link
+              (T    => Task_To_Add,
+               Prev => Task_To_Add,
+               Next => Task_To_Add);
          else
             declare
                Head : constant Oak_Task_Handler :=
-                        Runnable_Queues (Task_Priority);
+                  Runnable_Queues (Task_Priority);
                Tail : constant Oak_Task_Handler := Get_Prev_In_Queue (Head);
             begin
-               Set_Prev_In_Queue (T    => Head,
-                                  Prev => Task_To_Add);
-               Set_Queue_Link (T => Task_To_Add,
-                               Next => Head,
-                               Prev => Tail);
-               Set_Next_In_Queue (T    => Tail,
-                                  Next => Task_To_Add);
+               Set_Prev_In_Queue (T => Head, Prev => Task_To_Add);
+               Set_Queue_Link (T => Task_To_Add, Next => Head, Prev => Tail);
+               Set_Next_In_Queue (T => Tail, Next => Task_To_Add);
             end;
          end if;
       end Add_Task_To_End_Of_Runnable_Queue;
@@ -288,7 +283,7 @@ package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
             Runnable_Queues (P) := null;
          else
             Set_Prev_In_Queue (T => New_Head, Prev => Tail);
-            Set_Next_In_Queue (T => Tail,     Next => New_Head);
+            Set_Next_In_Queue (T => Tail, Next => New_Head);
             Runnable_Queues (P) := New_Head;
          end if;
          Set_Queue_Link (T => Old_Head, Prev => null, Next => null);

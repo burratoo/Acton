@@ -115,7 +115,7 @@ package body Oak.Oak_Task.Deadline_List is
         and then Current_Task.Deadline <= Task_To_Add.Deadline
       loop
          Previous_Task := Current_Task;
-         Current_Task := Current_Task.Deadline_List.Next;
+         Current_Task  := Current_Task.Deadline_List.Next;
       end loop;
 
       Task_To_Add.Deadline_List.Previous := Previous_Task;
@@ -144,7 +144,7 @@ package body Oak.Oak_Task.Deadline_List is
       while Current_Task /= null
         and then Current_Task.Deadline > Task_To_Add.Deadline
       loop
-         Next_Task := Current_Task;
+         Next_Task    := Current_Task;
          Current_Task := Current_Task.Deadline_List.Previous;
       end loop;
 

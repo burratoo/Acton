@@ -27,8 +27,7 @@ package body ARPART.Tasks is
          Type_State => OTS.Other,
          Parameter  => OTS.Empty_Parameter);
    begin
-      OT.Data_Access.Set_Activation_List (T     => Self,
-                                          Chain => Chain);
+      OT.Data_Access.Set_Activation_List (T => Self, Chain => Chain);
       OTS.Yield_Processor_To_Kernel (Resulting_Task_State => AP_State);
 
       if OT.Data_Access.Get_State (Self) = OT.Activation_Successful then

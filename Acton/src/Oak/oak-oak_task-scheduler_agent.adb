@@ -1,41 +1,41 @@
-with Oak.Memory.Call_Stack.Ops;  use  Oak.Memory.Call_Stack.Ops;
+with Oak.Memory.Call_Stack.Ops; use Oak.Memory.Call_Stack.Ops;
 
 with Oak.Oak_Task.Internal;
 
 package body Oak.Oak_Task.Scheduler_Agent is
 
    procedure Initialise_Agent
-     (Agent                          : access Oak_Task;
-      Name                           : in String;
-      Call_Stack                     : in Call_Stack_Handler;
-      Max_Priority                   : in Any_Priority;
-      Min_Prioirty                   : in Any_Priority;
-      Run_Loop                       : in Address)
+     (Agent        : access Oak_Task;
+      Name         : in String;
+      Call_Stack   : in Call_Stack_Handler;
+      Max_Priority : in Any_Priority;
+      Min_Prioirty : in Any_Priority;
+      Run_Loop     : in Address)
    is
    begin
 
-      Agent.Name_Length               :=
+      Agent.Name_Length                   :=
          Natural'Min (Task_Name'Length, Name'Length);
       Agent.Name (1 .. Agent.Name_Length) :=
         Name (Name'First .. Name'First + Agent.Name_Length - 1);
 
       Agent.all :=
-        (Kind                           => Scheduler,
-         Id                             => Internal.New_Task_Id,
-         Name                           => Agent.Name,
-         Name_Length                    => Agent.Name_Length,
-         Call_Stack                     => Call_Stack,
-         Lowest_Prioirty                => Min_Prioirty,
-         Highest_Prioirty               => Max_Priority,
-         Run_Loop                       => Run_Loop,
-         Memory_List                    => null,
-         Task_To_Run                    => null,
-         Manage_Task                    => null,
-         Desired_Agent_Run_Time         => Time_Zero,
-         Run_Reason                     => Select_Next_Task,
-         Next_Agent                     => null,
-         Activation_List                => null,
-         Elaborated                     => null);
+        (Kind                   => Scheduler,
+         Id                     => Internal.New_Task_Id,
+         Name                   => Agent.Name,
+         Name_Length            => Agent.Name_Length,
+         Call_Stack             => Call_Stack,
+         Lowest_Prioirty        => Min_Prioirty,
+         Highest_Prioirty       => Max_Priority,
+         Run_Loop               => Run_Loop,
+         Memory_List            => null,
+         Task_To_Run            => null,
+         Manage_Task            => null,
+         Desired_Agent_Run_Time => Time_Zero,
+         Run_Reason             => Select_Next_Task,
+         Next_Agent             => null,
+         Activation_List        => null,
+         Elaborated             => null);
 
       Initialise_Call_Stack
         (Stack             => Agent.Call_Stack,
@@ -169,7 +169,7 @@ package body Oak.Oak_Task.Scheduler_Agent is
    procedure Set_Queue_Link (T, Prev, Next : in Oak_Task_Handler) is
    begin
       T.Scheduler_Queue.Previous := Prev;
-      T.Scheduler_Queue.Next := Next;
+      T.Scheduler_Queue.Next     := Next;
    end Set_Queue_Link;
 
    function Get_Next_Agent (T : Oak_Task_Handler) return Oak_Task_Handler is

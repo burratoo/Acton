@@ -69,7 +69,8 @@ package body Oak.Oak_Task.Data_Access is
       end if;
 
       if Normal_Priority >= Any_Priority'First and
-        Normal_Priority <= Any_Priority'Last then
+         Normal_Priority <= Any_Priority'Last
+      then
          T.Normal_Priority := System.Any_Priority (Normal_Priority);
       elsif Normal_Priority = Unspecified_Priority then
          T.Normal_Priority := Default_Priority;
@@ -78,7 +79,7 @@ package body Oak.Oak_Task.Data_Access is
       end if;
 
       T.Activation_List := Chain.Head;
-      Chain.Head := T;
+      Chain.Head        := T;
 
    end Initialise_Task;
 
@@ -88,12 +89,12 @@ package body Oak.Oak_Task.Data_Access is
       Normal_Priority : Integer;
       Run_Loop        : Address)
    is
-      T  : constant Oak_Task_Handler := Oak.Core.Get_Main_Task;
+      T  : constant Oak_Task_Handler         := Oak.Core.Get_Main_Task;
       OI : constant access Oak.Core.Oak_Data := Oak.Core.Get_Oak_Instance;
 
-      Scheduler : constant access Oak_Scheduler_Info :=
-                    Oak.Core.Get_Scheduler_Info (OI);
-      Current_Time : constant Time := Clock;
+      Scheduler    : constant access Oak_Scheduler_Info :=
+         Oak.Core.Get_Scheduler_Info (OI);
+      Current_Time : constant Time                      := Clock;
    begin
       T.Name_Length               :=
          Natural'Min (Task_Name'Length, Name'Length);
@@ -131,7 +132,8 @@ package body Oak.Oak_Task.Data_Access is
          Start_Instruction => Run_Loop);
 
       if Normal_Priority >= Priority'First and
-        Normal_Priority <= Priority'Last then
+         Normal_Priority <= Priority'Last
+      then
          T.Normal_Priority := System.Any_Priority (Normal_Priority);
       elsif Normal_Priority = Unspecified_Priority then
          T.Normal_Priority := Default_Priority;
@@ -139,9 +141,7 @@ package body Oak.Oak_Task.Data_Access is
          raise Program_Error with "Priority out of range";
       end if;
 
-      Add_Task_To_Scheduler
-        (Scheduler_Info => Scheduler.all,
-         T              => T);
+      Add_Task_To_Scheduler (Scheduler_Info => Scheduler.all, T => T);
    end Initialise_Main_Task;
 
    -------------------------
@@ -244,9 +244,11 @@ package body Oak.Oak_Task.Data_Access is
       return T.Elaborated.all;
    end Is_Elaborated;
 
-   procedure Set_Activation_List (T     : access Oak_Task;
-                                  Chain : in Activation_Chain_Access) is
-      TP       : access Oak_Task                := Chain.Head;
+   procedure Set_Activation_List
+     (T     : access Oak_Task;
+      Chain : in Activation_Chain_Access)
+   is
+      TP : access Oak_Task := Chain.Head;
    begin
       --  Only set the task's activation list if all tasks's in the activation
       --  chain have been activated. Raise Program_Error otherwise.

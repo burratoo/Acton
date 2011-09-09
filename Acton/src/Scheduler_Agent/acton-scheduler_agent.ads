@@ -1,3 +1,3 @@
 package Acton.Scheduler_Agent is
---   pragma Pure;
+   pragma Pure;
 end Acton.Scheduler_Agent;
