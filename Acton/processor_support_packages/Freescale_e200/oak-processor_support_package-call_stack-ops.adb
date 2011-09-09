@@ -32,7 +32,7 @@ package body Oak.Processor_Support_Package.Call_Stack.Ops is
         ("mr  r14, %0"       & ASCII.LF & ASCII.HT &
          "stw %1, 0(r14)"    & ASCII.LF & ASCII.HT &
          "addi r14, r14, 40" & ASCII.LF & ASCII.HT &
-         "stw %2, 200(r14)",
+         "evstdd %2, 200(r14)",
          Inputs   => (Address'Asm_Input ("r", Stack.Pointer),
                       Address'Asm_Input ("r", Procedure_Address),
                       Address'Asm_Input ("r", Task_Value_Record)),
