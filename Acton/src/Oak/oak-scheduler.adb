@@ -7,10 +7,12 @@ with Oak.Processor_Support_Package.Task_Support;
 with Oak.Oak_Task.Scheduler_Agent;
 with Oak.Core;
 with System;                                     use System;
+with Oak.Oak_Task.Queue;
 
 package body Oak.Scheduler is
    package Tasks renames Oak.Processor_Support_Package.Task_Support;
    package SA_Ops renames Oak.Oak_Task.Scheduler_Agent;
+   package Inactive_Queue renames Oak.Oak_Task.Queue;
 
    -----------------------------------
    -- Insert_Task_Into_Dealine_List --
@@ -177,6 +179,38 @@ package body Oak.Scheduler is
       Run_Scheduler_Agent (Agent => Agent, Reason => Add_Task);
    end Add_Task_To_Scheduler;
 
+   procedure Remove_Task_From_Scheduler (T : Oak_Task_Handler) is
+      Agent : constant Oak_Task_Handler := Get_Scheduler_Agent_For_Task (T);
+   begin
+      SA_Ops.Set_Task_To_Manage (Agent => Agent, MT => T);
+      Run_Scheduler_Agent (Agent => Agent, Reason => Remove_Task);
+      Set_Scheduler_Agent_For_Task (T => T, Agent => null);
+   end Remove_Task_From_Scheduler;
+
+   procedure Activate_Task
+     (Scheduler_Info : in out Oak_Scheduler_Info;
+      T              : in Oak_Task_Handler) is
+      Agent : constant Oak_Task_Handler := Get_Scheduler_Agent_For_Task (T);
+   begin
+      Inactive_Queue.Remove_Task (Queue => Scheduler_Info.Inactive_Task_List,
+                                  T     => T);
+      Set_State (T     => T, State => Runnable);
+      SA_Ops.Set_Task_To_Manage (Agent => Agent, MT => T);
+      Run_Scheduler_Agent (Agent => Agent, Reason => Add_Task);
+   end Activate_Task;
+
+   procedure Deactivate_Task
+     (Scheduler_Info : in out Oak_Scheduler_Info;
+      T              : in Oak_Task_Handler) is
+      Agent : constant Oak_Task_Handler := Get_Scheduler_Agent_For_Task (T);
+   begin
+      Set_State (T => T, State => Inactive);
+      SA_Ops.Set_Task_To_Manage (Agent => Agent, MT => T);
+      Run_Scheduler_Agent (Agent => Agent, Reason => Remove_Task);
+      Inactive_Queue.Add_Task_To_Head
+        (Queue => Scheduler_Info.Inactive_Task_List,
+         T     => T);
+   end Deactivate_Task;
    -------------------------
    -- Run_Scheduler_Agent --
    -------------------------
@@ -273,7 +307,8 @@ package body Oak.Scheduler is
         (Running_Task          => null,
          Next_Task             => null,
          Scheduler_Agent_Table => null,
-         Task_Deadline_List    => null);
+         Task_Deadline_List    => null,
+         Inactive_Task_List    => null);
    end Get_Inital_Info_Record;
 
 end Oak.Scheduler;

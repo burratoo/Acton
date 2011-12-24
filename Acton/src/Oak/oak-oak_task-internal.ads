@@ -29,6 +29,11 @@ package Oak.Oak_Task.Internal is
 
    procedure Set_State (T : in Oak_Task_Handler; New_State : in Task_State);
 
+   function Get_Task_Request (For_Task : in Oak_Task_Handler)
+                              return Task_Requested_State;
+   procedure Store_Task_Request (For_Task : in Oak_Task_Handler;
+                               With_Request : in Task_Requested_State);
+
    procedure Next_Run_Cycle (T : in Oak_Task_Handler);
 
    function New_Task_Id return Task_Id;

@@ -1,13 +1,11 @@
 with Oak.Processor_Support_Package.Task_Support;
 with Oak.Oak_Task.Data_Access;
 with Oak.Core;
+use Oak.Oak_Task;
 
 package body ARPART.Tasks is
 
-   package OT renames Oak.Oak_Task;
    package OTS renames Oak.Processor_Support_Package.Task_Support;
-
-   use type Oak.Oak_Task.Task_State;
 
    -----------------------------
    -- Engage_Activation       --
@@ -16,21 +14,17 @@ package body ARPART.Tasks is
    -----------------------------
 
    procedure Activate_Tasks (Chain : Oak.Oak_Task.Activation_Chain_Access) is
-      Self     : constant access OT.Oak_Task       :=
+      Self     : constant access Oak_Task       :=
          Oak.Core.Get_Current_Task;
-      AP_State : constant OTS.Task_Requested_State :=
-        (State      => OT.Activation_Pending,
-         Type_State => OTS.Other,
-         Parameter  => OTS.Empty_Parameter);
-      AC_State : constant OTS.Task_Requested_State :=
-        (State      => OT.Activation_Complete,
-         Type_State => OTS.Other,
-         Parameter  => OTS.Empty_Parameter);
+      AP_State : constant Task_Requested_State
+        := (State => Activation_Pending);
+      AC_State : constant Task_Requested_State :=
+        (State      => Activation_Complete);
    begin
-      OT.Data_Access.Set_Activation_List (T => Self, Chain => Chain);
+      Data_Access.Set_Activation_List (T => Self, Chain => Chain);
       OTS.Yield_Processor_To_Kernel (Resulting_Task_State => AP_State);
 
-      if OT.Data_Access.Get_State (Self) = OT.Activation_Successful then
+      if Data_Access.Get_State (Self) = Activation_Successful then
          OTS.Yield_Processor_To_Kernel (Resulting_Task_State => AC_State);
       else
          raise Tasking_Error with "Failure during activation";
@@ -45,15 +39,12 @@ package body ARPART.Tasks is
    -----------------------------
 
    procedure Complete_Activation is
-      Self     : constant access OT.Oak_Task       :=
-         Oak.Core.Get_Current_Task;
-      AS_State : constant OTS.Task_Requested_State :=
-        (State      => OT.Activation_Successful,
-         Type_State => OTS.Other,
-         Parameter  => OTS.Empty_Parameter);
+      Self     : constant access Oak_Task := Oak.Core.Get_Current_Task;
+      AS_State : constant Task_Requested_State :=
+        (State      => Activation_Successful);
    begin
       OTS.Yield_Processor_To_Kernel (Resulting_Task_State => AS_State);
-      if OT.Data_Access.Get_State (Self) = OT.Activation_Successful then
+      if Data_Access.Get_State (Self) = Activation_Successful then
          OTS.Yield_Processor_To_Kernel (Resulting_Task_State => AS_State);
       else
          --  Need to include a cleanup routine here, though for a Ravenscar
@@ -65,19 +56,17 @@ package body ARPART.Tasks is
 
    --  Trival complete task.
    procedure Complete_Task is
-      State : constant OTS.Task_Requested_State :=
-        (State      => OT.Sleeping,
-         Type_State => OTS.Sleeping,
+      State : constant Task_Requested_State :=
+        (State      => Sleeping,
          Wake_Up_At => Ada.Real_Time.Time_Last);
    begin
       OTS.Yield_Processor_To_Kernel (Resulting_Task_State => State);
    end Complete_Task;
 
    procedure Change_Cycle_Period (New_Period : in Ada.Real_Time.Time_Span) is
-      State : constant OTS.Task_Requested_State :=
-        (State         => OT.Change_Cycle_Period,
-         Type_State    => OTS.Change_Time_Span,
-         New_Time_Span => New_Period);
+      State : constant Task_Requested_State :=
+        (State         => Change_Cycle_Period,
+         New_Cycle_Period => New_Period);
    begin
       OTS.Yield_Processor_To_Kernel (Resulting_Task_State => State);
    end Change_Cycle_Period;
@@ -85,19 +74,16 @@ package body ARPART.Tasks is
    procedure Change_Relative_Deadline
      (New_Deadline : in Ada.Real_Time.Time_Span)
    is
-      State : constant OTS.Task_Requested_State :=
-        (State         => OT.Change_Relative_Deadline,
-         Type_State    => OTS.Change_Time_Span,
-         New_Time_Span => New_Deadline);
+      State : constant Task_Requested_State :=
+        (State         => Change_Relative_Deadline,
+         New_Deadline_Span => New_Deadline);
    begin
       OTS.Yield_Processor_To_Kernel (Resulting_Task_State => State);
    end Change_Relative_Deadline;
 
    procedure Cycle_Completed is
-      State : constant OTS.Task_Requested_State :=
-        (State      => OT.Cycle_Completed,
-         Type_State => OTS.Other,
-         Parameter  => (0, 0));
+      State : constant Task_Requested_State :=
+        (State => Cycle_Completed);
    begin
       OTS.Yield_Processor_To_Kernel (Resulting_Task_State => State);
    end Cycle_Completed;

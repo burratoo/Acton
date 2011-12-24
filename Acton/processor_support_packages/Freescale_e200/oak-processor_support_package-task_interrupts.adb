@@ -33,14 +33,14 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
       --  Setup interrupt pointers
       Asm
         ("lis       r14, %0@ha" & ASCII.LF & ASCII.HT &
-         "addi r14, r14, %0@l" & ASCII.LF & ASCII.HT &
-         "mtivpr    r14" & ASCII.LF & ASCII.HT &
-         "lwz       r15, %1" & ASCII.LF & ASCII.HT &
-         "mtivor8   r15" & ASCII.LF & ASCII.HT &
-         "lwz       r16, %2" & ASCII.LF & ASCII.HT &
-         "mtivor10  r16" & ASCII.LF & ASCII.HT &
-         "lis       r14, 0" & ASCII.LF & ASCII.HT &
-         "mttbl     r14" & ASCII.LF & ASCII.HT &
+         "addi r14, r14, %0@l"  & ASCII.LF & ASCII.HT &
+         "mtivpr    r14"        & ASCII.LF & ASCII.HT &
+         "lwz       r15, %1"    & ASCII.LF & ASCII.HT &
+         "mtivor8   r15"        & ASCII.LF & ASCII.HT &
+         "lwz       r16, %2"    & ASCII.LF & ASCII.HT &
+         "mtivor10  r16"        & ASCII.LF & ASCII.HT &
+         "lis       r14, 0"     & ASCII.LF & ASCII.HT &
+         "mttbl     r14"        & ASCII.LF & ASCII.HT &
          "mttbu     r14",
          Inputs   => (Integer'Asm_Input ("i", IVPR),
                       System.Address'Asm_Input ("m", IVOR8_CS_To_Task),
@@ -107,24 +107,26 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
       Enable_SPE_Instructions;
 
       Asm
-        ("stwu   r1, -136(r1)" & ASCII.LF & ASCII.HT &  -- Allocate stack space
+        ("stwu   r1, -144(r1)" & ASCII.LF & ASCII.HT &  -- Allocate stack space
          "stwcx. r1,  r0,  r1" & ASCII.LF & ASCII.HT &  -- Clear memory
          "msync" & ASCII.LF & ASCII.HT &                -- reservation
-         "stw    r0,  132(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r2,  128(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r3,  124(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r4,  120(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r5,  116(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r6,  112(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r7,  108(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r8,  104(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r9,  100(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r10,  96(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r11,  92(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r12,  88(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r13,  84(r1)" & ASCII.LF & ASCII.HT &
-      --  We use registers r14-r16 to pass task state information back to the
-      --  kernel.
+         "stw    r0,  140(r1)" & ASCII.LF & ASCII.HT &
+         "stw    r2,  136(r1)" & ASCII.LF & ASCII.HT &
+         "stw    r3,  132(r1)" & ASCII.LF & ASCII.HT &
+         "stw    r4,  128(r1)" & ASCII.LF & ASCII.HT &
+         "stw    r5,  124(r1)" & ASCII.LF & ASCII.HT &
+         "stw    r6,  120(r1)" & ASCII.LF & ASCII.HT &
+         "stw    r7,  116(r1)" & ASCII.LF & ASCII.HT &
+         "stw    r8,  112(r1)" & ASCII.LF & ASCII.HT &
+         "stw    r9,  108(r1)" & ASCII.LF & ASCII.HT &
+         "stw    r10, 104(r1)" & ASCII.LF & ASCII.HT &
+         "stw    r11, 100(r1)" & ASCII.LF & ASCII.HT &
+         "stw    r12,  96(r1)" & ASCII.LF & ASCII.HT &
+         "stw    r13,  92(r1)" & ASCII.LF & ASCII.HT &
+      --  We use registers r14 to pass task state information back to the
+         --  kernel.
+         "stw    r15,  88(r1)" & ASCII.LF & ASCII.HT &
+         "stw    r16,  84(r1)" & ASCII.LF & ASCII.HT &
          "stw    r17,  80(r1)" & ASCII.LF & ASCII.HT &
          "stw    r18,  76(r1)" & ASCII.LF & ASCII.HT &
          "stw    r19,  72(r1)" & ASCII.LF & ASCII.HT &
@@ -185,41 +187,41 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
          "evldd  r9,   24(r1)" & ASCII.LF & ASCII.HT & -- Restore accumulator
          "evmra  r10,      r9" & ASCII.LF & ASCII.HT &
          "stwu   r1,   40(r1)" & ASCII.LF & ASCII.HT & -- Drop stack frame (?)
-         "evldd  r0,  216(r1)" & ASCII.LF & ASCII.HT & -- and restore GPRs
-         "evldd  r2,  208(r1)" & ASCII.LF & ASCII.HT &
-         "evldd  r3,  200(r1)" & ASCII.LF & ASCII.HT &
-         "evldd  r4,  192(r1)" & ASCII.LF & ASCII.HT &
-         "evldd  r5,  184(r1)" & ASCII.LF & ASCII.HT &
-         "evldd  r6,  176(r1)" & ASCII.LF & ASCII.HT &
-         "evldd  r7,  168(r1)" & ASCII.LF & ASCII.HT &
-         "evldd  r8,  160(r1)" & ASCII.LF & ASCII.HT &
-         "evldd  r9,  152(r1)" & ASCII.LF & ASCII.HT &
-         "evldd  r10, 144(r1)" & ASCII.LF & ASCII.HT &
-         "evldd  r11, 136(r1)" & ASCII.LF & ASCII.HT &
-         "evldd  r12, 128(r1)" & ASCII.LF & ASCII.HT &
-         "evldd  r13, 120(r1)" & ASCII.LF & ASCII.HT &
-      --  Registers r14-r16 are loaded below
+         "evldd  r0,  232(r1)" & ASCII.LF & ASCII.HT & -- and restore GPRs
+         "evldd  r2,  224(r1)" & ASCII.LF & ASCII.HT &
+         "evldd  r3,  216(r1)" & ASCII.LF & ASCII.HT &
+         "evldd  r4,  208(r1)" & ASCII.LF & ASCII.HT &
+         "evldd  r5,  200(r1)" & ASCII.LF & ASCII.HT &
+         "evldd  r6,  192(r1)" & ASCII.LF & ASCII.HT &
+         "evldd  r7,  184(r1)" & ASCII.LF & ASCII.HT &
+         "evldd  r8,  176(r1)" & ASCII.LF & ASCII.HT &
+         "evldd  r9,  168(r1)" & ASCII.LF & ASCII.HT &
+         "evldd  r10, 160(r1)" & ASCII.LF & ASCII.HT &
+         "evldd  r11, 152(r1)" & ASCII.LF & ASCII.HT &
+         "evldd  r12, 144(r1)" & ASCII.LF & ASCII.HT &
+         "evldd  r13, 136(r1)" & ASCII.LF & ASCII.HT &
+      --  Registers r14 are loaded below
+         "evldd  r15, 128(r1)" & ASCII.LF & ASCII.HT &
+         "evldd  r16, 120(r1)" & ASCII.LF & ASCII.HT &
          "evldd  r17, 112(r1)" & ASCII.LF & ASCII.HT &
          "evldd  r18, 104(r1)" & ASCII.LF & ASCII.HT &
-         "evldd  r19, 96(r1)" & ASCII.LF & ASCII.HT &
-         "evldd  r20, 88(r1)" & ASCII.LF & ASCII.HT &
-         "evldd  r21, 80(r1)" & ASCII.LF & ASCII.HT &
-         "evldd  r22, 72(r1)" & ASCII.LF & ASCII.HT &
-         "evldd  r23, 64(r1)" & ASCII.LF & ASCII.HT &
-         "evldd  r24, 56(r1)" & ASCII.LF & ASCII.HT &
-         "evldd  r25, 48(r1)" & ASCII.LF & ASCII.HT &
-         "evldd  r26, 40(r1)" & ASCII.LF & ASCII.HT &
-         "evldd  r27, 32(r1)" & ASCII.LF & ASCII.HT &
-         "evldd  r28, 24(r1)" & ASCII.LF & ASCII.HT &
-         "evldd  r29, 16(r1)" & ASCII.LF & ASCII.HT &
-         "evldd  r30,  8(r1)" & ASCII.LF & ASCII.HT &
-         "evldd  r31,  0(r1)" & ASCII.LF & ASCII.HT &
-         "stwu   r1, 224(r1)" & ASCII.LF & ASCII.HT &  --  Restore stack
+         "evldd  r19, 96(r1)"  & ASCII.LF & ASCII.HT &
+         "evldd  r20, 88(r1)"  & ASCII.LF & ASCII.HT &
+         "evldd  r21, 80(r1)"  & ASCII.LF & ASCII.HT &
+         "evldd  r22, 72(r1)"  & ASCII.LF & ASCII.HT &
+         "evldd  r23, 64(r1)"  & ASCII.LF & ASCII.HT &
+         "evldd  r24, 56(r1)"  & ASCII.LF & ASCII.HT &
+         "evldd  r25, 48(r1)"  & ASCII.LF & ASCII.HT &
+         "evldd  r26, 40(r1)"  & ASCII.LF & ASCII.HT &
+         "evldd  r27, 32(r1)"  & ASCII.LF & ASCII.HT &
+         "evldd  r28, 24(r1)"  & ASCII.LF & ASCII.HT &
+         "evldd  r29, 16(r1)"  & ASCII.LF & ASCII.HT &
+         "evldd  r30,  8(r1)"  & ASCII.LF & ASCII.HT &
+         "evldd  r31,  0(r1)"  & ASCII.LF & ASCII.HT &
+         "stwu   r1, 240(r1)"  & ASCII.LF & ASCII.HT &  --  Restore stack
       --  Restore r14-r16
-         "evldd  r14, 16(r1)" & ASCII.LF & ASCII.HT &
-         "evldd  r15,  8(r1)" & ASCII.LF & ASCII.HT &
-         "evldd  r16,  0(r1)" & ASCII.LF & ASCII.HT &
-         "stwu   r1,  24(r1)" & ASCII.LF & ASCII.HT &  --  Restore stack
+         "evldd  r14,  0(r1)"  & ASCII.LF & ASCII.HT &
+         "stwu   r1,   8(r1)"  & ASCII.LF & ASCII.HT &  --  Restore stack
          "rfi",                   --   switch to kernel routine.
          Inputs   => Address'Asm_Input ("r", Task_Stack_Pointer),
          Volatile => True);
@@ -237,25 +239,27 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
       Enable_SPE_Instructions;
 
       Asm
-        ("stwu   r1, -224(r1)" & ASCII.LF & ASCII.HT & -- Allocate stack space
+        ("stwu   r1, -240(r1)" & ASCII.LF & ASCII.HT & -- Allocate stack space
          "stwcx. r1,  r0, r1"  & ASCII.LF & ASCII.HT & -- Clear memory
          "msync" & ASCII.LF & ASCII.HT &              --  reservation
-         "evstdd r0,  216(r1)" & ASCII.LF & ASCII.HT & -- Note that we only
-         "evstdd r2,  208(r1)" & ASCII.LF & ASCII.HT & -- allocatespace for the
-         "evstdd r3,  200(r1)" & ASCII.LF & ASCII.HT & -- GPR at this access
-         "evstdd r4,  192(r1)" & ASCII.LF & ASCII.HT & -- 248 bytes through the
-         "evstdd r5,  184(r1)" & ASCII.LF & ASCII.HT & -- offset referencing
-         "evstdd r6,  176(r1)" & ASCII.LF & ASCII.HT &
-         "evstdd r7,  168(r1)" & ASCII.LF & ASCII.HT &
-         "evstdd r8,  160(r1)" & ASCII.LF & ASCII.HT &
-         "evstdd r9,  152(r1)" & ASCII.LF & ASCII.HT &
-         "evstdd r10, 144(r1)" & ASCII.LF & ASCII.HT &
-         "evstdd r11, 136(r1)" & ASCII.LF & ASCII.HT &
-         "evstdd r12, 128(r1)" & ASCII.LF & ASCII.HT &
-         "evstdd r13, 120(r1)" & ASCII.LF & ASCII.HT &
-      --  Registers r14-r16 are saved in functions Yield_Processor_To_Kernel
+         "evstdd r0,  232(r1)" & ASCII.LF & ASCII.HT & -- Note that we only
+         "evstdd r2,  224(r1)" & ASCII.LF & ASCII.HT & -- allocatespace for the
+         "evstdd r3,  216(r1)" & ASCII.LF & ASCII.HT & -- GPR at this access
+         "evstdd r4,  208(r1)" & ASCII.LF & ASCII.HT & -- 248 bytes through the
+         "evstdd r5,  200(r1)" & ASCII.LF & ASCII.HT & -- offset referencing
+         "evstdd r6,  192(r1)" & ASCII.LF & ASCII.HT &
+         "evstdd r7,  184(r1)" & ASCII.LF & ASCII.HT &
+         "evstdd r8,  176(r1)" & ASCII.LF & ASCII.HT &
+         "evstdd r9,  168(r1)" & ASCII.LF & ASCII.HT &
+         "evstdd r10, 160(r1)" & ASCII.LF & ASCII.HT &
+         "evstdd r11, 152(r1)" & ASCII.LF & ASCII.HT &
+         "evstdd r12, 144(r1)" & ASCII.LF & ASCII.HT &
+         "evstdd r13, 136(r1)" & ASCII.LF & ASCII.HT &
+      --  Registers r14 are saved in functions Yield_Processor_To_Kernel
       --  and ______________ and are then set to the return state of the the
       --  task.
+         "evstdd r15, 128(r1)" & ASCII.LF & ASCII.HT &
+         "evstdd r16, 120(r1)" & ASCII.LF & ASCII.HT &
          "evstdd r17, 112(r1)" & ASCII.LF & ASCII.HT &
          "evstdd r18, 104(r1)" & ASCII.LF & ASCII.HT &
          "evstdd r19,  96(r1)" & ASCII.LF & ASCII.HT &
@@ -318,20 +322,22 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
          "mtusprg0       r29" & ASCII.LF & ASCII.HT &
          "mtsrr0         r30" & ASCII.LF & ASCII.HT & -- Next instruction addr
       --  Restore GPRs
-         "lwz   r0,  132(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r2,  128(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r3,  124(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r4,  120(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r5,  116(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r6,  112(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r7,  108(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r8,  104(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r9,  100(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r10,  96(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r11,  92(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r12,  88(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r13,  84(r1)" & ASCII.LF & ASCII.HT &
-      --  Registers r14-r16 are used for yeilding task state.
+         "lwz   r0,  140(r1)" & ASCII.LF & ASCII.HT &
+         "lwz   r2,  136(r1)" & ASCII.LF & ASCII.HT &
+         "lwz   r3,  132(r1)" & ASCII.LF & ASCII.HT &
+         "lwz   r4,  128(r1)" & ASCII.LF & ASCII.HT &
+         "lwz   r5,  124(r1)" & ASCII.LF & ASCII.HT &
+         "lwz   r6,  120(r1)" & ASCII.LF & ASCII.HT &
+         "lwz   r7,  116(r1)" & ASCII.LF & ASCII.HT &
+         "lwz   r8,  112(r1)" & ASCII.LF & ASCII.HT &
+         "lwz   r9,  108(r1)" & ASCII.LF & ASCII.HT &
+         "lwz   r10, 104(r1)" & ASCII.LF & ASCII.HT &
+         "lwz   r11, 100(r1)" & ASCII.LF & ASCII.HT &
+         "lwz   r12,  96(r1)" & ASCII.LF & ASCII.HT &
+         "lwz   r13,  92(r1)" & ASCII.LF & ASCII.HT &
+      --  Registers r14 are used for yeilding task state.
+         "lwz   r15,  88(r1)" & ASCII.LF & ASCII.HT &
+         "lwz   r16,  84(r1)" & ASCII.LF & ASCII.HT &
          "lwz   r17,  80(r1)" & ASCII.LF & ASCII.HT &
          "lwz   r18,  76(r1)" & ASCII.LF & ASCII.HT &
          "lwz   r19,  72(r1)" & ASCII.LF & ASCII.HT &
@@ -347,7 +353,7 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
          "lwz   r29,  32(r1)" & ASCII.LF & ASCII.HT &
          "lwz   r30,  28(r1)" & ASCII.LF & ASCII.HT &
          "lwz   r31,  24(r1)" & ASCII.LF & ASCII.HT &
-         "stwu  r1,  136(r1)" & ASCII.LF & ASCII.HT &  --  Restore stack
+         "stwu  r1,  144(r1)" & ASCII.LF & ASCII.HT &  --  Restore stack
          "rfi",                     --   switch to task routine.
          Volatile => True);
 

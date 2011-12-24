@@ -37,6 +37,14 @@ package Oak.Scheduler is
    procedure Add_Task_To_Scheduler
      (Scheduler_Info : in out Oak_Scheduler_Info;
       T              : Oak_Task_Handler);
+   procedure Remove_Task_From_Scheduler
+     (T              : Oak_Task_Handler);
+   procedure Activate_Task
+     (Scheduler_Info : in out Oak_Scheduler_Info;
+      T              : in Oak_Task_Handler);
+   procedure Deactivate_Task
+     (Scheduler_Info : in out Oak_Scheduler_Info;
+      T              : in Oak_Task_Handler);
 
    function Run_Scheduler_Agent
      (Agent  : Oak_Task_Handler;
@@ -74,5 +82,6 @@ private
       --  there a better structure I
       --  could use? Could use
       --  Collection Package?)
+      Inactive_Task_List   : Oak_Task_Handler := null;
    end record;
 end Oak.Scheduler;

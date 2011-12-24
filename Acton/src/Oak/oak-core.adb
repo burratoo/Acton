@@ -6,8 +6,10 @@ with Oak.Processor_Support_Package.Processor;
 with Oak.Oak_Task.Internal;                         use Oak.Oak_Task.Internal;
 with Oak.Oak_Task.Data_Access;
 with Oak.Oak_Task.Activation;
+with Oak.Oak_Task.Protected_Object;
 with Oak.Processor_Support_Package.Task_Interrupts;
 with Oak.Processor_Support_Package.Call_Stack;
+with Oak.Protected_Object;
 
 package body Oak.Core is
 
@@ -63,12 +65,10 @@ package body Oak.Core is
       Earliest_Scheduler_Agent_Time   : Time;
       Next_Task                       : Oak_Task_Handler;
 
-      Task_Return_State : Task_Requested_State :=
-        (Type_State => Sleeping,
-         State      => Sleeping,
-         Wake_Up_At => Time_Last);
+      Task_Return_State : Task_Requested_State_Pointer := null;
    begin
       loop
+         Next_Task := null;
       --  Actually the first step should be to mask the timer interrupt we use
       --  to wake up so that the run loop isn't interrupted.
 
@@ -123,41 +123,62 @@ package body Oak.Core is
                   Chosen_Task    => Next_Task);
             when Task_Yield =>
                case Task_Return_State.State is
+                  when Activation_Complete =>
+                     Oak.Oak_Task.Activation.Finish_Activation
+                       (Activator => Get_Current_Task);
+                     Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
+                       (Scheduler_Info => Oak_Instance.Scheduler,
+                        Chosen_Task    => Next_Task);
+
                   when Sleeping =>
                      Oak.Oak_Task.Data_Access.Set_Wake_Time
                        (T  => Get_Current_Task,
                         WT => Task_Return_State.Wake_Up_At);
+                     Run_Current_Task_Scheduler_Agent
+                       (Scheduler_Info => Oak_Instance.Scheduler,
+                        Chosen_Task    => Next_Task);
 
                   when Cycle_Completed =>
                      Next_Run_Cycle (T => Get_Current_Task);
-
-                  when Activation_Complete =>
-                     Oak.Oak_Task.Activation.Finish_Activation
-                       (Activator => Get_Current_Task);
+                     Run_Current_Task_Scheduler_Agent
+                       (Scheduler_Info => Oak_Instance.Scheduler,
+                        Chosen_Task    => Next_Task);
 
                   when Change_Cycle_Period =>
                      Oak.Oak_Task.Internal.Set_Cycle_Period
                        (T  => Get_Current_Task,
-                        CP => Task_Return_State.New_Time_Span);
+                        CP => Task_Return_State.New_Cycle_Period);
+                     Run_Current_Task_Scheduler_Agent
+                       (Scheduler_Info => Oak_Instance.Scheduler,
+                        Chosen_Task    => Next_Task);
 
                   when Change_Relative_Deadline =>
                      Oak.Oak_Task.Internal.Set_Relative_Deadline
                        (T  => Get_Current_Task,
-                        RD => Task_Return_State.New_Time_Span);
-
-                  when others =>
-                     null;
-               end case;
-
-               case Task_Return_State.State is
-                  when Activation_Complete =>
-                     Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
-                       (Scheduler_Info => Oak_Instance.Scheduler,
-                        Chosen_Task    => Next_Task);
-                  when others =>
+                        RD => Task_Return_State.New_Deadline_Span);
                      Run_Current_Task_Scheduler_Agent
                        (Scheduler_Info => Oak_Instance.Scheduler,
                         Chosen_Task    => Next_Task);
+
+                  when Entering_PO =>
+                     Store_Task_Request (For_Task     => Get_Current_Task,
+                                        With_Request => Task_Return_State.all);
+                     Oak.Protected_Object.Process_Enter_Request
+                       (Scheduler_Info => Oak_Instance.Scheduler,
+                        T              => Get_Current_Task,
+                        PO => Task_Return_State.PO_Enter,
+                        Subprogram_Kind => Task_Return_State.Subprogram_Kind,
+                        Entry_Id        => Task_Return_State.Entry_Id_Enter,
+                       Chosen_Task => Next_Task);
+
+                  when Exiting_PO =>
+                     Oak.Protected_Object.Process_Exit_Request
+                       (Scheduler_Info => Oak_Instance.Scheduler,
+                        T              => Get_Current_Task,
+                        PO             => Task_Return_State.PO_Exit,
+                        Chosen_Task    => Next_Task);
+                  when others =>
+                     null;
                end case;
 
             when Scheduler_Agent | Missed_Deadline =>
@@ -170,6 +191,36 @@ package body Oak.Core is
                --                    Chosen_Task    => Next_Task);
                --   null;
          end case;
+
+         if Next_Task /= null then
+            case Oak_Task.Data_Access.Get_State (T => Next_Task) is
+               when Shared_State =>
+                  if Oak_Task.Data_Access.Get_Shared_State
+                    (For_Task => Next_Task) = Entering_PO then
+                     declare
+                        TR : constant Task_Requested_State
+                          := Get_Task_Request (For_Task => Next_Task);
+                     begin
+                        Oak.Protected_Object.Process_Enter_Request
+                         (Scheduler_Info  => Oak_Instance.Scheduler,
+                          T               => Next_Task,
+                          PO              => TR.PO_Enter,
+                          Subprogram_Kind => TR.Subprogram_Kind,
+                          Entry_Id        => TR.Entry_Id_Enter,
+                          Chosen_Task => Next_Task);
+                     end;
+                  end if;
+
+               when others =>
+                  null;
+            end case;
+
+            if Oak_Task.Protected_Object.Is_Protected_Object
+              (PO => Next_Task) then
+               Next_Task := Oak_Task.Protected_Object.Get_Task_Within
+                 (PO => Next_Task);
+            end if;
+         end if;
 
          ---------------
          --  After we run the Scheduler Agents, all that is left to do is set

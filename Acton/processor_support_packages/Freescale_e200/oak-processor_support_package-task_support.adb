@@ -2,6 +2,7 @@ with System.Machine_Code;            use System.Machine_Code;
 with ISA.Power.e200.Timer_Registers;
 with ISA;
 with System;                         use System;
+with Ada.Unchecked_Conversion;
 
 package body Oak.Processor_Support_Package.Task_Support is
    ----------------------------
@@ -9,33 +10,26 @@ package body Oak.Processor_Support_Package.Task_Support is
    ----------------------------
 
    procedure Context_Switch_To_Task
-     (Task_Return_State : out Task_Requested_State)
+     (Task_Return_State : out OT.Task_Requested_State_Pointer)
    is
+      TSR_Address : System.Address;
+      --  Suppress aliasing warnings due to unchecked conversion as it is not
+      --  relevant.
+      pragma Warnings (Off);
+      function To_TSR is
+        new Ada.Unchecked_Conversion (Source => System.Address,
+                                    Target => OT.Task_Requested_State_Pointer);
+      pragma Warnings (On);
    begin
-      --  A context switch will clobber registers r14 - r16, as tasks will
+      --  A context switch will clobber registers r14 - r17, as tasks will
       --  return their state via these registers.
       Asm
-        ("sc" &
-         ASCII.LF &
-         ASCII.HT &     --  Switch to Task
-         "mr     %0, r14" &
-         ASCII.LF &
-         ASCII.HT &
-         "mr     %1, r15" &
-         ASCII.LF &
-         ASCII.HT &
-         "mr     %2, r16",
-         Outputs  => (Oak.Oak_Task.Task_State'Asm_Output
-                         ("=r",
-                          Task_Return_State.State),
-                      Integer'Asm_Output
-                         ("=r",
-                          Task_Return_State.Parameter (0)),
-                      Integer'Asm_Output
-                         ("=r",
-                          Task_Return_State.Parameter (1))),
+        ("sc"             & ASCII.LF & ASCII.HT &     --  Switch to Task
+         "mr     %0, r14",
+         Outputs  => System.Address'Asm_Output ("=r", TSR_Address),
          Volatile => True);
-      --  Pull out Task return codes
+
+      Task_Return_State := To_TSR (TSR_Address);
    end Context_Switch_To_Task;
 
    ------------------------------
@@ -63,34 +57,21 @@ package body Oak.Processor_Support_Package.Task_Support is
 
    procedure Yield_Processor_To_Kernel is
    begin
-      Asm ("stwu   r1, -24(r1)"     & ASCII.LF & ASCII.HT &
-           "evstdd r14, 16(r1)"     & ASCII.LF & ASCII.HT &
-           "evstdd r15, 8(r1)"      & ASCII.LF & ASCII.HT &
-           "evstdd r16, 0(r1)"      & ASCII.LF & ASCII.HT &
+      Asm ("stwu   r1, -8(r1)"     & ASCII.LF & ASCII.HT &
+           "evstdd r14, 0(r1)"     & ASCII.LF & ASCII.HT &
            "sc",               -- Context switch to kernel.
           Volatile => True);
    end Yield_Processor_To_Kernel;
 
    procedure Yield_Processor_To_Kernel
-     (Resulting_Task_State : Task_Requested_State) is
+     (Resulting_Task_State : OT.Task_Requested_State) is
    begin
-      Asm ("stwu   r1, -24(r1)"     & ASCII.LF & ASCII.HT &
-           "evstdd r14, 16(r1)"     & ASCII.LF & ASCII.HT &
-           "evstdd r15, 8(r1)"      & ASCII.LF & ASCII.HT &
-           "evstdd r16, 0(r1)"      & ASCII.LF & ASCII.HT &
+      Asm ("stwu   r1, -8(r1)"     & ASCII.LF & ASCII.HT &
+           "evstdd r14, 0(r1)"     & ASCII.LF & ASCII.HT &
            "mr     r14, %0"         & ASCII.LF & ASCII.HT &
-           "mr     r15, %1"         & ASCII.LF & ASCII.HT &
-           "mr     r16, %2"         & ASCII.LF & ASCII.HT &
            "sc",               -- Context switch to kernel.
-         Inputs   => (Oak.Oak_Task.Task_State'Asm_Input
-                         ("r",
-                          Resulting_Task_State.State),
-                      Integer'Asm_Input
-                         ("r",
-                          Resulting_Task_State.Parameter (0)),
-                      Integer'Asm_Input
-                         ("r",
-                          Resulting_Task_State.Parameter (1))),
+           Inputs   => System.Address'Asm_Input
+             ("r", Resulting_Task_State'Address),
          Volatile => True);
       null;
    end Yield_Processor_To_Kernel;
@@ -171,12 +152,8 @@ package body Oak.Processor_Support_Package.Task_Support is
       --  Set Decremeter Interrupt to jump to the other side of the infinite
       --  loop
       Asm
-        ("lwz   r14, %0" &
-         ASCII.LF &
-         ASCII.HT &
-         "mtivor10  r14" &
-         ASCII.LF &
-         ASCII.HT &
+        ("lwz   r14, %0" & ASCII.LF & ASCII.HT &
+         "mtivor10  r14" & ASCII.LF & ASCII.HT &
          "li    r14, 0",
          Inputs   => Address'Asm_Input ("m", IVOR10_Sleep_Intr),
          Clobber  => "r14",

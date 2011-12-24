@@ -65,6 +65,18 @@ package body Oak.Oak_Task.Internal is
       T.State := New_State;
    end Set_State;
 
+   function Get_Task_Request (For_Task : in Oak_Task_Handler)
+                              return Task_Requested_State is
+   begin
+      return For_Task.Task_Request;
+   end Get_Task_Request;
+
+   procedure Store_Task_Request (For_Task : in Oak_Task_Handler;
+                                 With_Request : in Task_Requested_State) is
+   begin
+      For_Task.Task_Request := With_Request;
+   end Store_Task_Request;
+
    procedure Next_Run_Cycle (T : in Oak_Task_Handler) is
    begin
       T.Wake_Time      := T.Next_Run_Cycle;
