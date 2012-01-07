@@ -10,12 +10,13 @@ project Acton is
    for Library_Dir use "adalib/";
    for Library_Version use ".1";
    for Library_Src_Dir use "adainclude/";
-   for Library_Interface use ("ARPART", "ARPART.Tasks", "Acton", "Acton.Scheduler_Agent", "Acton.Scheduler_Agent.FIFO_Within_Priorities", "Ada", "Ada.Exceptions", "Ada.Real_Time", "Ada.Real_Time.Delays", "Ada.Unchecked_Conversion", "Interfaces", "Oak", "Oak.Core", "Oak.Memory",
+   for Library_Interface use ("ARPART", "ARPART.Tasks", "ARPART.Protected_Objects", "Acton", "Acton.Scheduler_Agent", "Acton.Scheduler_Agent.FIFO_Within_Priorities", "Ada", "Ada.Exceptions", "Ada.Real_Time", "Ada.Real_Time.Delays", "Ada.Unchecked_Conversion", "Interfaces", "Oak", "Oak.Core", "Oak.Memory",
                               "Oak.Memory.Call_Stack",
                               "Oak.Processor_Support_Package",
                               "Oak.Processor_Support_Package.Call_Stack",
                               "Oak.Processor_Support_Package.Time",
-                              "Oak.Oak_Task", "Oak.Oak_Task.Activation", "Oak.Oak_Task.Data_Access",
+                              "Oak.Oak_Task", "Oak.Oak_Task.Activation", "Oak.Oak_Task.Data_Access", "Oak.Oak_Task.Queue",
+                              "Oak.Oak_Task.Protected_Object",
                               "Oak.Oak_Task.Scheduler_Agent",
                               "System", "System.Machine_Code", "System.Storage_Elements", "System.Unsigned_Types",
                              --  Only needed for their ali files
@@ -23,6 +24,7 @@ project Acton is
                               "Oak.Processor_Support_Package.Processor",
                               "Oak.Processor_Support_Package.Task_Interrupts",
                               "Oak.Processor_Support_Package.Task_Support",
+                              "Oak.Protected_Object",
                               "Oak.Oak_Task.Internal",
                               "Oak.Scheduler",
                               "Oak.Scheduler.Agent_List"
