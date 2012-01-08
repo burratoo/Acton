@@ -48,7 +48,7 @@ package body Oak.Processor_Support_Package.Task_Support is
    procedure Context_Switch_To_Scheduler_Agent is
    begin
       Asm ("sc",                                --  Switch to Task
-        Clobber => "r14, r15, r16", Volatile => True);
+        Clobber => "r14", Volatile => True);
    end Context_Switch_To_Scheduler_Agent;
 
    -------------------------------
