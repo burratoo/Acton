@@ -9,11 +9,11 @@ package body Ada.Real_Time.Delays is
    -----------------
 
    procedure Delay_Until (T : Time) is
-      State : constant Task_Requested_State :=
-        (State      => Sleeping,
-         Wake_Up_At => T);
+      Message : constant Oak_Task_Message :=
+        (Message_Type => Sleeping,
+         Wake_Up_At   => T);
    begin
-      OTS.Yield_Processor_To_Kernel (Resulting_Task_State => State);
+      OTS.Yield_Processor_To_Kernel (Task_Message => Message);
    end Delay_Until;
 
 end Ada.Real_Time.Delays;

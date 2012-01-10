@@ -15,13 +15,13 @@ package body ARPART.Protected_Objects is
       Entry_Id              : Oak.Oak_Task.Entry_Index) is
       Self : constant access Oak_Task       :=
          Oak.Core.Get_Current_Task;
-      State : constant Task_Requested_State :=
-                (State           => Entering_PO,
+      Message : constant Oak_Task_Message :=
+                (Message_Type    => Entering_PO,
                  PO_Enter        => PO,
                  Subprogram_Kind => Subprogram_Kind,
                  Entry_Id_Enter  => Entry_Id);
    begin
-      OTS.Yield_Processor_To_Kernel (Resulting_Task_State => State);
+      OTS.Yield_Processor_To_Kernel (Task_Message => Message);
       if Data_Access.Get_State (T => Self) = Enter_PO_Refused then
          raise Program_Error;
       end if;
@@ -30,11 +30,11 @@ package body ARPART.Protected_Objects is
    procedure Exit_Protected_Object (PO : Oak.Oak_Task.Oak_Task_Handler) is
       Self     : constant access Oak_Task       :=
                    Oak.Core.Get_Current_Task;
-      State    : constant Task_Requested_State :=
-                (State           => Exiting_PO,
-                 PO_Exit         => PO);
+      Message  : constant Oak_Task_Message :=
+                (Message_Type  => Exiting_PO,
+                 PO_Exit       => PO);
    begin
-      OTS.Yield_Processor_To_Kernel (Resulting_Task_State => State);
+      OTS.Yield_Processor_To_Kernel (Task_Message => Message);
       if Data_Access.Get_State (T => Self) = Exit_PO_Error then
          raise Program_Error;
       end if;
@@ -44,8 +44,7 @@ package body ARPART.Protected_Objects is
      (PO       : Oak.Oak_Task.Oak_Task_Handler;
       Entry_Id : Oak.Oak_Task.Entry_Index) return Natural is
    begin
-      return OTP.Entry_Queue_Length (PO => PO,
-                                     Entry_Id         => Entry_Id);
+      return OTP.Entry_Queue_Length (PO => PO, Entry_Id => Entry_Id);
    end Entry_Count;
 
 end ARPART.Protected_Objects;
