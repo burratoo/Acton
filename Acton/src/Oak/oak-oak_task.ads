@@ -17,26 +17,26 @@ package Oak.Oak_Task is
      (1 .. Processor_Support_Package.Max_Task_Name_Length);
 
    type Task_State is (
-                       Activation_Pending,
-                       Activation_Failed,
-                       Activation_Successful,
-                       Activation_Complete,
-                       Running,
-                       Runnable,
-                       Sleeping,
-                       Waiting,
-                       Inactive,
-                       Shared_State,
-                       Cycle_Completed,
-                       Change_Cycle_Period,
-                       Change_Relative_Deadline,
-                       Terminated,
-                       Entering_PO,
-                       Enter_PO_Refused,
-                       Exiting_PO,
-                       Exit_PO_Error,
-                       Waiting_On_Protected_Object,
-                       No_State);
+                       Activation_Pending,          -- 0
+                       Activation_Failed,           -- 1
+                       Activation_Successful,       -- 2
+                       Activation_Complete,         -- 3
+                       Running,                     -- 4
+                       Runnable,                    -- 5
+                       Sleeping,                    -- 6
+                       Waiting,                     -- 7
+                       Inactive,                    -- 8
+                       Shared_State,                -- 9
+                       Cycle_Completed,             -- 10
+                       Change_Cycle_Period,         -- 11
+                       Change_Relative_Deadline,    -- 12
+                       Terminated,                  -- 13
+                       Entering_PO,                 -- 14
+                       Enter_PO_Refused,            -- 15
+                       Exiting_PO,                  -- 16
+                       Exit_PO_Error,               -- 17
+                       Waiting_On_Protected_Object, -- 18
+                       No_State);                   -- 19
 
    type Shared_Task_State is access all Task_State;
    No_Shared_State : constant Shared_Task_State
@@ -94,8 +94,8 @@ package Oak.Oak_Task is
       Protected_Procedure,
       Protected_Entry);
 
-   type Task_Requested_State (State : Task_State := No_State) is record
-      case State is
+   type Oak_Task_Message (Message_Type : Task_State := No_State) is record
+      case Message_Type is
          when Sleeping =>
             Wake_Up_At : Time := Time_Last;
          when Change_Cycle_Period =>
@@ -113,9 +113,15 @@ package Oak.Oak_Task is
       end case;
    end record;
 
-   type Task_Requested_State_Pointer is access   Task_Requested_State;
+   type Oak_Task_Message_Store is record
+      Task_Yielded : Boolean;
+      Message      : Oak_Task_Message;
+   end record;
 
-   Empty_Task_Request : constant Task_Requested_State := (State => No_State);
+   type Oak_Task_Message_Location is access all Oak_Task_Message_Store;
+
+   --  Empty_Task_Request : constant Task_Requested_State
+   --  := (State => No_State);
 
    -----------------
    --  Not sure if I will need this procedure or not. Mainly this is due to
@@ -164,6 +170,7 @@ private
       --  and poped off when it regains.
       --  need it...
       Controlling_Shared_State  : aliased Task_State :=  Waiting;
+      Message_Location          : Oak_Task_Message_Location := null;
 
       case Kind is
          when Regular =>
@@ -181,8 +188,6 @@ private
             Scheduler_Agent : Oak_Task_Handler := null;
             Queue_Link : Task_Link_Element;
             Deadline_List   : Task_Link_Element;
-
-            Task_Request    : Task_Requested_State := Empty_Task_Request;
 
             Is_Protected_Object    : Boolean := False;
             Tasks_Within           : Oak_Task_Handler := null;

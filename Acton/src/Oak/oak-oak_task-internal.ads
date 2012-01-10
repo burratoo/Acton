@@ -29,11 +29,6 @@ package Oak.Oak_Task.Internal is
 
    procedure Set_State (T : in Oak_Task_Handler; New_State : in Task_State);
 
-   function Get_Task_Request (For_Task : in Oak_Task_Handler)
-                              return Task_Requested_State;
-   procedure Store_Task_Request (For_Task : in Oak_Task_Handler;
-                               With_Request : in Task_Requested_State);
-
    procedure Next_Run_Cycle (T : in Oak_Task_Handler);
 
    function New_Task_Id return Task_Id;
@@ -49,4 +44,9 @@ package Oak.Oak_Task.Internal is
 
    pragma Inline_Always (Is_Scheduler_Agent);
    pragma Inline_Always (Is_Regular_Task);
+
+   function Task_Has_Yielded (For_Task : in Oak_Task_Handler) return
+     Boolean;
+   procedure Store_Task_Yielded_Status (For_Task : in Oak_Task_Handler;
+                                        Yielded  : in Boolean);
 end Oak.Oak_Task.Internal;

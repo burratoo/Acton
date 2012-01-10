@@ -32,14 +32,12 @@ package Oak.Processor_Support_Package.Task_Support is
    --  registers to store is the Stack Pointer. Even then, this could just be
    --  set up by the kernel before the context switch... mmmm........
 
-   procedure Context_Switch_To_Task
-     (Task_Return_State : out OT.Task_Requested_State_Pointer);
+   procedure Context_Switch_To_Task;
    procedure Context_Switch_To_Kernel;
    procedure Context_Switch_To_Scheduler_Agent;
 
    procedure Yield_Processor_To_Kernel;
-   procedure Yield_Processor_To_Kernel
-     (Resulting_Task_State : OT.Task_Requested_State);
+   procedure Yield_Processor_To_Kernel (Task_Message : OT.Oak_Task_Message);
 
    pragma Inline_Always (Context_Switch_To_Task);
    pragma Inline_Always (Context_Switch_To_Kernel);

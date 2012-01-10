@@ -2,7 +2,8 @@ with System.Machine_Code;            use System.Machine_Code;
 with ISA.Power.e200.Timer_Registers;
 with ISA;
 with System;                         use System;
-with Ada.Unchecked_Conversion;
+with Oak.Oak_Task.Data_Access;
+with Oak.Core;
 
 package body Oak.Processor_Support_Package.Task_Support is
    ----------------------------
@@ -10,26 +11,11 @@ package body Oak.Processor_Support_Package.Task_Support is
    ----------------------------
 
    procedure Context_Switch_To_Task
-     (Task_Return_State : out OT.Task_Requested_State_Pointer)
    is
-      TSR_Address : System.Address;
-      --  Suppress aliasing warnings due to unchecked conversion as it is not
-      --  relevant.
-      pragma Warnings (Off);
-      function To_TSR is
-        new Ada.Unchecked_Conversion (Source => System.Address,
-                                    Target => OT.Task_Requested_State_Pointer);
-      pragma Warnings (On);
    begin
-      --  A context switch will clobber registers r14 - r17, as tasks will
-      --  return their state via these registers.
       Asm
-        ("sc"             & ASCII.LF & ASCII.HT &     --  Switch to Task
-         "mr     %0, r14",
-         Outputs  => System.Address'Asm_Output ("=r", TSR_Address),
+        ("sc",     --  Switch to Task
          Volatile => True);
-
-      Task_Return_State := To_TSR (TSR_Address);
    end Context_Switch_To_Task;
 
    ------------------------------
@@ -48,7 +34,7 @@ package body Oak.Processor_Support_Package.Task_Support is
    procedure Context_Switch_To_Scheduler_Agent is
    begin
       Asm ("sc",                                --  Switch to Task
-        Clobber => "r14", Volatile => True);
+           Volatile => True);
    end Context_Switch_To_Scheduler_Agent;
 
    -------------------------------
@@ -57,24 +43,19 @@ package body Oak.Processor_Support_Package.Task_Support is
 
    procedure Yield_Processor_To_Kernel is
    begin
-      Asm ("stwu   r1, -8(r1)"     & ASCII.LF & ASCII.HT &
-           "evstdd r14, 0(r1)"     & ASCII.LF & ASCII.HT &
-           "sc",               -- Context switch to kernel.
+      Asm ("sc",               -- Context switch to kernel.
           Volatile => True);
    end Yield_Processor_To_Kernel;
 
    procedure Yield_Processor_To_Kernel
-     (Resulting_Task_State : OT.Task_Requested_State) is
+     (Task_Message : OT.Oak_Task_Message) is
    begin
-      Asm ("stwu   r1, -8(r1)"     & ASCII.LF & ASCII.HT &
-           "evstdd r14, 0(r1)"     & ASCII.LF & ASCII.HT &
-           "mr     r14, %0"         & ASCII.LF & ASCII.HT &
-           "sc",               -- Context switch to kernel.
-           Inputs   => System.Address'Asm_Input
-             ("r", Resulting_Task_State'Address),
-         Volatile => True);
-      null;
+      OT.Data_Access.Store_Oak_Task_Message
+        (For_Task     => Oak.Core.Get_Current_Task,
+         Message      => Task_Message);
+      Yield_Processor_To_Kernel;
    end Yield_Processor_To_Kernel;
+
    ---------------------------
    -- Set_Oak_Wake_Up_Timer --
    ---------------------------

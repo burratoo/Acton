@@ -63,12 +63,11 @@ package body Oak.Core is
    procedure Run_Loop (Oak_Instance : in out Oak_Data) is
       Wake_Up_Time, Earliest_Deadline : Time;
       Earliest_Scheduler_Agent_Time   : Time;
-      Next_Task                       : Oak_Task_Handler;
+      Next_Task                       : Oak_Task_Handler := null;
 
-      Task_Return_State : Task_Requested_State_Pointer := null;
+      Task_Message : Oak_Task_Message := (Message_Type => No_State);
    begin
       loop
-         Next_Task := null;
       --  Actually the first step should be to mask the timer interrupt we use
       --  to wake up so that the run loop isn't interrupted.
 
@@ -122,7 +121,12 @@ package body Oak.Core is
                  (Scheduler_Info => Oak_Instance.Scheduler,
                   Chosen_Task    => Next_Task);
             when Task_Yield =>
-               case Task_Return_State.State is
+               case Task_Message.Message_Type is
+                  when Activation_Pending =>
+                     Run_Current_Task_Scheduler_Agent
+                       (Scheduler_Info => Oak_Instance.Scheduler,
+                        Chosen_Task    => Next_Task);
+
                   when Activation_Complete =>
                      Oak.Oak_Task.Activation.Finish_Activation
                        (Activator => Get_Current_Task);
@@ -132,8 +136,8 @@ package body Oak.Core is
 
                   when Sleeping =>
                      Oak.Oak_Task.Data_Access.Set_Wake_Time
-                       (T  => Get_Current_Task,
-                        WT => Task_Return_State.Wake_Up_At);
+                       (T  => Next_Task,
+                        WT => Task_Message.Wake_Up_At);
                      Run_Current_Task_Scheduler_Agent
                        (Scheduler_Info => Oak_Instance.Scheduler,
                         Chosen_Task    => Next_Task);
@@ -147,7 +151,7 @@ package body Oak.Core is
                   when Change_Cycle_Period =>
                      Oak.Oak_Task.Internal.Set_Cycle_Period
                        (T  => Get_Current_Task,
-                        CP => Task_Return_State.New_Cycle_Period);
+                        CP => Task_Message.New_Cycle_Period);
                      Run_Current_Task_Scheduler_Agent
                        (Scheduler_Info => Oak_Instance.Scheduler,
                         Chosen_Task    => Next_Task);
@@ -155,27 +159,25 @@ package body Oak.Core is
                   when Change_Relative_Deadline =>
                      Oak.Oak_Task.Internal.Set_Relative_Deadline
                        (T  => Get_Current_Task,
-                        RD => Task_Return_State.New_Deadline_Span);
+                        RD => Task_Message.New_Deadline_Span);
                      Run_Current_Task_Scheduler_Agent
                        (Scheduler_Info => Oak_Instance.Scheduler,
                         Chosen_Task    => Next_Task);
 
                   when Entering_PO =>
-                     Store_Task_Request (For_Task     => Get_Current_Task,
-                                        With_Request => Task_Return_State.all);
                      Oak.Protected_Object.Process_Enter_Request
-                       (Scheduler_Info => Oak_Instance.Scheduler,
-                        T              => Get_Current_Task,
-                        PO => Task_Return_State.PO_Enter,
-                        Subprogram_Kind => Task_Return_State.Subprogram_Kind,
-                        Entry_Id        => Task_Return_State.Entry_Id_Enter,
+                       (Scheduler_Info  => Oak_Instance.Scheduler,
+                        T               => Get_Current_Task,
+                        PO              => Task_Message.PO_Enter,
+                        Subprogram_Kind => Task_Message.Subprogram_Kind,
+                        Entry_Id        => Task_Message.Entry_Id_Enter,
                        Chosen_Task => Next_Task);
 
                   when Exiting_PO =>
                      Oak.Protected_Object.Process_Exit_Request
                        (Scheduler_Info => Oak_Instance.Scheduler,
                         T              => Get_Current_Task,
-                        PO             => Task_Return_State.PO_Exit,
+                        PO             => Task_Message.PO_Exit,
                         Chosen_Task    => Next_Task);
                   when others =>
                      null;
@@ -198,15 +200,16 @@ package body Oak.Core is
                   if Oak_Task.Data_Access.Get_Shared_State
                     (For_Task => Next_Task) = Entering_PO then
                      declare
-                        TR : constant Task_Requested_State
-                          := Get_Task_Request (For_Task => Next_Task);
+                        M : constant Oak_Task_Message
+                          := Oak_Task.Data_Access.Get_Oak_Task_Message
+                            (For_Task => Next_Task);
                      begin
                         Oak.Protected_Object.Process_Enter_Request
                          (Scheduler_Info  => Oak_Instance.Scheduler,
                           T               => Next_Task,
-                          PO              => TR.PO_Enter,
-                          Subprogram_Kind => TR.Subprogram_Kind,
-                          Entry_Id        => TR.Entry_Id_Enter,
+                          PO              => M.PO_Enter,
+                          Subprogram_Kind => M.Subprogram_Kind,
+                          Entry_Id        => M.Entry_Id_Enter,
                           Chosen_Task => Next_Task);
                      end;
                   end if;
@@ -258,12 +261,18 @@ package body Oak.Core is
 
             --  Switch registers and enable Wake Up Interrupt.
             Oak_Instance.Current_Task := Next_Task;
-            Context_Switch_To_Task (Task_Return_State => Task_Return_State);
-            if Task_Return_State.State /= Runnable then
+            Context_Switch_To_Task;
+            Task_Message := Oak_Task.Data_Access.Get_Oak_Task_Message
+                                   (For_Task => Next_Task);
+            if Oak_Task.Internal.Task_Has_Yielded (For_Task => Next_Task) then
                Oak_Instance.Woken_By := Task_Yield;
                Set_State
                  (T         => Oak_Instance.Current_Task,
-                  New_State => Task_Return_State.State);
+                  New_State => Task_Message.Message_Type);
+            else
+               Oak_Task.Internal.Store_Task_Yielded_Status
+                 (For_Task => Next_Task,
+                  Yielded  => True);
             end if;
          end if;
 

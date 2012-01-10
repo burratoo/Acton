@@ -37,7 +37,7 @@ package body Oak.Oak_Task.Protected_Object is
          Memory_List            => null,
          Activation_List        => null,
          Elaborated             => null,
-         Task_Request           => Empty_Task_Request,
+         Message_Location       => null,
          Is_Protected_Object    => True,
          Tasks_Within           => null,
          Active_Subprogram_Kind => Protected_Function,

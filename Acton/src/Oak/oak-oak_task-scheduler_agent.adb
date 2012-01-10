@@ -37,11 +37,13 @@ package body Oak.Oak_Task.Scheduler_Agent is
          Next_Agent             => null,
          Activation_List        => null,
          Elaborated             => null,
-         Controlling_Shared_State => Waiting);
+         Controlling_Shared_State => Waiting,
+         Message_Location => null);
 
       Initialise_Call_Stack
         (Stack             => Agent.Call_Stack,
-         Start_Instruction => Agent.Run_Loop);
+         Start_Instruction => Agent.Run_Loop,
+         Message_Location  => Agent.Message_Location);
    end Initialise_Agent;
 
    ---------------------

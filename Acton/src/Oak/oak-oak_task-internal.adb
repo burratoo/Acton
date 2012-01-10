@@ -65,18 +65,6 @@ package body Oak.Oak_Task.Internal is
       T.State := New_State;
    end Set_State;
 
-   function Get_Task_Request (For_Task : in Oak_Task_Handler)
-                              return Task_Requested_State is
-   begin
-      return For_Task.Task_Request;
-   end Get_Task_Request;
-
-   procedure Store_Task_Request (For_Task : in Oak_Task_Handler;
-                                 With_Request : in Task_Requested_State) is
-   begin
-      For_Task.Task_Request := With_Request;
-   end Store_Task_Request;
-
    procedure Next_Run_Cycle (T : in Oak_Task_Handler) is
    begin
       T.Wake_Time      := T.Next_Run_Cycle;
@@ -112,4 +100,18 @@ package body Oak.Oak_Task.Internal is
    begin
       return T.Kind = Regular;
    end Is_Regular_Task;
+
+   function Task_Has_Yielded (For_Task : in Oak_Task_Handler) return
+     Boolean is
+   begin
+      return For_Task.Message_Location.Task_Yielded;
+   end Task_Has_Yielded;
+
+   procedure Store_Task_Yielded_Status (For_Task : in Oak_Task_Handler;
+                                        Yielded  : in Boolean)
+   is
+   begin
+      For_Task.Message_Location.Task_Yielded := Yielded;
+   end Store_Task_Yielded_Status;
+
 end Oak.Oak_Task.Internal;

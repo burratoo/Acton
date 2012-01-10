@@ -51,7 +51,7 @@ package body Oak.Oak_Task.Data_Access is
          Memory_List            => null,
          Activation_List        => null,
          Elaborated             => Elaborated,
-         Task_Request           => Empty_Task_Request,
+         Message_Location       => null,
          Is_Protected_Object    => False,
          Tasks_Within           => null,
          Active_Subprogram_Kind => Protected_Function,
@@ -67,14 +67,16 @@ package body Oak.Oak_Task.Data_Access is
          Initialise_Call_Stack
            (Stack             => T.Call_Stack,
             Start_Instruction => Run_Loop,
-            Task_Value_Record => Task_Value_Record);
+            Task_Value_Record => Task_Value_Record,
+            Message_Location  => T.Message_Location);
       else
          Initialise_Call_Stack
            (Stack             => T.Call_Stack,
             Start_Instruction => Run_Loop,
             Task_Value_Record => Task_Value_Record,
             Stack_Address     => Stack_Address,
-            Stack_Size        => Stack_Size);
+            Stack_Size        => Stack_Size,
+            Message_Location  => T.Message_Location);
       end if;
 
       if Normal_Priority >= Any_Priority'First and
@@ -133,7 +135,7 @@ package body Oak.Oak_Task.Data_Access is
          Memory_List            => null,
          Activation_List        => null,
          Elaborated             => null,
-         Task_Request           => Empty_Task_Request,
+         Message_Location       => null,
          Is_Protected_Object    => False,
          Tasks_Within           => null,
          Active_Subprogram_Kind => Protected_Function,
@@ -147,7 +149,8 @@ package body Oak.Oak_Task.Data_Access is
 
       Initialise_Call_Stack
         (Stack             => T.Call_Stack,
-         Start_Instruction => Run_Loop);
+         Start_Instruction => Run_Loop,
+         Message_Location => T.Message_Location);
 
       if Normal_Priority >= Priority'First and
         Normal_Priority <= Priority'Last
@@ -219,6 +222,17 @@ package body Oak.Oak_Task.Data_Access is
       For_Task.Shared_State := With_State_Pointer;
    end Set_Shared_State;
 
+   function Get_Oak_Task_Message (For_Task : in Oak_Task_Handler)
+                              return Oak_Task_Message is
+   begin
+      return For_Task.Message_Location.Message;
+   end Get_Oak_Task_Message;
+
+   procedure Store_Oak_Task_Message (For_Task : in Oak_Task_Handler;
+                                     Message : in Oak_Task_Message) is
+   begin
+      For_Task.Message_Location.Message := Message;
+   end Store_Oak_Task_Message;
    -------------------------
    -- Get_Normal_Priority --
    -------------------------
