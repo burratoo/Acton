@@ -1,14 +1,14 @@
 package body Oak.Oak_Task.Queue is
-   procedure Add_Task_Before (Queue  : in out Oak_Task_Handler;
-                       T      : in Oak_Task_Handler;
-                       Before : in Oak_Task_Handler) is
+   procedure Add_Task_Before (Queue     : in out Oak_Task_Handler;
+                              T         : in Oak_Task_Handler;
+                              Before    : in Oak_Task_Handler;
+                              Queue_End : in Queue_End_Point := Head) is
    begin
       if Queue = null then
          Queue := T;
-         T.Queue_Link := (Next => T,
-                          Previous => T);
+         T.Queue_Link := (Next => T, Previous => T);
       else
-         if Queue = Before then
+         if Before = Queue and Queue_End = Head then
             Queue := T;
          end if;
          declare
@@ -18,8 +18,8 @@ package body Oak.Oak_Task.Queue is
          begin
             T.Queue_Link := (Next => Next_Task,
                              Previous => Prev_Task);
-            Next_Task.Queue_Link.Previous := Prev_Task;
-            Prev_Task.Queue_Link.Next := Next_Task;
+            Next_Task.Queue_Link.Previous := T;
+            Prev_Task.Queue_Link.Next := T;
          end;
       end if;
    end Add_Task_Before;
@@ -40,8 +40,8 @@ package body Oak.Oak_Task.Queue is
          begin
             T.Queue_Link := (Next => Next_Task,
                              Previous => Prev_Task);
-            Next_Task.Queue_Link.Previous := Prev_Task;
-            Prev_Task.Queue_Link.Next := Next_Task;
+            Next_Task.Queue_Link.Previous := T;
+            Prev_Task.Queue_Link.Next := T;
          end;
       end if;
    end Add_Task_After;
@@ -60,7 +60,7 @@ package body Oak.Oak_Task.Queue is
       if Queue = null then
          Add_Task_After (Queue => Queue,
                          T     => T,
-                   After => null);
+                         After => null);
       else
          Add_Task_After (Queue => Queue,
                    T     => T,

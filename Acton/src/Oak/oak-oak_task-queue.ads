@@ -2,9 +2,12 @@ package Oak.Oak_Task.Queue is
 
    pragma Preelaborate;
 
-   procedure Add_Task_Before (Queue  : in out Oak_Task_Handler;
-                       T      : in Oak_Task_Handler;
-                       Before : in Oak_Task_Handler);
+   type Queue_End_Point is (Head, Tail);
+
+   procedure Add_Task_Before (Queue     : in out Oak_Task_Handler;
+                              T         : in Oak_Task_Handler;
+                              Before    : in Oak_Task_Handler;
+                              Queue_End : in Queue_End_Point := Head);
    procedure Add_Task_After (Queue : in out Oak_Task_Handler;
                        T     : in Oak_Task_Handler;
                        After : in Oak_Task_Handler);
