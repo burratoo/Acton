@@ -31,8 +31,7 @@ package body Oak.Oak_Task.Queue is
    begin
       if Queue = null then
          Queue := T;
-         T.Queue_Link := (Next => T,
-                          Previous => T);
+         T.Queue_Link := (Next => T, Previous => T);
       else
          declare
             Next_Task : constant Oak_Task_Handler := After.Queue_Link.Next;
@@ -78,8 +77,8 @@ package body Oak.Oak_Task.Queue is
             Queue := Queue.Queue_Link.Next;
          end if;
          declare
-            Next_Task : constant Oak_Task_Handler := Queue.Queue_Link.Next;
-            Prev_Task : constant Oak_Task_Handler := Queue.Queue_Link.Previous;
+            Next_Task : constant Oak_Task_Handler := T.Queue_Link.Next;
+            Prev_Task : constant Oak_Task_Handler := T.Queue_Link.Previous;
          begin
             Next_Task.Queue_Link.Previous := Prev_Task;
             Prev_Task.Queue_Link.Next := Next_Task;

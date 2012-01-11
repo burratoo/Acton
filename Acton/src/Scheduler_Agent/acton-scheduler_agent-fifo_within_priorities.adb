@@ -237,15 +237,15 @@ package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
 
       procedure Move_Woken_Tasks_To_Runnable_Queue is
          Current_Time : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
-         T, Move_T    : Oak_Task_Handler            := Sleeping_Queue;
+         T            : Oak_Task_Handler            := Sleeping_Queue;
       begin
-         while T /= null
-           and then Current_Time > Task_Data.Get_Wake_Time (T => T)
+         while Sleeping_Queue /= null
+           and then Current_Time
+             > Task_Data.Get_Wake_Time (T => Sleeping_Queue)
          loop
-            Move_T := T;
-            T      := Get_Next_Task (T => T);
-            Remove_Task  (Queue => Sleeping_Queue, T => Move_T);
-            Add_Task_To_End_Of_Runnable_Queue (Task_To_Add => Move_T);
+            T := Sleeping_Queue;
+            Remove_Task  (Queue => Sleeping_Queue, T => T);
+            Add_Task_To_End_Of_Runnable_Queue (Task_To_Add => T);
          end loop;
       end Move_Woken_Tasks_To_Runnable_Queue;
 
