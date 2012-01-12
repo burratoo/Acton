@@ -89,6 +89,7 @@ package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
       procedure Select_Next_Task;
       procedure Task_Yielded;
       procedure Add_Task;
+      procedure Remove_Task;
 
       procedure Insert_Into_Sleeping_Queue
         (T     : in Oak_Task_Handler);
@@ -144,11 +145,11 @@ package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
       -- Task_Yielded         --
       --------------------------
       procedure Task_Yielded is
-         T_Priority   : System.Priority;
          Yielded_Task : constant Oak_Task_Handler :=
             Get_Task_To_Run (Agent => Self);
+         T_Priority   : constant System.Priority :=
+                          Task_Data.Get_Normal_Priority (T => Yielded_Task);
       begin
-         T_Priority := Task_Data.Get_Normal_Priority (T => Yielded_Task);
          if Runnable_Queues (T_Priority) = Yielded_Task then --  Sanity check.
             case Task_Data.Get_State (T => Yielded_Task) is
                when Cycle_Completed =>
@@ -183,10 +184,10 @@ package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
       --------------
 
       procedure Add_Task is
-         Task_To_Add  : Oak_Task_Handler;
+         Task_To_Add  : constant Oak_Task_Handler :=
+                          Get_Task_To_Manage (Agent => Self);
          Current_Time : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
       begin
-         Task_To_Add := Get_Task_To_Manage (Agent => Self);
          if Task_Data.Get_Wake_Time (T => Task_To_Add) < Current_Time then
             Add_Task_To_End_Of_Runnable_Queue (Task_To_Add => Task_To_Add);
          else
@@ -196,6 +197,27 @@ package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
                Run_Time => Task_Data.Get_Wake_Time (T => Sleeping_Queue));
          end if;
       end Add_Task;
+
+      procedure Remove_Task is
+         Task_To_Remove  : constant Oak_Task_Handler :=
+                             Get_Task_To_Manage (Agent => Self);
+      begin
+         case Data_Access.Get_State (T => Task_To_Remove) is
+            when Runnable | Entering_PO =>
+               declare
+                  Task_Priority : constant System.Priority :=
+                           Task_Data.Get_Normal_Priority (T => Task_To_Remove);
+               begin
+                  Remove_Task (Queue => Runnable_Queues (Task_Priority),
+                               T     => Task_To_Remove);
+               end;
+
+            when Sleeping =>
+               Remove_Task (Queue => Sleeping_Queue, T => Task_To_Remove);
+            when others =>
+               raise Scheduler_Error1;
+         end case;
+      end Remove_Task;
 
       procedure Insert_Into_Sleeping_Queue
         (T     : in Oak_Task_Handler)
@@ -259,8 +281,8 @@ package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
                Select_Next_Task;
             when Add_Task =>
                Add_Task;
-            when others =>
-               null;
+            when Remove_Task =>
+               Remove_Task;
          end case;
          Yield_Processor_To_Kernel;
       end loop;
