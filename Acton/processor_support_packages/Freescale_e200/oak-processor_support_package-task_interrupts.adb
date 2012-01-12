@@ -14,9 +14,9 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
    procedure Enable_SPE_Instructions;
    pragma Inline_Always (Enable_SPE_Instructions);
 
-   procedure Enable_SPE_Instruction_And_Clear_Decrementer_Interrupt;
+   procedure Clear_Decrementer_Interrupt;
    pragma Inline_Always
-     (Enable_SPE_Instruction_And_Clear_Decrementer_Interrupt);
+     (Clear_Decrementer_Interrupt);
 
    procedure Initialise_Task_Enviroment is
       subtype HID0_Type is
@@ -24,12 +24,6 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
         Hardware_Implementation_Dependent_Register_0_Type;
       HID0 : HID0_Type;
    begin
-      --  Store r2 and r13 to SPRG6 and SPRG7
-      Asm
-        ("mtsprg6   r2"  & ASCII.LF & ASCII.HT &
-         "mtsprg7   r13",
-         Volatile => True);
-
       --  Setup interrupt pointers
       Asm
         ("lis       r14, %0@ha" & ASCII.LF & ASCII.HT &
@@ -58,21 +52,27 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
          Volatile => True);
    end Initialise_Task_Enviroment;
 
+   --  We use r2 and r13 as they are the only registers guaranteed not to
+   --  be using the whole 64 bits of the register.
    procedure Enable_SPE_Instructions is
    begin
       --  The machine state register is modified as follows:
       --       MSR.Signal_Processing := ISA.Enable;
       Asm
-        ("li      r2,  1"        & ASCII.LF & ASCII.HT &
-         "mfmsr   r13"           & ASCII.LF & ASCII.HT &
-         "rlwimi  r13,r2,25,6,6" & ASCII.LF & ASCII.HT &
-         "mtmsr   r13"           & ASCII.LF & ASCII.HT &
-         "mfsprg6 r2"            & ASCII.LF & ASCII.HT &
-         "mfsprg7 r13",
+        ("stwu    r1, -8(r1)"     & ASCII.LF & ASCII.HT &
+         "stw     r2,  4(r1)"     & ASCII.LF & ASCII.HT &
+         "stw     r13, 0(r1)"     & ASCII.LF & ASCII.HT &
+         "li      r2,  1"         & ASCII.LF & ASCII.HT &
+         "mfmsr   r13"            & ASCII.LF & ASCII.HT &
+         "rlwimi  r13,r2,25,6,6"  & ASCII.LF & ASCII.HT &
+         "mtmsr   r13"            & ASCII.LF & ASCII.HT &
+         "lwz     r2,  4(r1)"     & ASCII.LF & ASCII.HT &
+         "lwz     r13, 0(r1)"     & ASCII.LF & ASCII.HT &
+         "stwu    r1,  8(r1)",
          Volatile => True);
    end Enable_SPE_Instructions;
 
-   procedure Enable_SPE_Instruction_And_Clear_Decrementer_Interrupt is
+   procedure Clear_Decrementer_Interrupt is
    begin
       --  The following is written to the time status register:
       --  TSR : constant Timer_Status_Register_Type :=
@@ -82,16 +82,14 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
       --     Decrement_Interrupt      => Occurred,
       --     Fixed_Interval_Interrupt => Not_Occurred);
       Asm
-        ("li      r2,  1"        & ASCII.LF & ASCII.HT &
-         "mfmsr   r13"           & ASCII.LF & ASCII.HT &
-         "rlwimi  r13,r2,25,6,6" & ASCII.LF & ASCII.HT &
-         "mtmsr   r13"           & ASCII.LF & ASCII.HT & -- enable SPE Instr.
+        ("stwu    r1, -4(r1)"    & ASCII.LF & ASCII.HT &
+         "stw     r2,  0(r1)"    & ASCII.LF & ASCII.HT &
          "lis     r2,  0x800"    & ASCII.LF & ASCII.HT &
-         "mttsr   r2"            & ASCII.LF & ASCII.HT & --  Clear Dec. Inter.
-         "mfsprg6 r2"            & ASCII.LF & ASCII.HT &
-         "mfsprg7 r13",
+         "mttsr   r2"            & ASCII.LF & ASCII.HT &
+         "lwz     r2,  0(r1)"    & ASCII.LF & ASCII.HT &
+         "stwu    r1,  4(r1)",
          Volatile => True);
-   end Enable_SPE_Instruction_And_Clear_Decrementer_Interrupt;
+   end Clear_Decrementer_Interrupt;
 
    ---------------------------------
    -- E200_Context_Switch_To_Task --
@@ -353,18 +351,32 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
 
    end E200_Context_Switch_To_Kernel;
 
+   --  Check that the assembly code for Store_Task_Yielded_Status always uses
+   --  r0 and r9.
    procedure Decrementer_Interrupt is
+      pragma Suppress (Access_Check);
    begin
-      Enable_SPE_Instruction_And_Clear_Decrementer_Interrupt;
+      Clear_Decrementer_Interrupt;
+      Enable_SPE_Instructions;
+      Asm
+        ("stu    r1, -16(r1)" & ASCII.LF & ASCII.HT &
+         "evstdd r0,   0(r1)" & ASCII.LF & ASCII.HT &
+         "evstdd r9,   8(r1)",
+         Volatile => True);
       Oak.Oak_Task.Internal.Store_Task_Yielded_Status
         (For_Task => Oak.Core.Get_Current_Task,
          Yielded  => False);
+      Asm
+        ("evldd  r9,   8(r1)" & ASCII.LF & ASCII.HT &
+         "evldd  r0,   0(r1)" & ASCII.LF & ASCII.HT &
+         "stu    r1,  16(r1)",
+         Volatile => True);
       E200_Context_Switch_To_Kernel;
    end Decrementer_Interrupt;
 
    procedure Sleep_Interrupt is
    begin
-      Enable_SPE_Instruction_And_Clear_Decrementer_Interrupt;
+      Clear_Decrementer_Interrupt;
       Asm
         ("li    r14, 1" & ASCII.LF & ASCII.HT &
          "rfi",

@@ -49,4 +49,6 @@ package Oak.Oak_Task.Internal is
      Boolean;
    procedure Store_Task_Yielded_Status (For_Task : in Oak_Task_Handler;
                                         Yielded  : in Boolean);
+
+   pragma Inline_Always (Store_Task_Yielded_Status);
 end Oak.Oak_Task.Internal;
