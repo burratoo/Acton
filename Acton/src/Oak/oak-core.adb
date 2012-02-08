@@ -175,10 +175,11 @@ package body Oak.Core is
 
                   when Exiting_PO =>
                      Oak.Protected_Object.Process_Exit_Request
-                       (Scheduler_Info => Oak_Instance.Scheduler,
-                        T              => Get_Current_Task,
-                        PO             => Task_Message.PO_Exit,
-                        Chosen_Task    => Next_Task);
+                       (Scheduler_Info    => Oak_Instance.Scheduler,
+                        T                 => Get_Current_Task,
+                        PO                => Task_Message.PO_Exit,
+                        Barrier_Exception => Task_Message.Barrier_Exception,
+                        Chosen_Task       => Next_Task);
                   when others =>
                      null;
                end case;

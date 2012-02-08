@@ -9,7 +9,18 @@ package Oak.Oak_Task is
 
    pragma Preelaborate;
 
-   type Oak_Task is limited private;
+   type Oak_Task_Kind is (Regular, Scheduler);
+
+   --  Protected entry constants and types
+   --  A lot of this could possibly move to Oak.Protected_Object.
+   No_Entry     : constant := 0;
+   Single_Entry : constant := 1;
+   Max_Entry    : constant := Processor_Support_Package.Max_Entries;
+
+   type Entry_Index is range No_Entry .. Max_Entry;
+
+   type Oak_Task (Num_Entries : Entry_Index   := No_Entry;
+                  Kind        : Oak_Task_Kind := Regular) is limited private;
    type Oak_Task_Handler is access all Oak_Task;
 
    type Task_Id is range 0 .. Max_Tasks;
@@ -60,7 +71,6 @@ package Oak.Oak_Task is
    Blank_Link : constant Task_Link_Element := (Next => null,
                                                Previous => null);
 
-   type Oak_Task_Kind is (Regular, Scheduler);
    type Reason_For_Run is (
                            Task_Yield,
                            Select_Next_Task,
@@ -75,15 +85,7 @@ package Oak.Oak_Task is
 
    Unspecified_Priority : constant Integer := -1;
 
-   --  Protected entry constants and types
-   --  A lot of this could possibly move to Oak.Protected_Object.
-   No_Entry     : constant := 0;
-   Single_Entry : constant := 1;
-   Max_Entry    : constant := Processor_Support_Package.Max_Entries;
-
-   type Entry_Index is range No_Entry .. Max_Entry;
    type Entry_Queue_Array is array (Entry_Index range <>) of Oak_Task_Handler;
-
    type Entry_Barrier_State is (Closed, Open);
    type Entry_Barrier_Array is array (Entry_Index range <>) of
      Entry_Barrier_State;
@@ -107,7 +109,8 @@ package Oak.Oak_Task is
             Subprogram_Kind  : Protected_Subprogram_Type := Protected_Function;
             Entry_Id_Enter   : Entry_Index := No_Entry;
          when Exiting_PO =>
-            PO_Exit       : Oak_Task_Handler := null;
+            PO_Exit           : Oak_Task_Handler := null;
+            Barrier_Exception : Boolean := False;
          when others =>
             null;
       end case;
@@ -141,8 +144,8 @@ private
 
    Global_Task_Id : Task_Id := 1;
 
-   type Oak_Task (Kind        : Oak_Task_Kind := Regular;
-                  Num_Entries : Entry_Index := No_Entry) is record
+   type Oak_Task (Num_Entries : Entry_Index   := No_Entry;
+                  Kind        : Oak_Task_Kind := Regular) is record
       Id          : Task_Id := Task_Id'Last;
       Name        : Task_Name;
       Name_Length : Natural := 0;

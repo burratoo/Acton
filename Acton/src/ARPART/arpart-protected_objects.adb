@@ -12,7 +12,7 @@ package body ARPART.Protected_Objects is
    procedure Enter_Protected_Object
      (PO                    : Oak.Oak_Task.Oak_Task_Handler;
       Subprogram_Kind       : Oak.Oak_Task.Protected_Subprogram_Type;
-      Entry_Id              : Oak.Oak_Task.Entry_Index) is
+      Entry_Id              : Oak.Oak_Task.Entry_Index := No_Entry) is
       Self : constant access Oak_Task       :=
          Oak.Core.Get_Current_Task;
       Message : constant Oak_Task_Message :=
@@ -27,12 +27,16 @@ package body ARPART.Protected_Objects is
       end if;
    end Enter_Protected_Object;
 
-   procedure Exit_Protected_Object (PO : Oak.Oak_Task.Oak_Task_Handler) is
+   procedure Exit_Protected_Object
+     (PO                : Oak.Oak_Task.Oak_Task_Handler;
+      Barrier_Exception : Boolean := False)
+   is
       Self     : constant access Oak_Task       :=
                    Oak.Core.Get_Current_Task;
       Message  : constant Oak_Task_Message :=
                 (Message_Type  => Exiting_PO,
-                 PO_Exit       => PO);
+                 PO_Exit       => PO,
+                 Barrier_Exception => Barrier_Exception);
    begin
       OTS.Yield_Processor_To_Kernel (Task_Message => Message);
       if Data_Access.Get_State (T => Self) = Exit_PO_Error then

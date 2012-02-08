@@ -114,7 +114,7 @@ package body Oak.Oak_Task.Protected_Object is
       Next_Task := null;
       for Entry_Id in PO.Entry_Queues'Range loop
          Next_Task := PO.Entry_Queues (Entry_Id);
-         if Next_Task = null then
+         if Next_Task /= null then
                Queue.Remove_Task (Queue => PO.Entry_Queues (Entry_Id),
                                   T     => Next_Task);
             exit;
@@ -145,7 +145,8 @@ package body Oak.Oak_Task.Protected_Object is
 
    function Entry_Queue_Length
      (PO : in Oak_Task_Handler;
-      Entry_Id         : in Entry_Index) return Natural is
+      Entry_Id         : in Entry_Index) return Natural
+   is
       Head_Task : constant Oak_Task_Handler
         := PO.Entry_Queues (Entry_Id);
       Current_Task : Oak_Task_Handler := Head_Task;
@@ -186,5 +187,23 @@ package body Oak.Oak_Task.Protected_Object is
    begin
       return Entry_Id in PO.Entry_Queues'Range;
    end Is_Entry_Id_Valid;
+
+   procedure Purge_Entry_Queues
+     (PO                   : in Oak_Task_Handler;
+      New_Task_State : in Task_State)
+   is
+      Current_Task : Oak_Task_Handler := null;
+   begin
+      for Entry_Id in PO.Entry_Queues'Range loop
+         Current_Task := PO.Entry_Queues (Entry_Id);
+         while Current_Task /= null loop
+            Queue.Remove_Task (Queue => PO.Entry_Queues (Entry_Id),
+                               T     => Current_Task);
+            Current_Task.State := New_Task_State;
+            Current_Task.Shared_State := No_Shared_State;
+            Current_Task := PO.Entry_Queues (Entry_Id);
+         end loop;
+      end loop;
+   end Purge_Entry_Queues;
 
 end Oak.Oak_Task.Protected_Object;

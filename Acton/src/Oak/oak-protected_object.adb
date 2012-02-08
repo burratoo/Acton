@@ -70,24 +70,31 @@ package body Oak.Protected_Object is
    end Process_Enter_Request;
 
    procedure Process_Exit_Request
-     (Scheduler_Info : in out Scheduler.Oak_Scheduler_Info;
-      T  : in Oak_Task_Handler;
-      PO             : in Oak_Task_Handler;
-      Chosen_Task    : out Oak_Task_Handler) is
+     (Scheduler_Info    : in out Scheduler.Oak_Scheduler_Info;
+      T                 : in Oak_Task_Handler;
+      PO                : in Oak_Task_Handler;
+      Barrier_Exception : in Boolean;
+      Chosen_Task       : out Oak_Task_Handler) is
    begin
       if not Is_Task_Inside_Protect_Object (T => T, PO  => PO) then
          Oak_Task.Data_Access.Set_State (T => T, State => Exit_PO_Error);
          return;
       end if;
 
-      Oak_Task.Data_Access.Set_State (T         => T, State => Runnable);
+      Oak_Task.Data_Access.Set_State (T => T, State => Runnable);
       Remove_Task_From_Protected_Object (T => T, PO => PO);
       Scheduler.Add_Task_To_Scheduler (Scheduler_Info => Scheduler_Info,
                                        T              => T);
+
       Get_And_Remove_Next_Task_From_Entry_Queues
         (PO => PO, Next_Task => Chosen_Task);
 
-      if Chosen_Task = null then
+      if Chosen_Task = null or Barrier_Exception then
+         if Barrier_Exception then
+            Purge_Entry_Queues (PO             => PO,
+                                New_Task_State => Enter_PO_Refused);
+         end if;
+
          Set_Acquiring_Tasks_State (For_Protected_Object => PO,
                                     To_State             => Entering_PO);
          Scheduler.Deactivate_Task (Scheduler_Info => Scheduler_Info,

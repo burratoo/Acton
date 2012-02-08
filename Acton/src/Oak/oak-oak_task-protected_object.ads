@@ -68,4 +68,8 @@ package Oak.Oak_Task.Protected_Object is
      (PO               : in Oak_Task_Handler;
       Entry_Id         : in Entry_Index) return Boolean;
 
+   procedure Purge_Entry_Queues
+     (PO             : in Oak_Task_Handler;
+      New_Task_State : in Task_State);
+
 end Oak.Oak_Task.Protected_Object;
