@@ -6,7 +6,6 @@ package Oak.Oak_Task.Protected_Object is
      (PO               : in Oak_Task_Handler;
       Name             : in String;
       Ceiling_Priority : in Integer;
-      Entry_Count      : in Integer;
       Barriers         : in Entry_Barrier_Handler);
 
    procedure Add_Task_To_Protected_Object

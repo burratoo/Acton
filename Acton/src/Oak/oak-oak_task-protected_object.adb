@@ -6,7 +6,6 @@ package body Oak.Oak_Task.Protected_Object is
      (PO : in Oak_Task_Handler;
       Name             : in String;
       Ceiling_Priority : in Integer;
-      Entry_Count      : in Integer;
       Barriers         : in Entry_Barrier_Handler) is
    begin
       PO.Name_Length               :=
@@ -16,7 +15,7 @@ package body Oak.Oak_Task.Protected_Object is
 
       PO.all :=
         (Kind                   => Regular,
-         Num_Entries            => Entry_Index (Entry_Count),
+         Num_Entries            => PO.Num_Entries,
          Id                     => Internal.New_Task_Id,
          Name                   => PO.Name,
          Name_Length            => PO.Name_Length,
