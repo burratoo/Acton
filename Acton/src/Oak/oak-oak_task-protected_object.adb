@@ -171,7 +171,7 @@ package body Oak.Oak_Task.Protected_Object is
      (PO       : in Oak_Task_Handler;
       Entry_Id : in Entry_Index) return Entry_Barrier_State is
    begin
-      return PO.Entry_Barriers (Entry_Id);
+      return PO.Entry_Barriers.State (Entry_Id);
    end Get_Barrier_State;
 
    function Is_Protected_Object

@@ -89,7 +89,10 @@ package Oak.Oak_Task is
    type Entry_Barrier_State is (Closed, Open);
    type Entry_Barrier_Array is array (Entry_Index range <>) of
      Entry_Barrier_State;
-   type Entry_Barrier_Handler is access Entry_Barrier_Array;
+   type Entry_Barrier_Wrapper (Array_Length : Entry_Index) is record
+      State : Entry_Barrier_Array (1 .. Array_Length);
+   end record;
+   type Entry_Barrier_Handler is access all Entry_Barrier_Wrapper;
 
    type Protected_Subprogram_Type is
      (Protected_Function,
