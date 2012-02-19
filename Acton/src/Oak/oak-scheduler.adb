@@ -106,20 +106,13 @@ package body Oak.Scheduler is
    -- Run_Current_Task_Scheduler_Agent --
    --------------------------------------
    procedure Run_Current_Task_Scheduler_Agent
-     (Scheduler_Info : in out Oak_Scheduler_Info;
-      Chosen_Task    : in out Oak_Task_Handler)
+     (Chosen_Task : in out Oak_Task_Handler)
    is
-      Agent : constant Oak_Task_Handler :=
-         Get_Scheduler_Agent_For_Task (T => Chosen_Task);
    begin
-      Chosen_Task :=
-         Run_Scheduler_Agent (Agent => Agent, Reason => Task_Yield);
-
-      if Chosen_Task = null then
-         Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
-           (Scheduler_Info => Scheduler_Info,
-            Chosen_Task    => Chosen_Task);
-      end if;
+      Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
+        (From_Scheduler_Agent =>
+           Get_Scheduler_Agent_For_Task (T => Chosen_Task),
+         Chosen_Task          => Chosen_Task);
    end Run_Current_Task_Scheduler_Agent;
 
    ------------------------------------------------------------

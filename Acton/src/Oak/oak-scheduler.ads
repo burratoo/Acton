@@ -26,8 +26,7 @@ package Oak.Scheduler is
      (From_Scheduler_Agent : Oak_Task_Handler;
       Chosen_Task          : out Oak_Task_Handler);
    procedure Run_Current_Task_Scheduler_Agent
-     (Scheduler_Info : in out Oak_Scheduler_Info;
-      Chosen_Task    : in out Oak_Task_Handler);
+     (Chosen_Task : in out Oak_Task_Handler);
    procedure Run_The_Bloody_Scheduler_Agent_That_Wanted_To_Be_Woken
      (Scheduler_Info : in out Oak_Scheduler_Info;
       Chosen_Task    : in out Oak_Task_Handler);
