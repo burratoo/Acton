@@ -1,5 +1,7 @@
 with Oak.Oak_Task.Internal;
 with Oak.Oak_Task.Queue;
+with Oak.Core;
+with Oak.Scheduler;
 
 package body Oak.Oak_Task.Protected_Object is
    procedure Initialise_Protected_Object
@@ -19,15 +21,15 @@ package body Oak.Oak_Task.Protected_Object is
          Id                     => Internal.New_Task_Id,
          Name                   => PO.Name,
          Name_Length            => PO.Name_Length,
-         State                  => No_State,
+         State                  => Inactive,
          Shared_State           => No_Shared_State,
          Normal_Priority        => PO.Normal_Priority,
          Deadline               => Time_Span_Last,
          Cycle_Period           => Time_Span_Zero,
          Phase                  => Time_Span_Zero,
-         Next_Deadline          => Time_Last,
-         Next_Run_Cycle         => Time_Last,
-         Wake_Time              => Time_Last,
+         Next_Deadline          => Time_First,
+         Next_Run_Cycle         => Time_First,
+         Wake_Time              => Time_First,
          Run_Loop               => Null_Address,
          Call_Stack             => (others => Null_Address),
          Scheduler_Agent        => null,
@@ -54,6 +56,9 @@ package body Oak.Oak_Task.Protected_Object is
          raise Program_Error with "Priority out of range";
       end if;
 
+      Oak.Scheduler.Add_New_Task_To_Inactive_List
+        (Scheduler_Info => Core.Get_Scheduler_Info (Core.Get_Oak_Instance).all,
+         T              => PO);
    end Initialise_Protected_Object;
 
    procedure Add_Task_To_Protected_Object
@@ -74,8 +79,13 @@ package body Oak.Oak_Task.Protected_Object is
    function Is_Task_Inside_Protect_Object (T  : in Oak_Task_Handler;
                                            PO : in Oak_Task_Handler)
                                            return Boolean is
-      Current_Task : Oak_Task_Handler := Queue.Get_Next_Task (PO.Tasks_Within);
+      Current_Task : Oak_Task_Handler := PO.Tasks_Within;
    begin
+      if Current_Task = null then
+         return False;
+      end if;
+
+      Current_Task := Queue.Get_Next_Task (Current_Task);
       while Current_Task /= PO.Tasks_Within and Current_Task /= T loop
          Current_Task := Queue.Get_Next_Task (Current_Task);
       end loop;

@@ -1,5 +1,6 @@
 with Oak.Oak_Task.Protected_Object; use Oak.Oak_Task.Protected_Object;
 with Oak.Oak_Task.Data_Access;
+with Oak.Oak_Task.Internal;
 
 package body Oak.Protected_Object is
 
@@ -13,14 +14,17 @@ package body Oak.Protected_Object is
    begin
       --  Check that the request is valid
       if not Is_Protected_Object (PO) or
-        not Is_Entry_Id_Valid (PO => PO, Entry_Id => Entry_Id) then
+        (Subprogram_Kind = Protected_Entry and then
+           not Is_Entry_Id_Valid (PO => PO, Entry_Id => Entry_Id))
+      then
          Oak_Task.Data_Access.Set_State (T => T, State => Enter_PO_Refused);
          Chosen_Task := T;
          return;
       end if;
 
       if Oak_Task.Data_Access.Get_Normal_Priority (T => T) >
-        Oak_Task.Data_Access.Get_Normal_Priority (T => PO) then
+        Oak_Task.Data_Access.Get_Normal_Priority (T => PO)
+      then
          Oak_Task.Data_Access.Set_State (T     => T,
                                          State => Enter_PO_Refused);
          Chosen_Task := T;
@@ -38,8 +42,8 @@ package body Oak.Protected_Object is
                                      Entry_Id => Entry_Id);
             Chosen_Task := null;
          else
-            Oak_Task.Data_Access.Set_State (T => T, State => Runnable);
             Add_Task_To_Protected_Object (T  => T, PO => PO);
+            Oak_Task.Data_Access.Set_State (T => T, State => Runnable);
             Set_Acquiring_Tasks_State (For_Protected_Object => PO,
                                        To_State             => Waiting);
             Scheduler.Activate_Task (Scheduler_Info => Scheduler_Info,
@@ -62,9 +66,10 @@ package body Oak.Protected_Object is
       end if;
 
       if Chosen_Task = null then
-         Scheduler.Run_Current_Task_Scheduler_Agent
-           (Scheduler_Info => Scheduler_Info,
-            Chosen_Task    => Chosen_Task);
+         Scheduler.Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
+           (From_Scheduler_Agent =>
+              Oak_Task.Internal.Get_Scheduler_Agent_For_Task (T),
+            Chosen_Task          => Chosen_Task);
       end if;
 
    end Process_Enter_Request;
@@ -103,9 +108,9 @@ package body Oak.Protected_Object is
            (Scheduler_Info => Scheduler_Info,
             Chosen_Task    => Chosen_Task);
       else
-         Oak_Task.Data_Access.Set_State (T         => Chosen_Task,
+         Oak_Task.Data_Access.Set_State (T     => Chosen_Task,
                                          State => Runnable);
-         Add_Task_To_Protected_Object (T  => Chosen_Task, PO => PO);
+         Add_Task_To_Protected_Object (T  => T, PO => PO);
       end if;
    end Process_Exit_Request;
 

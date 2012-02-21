@@ -190,6 +190,13 @@ package body Oak.Core is
                --   null;
          end case;
 
+         if Next_Task /= null and then
+           Oak_Task.Protected_Object.Is_Protected_Object
+             (PO => Next_Task) then
+            Next_Task := Oak_Task.Protected_Object.Get_Task_Within
+              (PO => Next_Task);
+         end if;
+
          if Next_Task /= null then
             case Oak_Task.Data_Access.Get_State (T => Next_Task) is
                when Shared_State =>
@@ -213,12 +220,6 @@ package body Oak.Core is
                when others =>
                   null;
             end case;
-
-            if Oak_Task.Protected_Object.Is_Protected_Object
-              (PO => Next_Task) then
-               Next_Task := Oak_Task.Protected_Object.Get_Task_Within
-                 (PO => Next_Task);
-            end if;
          end if;
 
          ---------------

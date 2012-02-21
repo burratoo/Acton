@@ -28,26 +28,27 @@ package Oak.Oak_Task is
      (1 .. Processor_Support_Package.Max_Task_Name_Length);
 
    type Task_State is (
-                       Activation_Pending,          -- 0
-                       Activation_Failed,           -- 1
-                       Activation_Successful,       -- 2
-                       Activation_Complete,         -- 3
-                       Running,                     -- 4
-                       Runnable,                    -- 5
-                       Sleeping,                    -- 6
-                       Waiting,                     -- 7
-                       Inactive,                    -- 8
-                       Shared_State,                -- 9
-                       Cycle_Completed,             -- 10
-                       Change_Cycle_Period,         -- 11
-                       Change_Relative_Deadline,    -- 12
-                       Terminated,                  -- 13
-                       Entering_PO,                 -- 14
-                       Enter_PO_Refused,            -- 15
-                       Exiting_PO,                  -- 16
-                       Exit_PO_Error,               -- 17
-                       Waiting_On_Protected_Object, -- 18
-                       No_State);                   -- 19
+                       Bad_State,                   -- 0
+                       Activation_Pending,          -- 1
+                       Activation_Failed,           -- 2
+                       Activation_Successful,       -- 3
+                       Activation_Complete,         -- 4
+                       Running,                     -- 5
+                       Runnable,                    -- 6
+                       Sleeping,                    -- 7
+                       Waiting,                     -- 8
+                       Inactive,                    -- 9
+                       Shared_State,                -- 10
+                       Cycle_Completed,             -- 11
+                       Change_Cycle_Period,         -- 12
+                       Change_Relative_Deadline,    -- 13
+                       Terminated,                  -- 14
+                       Entering_PO,                 -- 15
+                       Enter_PO_Refused,            -- 16
+                       Exiting_PO,                  -- 17
+                       Exit_PO_Error,               -- 18
+                       Waiting_On_Protected_Object, -- 19
+                       No_State);                   -- 20
 
    type Shared_Task_State is access all Task_State;
    No_Shared_State : constant Shared_Task_State

@@ -104,11 +104,29 @@ package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
 
       procedure Select_Next_Task is
          Selected_Task : Oak_Task_Handler := null;
+         Head_Task     : Oak_Task_Handler := null;
       begin
          Move_Woken_Tasks_To_Runnable_Queue;
 
          for T_Priority in reverse Runnable_Queues'Range loop
-            Selected_Task := Runnable_Queues (T_Priority);
+            Head_Task := Runnable_Queues (T_Priority);
+            if Head_Task /= null then
+               Selected_Task := Head_Task;
+               while Task_Data.Get_State (T => Selected_Task) = Shared_State
+                 and then Task_Data.Get_Shared_State
+                   (For_Task => Selected_Task) = Waiting
+               loop
+                  Selected_Task := Get_Next_Task (Selected_Task);
+
+                  --  We have already checked the Head_Task, so if we reach it
+                  --  again it means we have hit the end of the queue and thus
+                  --  there are no runnable tasks in the queue
+                  if Selected_Task = Head_Task then
+                     Selected_Task := null;
+                     exit;
+                  end if;
+               end loop;
+            end if;
             exit when Selected_Task /= null;
          end loop;
 
@@ -147,7 +165,7 @@ package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
       procedure Task_Yielded is
          Yielded_Task : constant Oak_Task_Handler :=
             Get_Task_To_Run (Agent => Self);
-         T_Priority   : constant System.Priority :=
+         T_Priority   : constant System.Any_Priority :=
                           Task_Data.Get_Normal_Priority (T => Yielded_Task);
       begin
          if Runnable_Queues (T_Priority) = Yielded_Task then --  Sanity check.
@@ -205,7 +223,7 @@ package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
          case Data_Access.Get_State (T => Task_To_Remove) is
             when Runnable | Entering_PO =>
                declare
-                  Task_Priority : constant System.Priority :=
+                  Task_Priority : constant System.Any_Priority :=
                            Task_Data.Get_Normal_Priority (T => Task_To_Remove);
                begin
                   Remove_Task (Queue => Runnable_Queues (Task_Priority),
@@ -249,7 +267,7 @@ package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
       procedure Add_Task_To_End_Of_Runnable_Queue
         (Task_To_Add : Oak_Task_Handler)
       is
-         Task_Priority : System.Priority;
+         Task_Priority : System.Any_Priority;
       begin
          Task_Data.Set_State (T => Task_To_Add, State => Runnable);
          Task_Priority := Task_Data.Get_Normal_Priority (Task_To_Add);
