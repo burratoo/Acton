@@ -363,9 +363,9 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
          "evstdd r0,   0(r1)" & ASCII.LF & ASCII.HT &
          "evstdd r9,   8(r1)",
          Volatile => True);
-      Oak.Oak_Task.Internal.Store_Task_Yielded_Status
+      Oak.Oak_Task.Internal.Store_Task_Yield_Status
         (For_Task => Oak.Core.Get_Current_Task,
-         Yielded  => False);
+         Yielded  => Oak.Oak_Task.Forced);
       Asm
         ("evldd  r9,   8(r1)" & ASCII.LF & ASCII.HT &
          "evldd  r0,   0(r1)" & ASCII.LF & ASCII.HT &

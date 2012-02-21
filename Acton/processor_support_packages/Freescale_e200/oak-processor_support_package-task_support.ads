@@ -37,7 +37,6 @@ package Oak.Processor_Support_Package.Task_Support is
    procedure Context_Switch_To_Scheduler_Agent;
 
    procedure Yield_Processor_To_Kernel;
-   procedure Yield_Processor_To_Kernel (Task_Message : OT.Oak_Task_Message);
 
    pragma Inline_Always (Context_Switch_To_Task);
    pragma Inline_Always (Context_Switch_To_Kernel);

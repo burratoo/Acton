@@ -120,8 +120,10 @@ package Oak.Oak_Task is
       end case;
    end record;
 
+   type Yielded_State is (Forced, Voluntary);
+
    type Oak_Task_Message_Store is record
-      Task_Yielded : Boolean;
+      Yield_Status : Yielded_State;
       Message      : Oak_Task_Message;
    end record;
 

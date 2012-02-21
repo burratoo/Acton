@@ -101,17 +101,17 @@ package body Oak.Oak_Task.Internal is
       return T.Kind = Regular;
    end Is_Regular_Task;
 
-   function Task_Has_Yielded (For_Task : in Oak_Task_Handler) return
-     Boolean is
+   function Get_Task_Yield_Status (For_Task : in Oak_Task_Handler) return
+     Yielded_State is
    begin
-      return For_Task.Message_Location.Task_Yielded;
-   end Task_Has_Yielded;
+      return For_Task.Message_Location.Yield_Status;
+   end Get_Task_Yield_Status;
 
-   procedure Store_Task_Yielded_Status (For_Task : in Oak_Task_Handler;
-                                        Yielded  : in Boolean)
+   procedure Store_Task_Yield_Status (For_Task : in Oak_Task_Handler;
+                                        Yielded  : in Yielded_State)
    is
    begin
-      For_Task.Message_Location.Task_Yielded := Yielded;
-   end Store_Task_Yielded_Status;
+      For_Task.Message_Location.Yield_Status := Yielded;
+   end Store_Task_Yield_Status;
 
 end Oak.Oak_Task.Internal;
