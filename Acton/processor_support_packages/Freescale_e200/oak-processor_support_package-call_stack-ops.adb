@@ -58,7 +58,7 @@ package body Oak.Processor_Support_Package.Call_Stack.Ops is
       Stack.Pointer := Stack.Pointer -
         Oak.Oak_Task.Oak_Task_Message_Store'Size / System.Storage_Unit;
       Message_Location := To_Message_Loc (Stack.Pointer);
-      Message_Location.Task_Yielded := True;
+      Message_Location.Yield_Status := Oak.Oak_Task.Voluntary;
       Stack.Pointer := Stack.Pointer - Task_Registers_Save_Size;
       Set_Task_Body_Procedure
         (Stack               => Stack,

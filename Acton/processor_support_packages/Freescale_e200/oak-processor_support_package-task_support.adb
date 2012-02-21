@@ -2,8 +2,6 @@ with System.Machine_Code;            use System.Machine_Code;
 with ISA.Power.e200.Timer_Registers;
 with ISA;
 with System;                         use System;
-with Oak.Oak_Task.Data_Access;
-with Oak.Core;
 
 package body Oak.Processor_Support_Package.Task_Support is
    ----------------------------
@@ -45,15 +43,6 @@ package body Oak.Processor_Support_Package.Task_Support is
    begin
       Asm ("sc",               -- Context switch to kernel.
           Volatile => True);
-   end Yield_Processor_To_Kernel;
-
-   procedure Yield_Processor_To_Kernel
-     (Task_Message : OT.Oak_Task_Message) is
-   begin
-      OT.Data_Access.Store_Oak_Task_Message
-        (For_Task     => Oak.Core.Get_Current_Task,
-         Message      => Task_Message);
-      Yield_Processor_To_Kernel;
    end Yield_Processor_To_Kernel;
 
    ---------------------------

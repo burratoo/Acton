@@ -261,16 +261,18 @@ package body Oak.Core is
             Context_Switch_To_Task;
             Task_Message := Oak_Task.Data_Access.Get_Oak_Task_Message
                                    (For_Task => Next_Task);
-            if Oak_Task.Internal.Task_Has_Yielded (For_Task => Next_Task) then
-               Oak_Instance.Woken_By := Task_Yield;
-               Set_State
-                 (T         => Oak_Instance.Current_Task,
-                  New_State => Task_Message.Message_Type);
-            else
-               Oak_Task.Internal.Store_Task_Yielded_Status
-                 (For_Task => Next_Task,
-                  Yielded  => True);
-            end if;
+            case Oak_Task.Internal.Get_Task_Yield_Status
+              (For_Task => Next_Task) is
+               when Voluntary =>
+                  Oak_Instance.Woken_By := Task_Yield;
+                  Set_State
+                    (T         => Oak_Instance.Current_Task,
+                     New_State => Task_Message.Message_Type);
+               when Forced =>
+                  Oak_Task.Internal.Store_Task_Yield_Status
+                    (For_Task => Next_Task,
+                     Yielded  => Voluntary);
+            end case;
          end if;
 
       end loop;
