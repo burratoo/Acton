@@ -123,7 +123,7 @@ package body Oak.Core is
             when Task_Yield =>
                case Task_Message.Message_Type is
                   when Activation_Pending =>
-                     Run_Current_Task_Scheduler_Agent
+                     Inform_Scheduler_Agent_Task_Has_Yielded
                        (Chosen_Task => Next_Task);
 
                   when Activation_Complete =>
@@ -137,26 +137,26 @@ package body Oak.Core is
                      Oak.Oak_Task.Data_Access.Set_Wake_Time
                        (T  => Next_Task,
                         WT => Task_Message.Wake_Up_At);
-                     Run_Current_Task_Scheduler_Agent
+                     Inform_Scheduler_Agent_Task_Has_Yielded
                        (Chosen_Task => Next_Task);
 
                   when Cycle_Completed =>
                      Next_Run_Cycle (T => Get_Current_Task);
-                     Run_Current_Task_Scheduler_Agent
+                     Inform_Scheduler_Agent_Task_Has_Yielded
                        (Chosen_Task => Next_Task);
 
                   when Change_Cycle_Period =>
                      Oak.Oak_Task.Internal.Set_Cycle_Period
                        (T  => Get_Current_Task,
                         CP => Task_Message.New_Cycle_Period);
-                     Run_Current_Task_Scheduler_Agent
+                     Inform_Scheduler_Agent_Task_Has_Yielded
                        (Chosen_Task => Next_Task);
 
                   when Change_Relative_Deadline =>
                      Oak.Oak_Task.Internal.Set_Relative_Deadline
                        (T  => Get_Current_Task,
                         RD => Task_Message.New_Deadline_Span);
-                     Run_Current_Task_Scheduler_Agent
+                     Inform_Scheduler_Agent_Task_Has_Yielded
                        (Chosen_Task => Next_Task);
 
                   when Entering_PO =>

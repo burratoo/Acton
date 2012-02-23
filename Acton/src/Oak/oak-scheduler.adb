@@ -102,18 +102,28 @@ package body Oak.Scheduler is
 
    end Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next;
 
-   --------------------------------------
-   -- Run_Current_Task_Scheduler_Agent --
-   --------------------------------------
-   procedure Run_Current_Task_Scheduler_Agent
+   ---------------------------------------------
+   -- Inform_Scheduler_Agent_Task_Has_Yielded --
+   ---------------------------------------------
+   procedure Inform_Scheduler_Agent_Task_Has_Yielded
      (Chosen_Task : in out Oak_Task_Handler)
    is
+      Agent : constant Oak_Task_Handler :=
+         Get_Scheduler_Agent_For_Task (T => Chosen_Task);
    begin
-      Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
-        (From_Scheduler_Agent =>
-           Get_Scheduler_Agent_For_Task (T => Chosen_Task),
-         Chosen_Task          => Chosen_Task);
-   end Run_Current_Task_Scheduler_Agent;
+      Chosen_Task :=
+         Run_Scheduler_Agent (Agent => Agent, Reason => Task_Yield);
+
+      if Chosen_Task = null then
+         if SA_Ops.Get_Next_Agent (T => Agent) /= null then
+            Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
+              (From_Scheduler_Agent => SA_Ops.Get_Next_Agent (T => Agent),
+               Chosen_Task          => Chosen_Task);
+         else
+            Chosen_Task := null;
+         end if;
+      end if;
+   end Inform_Scheduler_Agent_Task_Has_Yielded;
 
    ------------------------------------------------------------
    -- Run_The_Bloody_Scheduler_Agent_That_Wanted_To_Be_Woken --

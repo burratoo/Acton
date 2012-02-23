@@ -13,6 +13,10 @@ package body Oak.Protected_Object is
       Chosen_Task     : out Oak_Task_Handler) is
    begin
       --  Check that the request is valid
+      if PO = null then
+         raise Program_Error;
+      end if;
+
       if not Is_Protected_Object (PO) or
         (Subprogram_Kind = Protected_Entry and then
            not Is_Entry_Id_Valid (PO => PO, Entry_Id => Entry_Id))
