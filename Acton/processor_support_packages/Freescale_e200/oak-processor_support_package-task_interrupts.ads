@@ -28,6 +28,6 @@ package Oak.Processor_Support_Package.Task_Interrupts is
    pragma Import (Assembler, CSTT, "__OTS_CSTT");
    pragma Import (Assembler, CSTK, "__OTS_CSTK");
 
-   IVOR8_CS_To_Task   : System.Address := CSTT'Address;
-   IVOR8_CS_To_Kernel : System.Address := CSTK'Address;
+   IVOR8_CS_To_Task   : constant System.Address := CSTT'Address;
+   IVOR8_CS_To_Kernel : constant System.Address := CSTK'Address;
 end Oak.Processor_Support_Package.Task_Interrupts;
