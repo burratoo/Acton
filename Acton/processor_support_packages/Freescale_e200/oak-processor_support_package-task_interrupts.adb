@@ -152,12 +152,15 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
          "stw    r28,   8(r1)" & ASCII.LF & ASCII.HT &
          "stw    r29,   4(r1)" & ASCII.LF & ASCII.HT &
          "stw    r30,   0(r1)" & ASCII.LF & ASCII.HT &
-         "mtsprg0          r1" & ASCII.LF & ASCII.HT & -- Store kernel stack pt
-      --  Setup IVOR8 to point to Switch to Context Kernel handler
-         "lwz    r20,      %0" & ASCII.LF & ASCII.HT &
-         "mtivor8         r20",
-         Inputs   => Address'Asm_Input ("m", IVOR8_CS_To_Kernel),
+         "mtsprg0          r1",                        -- Store kernel stack pt
          Volatile => True);
+
+      --  Setup IVOR8 to point to Switch to Context Kernel handler
+      Asm (
+           "lwz    r20,      %0" & ASCII.LF & ASCII.HT &
+           "mtivor8         r20",
+           Inputs   => Address'Asm_Input ("m", IVOR8_CS_To_Kernel),
+           Volatile => True);
 
       Task_Stack_Pointer := Oak.Core.Get_Current_Task_Stack_Pointer;
       if Internal.Is_Regular_Task (T => Oak.Core.Get_Current_Task) then
@@ -181,7 +184,7 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
          "mtcr            r28" & ASCII.LF & ASCII.HT &
          "mtusprg0        r29" & ASCII.LF & ASCII.HT &
          "mtsrr0          r30" & ASCII.LF & ASCII.HT & -- Next instruction addr
-         "evldd  r9,   24(r1)" & ASCII.LF & ASCII.HT & -- Restore accumulator
+         "evldd  r9,   32(r1)" & ASCII.LF & ASCII.HT & -- Restore accumulator
          "evmra  r10,      r9" & ASCII.LF & ASCII.HT &
          "stwu   r1,   40(r1)" & ASCII.LF & ASCII.HT & -- Drop stack frame (?)
          "evldd  r0,  240(r1)" & ASCII.LF & ASCII.HT & -- and restore GPRs
@@ -272,7 +275,7 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
          "stwu   r1,  -40(r1)" & ASCII.LF & ASCII.HT &
          "li     r22,       0" & ASCII.LF & ASCII.HT &  -- Store Accumulator
          "evaddusiaaw r23, r22" & ASCII.LF & ASCII.HT & -- register
-         "evstdd r23,  24(r1)" & ASCII.LF & ASCII.HT &
+         "evstdd r23,  32(r1)" & ASCII.LF & ASCII.HT &
          "mfspefscr       r24" & ASCII.LF & ASCII.HT & -- Next instruction
          "mfxer           r25" & ASCII.LF & ASCII.HT & -- address
          "mflr            r26" & ASCII.LF & ASCII.HT &
@@ -287,13 +290,16 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
          "stw    r28,   8(r1)" & ASCII.LF & ASCII.HT &
          "stw    r29,   4(r1)" & ASCII.LF & ASCII.HT &
          "stw    r30,   0(r1)" & ASCII.LF & ASCII.HT &
-      --  Setup IVOR8 to point to Switch to Context Task handler
-         "lwz     r20,     %1" & ASCII.LF & ASCII.HT &
-         "mtivor8         r20" & ASCII.LF & ASCII.HT &
          "mr     %0,       r1",
-         Inputs   => (Address'Asm_Input ("m", IVOR8_CS_To_Task)),
          Outputs  => (Address'Asm_Output ("=r", Task_Stack_Pointer)),
          Volatile => True);
+
+      --  Setup IVOR8 to point to Switch to Context Task handler
+      Asm (
+           "lwz     r20,     %0" & ASCII.LF & ASCII.HT &
+           "mtivor8         r20",
+           Inputs   => (Address'Asm_Input ("m", IVOR8_CS_To_Task)),
+           Volatile => True);
 
       Oak.Core.Set_Current_Task_Stack_Pointer (SP => Task_Stack_Pointer);
       Oak.Processor_Support_Package.Task_Support.Disable_Oak_Wake_Up_Interrupt;
@@ -360,7 +366,7 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
       Enable_SPE_Instructions;
       Asm
         ("stu    r1, -16(r1)" & ASCII.LF & ASCII.HT &
-         "evstdd r0,   0(r1)" & ASCII.LF & ASCII.HT &
+         "evstdd r10,  0(r1)" & ASCII.LF & ASCII.HT &
          "evstdd r9,   8(r1)",
          Volatile => True);
       Oak.Oak_Task.Internal.Store_Task_Yield_Status
@@ -368,7 +374,7 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
          Yielded  => Oak.Oak_Task.Forced);
       Asm
         ("evldd  r9,   8(r1)" & ASCII.LF & ASCII.HT &
-         "evldd  r0,   0(r1)" & ASCII.LF & ASCII.HT &
+         "evldd  r10,  0(r1)" & ASCII.LF & ASCII.HT &
          "stu    r1,  16(r1)",
          Volatile => True);
       E200_Context_Switch_To_Kernel;

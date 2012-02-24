@@ -49,6 +49,7 @@ package Oak.Processor_Support_Package.Time is
 
    function Get_Clock return Oak_Time;
    pragma Import (Assembler, Get_Clock, "oak_get_clock");
+
    --
    --  At 132 MHz -> 7.58 ns per tick. 132 x 10^6 ticks per second.
    --  In Hex : 0x7DE2900 Which is less than 2^32 or 0xFFFFFFFF.
