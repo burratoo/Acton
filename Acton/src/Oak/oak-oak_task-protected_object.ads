@@ -56,9 +56,9 @@ package Oak.Oak_Task.Protected_Object is
    function Get_Active_Subprogram_Kind
      (PO : in Oak_Task_Handler) return Protected_Subprogram_Type;
 
-   function Get_Barrier_State
+   function Is_Barrier_Open
      (PO       : in Oak_Task_Handler;
-      Entry_Id : in Entry_Index) return Entry_Barrier_State;
+      Entry_Id : in Entry_Index) return Boolean;
 
    function Is_Protected_Object
      (PO : in Oak_Task_Handler) return Boolean;

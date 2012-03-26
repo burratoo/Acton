@@ -122,11 +122,13 @@ package body Oak.Oak_Task.Protected_Object is
    begin
       Next_Task := null;
       for Entry_Id in PO.Entry_Queues'Range loop
-         Next_Task := PO.Entry_Queues (Entry_Id);
-         if Next_Task /= null then
+         if PO.Entry_Barriers.State (Entry_Id) then
+            Next_Task := PO.Entry_Queues (Entry_Id);
+            if Next_Task /= null then
                Queue.Remove_Task (Queue => PO.Entry_Queues (Entry_Id),
                                   T     => Next_Task);
-            exit;
+               exit;
+            end if;
          end if;
       end loop;
    end Get_And_Remove_Next_Task_From_Entry_Queues;
@@ -177,12 +179,12 @@ package body Oak.Oak_Task.Protected_Object is
       return PO.Active_Subprogram_Kind;
    end Get_Active_Subprogram_Kind;
 
-   function Get_Barrier_State
+   function Is_Barrier_Open
      (PO       : in Oak_Task_Handler;
-      Entry_Id : in Entry_Index) return Entry_Barrier_State is
+      Entry_Id : in Entry_Index) return Boolean is
    begin
       return PO.Entry_Barriers.State (Entry_Id);
-   end Get_Barrier_State;
+   end Is_Barrier_Open;
 
    function Is_Protected_Object
      (PO : in Oak_Task_Handler) return Boolean is

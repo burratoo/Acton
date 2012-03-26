@@ -9,5 +9,6 @@ package Oak.Processor_Support_Package is
    Max_Tasks            : constant := 2 ** 16;
    Max_Task_Name_Length : constant := 80;
 
-   Max_Entries          : constant := 10;
+   Max_Protected_Entries : constant := 10;
+   Max_Task_Entries      : constant := 0;
 end Oak.Processor_Support_Package;

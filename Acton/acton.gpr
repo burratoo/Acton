@@ -47,7 +47,7 @@ project Acton is
    end Builder;
 
    package Compiler is
-      Ada_Switches := ("-gnatwa.Xl", "-g", "-gnat05",  "-gnatn", "-gnatg", "-O2");
+      Ada_Switches := ("-gnatwa.Xl", "-g", "-gnat2012",  "-gnatn", "-gnatg", "-O2");
       Asm_Switches := ();
 
       case Processor is

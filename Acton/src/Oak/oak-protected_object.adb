@@ -1,6 +1,5 @@
 with Oak.Oak_Task.Protected_Object; use Oak.Oak_Task.Protected_Object;
 with Oak.Oak_Task.Data_Access;
-with Oak.Oak_Task.Internal;
 
 package body Oak.Protected_Object is
 
@@ -38,7 +37,7 @@ package body Oak.Protected_Object is
       if Oak_Task.Data_Access.Get_State (PO) = Inactive then
          Scheduler.Remove_Task_From_Scheduler (T);
          if Subprogram_Kind = Protected_Entry and then
-            Get_Barrier_State (PO => PO, Entry_Id => Entry_Id) = Closed then
+            not Is_Barrier_Open (PO => PO, Entry_Id => Entry_Id) then
             Oak_Task.Data_Access.Set_State (T         => T,
                                             State => Waiting);
             Add_Task_To_Entry_Queue (PO       => PO,
@@ -71,9 +70,8 @@ package body Oak.Protected_Object is
 
       if Chosen_Task = null then
          Scheduler.Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
-           (From_Scheduler_Agent =>
-              Oak_Task.Internal.Get_Scheduler_Agent_For_Task (T),
-            Chosen_Task          => Chosen_Task);
+           (Scheduler_Info => Scheduler_Info,
+            Chosen_Task    => Chosen_Task);
       end if;
 
    end Process_Enter_Request;
@@ -114,7 +112,7 @@ package body Oak.Protected_Object is
       else
          Oak_Task.Data_Access.Set_State (T     => Chosen_Task,
                                          State => Runnable);
-         Add_Task_To_Protected_Object (T  => T, PO => PO);
+         Add_Task_To_Protected_Object (T  => Chosen_Task, PO => PO);
       end if;
    end Process_Exit_Request;
 

@@ -15,11 +15,21 @@ package Oak.Oak_Task is
    --  A lot of this could possibly move to Oak.Protected_Object.
    No_Entry     : constant := 0;
    Single_Entry : constant := 1;
-   Max_Entry    : constant := Processor_Support_Package.Max_Entries;
 
-   type Entry_Index is range No_Entry .. Max_Entry;
+   Max_Protected_Entries : constant :=
+     Processor_Support_Package.Max_Protected_Entries;
+   Max_Task_Entries      : constant :=
+     Processor_Support_Package.Max_Task_Entries;
 
-   type Oak_Task (Num_Entries : Entry_Index   := No_Entry;
+   Max_Entries : constant :=
+     (if Max_Protected_Entries > Max_Task_Entries then
+                Max_Protected_Entries else Max_Task_Entries);
+
+   type Entry_Index is range No_Entry .. Max_Entries;
+   subtype Protected_Entry_Index is Entry_Index
+     range No_Entry .. Max_Protected_Entries;
+
+   type Oak_Task (Num_Entries : Entry_Index := No_Entry;
                   Kind        : Oak_Task_Kind := Regular) is limited private;
    type Oak_Task_Handler is access all Oak_Task;
 
@@ -87,9 +97,8 @@ package Oak.Oak_Task is
    Unspecified_Priority : constant Integer := -1;
 
    type Entry_Queue_Array is array (Entry_Index range <>) of Oak_Task_Handler;
-   type Entry_Barrier_State is (Closed, Open);
    type Entry_Barrier_Array is array (Entry_Index range <>) of
-     Entry_Barrier_State;
+     Boolean;
    type Entry_Barrier_Wrapper (Array_Length : Entry_Index) is record
       State : Entry_Barrier_Array (1 .. Array_Length);
    end record;
