@@ -38,12 +38,14 @@ package body Oak.Protected_Object is
          Scheduler.Remove_Task_From_Scheduler (T);
          if Subprogram_Kind = Protected_Entry and then
             not Is_Barrier_Open (PO => PO, Entry_Id => Entry_Id) then
-            Oak_Task.Data_Access.Set_State (T         => T,
-                                            State => Waiting);
+            Oak_Task.Data_Access.Set_State (T => T, State => Waiting);
             Add_Task_To_Entry_Queue (PO       => PO,
                                      T        => T,
                                      Entry_Id => Entry_Id);
-            Chosen_Task := null;
+            if Has_Count_Attribute (PO) then
+               Get_And_Remove_Next_Task_From_Entry_Queues
+                 (PO => PO, Next_Task => Chosen_Task);
+            end if;
          else
             Add_Task_To_Protected_Object (T  => T, PO => PO);
             Oak_Task.Data_Access.Set_State (T => T, State => Runnable);

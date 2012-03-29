@@ -6,9 +6,10 @@ with Oak.Scheduler;
 package body Oak.Oak_Task.Protected_Object is
    procedure Initialise_Protected_Object
      (PO : in Oak_Task_Handler;
-      Name             : in String;
-      Ceiling_Priority : in Integer;
-      Barriers         : in Entry_Barrier_Handler) is
+      Name                : in String;
+      Ceiling_Priority    : in Integer;
+      Barriers_Function   : in Entry_Barrier_Function_Handler;
+      Has_Count_Attribute : in Boolean) is
    begin
       PO.Name_Length               :=
         Natural'Min (Task_Name'Length, Name'Length);
@@ -40,10 +41,11 @@ package body Oak.Oak_Task.Protected_Object is
          Elaborated             => null,
          Message_Location       => null,
          Is_Protected_Object    => True,
+         Has_Count_Attribute    => Has_Count_Attribute,
          Tasks_Within           => null,
          Active_Subprogram_Kind => Protected_Function,
+         Entry_Barriers         => Barriers_Function,
          Entry_Queues           => (others => null),
-         Entry_Barriers         => Barriers,
          Controlling_Shared_State => Waiting);
 
       if Ceiling_Priority >= Any_Priority'First and
@@ -122,13 +124,12 @@ package body Oak.Oak_Task.Protected_Object is
    begin
       Next_Task := null;
       for Entry_Id in PO.Entry_Queues'Range loop
-         if PO.Entry_Barriers.State (Entry_Id) then
-            Next_Task := PO.Entry_Queues (Entry_Id);
-            if Next_Task /= null then
-               Queue.Remove_Task (Queue => PO.Entry_Queues (Entry_Id),
-                                  T     => Next_Task);
-               exit;
-            end if;
+         Next_Task := PO.Entry_Queues (Entry_Id);
+         if Next_Task /= null and then
+           Is_Barrier_Open (PO, Entry_Id) then
+            Queue.Remove_Task (Queue => PO.Entry_Queues (Entry_Id),
+                               T     => Next_Task);
+            exit;
          end if;
       end loop;
    end Get_And_Remove_Next_Task_From_Entry_Queues;
@@ -183,8 +184,13 @@ package body Oak.Oak_Task.Protected_Object is
      (PO       : in Oak_Task_Handler;
       Entry_Id : in Entry_Index) return Boolean is
    begin
-      return PO.Entry_Barriers.State (Entry_Id);
+      return PO.Entry_Barriers (PO, Entry_Id);
    end Is_Barrier_Open;
+
+   function Has_Count_Attribute (PO : in Oak_Task_Handler) return Boolean is
+   begin
+      return PO.Has_Count_Attribute;
+   end Has_Count_Attribute;
 
    function Is_Protected_Object
      (PO : in Oak_Task_Handler) return Boolean is

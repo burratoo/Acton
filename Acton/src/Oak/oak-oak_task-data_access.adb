@@ -57,6 +57,7 @@ package body Oak.Oak_Task.Data_Access is
          Active_Subprogram_Kind => Protected_Function,
          Entry_Queues           => (others => null),
          Entry_Barriers         => null,
+         Has_Count_Attribute      => False,
          Controlling_Shared_State => Waiting);
 
       if Stack_Address = Null_Address then
@@ -141,6 +142,7 @@ package body Oak.Oak_Task.Data_Access is
          Active_Subprogram_Kind => Protected_Function,
          Entry_Queues           => (others => null),
          Entry_Barriers         => null,
+         Has_Count_Attribute      => False,
          Controlling_Shared_State => Waiting);
 
       Allocate_Call_Stack
