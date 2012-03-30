@@ -173,7 +173,6 @@ package body Oak.Core is
                        (Scheduler_Info    => Oak_Instance.Scheduler,
                         T                 => Get_Current_Task,
                         PO                => Task_Message.PO_Exit,
-                        Barrier_Exception => Task_Message.Barrier_Exception,
                         Chosen_Task       => Next_Task);
                   when others =>
                      null;

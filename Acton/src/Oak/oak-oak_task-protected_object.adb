@@ -132,6 +132,9 @@ package body Oak.Oak_Task.Protected_Object is
             exit;
          end if;
       end loop;
+   exception
+      when Program_Error =>
+         Next_Task := null;
    end Get_And_Remove_Next_Task_From_Entry_Queues;
 
    function Get_Acquiring_Tasks_State
@@ -185,6 +188,11 @@ package body Oak.Oak_Task.Protected_Object is
       Entry_Id : in Entry_Index) return Boolean is
    begin
       return PO.Entry_Barriers (PO, Entry_Id);
+   exception
+      when others =>
+         Purge_Entry_Queues (PO             => PO,
+                             New_Task_State => Enter_PO_Refused);
+         raise Program_Error;
    end Is_Barrier_Open;
 
    function Has_Count_Attribute (PO : in Oak_Task_Handler) return Boolean is

@@ -120,8 +120,7 @@ package Oak.Oak_Task is
             Subprogram_Kind  : Protected_Subprogram_Type := Protected_Function;
             Entry_Id_Enter   : Entry_Index := No_Entry;
          when Exiting_PO =>
-            PO_Exit           : Oak_Task_Handler := null;
-            Barrier_Exception : Boolean := False;
+            PO_Exit : Oak_Task_Handler := null;
          when others =>
             null;
       end case;

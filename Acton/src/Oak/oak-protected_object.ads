@@ -16,7 +16,6 @@ package Oak.Protected_Object is
      (Scheduler_Info    : in out Scheduler.Oak_Scheduler_Info;
       T                 : in Oak_Task_Handler;
       PO                : in Oak_Task_Handler;
-      Barrier_Exception : in Boolean;
       Chosen_Task       : out Oak_Task_Handler);
 
 end Oak.Protected_Object;
