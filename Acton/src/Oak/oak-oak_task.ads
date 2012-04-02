@@ -97,7 +97,7 @@ package Oak.Oak_Task is
    Unspecified_Priority : constant Integer := -1;
 
    type Entry_Barrier_Function_Handler is
-     access function (PO : Oak_Task_Handler;
+     access function (PO : System.Address;
                       E  : Protected_Entry_Index) return Boolean;
 
    type Entry_Queue_Array is array (Entry_Index range <>) of Oak_Task_Handler;
@@ -206,12 +206,13 @@ private
 
             Is_Protected_Object    : Boolean := False;
             Has_Count_Attribute    : Boolean := False;
-            Tasks_Within           : Oak_Task_Handler := null;
             Active_Subprogram_Kind : Protected_Subprogram_Type
               := Protected_Function;
+            Tasks_Within           : Oak_Task_Handler := null;
             Entry_Barriers         : Entry_Barrier_Function_Handler;
             Entry_Queues           : Entry_Queue_Array (1 .. Num_Entries)
               := (others => null);
+            Object_Record          : System.Address;
 
          when Scheduler =>
             --  Scheduler Agents fields.

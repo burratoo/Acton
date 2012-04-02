@@ -5,11 +5,12 @@ with Oak.Scheduler;
 
 package body Oak.Oak_Task.Protected_Object is
    procedure Initialise_Protected_Object
-     (PO : in Oak_Task_Handler;
-      Name                : in String;
-      Ceiling_Priority    : in Integer;
-      Barriers_Function   : in Entry_Barrier_Function_Handler;
-      Has_Count_Attribute : in Boolean) is
+     (PO                    : in Oak_Task_Handler;
+      Name                  : in String;
+      Ceiling_Priority      : in Integer;
+      Barriers_Function     : in Entry_Barrier_Function_Handler;
+      Has_Count_Attribute   : in Boolean;
+      Object_Record_Address : in System.Address) is
    begin
       PO.Name_Length               :=
         Natural'Min (Task_Name'Length, Name'Length);
@@ -46,6 +47,7 @@ package body Oak.Oak_Task.Protected_Object is
          Active_Subprogram_Kind => Protected_Function,
          Entry_Barriers         => Barriers_Function,
          Entry_Queues           => (others => null),
+         Object_Record          => Object_Record_Address,
          Controlling_Shared_State => Waiting);
 
       if Ceiling_Priority >= Any_Priority'First and
@@ -187,7 +189,7 @@ package body Oak.Oak_Task.Protected_Object is
      (PO       : in Oak_Task_Handler;
       Entry_Id : in Entry_Index) return Boolean is
    begin
-      return PO.Entry_Barriers (PO, Entry_Id);
+      return PO.Entry_Barriers (PO.Object_Record, Entry_Id);
    exception
       when others =>
          Purge_Entry_Queues (PO             => PO,

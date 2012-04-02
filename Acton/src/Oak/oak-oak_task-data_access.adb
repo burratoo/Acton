@@ -57,6 +57,7 @@ package body Oak.Oak_Task.Data_Access is
          Active_Subprogram_Kind => Protected_Function,
          Entry_Queues           => (others => null),
          Entry_Barriers         => null,
+         Object_Record          => Null_Address,
          Has_Count_Attribute      => False,
          Controlling_Shared_State => Waiting);
 
@@ -142,6 +143,7 @@ package body Oak.Oak_Task.Data_Access is
          Active_Subprogram_Kind => Protected_Function,
          Entry_Queues           => (others => null),
          Entry_Barriers         => null,
+         Object_Record            => Null_Address,
          Has_Count_Attribute      => False,
          Controlling_Shared_State => Waiting);
 
