@@ -36,6 +36,8 @@ package body Oak.Protected_Object is
 
       if Oak_Task.Data_Access.Get_State (PO) = Inactive then
          Scheduler.Remove_Task_From_Scheduler (T);
+         Chosen_Task := null;
+
          declare
          begin
             if Subprogram_Kind = Protected_Entry and then
@@ -49,13 +51,7 @@ package body Oak.Protected_Object is
                     (PO => PO, Next_Task => Chosen_Task);
                end if;
             else
-               Add_Task_To_Protected_Object (T  => T, PO => PO);
-               Oak_Task.Data_Access.Set_State (T => T, State => Runnable);
-               Set_Acquiring_Tasks_State (For_Protected_Object => PO,
-                                          To_State             => Waiting);
-               Scheduler.Activate_Task (Scheduler_Info => Scheduler_Info,
-                                        T              => PO);
-               Chosen_Task := PO;
+               Chosen_Task := T;
             end if;
          exception
             when Program_Error =>
@@ -69,6 +65,18 @@ package body Oak.Protected_Object is
                Chosen_Task := T;
                return;
          end;
+
+         if Chosen_Task /= null then
+            Add_Task_To_Protected_Object (T  => Chosen_Task, PO => PO);
+            Oak_Task.Data_Access.Set_State
+              (T => Chosen_Task, State => Runnable);
+            Set_Acquiring_Tasks_State (For_Protected_Object => PO,
+                                       To_State             => Waiting);
+            Scheduler.Activate_Task (Scheduler_Info => Scheduler_Info,
+                                     T              => PO);
+            Chosen_Task := PO;
+         end if;
+
       elsif Subprogram_Kind = Protected_Function and
                Get_Active_Subprogram_Kind (PO) = Protected_Function then
          Scheduler.Remove_Task_From_Scheduler (T);

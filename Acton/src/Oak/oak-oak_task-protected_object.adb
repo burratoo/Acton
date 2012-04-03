@@ -132,6 +132,8 @@ package body Oak.Oak_Task.Protected_Object is
             Queue.Remove_Task (Queue => PO.Entry_Queues (Entry_Id),
                                T     => Next_Task);
             exit;
+         else
+            Next_Task := null;
          end if;
       end loop;
    exception
