@@ -7,10 +7,12 @@ with Oak.Processor_Support_Package.Task_Support;
 with Oak.Oak_Task.Scheduler_Agent;
 with Oak.Core;
 with System;                                     use System;
+with Oak.Oak_Task.Queue;
 
 package body Oak.Scheduler is
    package Tasks renames Oak.Processor_Support_Package.Task_Support;
    package SA_Ops renames Oak.Oak_Task.Scheduler_Agent;
+   package Inactive_Queue renames Oak.Oak_Task.Queue;
 
    -----------------------------------
    -- Insert_Task_Into_Dealine_List --
@@ -100,12 +102,11 @@ package body Oak.Scheduler is
 
    end Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next;
 
-   --------------------------------------
-   -- Run_Current_Task_Scheduler_Agent --
-   --------------------------------------
-   procedure Run_Current_Task_Scheduler_Agent
-     (Scheduler_Info : in out Oak_Scheduler_Info;
-      Chosen_Task    : in out Oak_Task_Handler)
+   ---------------------------------------------
+   -- Inform_Scheduler_Agent_Task_Has_Yielded --
+   ---------------------------------------------
+   procedure Inform_Scheduler_Agent_Task_Has_Yielded
+     (Chosen_Task : in out Oak_Task_Handler)
    is
       Agent : constant Oak_Task_Handler :=
          Get_Scheduler_Agent_For_Task (T => Chosen_Task);
@@ -114,11 +115,15 @@ package body Oak.Scheduler is
          Run_Scheduler_Agent (Agent => Agent, Reason => Task_Yield);
 
       if Chosen_Task = null then
-         Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
-           (Scheduler_Info => Scheduler_Info,
-            Chosen_Task    => Chosen_Task);
+         if SA_Ops.Get_Next_Agent (T => Agent) /= null then
+            Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
+              (From_Scheduler_Agent => SA_Ops.Get_Next_Agent (T => Agent),
+               Chosen_Task          => Chosen_Task);
+         else
+            Chosen_Task := null;
+         end if;
       end if;
-   end Run_Current_Task_Scheduler_Agent;
+   end Inform_Scheduler_Agent_Task_Has_Yielded;
 
    ------------------------------------------------------------
    -- Run_The_Bloody_Scheduler_Agent_That_Wanted_To_Be_Woken --
@@ -176,6 +181,57 @@ package body Oak.Scheduler is
       SA_Ops.Set_Task_To_Manage (Agent => Agent, MT => T);
       Run_Scheduler_Agent (Agent => Agent, Reason => Add_Task);
    end Add_Task_To_Scheduler;
+
+   procedure Remove_Task_From_Scheduler (T : Oak_Task_Handler) is
+      Agent : constant Oak_Task_Handler := Get_Scheduler_Agent_For_Task (T);
+   begin
+      SA_Ops.Set_Task_To_Manage (Agent => Agent, MT => T);
+      Run_Scheduler_Agent (Agent => Agent, Reason => Remove_Task);
+      Set_Scheduler_Agent_For_Task (T => T, Agent => null);
+   end Remove_Task_From_Scheduler;
+
+   procedure Activate_Task
+     (Scheduler_Info : in out Oak_Scheduler_Info;
+      T              : in Oak_Task_Handler) is
+      Agent : constant Oak_Task_Handler := Get_Scheduler_Agent_For_Task (T);
+   begin
+      Inactive_Queue.Remove_Task (Queue => Scheduler_Info.Inactive_Task_List,
+                                  T     => T);
+      Set_State (T => T, State => Runnable);
+      SA_Ops.Set_Task_To_Manage (Agent => Agent, MT => T);
+      Run_Scheduler_Agent (Agent => Agent, Reason => Add_Task);
+   end Activate_Task;
+
+   procedure Deactivate_Task
+     (Scheduler_Info : in out Oak_Scheduler_Info;
+      T              : in Oak_Task_Handler) is
+      Agent : constant Oak_Task_Handler := Get_Scheduler_Agent_For_Task (T);
+   begin
+      SA_Ops.Set_Task_To_Manage (Agent => Agent, MT => T);
+      Run_Scheduler_Agent (Agent => Agent, Reason => Remove_Task);
+      Set_State (T => T, State => Inactive);
+      Inactive_Queue.Add_Task_To_Head
+        (Queue => Scheduler_Info.Inactive_Task_List,
+         T     => T);
+   end Deactivate_Task;
+
+   procedure Add_New_Task_To_Inactive_List
+     (Scheduler_Info : in out Oak_Scheduler_Info;
+      T              : in Oak_Task_Handler) is
+      Task_Priority : constant Any_Priority := Get_Normal_Priority (T => T);
+      Agent         : Oak_Task_Handler := Scheduler_Info.Scheduler_Agent_Table;
+   begin
+      while Agent /= null
+        and then Task_Priority < SA_Ops.Get_Lowest_Priority (Agent)
+      loop
+         Agent := SA_Ops.Get_Next_Agent (Agent);
+      end loop;
+      Set_Scheduler_Agent_For_Task (T => T, Agent => Agent);
+      Set_State (T => T, State => Inactive);
+      Inactive_Queue.Add_Task_To_Head
+        (Queue => Scheduler_Info.Inactive_Task_List,
+         T     => T);
+   end Add_New_Task_To_Inactive_List;
 
    -------------------------
    -- Run_Scheduler_Agent --
@@ -273,7 +329,8 @@ package body Oak.Scheduler is
         (Running_Task          => null,
          Next_Task             => null,
          Scheduler_Agent_Table => null,
-         Task_Deadline_List    => null);
+         Task_Deadline_List    => null,
+         Inactive_Task_List    => null);
    end Get_Inital_Info_Record;
 
 end Oak.Scheduler;

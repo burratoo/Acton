@@ -44,4 +44,11 @@ package Oak.Oak_Task.Internal is
 
    pragma Inline_Always (Is_Scheduler_Agent);
    pragma Inline_Always (Is_Regular_Task);
+
+   function Get_Task_Yield_Status (For_Task : in Oak_Task_Handler) return
+     Yielded_State;
+   procedure Store_Task_Yield_Status (For_Task : in Oak_Task_Handler;
+                                        Yielded  : in Yielded_State);
+   pragma Inline_Always (Store_Task_Yield_Status);
+
 end Oak.Oak_Task.Internal;

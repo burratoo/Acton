@@ -39,16 +39,6 @@ package Oak.Oak_Task.Scheduler_Agent is
      (Agent : in Oak_Task_Handler;
       MT    : in Oak_Task_Handler);
 
-   function Get_Next_In_Queue
-     (T    : Oak_Task_Handler)
-      return Oak_Task_Handler;
-   function Get_Prev_In_Queue
-     (T    : Oak_Task_Handler)
-      return Oak_Task_Handler;
-   procedure Set_Next_In_Queue (T, Next : in Oak_Task_Handler);
-   procedure Set_Prev_In_Queue (T, Prev : in Oak_Task_Handler);
-   procedure Set_Queue_Link (T, Prev, Next : in Oak_Task_Handler);
-
    function Get_Next_Agent (T : Oak_Task_Handler) return Oak_Task_Handler;
    procedure Set_Next_Agent
      (T          : in Oak_Task_Handler;

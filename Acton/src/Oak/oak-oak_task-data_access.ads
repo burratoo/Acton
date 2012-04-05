@@ -34,6 +34,17 @@ package Oak.Oak_Task.Data_Access is
    function Get_State (T : access Oak_Task) return Task_State;
    procedure Set_State (T : access Oak_Task; State : Task_State);
 
+   function Get_Shared_State (For_Task : access Oak_Task)
+                                      return Task_State;
+   procedure Set_Shared_State
+     (For_Task : access Oak_Task;
+      With_State_Pointer : in Shared_Task_State);
+
+   function Get_Oak_Task_Message (For_Task : in Oak_Task_Handler)
+                              return Oak_Task_Message;
+   procedure Store_Oak_Task_Message (For_Task : in Oak_Task_Handler;
+                                     Message  : in Oak_Task_Message);
+
    function Get_Normal_Priority (T : access Oak_Task) return Any_Priority;
    function Get_Deadline (T : access Oak_Task) return Time_Span;
    function Get_Cycle_Period (T : access Oak_Task) return Time_Span;
@@ -50,4 +61,5 @@ package Oak.Oak_Task.Data_Access is
    function Get_Activation_List
      (T    : access Oak_Task)
       return access Oak_Task;
+
 end Oak.Oak_Task.Data_Access;

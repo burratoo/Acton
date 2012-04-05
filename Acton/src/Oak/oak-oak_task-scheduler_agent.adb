@@ -21,6 +21,7 @@ package body Oak.Oak_Task.Scheduler_Agent is
 
       Agent.all :=
         (Kind                   => Scheduler,
+         Num_Entries            => No_Entry,
          Id                     => Internal.New_Task_Id,
          Name                   => Agent.Name,
          Name_Length            => Agent.Name_Length,
@@ -35,11 +36,14 @@ package body Oak.Oak_Task.Scheduler_Agent is
          Run_Reason             => Select_Next_Task,
          Next_Agent             => null,
          Activation_List        => null,
-         Elaborated             => null);
+         Elaborated             => null,
+         Controlling_Shared_State => Waiting,
+         Message_Location => null);
 
       Initialise_Call_Stack
         (Stack             => Agent.Call_Stack,
-         Start_Instruction => Agent.Run_Loop);
+         Start_Instruction => Agent.Run_Loop,
+         Message_Location  => Agent.Message_Location);
    end Initialise_Agent;
 
    ---------------------
@@ -139,38 +143,6 @@ package body Oak.Oak_Task.Scheduler_Agent is
    begin
       Agent.Manage_Task := MT;
    end Set_Task_To_Manage;
-
-   function Get_Next_In_Queue
-     (T    : Oak_Task_Handler)
-      return Oak_Task_Handler
-   is
-   begin
-      return T.Scheduler_Queue.Next;
-   end Get_Next_In_Queue;
-
-   function Get_Prev_In_Queue
-     (T    : Oak_Task_Handler)
-      return Oak_Task_Handler
-   is
-   begin
-      return T.Scheduler_Queue.Previous;
-   end Get_Prev_In_Queue;
-
-   procedure Set_Next_In_Queue (T, Next : in Oak_Task_Handler) is
-   begin
-      T.Scheduler_Queue.Next := Next;
-   end Set_Next_In_Queue;
-
-   procedure Set_Prev_In_Queue (T, Prev : in Oak_Task_Handler) is
-   begin
-      T.Scheduler_Queue.Previous := Prev;
-   end Set_Prev_In_Queue;
-
-   procedure Set_Queue_Link (T, Prev, Next : in Oak_Task_Handler) is
-   begin
-      T.Scheduler_Queue.Previous := Prev;
-      T.Scheduler_Queue.Next     := Next;
-   end Set_Queue_Link;
 
    function Get_Next_Agent (T : Oak_Task_Handler) return Oak_Task_Handler is
    begin

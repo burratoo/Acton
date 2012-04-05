@@ -6,6 +6,7 @@ package ARPART.Tasks is
    pragma Preelaborate;
 
    package Oak_Activation renames Oak.Oak_Task.Activation;
+   package OT renames Oak.Oak_Task;
 
    procedure Activate_Tasks (Chain : Oak.Oak_Task.Activation_Chain_Access);
    procedure Complete_Activation;
@@ -18,4 +19,5 @@ package ARPART.Tasks is
 
    procedure Cycle_Completed;
 
+   procedure Yield_Processor_To_Kernel (Task_Message : OT.Oak_Task_Message);
 end ARPART.Tasks;

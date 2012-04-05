@@ -12,7 +12,7 @@ project MPC5554 is
    end Builder;
 
    package Compiler is
-      for Default_Switches ("ada") use ("-gnatwa.X", "-O3", "-gnat05", "-gnatyabcefhiklM89nprstxu3", "-gnatn", "-Wa,-mregnames");
+      for Default_Switches ("ada") use ("-gnatwa.X", "-O3", "-gnatyabcefhiklM89nprstxu3", "-gnatn", "-Wa,-mregnames");
       for Default_Switches ("asm") use ("-Wa,-mregnames");
    end Compiler;
 

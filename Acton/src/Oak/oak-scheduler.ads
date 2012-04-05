@@ -25,9 +25,8 @@ package Oak.Scheduler is
    procedure Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
      (From_Scheduler_Agent : Oak_Task_Handler;
       Chosen_Task          : out Oak_Task_Handler);
-   procedure Run_Current_Task_Scheduler_Agent
-     (Scheduler_Info : in out Oak_Scheduler_Info;
-      Chosen_Task    : in out Oak_Task_Handler);
+   procedure Inform_Scheduler_Agent_Task_Has_Yielded
+     (Chosen_Task : in out Oak_Task_Handler);
    procedure Run_The_Bloody_Scheduler_Agent_That_Wanted_To_Be_Woken
      (Scheduler_Info : in out Oak_Scheduler_Info;
       Chosen_Task    : in out Oak_Task_Handler);
@@ -37,6 +36,17 @@ package Oak.Scheduler is
    procedure Add_Task_To_Scheduler
      (Scheduler_Info : in out Oak_Scheduler_Info;
       T              : Oak_Task_Handler);
+   procedure Remove_Task_From_Scheduler
+     (T              : Oak_Task_Handler);
+   procedure Activate_Task
+     (Scheduler_Info : in out Oak_Scheduler_Info;
+      T              : in Oak_Task_Handler);
+   procedure Deactivate_Task
+     (Scheduler_Info : in out Oak_Scheduler_Info;
+      T              : in Oak_Task_Handler);
+   procedure Add_New_Task_To_Inactive_List
+     (Scheduler_Info : in out Oak_Scheduler_Info;
+      T              : in Oak_Task_Handler);
 
    function Run_Scheduler_Agent
      (Agent  : Oak_Task_Handler;
@@ -74,5 +84,6 @@ private
       --  there a better structure I
       --  could use? Could use
       --  Collection Package?)
+      Inactive_Task_List   : Oak_Task_Handler := null;
    end record;
 end Oak.Scheduler;
