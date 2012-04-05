@@ -5,10 +5,11 @@ with Oak.Scheduler;
 
 package body Oak.Oak_Task.Protected_Object is
    procedure Initialise_Protected_Object
-     (PO : in Oak_Task_Handler;
-      Name             : in String;
-      Ceiling_Priority : in Integer;
-      Barriers         : in Entry_Barrier_Handler) is
+     (PO                    : in Oak_Task_Handler;
+      Name                  : in String;
+      Ceiling_Priority      : in Integer;
+      Barriers_Function     : in Entry_Barrier_Function_Handler;
+      Object_Record_Address : in System.Address) is
    begin
       PO.Name_Length               :=
         Natural'Min (Task_Name'Length, Name'Length);
@@ -42,8 +43,9 @@ package body Oak.Oak_Task.Protected_Object is
          Is_Protected_Object    => True,
          Tasks_Within           => null,
          Active_Subprogram_Kind => Protected_Function,
+         Entry_Barriers         => Barriers_Function,
          Entry_Queues           => (others => null),
-         Entry_Barriers         => Barriers,
+         Object_Record          => Object_Record_Address,
          Controlling_Shared_State => Waiting);
 
       if Ceiling_Priority >= Any_Priority'First and
@@ -122,15 +124,19 @@ package body Oak.Oak_Task.Protected_Object is
    begin
       Next_Task := null;
       for Entry_Id in PO.Entry_Queues'Range loop
-         if PO.Entry_Barriers.State (Entry_Id) then
-            Next_Task := PO.Entry_Queues (Entry_Id);
-            if Next_Task /= null then
-               Queue.Remove_Task (Queue => PO.Entry_Queues (Entry_Id),
-                                  T     => Next_Task);
-               exit;
-            end if;
+         Next_Task := PO.Entry_Queues (Entry_Id);
+         if Next_Task /= null and then
+           Is_Barrier_Open (PO, Entry_Id) then
+            Queue.Remove_Task (Queue => PO.Entry_Queues (Entry_Id),
+                               T     => Next_Task);
+            exit;
+         else
+            Next_Task := null;
          end if;
       end loop;
+   exception
+      when Program_Error =>
+         Next_Task := null;
    end Get_And_Remove_Next_Task_From_Entry_Queues;
 
    function Get_Acquiring_Tasks_State
@@ -183,7 +189,12 @@ package body Oak.Oak_Task.Protected_Object is
      (PO       : in Oak_Task_Handler;
       Entry_Id : in Entry_Index) return Boolean is
    begin
-      return PO.Entry_Barriers.State (Entry_Id);
+      return PO.Entry_Barriers (PO.Object_Record, Entry_Id);
+   exception
+      when others =>
+         Purge_Entry_Queues (PO             => PO,
+                             New_Task_State => Enter_PO_Refused);
+         raise Program_Error;
    end Is_Barrier_Open;
 
    function Is_Protected_Object

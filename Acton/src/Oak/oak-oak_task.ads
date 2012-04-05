@@ -96,13 +96,11 @@ package Oak.Oak_Task is
 
    Unspecified_Priority : constant Integer := -1;
 
+   type Entry_Barrier_Function_Handler is
+     access function (PO : System.Address;
+                      E  : Protected_Entry_Index) return Boolean;
+
    type Entry_Queue_Array is array (Entry_Index range <>) of Oak_Task_Handler;
-   type Entry_Barrier_Array is array (Entry_Index range <>) of
-     Boolean;
-   type Entry_Barrier_Wrapper (Array_Length : Entry_Index) is record
-      State : Entry_Barrier_Array (1 .. Array_Length);
-   end record;
-   type Entry_Barrier_Handler is access all Entry_Barrier_Wrapper;
 
    type Protected_Subprogram_Type is
      (Protected_Function,
@@ -122,8 +120,7 @@ package Oak.Oak_Task is
             Subprogram_Kind  : Protected_Subprogram_Type := Protected_Function;
             Entry_Id_Enter   : Entry_Index := No_Entry;
          when Exiting_PO =>
-            PO_Exit           : Oak_Task_Handler := null;
-            Barrier_Exception : Boolean := False;
+            PO_Exit : Oak_Task_Handler := null;
          when others =>
             null;
       end case;
@@ -208,12 +205,13 @@ private
             Deadline_List   : Task_Link_Element;
 
             Is_Protected_Object    : Boolean := False;
-            Tasks_Within           : Oak_Task_Handler := null;
             Active_Subprogram_Kind : Protected_Subprogram_Type
               := Protected_Function;
+            Tasks_Within           : Oak_Task_Handler := null;
+            Entry_Barriers         : Entry_Barrier_Function_Handler;
             Entry_Queues           : Entry_Queue_Array (1 .. Num_Entries)
               := (others => null);
-            Entry_Barriers         : Entry_Barrier_Handler := null;
+            Object_Record          : System.Address;
 
          when Scheduler =>
             --  Scheduler Agents fields.

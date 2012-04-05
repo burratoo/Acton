@@ -27,15 +27,13 @@ package body ARPART.Protected_Objects is
    end Enter_Protected_Object;
 
    procedure Exit_Protected_Object
-     (PO                : Oak.Oak_Task.Oak_Task_Handler;
-      Barrier_Exception : Boolean := False)
+     (PO : Oak.Oak_Task.Oak_Task_Handler)
    is
       Self     : constant access Oak_Task       :=
                    Oak.Core.Get_Current_Task;
       Message  : constant Oak_Task_Message :=
                 (Message_Type  => Exiting_PO,
-                 PO_Exit       => PO,
-                 Barrier_Exception => Barrier_Exception);
+                 PO_Exit       => PO);
    begin
       Tasks.Yield_Processor_To_Kernel (Task_Message => Message);
       if Data_Access.Get_State (T => Self) = Exit_PO_Error then

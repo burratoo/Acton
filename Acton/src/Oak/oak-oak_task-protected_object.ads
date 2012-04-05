@@ -3,10 +3,11 @@ package Oak.Oak_Task.Protected_Object is
    pragma Preelaborate;
 
    procedure Initialise_Protected_Object
-     (PO               : in Oak_Task_Handler;
-      Name             : in String;
-      Ceiling_Priority : in Integer;
-      Barriers         : in Entry_Barrier_Handler);
+     (PO                    : in Oak_Task_Handler;
+      Name                  : in String;
+      Ceiling_Priority      : in Integer;
+      Barriers_Function     : in Entry_Barrier_Function_Handler;
+      Object_Record_Address : in System.Address);
 
    procedure Add_Task_To_Protected_Object
      (T  : in Oak_Task_Handler;
