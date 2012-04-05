@@ -7,7 +7,6 @@ package Oak.Oak_Task.Protected_Object is
       Name                  : in String;
       Ceiling_Priority      : in Integer;
       Barriers_Function     : in Entry_Barrier_Function_Handler;
-      Has_Count_Attribute   : in Boolean;
       Object_Record_Address : in System.Address);
 
    procedure Add_Task_To_Protected_Object
@@ -61,8 +60,6 @@ package Oak.Oak_Task.Protected_Object is
    function Is_Barrier_Open
      (PO       : in Oak_Task_Handler;
       Entry_Id : in Entry_Index) return Boolean;
-
-   function Has_Count_Attribute (PO : in Oak_Task_Handler) return Boolean;
 
    function Is_Protected_Object
      (PO : in Oak_Task_Handler) return Boolean;

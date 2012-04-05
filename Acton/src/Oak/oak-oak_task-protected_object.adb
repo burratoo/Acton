@@ -9,7 +9,6 @@ package body Oak.Oak_Task.Protected_Object is
       Name                  : in String;
       Ceiling_Priority      : in Integer;
       Barriers_Function     : in Entry_Barrier_Function_Handler;
-      Has_Count_Attribute   : in Boolean;
       Object_Record_Address : in System.Address) is
    begin
       PO.Name_Length               :=
@@ -42,7 +41,6 @@ package body Oak.Oak_Task.Protected_Object is
          Elaborated             => null,
          Message_Location       => null,
          Is_Protected_Object    => True,
-         Has_Count_Attribute    => Has_Count_Attribute,
          Tasks_Within           => null,
          Active_Subprogram_Kind => Protected_Function,
          Entry_Barriers         => Barriers_Function,
@@ -198,11 +196,6 @@ package body Oak.Oak_Task.Protected_Object is
                              New_Task_State => Enter_PO_Refused);
          raise Program_Error;
    end Is_Barrier_Open;
-
-   function Has_Count_Attribute (PO : in Oak_Task_Handler) return Boolean is
-   begin
-      return PO.Has_Count_Attribute;
-   end Has_Count_Attribute;
 
    function Is_Protected_Object
      (PO : in Oak_Task_Handler) return Boolean is

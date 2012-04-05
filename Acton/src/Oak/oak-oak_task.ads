@@ -205,7 +205,6 @@ private
             Deadline_List   : Task_Link_Element;
 
             Is_Protected_Object    : Boolean := False;
-            Has_Count_Attribute    : Boolean := False;
             Active_Subprogram_Kind : Protected_Subprogram_Type
               := Protected_Function;
             Tasks_Within           : Oak_Task_Handler := null;

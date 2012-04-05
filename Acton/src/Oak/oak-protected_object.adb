@@ -46,10 +46,15 @@ package body Oak.Protected_Object is
                Add_Task_To_Entry_Queue (PO       => PO,
                                         T        => T,
                                         Entry_Id => Entry_Id);
-               if Has_Count_Attribute (PO) then
-                  Get_And_Remove_Next_Task_From_Entry_Queues
-                    (PO => PO, Next_Task => Chosen_Task);
-               end if;
+
+               --  We need to check the queues here in case a barrier has
+               --  changed as a result of it using the queue attribute.
+               --  We are not able to conditional this to only protected
+               --  objects that have barriers that use Count as the front
+               --  end does lend itself to achieve this.
+               Get_And_Remove_Next_Task_From_Entry_Queues
+                 (PO => PO, Next_Task => Chosen_Task);
+
             else
                Chosen_Task := T;
             end if;
