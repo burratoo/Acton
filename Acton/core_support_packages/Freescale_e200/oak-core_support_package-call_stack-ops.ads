@@ -3,7 +3,7 @@ with Oak.Oak_Task;
 with System;
 with System.Storage_Elements;
 
-package Oak.Processor_Support_Package.Call_Stack.Ops is
+package Oak.Core_Support_Package.Call_Stack.Ops is
 
    pragma Preelaborate;
 
@@ -33,4 +33,4 @@ package Oak.Processor_Support_Package.Call_Stack.Ops is
       Stack_Size        : in System.Storage_Elements.Storage_Count;
       Message_Location  : out OT.Oak_Task_Message_Location);
 
-end Oak.Processor_Support_Package.Call_Stack.Ops;
+end Oak.Core_Support_Package.Call_Stack.Ops;

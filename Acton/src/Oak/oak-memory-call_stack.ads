@@ -1,13 +1,13 @@
 with System;
 with System.Storage_Elements;
-with Oak.Processor_Support_Package;
-with Oak.Processor_Support_Package.Call_Stack;
+with Oak.Core_Support_Package;
+with Oak.Core_Support_Package.Call_Stack;
 
 package Oak.Memory.Call_Stack is
    pragma Preelaborate;
 
    use System;
-   package PSP_Stack renames Oak.Processor_Support_Package.Call_Stack;
+   package CSP_Stack renames Oak.Core_Support_Package.Call_Stack;
 
    --   type Storage_Pointer is access all Storage_Element;
    type Call_Stack is
@@ -20,14 +20,14 @@ package Oak.Memory.Call_Stack is
    end record;
 
    Default_Stack_Size : constant :=
-     Oak.Processor_Support_Package.Call_Stack.Default_Call_Stack_Size;
+     Oak.Core_Support_Package.Call_Stack.Default_Call_Stack_Size;
 
    --  Value used to indicate tha no size has been set
 
    Unspecified_Call_Stack_Size : constant Storage_Count := 0;
 
    subtype Call_Stack_Size is Storage_Elements.Storage_Count range
-     PSP_Stack.Minimum_Call_Stack_Size ..
+     CSP_Stack.Minimum_Call_Stack_Size ..
       Storage_Elements.Storage_Count'Last;
 private
    --  Warning! This is not a real variable. It is defined in the linker script

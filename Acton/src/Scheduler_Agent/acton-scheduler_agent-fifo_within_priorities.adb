@@ -1,6 +1,6 @@
 with Oak.Core;
-with Oak.Processor_Support_Package.Task_Support;
-use  Oak.Processor_Support_Package.Task_Support;
+with Oak.Core_Support_Package.Task_Support;
+use  Oak.Core_Support_Package.Task_Support;
 with Oak.Oak_Task.Scheduler_Agent;
 use Oak.Oak_Task.Scheduler_Agent;
 with Oak.Oak_Task.Data_Access;

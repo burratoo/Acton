@@ -1,4 +1,4 @@
-package body Oak.Processor_Support_Package.Processor is
+package body Oak.Core_Support_Package.Processor is
 
    -----------------------
    -- Get_Proccessor_Id --
@@ -9,4 +9,4 @@ package body Oak.Processor_Support_Package.Processor is
       return 1;
    end Get_Proccessor_Id;
 
-end Oak.Processor_Support_Package.Processor;
+end Oak.Core_Support_Package.Processor;

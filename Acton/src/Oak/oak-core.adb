@@ -1,19 +1,19 @@
 with Ada.Real_Time;                                 use Ada.Real_Time;
 with Oak.Memory.Call_Stack.Ops;
-with Oak.Processor_Support_Package.Task_Support;
-use  Oak.Processor_Support_Package.Task_Support;
-with Oak.Processor_Support_Package.Processor;
+with Oak.Core_Support_Package.Task_Support;
+use  Oak.Core_Support_Package.Task_Support;
+with Oak.Core_Support_Package.Processor;
 with Oak.Oak_Task.Internal;                         use Oak.Oak_Task.Internal;
 with Oak.Oak_Task.Data_Access;
 with Oak.Oak_Task.Activation;
 with Oak.Oak_Task.Protected_Object;
-with Oak.Processor_Support_Package.Task_Interrupts;
-with Oak.Processor_Support_Package.Call_Stack;
+with Oak.Core_Support_Package.Task_Interrupts;
+with Oak.Core_Support_Package.Call_Stack;
 with Oak.Protected_Object;
 
 package body Oak.Core is
 
-   package Processor renames Oak.Processor_Support_Package.Processor;
+   package Processor renames Oak.Core_Support_Package.Processor;
 
    ----------------
    -- Initialise --
@@ -25,9 +25,9 @@ package body Oak.Core is
          Oak.Memory.Call_Stack.Ops.Allocate_Call_Stack
            (Stack            => Processor_Kernels (J).Call_Stack,
             Size_In_Elements =>
-              Oak.Processor_Support_Package.Call_Stack.Oak_Call_Stack_Size);
+              Oak.Core_Support_Package.Call_Stack.Oak_Call_Stack_Size);
       end loop;
-      Oak.Processor_Support_Package.Task_Interrupts.Initialise_Task_Enviroment;
+      Oak.Core_Support_Package.Task_Interrupts.Initialise_Task_Enviroment;
    end Initialise;
 
    -----------

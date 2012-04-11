@@ -1,16 +1,16 @@
 with Oak.Oak_Task.Deadline_List;
 with Oak.Oak_Task.Internal;                      use Oak.Oak_Task.Internal;
-with Oak.Processor_Support_Package;
-use Oak.Processor_Support_Package;
+with Oak.Core_Support_Package;
+use Oak.Core_Support_Package;
 with Oak.Oak_Task.Data_Access;                   use Oak.Oak_Task.Data_Access;
-with Oak.Processor_Support_Package.Task_Support;
+with Oak.Core_Support_Package.Task_Support;
 with Oak.Oak_Task.Scheduler_Agent;
 with Oak.Core;
 with System;                                     use System;
 with Oak.Oak_Task.Queue;
 
 package body Oak.Scheduler is
-   package Tasks renames Oak.Processor_Support_Package.Task_Support;
+   package Tasks renames Oak.Core_Support_Package.Task_Support;
    package SA_Ops renames Oak.Oak_Task.Scheduler_Agent;
    package Inactive_Queue renames Oak.Oak_Task.Queue;
 

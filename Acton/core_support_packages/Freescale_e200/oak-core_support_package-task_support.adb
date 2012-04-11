@@ -3,7 +3,7 @@ with ISA.Power.e200.Timer_Registers;
 with ISA;
 with System;                         use System;
 
-package body Oak.Processor_Support_Package.Task_Support is
+package body Oak.Core_Support_Package.Task_Support is
    ----------------------------
    -- Context_Switch_To_Task --
    ----------------------------
@@ -144,4 +144,4 @@ package body Oak.Processor_Support_Package.Task_Support is
          Volatile => True);
    end Sleep_Kernel;
 
-end Oak.Processor_Support_Package.Task_Support;
+end Oak.Core_Support_Package.Task_Support;

@@ -1,16 +1,16 @@
-with Oak.Processor_Support_Package.Time;
+with Oak.Core_Support_Package.Time;
 
 package Ada.Real_Time is
 
    pragma Preelaborate;
 
-   package Oak_PSP_Time renames Oak.Processor_Support_Package.Time;
+   package Oak_CSP_Time renames Oak.Core_Support_Package.Time;
 
    type Time is private;
    Time_First : constant Time;
    Time_Last  : constant Time;
    Time_Zero  : constant Time;
-   Time_Unit  : constant := Oak_PSP_Time.Oak_Time_Unit;
+   Time_Unit  : constant := Oak_CSP_Time.Oak_Time_Unit;
 
    type Time_Span is private;
    Time_Span_First : constant Time_Span;
@@ -56,24 +56,24 @@ package Ada.Real_Time is
    function Minutes (M : Integer) return Time_Span;
 
    type Seconds_Count is range
-     -(Oak_PSP_Time.Seconds_Max) .. +(Oak_PSP_Time.Seconds_Max);
+     -(Oak_CSP_Time.Seconds_Max) .. +(Oak_CSP_Time.Seconds_Max);
 
    procedure Split (T : Time; SC : out Seconds_Count; TS : out Time_Span);
    function Time_Of (SC : Seconds_Count; TS : Time_Span) return Time;
 
 private
-   type Time is new Oak_PSP_Time.Oak_Time;
+   type Time is new Oak_CSP_Time.Oak_Time;
    Time_First : constant Time := Time'First;
    Time_Last  : constant Time := Time'Last;
    Time_Zero : constant Time := 0;
 
-   type Time_Span is new Oak_PSP_Time.Oak_Time;
+   type Time_Span is new Oak_CSP_Time.Oak_Time;
    Time_Span_First : constant Time_Span := Time_Span'First;
    Time_Span_Last  : constant Time_Span := Time_Span'Last;
    Time_Span_Zero  : constant Time_Span := 0;
-   Time_Span_Unit  : constant Time_Span := Oak_PSP_Time.Oak_Time_Span_Unit;
+   Time_Span_Unit  : constant Time_Span := Oak_CSP_Time.Oak_Time_Span_Unit;
 
-   Tick : constant Time_Span := Oak_PSP_Time.Oak_Tick;
+   Tick : constant Time_Span := Oak_CSP_Time.Oak_Tick;
 
    pragma Import (Intrinsic, "+");
    pragma Import (Intrinsic, "-");

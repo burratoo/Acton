@@ -29,7 +29,7 @@
 --  microcontrollers as their timer resolution moves into the microseconds
 --  region. Also makes the time range useable similar to existing systems.
 
-package Oak.Processor_Support_Package.Time is
+package Oak.Core_Support_Package.Time is
    pragma Preelaborate;
 
    MHz         : constant := 1E6;
@@ -55,4 +55,4 @@ package Oak.Processor_Support_Package.Time is
    --  In Hex : 0x7DE2900 Which is less than 2^32 or 0xFFFFFFFF.
    Seconds_Max : constant := 2 ** 63 - 1;
 
-end Oak.Processor_Support_Package.Time;
+end Oak.Core_Support_Package.Time;

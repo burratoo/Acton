@@ -1,7 +1,7 @@
 with System.Storage_Elements;
 with System;
 
-package Oak.Processor_Support_Package.Task_Interrupts is
+package Oak.Core_Support_Package.Task_Interrupts is
    pragma Preelaborate;
 
    procedure Initialise_Task_Enviroment;
@@ -30,4 +30,4 @@ package Oak.Processor_Support_Package.Task_Interrupts is
 
    IVOR8_CS_To_Task   : constant System.Address := CSTT'Address;
    IVOR8_CS_To_Kernel : constant System.Address := CSTK'Address;
-end Oak.Processor_Support_Package.Task_Interrupts;
+end Oak.Core_Support_Package.Task_Interrupts;

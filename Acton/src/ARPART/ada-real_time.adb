@@ -8,7 +8,7 @@ package body Ada.Real_Time is
 
    function Clock return Time is
    begin
-      return Time (Oak_PSP_Time.Get_Clock);
+      return Time (Oak_CSP_Time.Get_Clock);
    end Clock;
 
    ---------
@@ -55,10 +55,10 @@ package body Ada.Real_Time is
       Seconds : Time_Span;
       DS, DF  : Duration;
    begin
-      Seconds := TS / Integer (Oak_PSP_Time.Ticks_Per_Second);
+      Seconds := TS / Integer (Oak_CSP_Time.Ticks_Per_Second);
       DS      := Duration (Seconds);
       DF      := Duration (Seconds *
-                             Integer (Oak_PSP_Time.Ticks_Per_Second) - TS);
+                             Integer (Oak_CSP_Time.Ticks_Per_Second) - TS);
       return DS + DF / Billion;
    end To_Duration;
 
@@ -69,7 +69,7 @@ package body Ada.Real_Time is
    function To_Time_Span (D : Duration) return Time_Span is
       TS_Seconds, TS_Nano : Time_Span;
    begin
-      TS_Seconds := Time_Span (D) * Integer (Oak_PSP_Time.Ticks_Per_Second);
+      TS_Seconds := Time_Span (D) * Integer (Oak_CSP_Time.Ticks_Per_Second);
       TS_Nano    := Time_Span ((D - Duration (TS_Seconds)) * Billion);
       return TS_Seconds + TS_Nano;
    end To_Time_Span;
@@ -129,8 +129,8 @@ package body Ada.Real_Time is
 
    procedure Split (T : Time; SC : out Seconds_Count; TS : out Time_Span) is
    begin
-      SC := Seconds_Count (T / Oak_PSP_Time.Ticks_Per_Second);
-      TS := T - Time (SC * Oak_PSP_Time.Ticks_Per_Second);
+      SC := Seconds_Count (T / Oak_CSP_Time.Ticks_Per_Second);
+      TS := T - Time (SC * Oak_CSP_Time.Ticks_Per_Second);
    end Split;
 
    -------------
@@ -139,7 +139,7 @@ package body Ada.Real_Time is
 
    function Time_Of (SC : Seconds_Count; TS : Time_Span) return Time is
    begin
-      return Time (SC * Oak_PSP_Time.Ticks_Per_Second) + Time (TS);
+      return Time (SC * Oak_CSP_Time.Ticks_Per_Second) + Time (TS);
    end Time_Of;
 
 end Ada.Real_Time;

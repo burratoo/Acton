@@ -6,7 +6,7 @@ with Ada.Real_Time;
 with Oak.Oak_Task;
 with System.Storage_Elements;
 
-package Oak.Processor_Support_Package.Task_Support is
+package Oak.Core_Support_Package.Task_Support is
 
    pragma Preelaborate;
 
@@ -60,4 +60,4 @@ package Oak.Processor_Support_Package.Task_Support is
    IVOR10_Decrementer_Intr : System.Address := DI'Address;
    IVOR10_Sleep_Intr       : System.Address := SI'Address;
 
-end Oak.Processor_Support_Package.Task_Support;
+end Oak.Core_Support_Package.Task_Support;

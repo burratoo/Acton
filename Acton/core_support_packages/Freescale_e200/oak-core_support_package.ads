@@ -1,6 +1,6 @@
 --  with Ada.Real_Time; use Ada.Real_Time;
 
-package Oak.Processor_Support_Package is
+package Oak.Core_Support_Package is
    pragma Pure;
 
    Number_Of_Processors : constant := 1;
@@ -11,4 +11,4 @@ package Oak.Processor_Support_Package is
 
    Max_Protected_Entries : constant := 10;
    Max_Task_Entries      : constant := 0;
-end Oak.Processor_Support_Package;
+end Oak.Core_Support_Package;

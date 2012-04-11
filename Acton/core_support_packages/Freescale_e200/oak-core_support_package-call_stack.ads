@@ -1,4 +1,4 @@
-package Oak.Processor_Support_Package.Call_Stack is
+package Oak.Core_Support_Package.Call_Stack is
 
    pragma Pure;
 
@@ -49,4 +49,4 @@ package Oak.Processor_Support_Package.Call_Stack is
    --  |    Instruction Pointer    | <----        Bottom of stack
    --  -----------------------------
 
-end Oak.Processor_Support_Package.Call_Stack;
+end Oak.Core_Support_Package.Call_Stack;

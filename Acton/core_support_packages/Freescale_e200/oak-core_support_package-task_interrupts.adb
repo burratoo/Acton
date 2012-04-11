@@ -1,15 +1,15 @@
 with System.Machine_Code;                        use System.Machine_Code;
 with System;                                     use System;
 with Oak.Core;
-with Oak.Processor_Support_Package.Task_Support;
-use  Oak.Processor_Support_Package.Task_Support;
+with Oak.Core_Support_Package.Task_Support;
+use  Oak.Core_Support_Package.Task_Support;
 with Oak.Oak_Task;
 
 with ISA.Power.e200.z6.HID;
 with ISA;
 with Oak.Oak_Task.Internal;
 
-package body Oak.Processor_Support_Package.Task_Interrupts is
+package body Oak.Core_Support_Package.Task_Interrupts is
 
    procedure Enable_SPE_Instructions;
    pragma Inline_Always (Enable_SPE_Instructions);
@@ -96,7 +96,7 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
    ---------------------------------
    procedure E200_Context_Switch_To_Task is
       use Oak.Oak_Task;
-      use Oak.Processor_Support_Package;
+      use Oak.Core_Support_Package;
 
       Task_Stack_Pointer : Address;
       pragma Suppress (Access_Check);
@@ -302,7 +302,7 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
            Volatile => True);
 
       Oak.Core.Set_Current_Task_Stack_Pointer (SP => Task_Stack_Pointer);
-      Oak.Processor_Support_Package.Task_Support.Disable_Oak_Wake_Up_Interrupt;
+      Oak.Core_Support_Package.Task_Support.Disable_Oak_Wake_Up_Interrupt;
 
       Asm
         ("mfsprg0         r1" & ASCII.LF & ASCII.HT & -- load kernel stack ptr
@@ -389,4 +389,4 @@ package body Oak.Processor_Support_Package.Task_Interrupts is
          Volatile => True);
    end Sleep_Interrupt;
 
-end Oak.Processor_Support_Package.Task_Interrupts;
+end Oak.Core_Support_Package.Task_Interrupts;

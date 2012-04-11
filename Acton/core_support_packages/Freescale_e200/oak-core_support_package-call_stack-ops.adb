@@ -2,7 +2,7 @@ with System.Machine_Code; use System.Machine_Code;
 with Ada.Unchecked_Conversion;
 with System;
 
-package body Oak.Processor_Support_Package.Call_Stack.Ops is
+package body Oak.Core_Support_Package.Call_Stack.Ops is
    use System.Storage_Elements;
 
    ----------------------------------
@@ -86,4 +86,4 @@ package body Oak.Processor_Support_Package.Call_Stack.Ops is
          Message_Location  => Message_Location);
    end Initialise_Call_Stack;
 
-end Oak.Processor_Support_Package.Call_Stack.Ops;
+end Oak.Core_Support_Package.Call_Stack.Ops;
