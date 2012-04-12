@@ -71,12 +71,8 @@ package body MPC5554.eTPU.Util is
       Bytes_Given := Shift_Left (Shift_Right (Number_Of_Bytes, 3), 1);
 
       New_Free_Offset := Bytes_Given + Free_Parameter_RAM_Offset;
-      if New_Free_Offset <= eTPU.Shared_Data_Offset'Last then
-         Data_Offset               := Free_Parameter_RAM_Offset;
-         Free_Parameter_RAM_Offset := New_Free_Offset;
-      else
-         Data_Offset := 0;
-      end if;
+      Data_Offset               := Free_Parameter_RAM_Offset;
+      Free_Parameter_RAM_Offset := New_Free_Offset;
    end Malloc;
 
    procedure Malloc2

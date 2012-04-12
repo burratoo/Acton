@@ -262,16 +262,18 @@ package MPC5554.DSPI is
       Status_Register                        at SR_Offset_Address range
          0 .. 31;
       DMA_Interrupt_Request_Register         at RSER_Offset_Address range
-         0 .. 31;
+         0 .. 15;
       Push_Tx_FIFO_Register                  at PUSHR_Offset_Address range
          0 .. 31;
       Pop_Rx_FIFO_Register                   at POPR_Offset_Address range
          0 .. 31;
    end record;
 
+   pragma Warnings (Off, "*component of*padded*");
    type Module_Type is array (DSPI_Module_ID) of DSPI_Module_Type;
    for Module_Type'Component_Size use 4000;
    Module : Module_Type;
    for Module'Address use To_Address (DSPI_Base_Address);
+   pragma Warnings (On, "*component of*padded*");
 
 end MPC5554.DSPI;

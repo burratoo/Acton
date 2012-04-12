@@ -1,0 +1,47 @@
+abstract project Acton_Common is
+   Source_Dirs       := ("../src", "../src/ARPART", "../src/GNARL", "../src/Oak", "../src/Scheduler_Agent", "../core_support_packages");
+   Object_Dir        := "../obj/";
+   Languages         := ("Ada", "Asm");
+   Library_Name      := "acton";
+   Library_Dir       := "../adalib/";
+   Library_Version   := ".1";
+   Library_Src_Dir   := "../adainclude/";
+   Library_Interface := ("ARPART", "ARPART.Tasks", "ARPART.Protected_Objects", "Acton", "Acton.Scheduler_Agent", "Acton.Scheduler_Agent.FIFO_Within_Priorities", "Ada", "Ada.Exceptions", "Ada.Real_Time", "Ada.Real_Time.Delays", "Ada.Unchecked_Conversion", "Interfaces", "Oak", "Oak.Core", "Oak.Memory",
+                              "Oak.Memory.Call_Stack",
+                              "Oak.Core_Support_Package",
+                              "Oak.Core_Support_Package.Call_Stack",
+                              "Oak.Core_Support_Package.Time",
+                              "Oak.Oak_Task", "Oak.Oak_Task.Activation", "Oak.Oak_Task.Data_Access", "Oak.Oak_Task.Queue",
+                              "Oak.Oak_Task.Protected_Object",
+                              "Oak.Oak_Task.Scheduler_Agent",
+                              "System", "System.Machine_Code", "System.Storage_Elements", "System.Unsigned_Types",
+                             --  Only needed for their ali files
+                              "Oak.Memory.Call_Stack.Ops",
+                              "Oak.Core_Support_Package.Processor",
+                              "Oak.Core_Support_Package.Task_Interrupts",
+                              "Oak.Core_Support_Package.Task_Support",
+                              "Oak.Protected_Object",
+                              "Oak.Oak_Task.Internal",
+                              "Oak.Scheduler",
+                              "Oak.Scheduler.Agent_List"
+                             );
+
+   Ada_Switches := ("-gnatwa.Xl", "-g", "-gnatn", "-gnatg", "-O2");
+   Asm_Switches := ();
+
+   Documentation_Dir := "../doc/";
+
+   package Builder is
+      for Default_Switches ("ada") use ("-s", "-m", "-j4", "-g", "-largs");
+   end Builder;
+
+   --  package Linker is
+   --   for Default_Switches ("ada") use ("-g", "-T", "linker/intflash.ld");
+   --  end Linker;
+
+   package Pretty_Printer is
+      for Default_Switches ("ada") use ("-c3", "-c4", "-c5", "-M79");
+   end Pretty_Printer;
+
+end Acton_Common;
+

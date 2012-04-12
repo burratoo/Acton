@@ -538,8 +538,10 @@ Channel_31 : Service_Type;
       Host_Service_Request_Register at 8 range 0 .. 31;
    end record;
 
+   pragma Warnings (Off, "*bits of*unused");
    for Channel_Configuration_Control_Type'Size use
      Channel_Configuration_Control_Type_Size;
+   pragma Warnings (On, "*bits of*unused");
 
    ----------------------------------------------------------------------------
    --  eTPU Registers
@@ -644,11 +646,15 @@ Channel_31 : Service_Type;
    for Channel_Pending_Service_Status_Register_B'Address use
      To_Address (eTPU_Base_Address + CPSSR_B_Offset_Address);
 
+   pragma Warnings (Off, "*component of*padded*");
+
    type Channel_Config_Control_Array is
      array (eTPU_ID_Type) of Channel_Configuration_Control_Type;
    type Channel_Registers_Array_Type is
      array (eTPU_Engine) of Channel_Config_Control_Array;
    for Channel_Registers_Array_Type'Component_Size use Channel_Registers_Size;
+
+   pragma Warnings (On, "*component of*padded*");
 
    Channel : Channel_Registers_Array_Type;
    for Channel'Address use

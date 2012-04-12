@@ -2,6 +2,9 @@ with System.Storage_Elements; use System.Storage_Elements;
 
 package MPC5554.eMIOS is
 
+   --  Disable forced biased representation warning.
+   pragma Warnings (".B");
+
    ----------------------------------------------------------------------------
    --  Memory Addresses
    ----------------------------------------------------------------------------
@@ -238,14 +241,16 @@ package MPC5554.eMIOS is
    end record;
 
    for Unified_Channel_Type use record
-      Channel_A_Data_Register  at 0 range 0 .. 31;
-      Channel_B_Data_Register  at 4 range 0 .. 31;
-      Channel_Counter_Register at 8 range 0 .. 31;
+      Channel_A_Data_Register  at 0 range 8 .. 31;
+      Channel_B_Data_Register  at 4 range 8 .. 31;
+      Channel_Counter_Register at 8 range 8 .. 31;
       Channel_Control_Register at 12 range 0 .. 31;
       Channel_Status_Register  at 16 range 0 .. 31;
    end record;
 
+   pragma Warnings (Off, "*bits of*unused");
    for Unified_Channel_Type'Size use Unified_Channel_Type_Size;
+   pragma Warnings (On, "*bits of*unused");
 
    ----------------------------------------------------------------------------
    --  eMIOS Registers
