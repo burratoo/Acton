@@ -1,0 +1,59 @@
+with "acton_common";
+
+project Acton_MPC5554 is
+
+   --  Source Directories
+   Traget_Source_Dirs := ("../processor_support_packages/Freescale/MPC5554/src/e200",
+                   "../processor_support_packages/Freescale/MPC5554/src/mpc5554",
+                   "../processor_support_packages/Freescale/MPC5554/src/oak_support");
+
+   --  Target Libraries
+   Target_Library_Interface := ("MPC5554", "MPC5554.DSPI", "MPC5554.EBI", "MPC5554.eDMA",
+                        "MPC5554.eMIOS", "MPC5554.eQADC", "MPC5554.eQADC.ADC",
+                        "MPC5554.eSCI", "MPC5554.eTPU", "MPC5554.eTPU.PWM",
+                        "MPC5554.eTPU.PWM.AUTO", "MPC5554.eTPU.Util",
+                        "MPC5554.INTC", "MPC5554.PBRIDGE", "MPC5554.SIU",
+                        "MPC5554.XBAR");
+
+   --  IDE
+   Target          := "powerpc-burratoo-acton-";
+   Target_Gnat     := Target & "gnat";
+   Target_Gnatlist := Target & "gnatls";
+   Target_Debugger_Command := Target & "gdb";
+
+   --  Builder Switches
+   Target_Ada_Switches := Acton_Common.Ada_Switches & "-Wa,-mregnames";
+   Target_Asm_Switches := Acton_Common.Asm_Switches & "-mregnames";
+
+
+   for Source_Dirs use Acton_Common.Source_Dirs & Traget_Source_Dirs;
+   for Object_Dir use Acton_Common.Object_Dir;
+   for Languages use Acton_Common.Languages;
+   for Library_Name use Acton_Common.Library_Name;
+   for Library_Dir use Acton_Common.Library_Dir;
+   for Library_Version use Acton_Common.Library_Version;
+   for Library_Src_Dir use Acton_Common.Library_Src_Dir;
+   for Library_Interface use Acton_Common.Library_Interface & Target_Library_Interface;
+
+   package Ide is
+      for Documentation_Dir use Acton_Common.Documentation_Dir;
+      for Gnat use Target_Gnat;
+      for Gnatlist use Target_Gnatlist;
+      for Debugger_Command use Target_Debugger_Command;
+   end Ide;
+
+   package Builder renames Acton_Common.Builder;
+
+   package Compiler is
+      for Default_Switches ("ada") use Acton_Common.Ada_Switches & Target_Ada_Switches;
+      for Default_Switches ("asm") use Acton_Common.Asm_Switches & Target_Asm_Switches;
+   end Compiler;
+
+   --  package Linker is
+   --   for Default_Switches ("ada") use ("-g", "-T", "linker/intflash.ld");
+   --  end Linker;
+
+   package Pretty_Printer renames Acton_Common.Pretty_Printer;
+
+end Acton_MPC5554;
+

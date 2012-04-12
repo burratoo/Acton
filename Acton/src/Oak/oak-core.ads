@@ -1,5 +1,5 @@
 with Oak.Scheduler;                 use Oak.Scheduler;
-with Oak.Processor_Support_Package; use Oak.Processor_Support_Package;
+with Oak.Core_Support_Package;      use Oak.Core_Support_Package;
 with Oak.Oak_Task;                  use Oak.Oak_Task;
 with System;                        use System;
 with Oak.Memory.Call_Stack;         use Oak.Memory.Call_Stack;

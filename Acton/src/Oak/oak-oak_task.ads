@@ -1,4 +1,4 @@
-with Oak.Processor_Support_Package; use Oak.Processor_Support_Package;
+with Oak.Core_Support_Package; use Oak.Core_Support_Package;
 with Oak.Memory;                    use Oak.Memory;
 with Ada.Real_Time;                 use Ada.Real_Time;
 with Oak.Memory.Call_Stack;         use Oak.Memory.Call_Stack;
@@ -17,9 +17,9 @@ package Oak.Oak_Task is
    Single_Entry : constant := 1;
 
    Max_Protected_Entries : constant :=
-     Processor_Support_Package.Max_Protected_Entries;
+     Core_Support_Package.Max_Protected_Entries;
    Max_Task_Entries      : constant :=
-     Processor_Support_Package.Max_Task_Entries;
+     Core_Support_Package.Max_Task_Entries;
 
    Max_Entries : constant :=
      (if Max_Protected_Entries > Max_Task_Entries then
@@ -35,7 +35,7 @@ package Oak.Oak_Task is
 
    type Task_Id is range 0 .. Max_Tasks;
    subtype Task_Name is String
-     (1 .. Processor_Support_Package.Max_Task_Name_Length);
+     (1 .. Core_Support_Package.Max_Task_Name_Length);
 
    type Task_State is (
                        Bad_State,                   -- 0

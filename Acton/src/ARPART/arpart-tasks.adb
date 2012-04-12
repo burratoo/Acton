@@ -1,4 +1,4 @@
-with Oak.Processor_Support_Package.Task_Support;
+with Oak.Core_Support_Package.Task_Support;
 with Oak.Oak_Task.Data_Access;
 with Oak.Core;
 use Oak.Oak_Task;
@@ -96,6 +96,6 @@ package body ARPART.Tasks is
       OT.Data_Access.Store_Oak_Task_Message
         (For_Task     => Oak.Core.Get_Current_Task,
          Message      => Task_Message);
-      Oak.Processor_Support_Package.Task_Support.Yield_Processor_To_Kernel;
+      Oak.Core_Support_Package.Task_Support.Yield_Processor_To_Kernel;
    end Yield_Processor_To_Kernel;
 end ARPART.Tasks;

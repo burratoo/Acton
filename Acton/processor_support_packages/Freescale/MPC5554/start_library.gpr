@@ -1,0 +1,41 @@
+project Start_Library is
+
+   for Languages use ("Ada", "Asm");
+   for Source_Dirs use ("src/start_library", "src/mpc5554", "src/e200", "../../../core_support_packages");
+   for Source_Files use ("__start.s",
+                         "mpc5500_asmcfg.s",
+                         "mpc5500_SRAM_load.s",
+                         "mpc5554-init.adb", "mpc5554-init.ads",
+                         "mpc5554.ads",
+                         "mpc5554-siu.ads",
+                         "mpc5554-ebi.ads",
+                         "mpc5554-pbridge.ads",
+                         "mpc5554-xbar.ads",
+                         "isa.ads",
+                         "isa-power-e200-processor_control_registers.ads");
+   for Object_Dir use "obj/";
+   for Library_Name use "acton-crt0";
+   for Library_Dir use "lib";
+   for Library_Version use "1";
+
+   package Naming is
+      for Body_Suffix ("asm") use ".s";
+   end Naming;
+
+   package Builder is
+      for Default_Switches ("ada") use ("-s");
+   end Builder;
+
+   package Compiler is
+      for Default_Switches ("ada") use ("-gnatn", "-gnatg", "-Wa,-mregnames");
+      for Default_Switches ("asm") use ("-mregnames");
+   end Compiler;
+
+   package Ide is
+      for Gnat use "powerpc-eabispe-gnat";
+      for Gnatlist use "powerpc-eabispe-gnatls";
+      for Debugger_Command use "powerpc-eabispe-gdb";
+   end Ide;
+
+end Start_Library;
+

@@ -1,4 +1,4 @@
-with Oak.Processor_Support_Package.Call_Stack.Ops;
+with Oak.Core_Support_Package.Call_Stack.Ops;
 with Oak.Oak_Task;
 
 package Oak.Memory.Call_Stack.Ops is
@@ -8,7 +8,7 @@ package Oak.Memory.Call_Stack.Ops is
    procedure Allocate_Call_Stack
      (Stack            : out Call_Stack_Handler;
       Size_In_Elements : in Storage_Elements.Storage_Count :=
-     PSP_Stack.Call_Stack_Size);
+     CSP_Stack.Call_Stack_Size);
 
    procedure Initialise_Call_Stack
      (Stack             : in out Oak.Memory.Call_Stack.Call_Stack_Handler;
@@ -16,7 +16,7 @@ package Oak.Memory.Call_Stack.Ops is
       Task_Value_Record : in System.Address := Null_Address;
       Message_Location  : out OT.Oak_Task_Message_Location)
       renames
-     Oak.Processor_Support_Package.Call_Stack.Ops.Initialise_Call_Stack;
+     Oak.Core_Support_Package.Call_Stack.Ops.Initialise_Call_Stack;
 
    procedure Initialise_Call_Stack
      (Stack             : in out Oak.Memory.Call_Stack.Call_Stack_Handler;
@@ -26,6 +26,6 @@ package Oak.Memory.Call_Stack.Ops is
       Stack_Size        : in System.Storage_Elements.Storage_Count;
       Message_Location  : out OT.Oak_Task_Message_Location)
       renames
-     Oak.Processor_Support_Package.Call_Stack.Ops.Initialise_Call_Stack;
+     Oak.Core_Support_Package.Call_Stack.Ops.Initialise_Call_Stack;
 
 end Oak.Memory.Call_Stack.Ops;
