@@ -72,4 +72,6 @@ package Oak.Oak_Task.Protected_Object is
      (PO             : in Oak_Task_Handler;
       New_Task_State : in Task_State);
 
+   function Has_Entries (PO : in Oak_Task_Handler) return Boolean;
+
 end Oak.Oak_Task.Protected_Object;

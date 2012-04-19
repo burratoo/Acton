@@ -6,20 +6,22 @@
  * Copyright 2011 Patrick Bernardi All rights reserved.
  */
 		.extern __OTS_E200_Context_Switch_To_Task
-		.extern __OTS_E200_Context_Switch_To_Task
+		.extern __OTS_E200_Context_Switch_To_Kernel
 		.extern __OTS_Decrementer_Interrupt
-		.extern ___OTS_Sleep_Interrupt
+		.extern __OTS_Sleep_Interrupt
+		.extern __OI_External_Interrupt
 
 		.global __OTS_CSTT
 		.global __OTS_CSTK
 		.global __OTS_DI
 		.global __OTS_SI
+                .global __OI_EI
 
 		.section ".acton_intr_branch_table", "ax"
 		.equ ALIGN_OFFSET, 4
 
 ActonInterruptBranchTable:
-
+__IVPR:
 		.align ALIGN_OFFSET
 __OTS_CSTT:	b	__OTS_E200_Context_Switch_To_Task
 		.align ALIGN_OFFSET
@@ -27,5 +29,6 @@ __OTS_CSTK:	b	__OTS_E200_Context_Switch_To_Kernel
 		.align ALIGN_OFFSET
 __OTS_DI:	b	__OTS_Decrementer_Interrupt
 		.align ALIGN_OFFSET
-__OTS_SI:	b	___OTS_Sleep_Interrupt
-
+__OTS_SI:	b	__OTS_Sleep_Interrupt
+		.align ALIGN_OFFSET
+__OI_EI:        b       __OI_External_Interrupt

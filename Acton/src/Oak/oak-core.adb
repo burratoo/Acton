@@ -9,6 +9,7 @@ with Oak.Oak_Task.Activation;
 with Oak.Oak_Task.Protected_Object;
 with Oak.Core_Support_Package.Task_Interrupts;
 with Oak.Core_Support_Package.Call_Stack;
+with Oak.Interrupts;
 with Oak.Protected_Object;
 
 package body Oak.Core is
@@ -166,7 +167,7 @@ package body Oak.Core is
                         PO              => Task_Message.PO_Enter,
                         Subprogram_Kind => Task_Message.Subprogram_Kind,
                         Entry_Id        => Task_Message.Entry_Id_Enter,
-                       Chosen_Task => Next_Task);
+                        Chosen_Task => Next_Task);
 
                   when Exiting_PO =>
                      Oak.Protected_Object.Process_Exit_Request
@@ -174,6 +175,12 @@ package body Oak.Core is
                         T                 => Get_Current_Task,
                         PO                => Task_Message.PO_Exit,
                         Chosen_Task       => Next_Task);
+                  when Attach_Interrupt_Handlers =>
+                     Oak.Interrupts.Attach_Handlers
+                       (Handlers    => Task_Message.Attach_Handlers,
+                        Handler_PO  => Task_Message.Attach_Handler_PO,
+                        T           => Get_Current_Task,
+                        Chosen_Task => Next_Task);
                   when others =>
                      null;
                end case;

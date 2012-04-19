@@ -52,6 +52,9 @@ __heap_start   =
  * | .rcw                    | Reset Config Half Word and PC value
  * |                         | > flash_rcw
  * +-------------------------+
+ * | .acton_intr_branch_table| Interrupts
+ * | .intc_vector_table      | > interrupts_flash
+ * +-------------------------+
  * | .pecrt0                 | Executable code
  * | .interp                 |
  * | .hash                   |
@@ -64,7 +67,7 @@ __heap_start   =
  * | .rodata                 |
  * | .rodata1                |
  * | .PPC.EMB.apuinfo        |
- * | .intc_hw_branch_table   |
+ * | .intc_vector_table      |
  * | .xcptn                  |
  * | etext = .               |
  * | _etext = .              |
@@ -146,16 +149,16 @@ SECTIONS
     *(.rcw)
   } > flash_rcw
 
-  /* INTC for hardware vector mode */
-  .intc_hw_branch_table :
-  {
-    *(.intc_hw_branch_table)
-  } > interrupts_flash
-
   .acton_intr_branch_table :
   {
     *(.acton_intr_branch_table)
-  } > int_flash
+  } > interrupts_flash
+
+  /* INTC for software vector mode */
+  .intc_vector_table ALIGN (2048):
+  {
+    *(.intc_hw_branch_table)
+  } > interrupts_flash
 
   /* CRT0 startup code */
   .pecrt0 ALIGN(4) :

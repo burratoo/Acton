@@ -228,4 +228,9 @@ package body Oak.Oak_Task.Protected_Object is
       end loop;
    end Purge_Entry_Queues;
 
+   function Has_Entries (PO : in Oak_Task_Handler) return Boolean is
+   begin
+      return (if PO.Entry_Barriers = null then False else True);
+   end Has_Entries;
+
 end Oak.Oak_Task.Protected_Object;
