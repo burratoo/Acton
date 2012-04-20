@@ -13,9 +13,9 @@ package body Oak.Interrupts is
    begin
       for J in Handlers'Range loop
          Oak.Processor_Support_Package.Interrupts.Attach_Handler
-           (Interrupt       => Handlers (J).Interrupt,
-            Handler_Address => Handlers (J).Handler'Address,
-            Priority        => P);
+           (Interrupt => Handlers (J).Interrupt,
+            Handler   => Handlers (J).Handler,
+            Priority  => P);
       end loop;
       Chosen_Task := T;
    end Attach_Handlers;

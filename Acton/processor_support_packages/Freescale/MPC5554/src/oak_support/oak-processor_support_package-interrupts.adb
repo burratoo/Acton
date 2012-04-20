@@ -39,10 +39,13 @@ package body Oak.Processor_Support_Package.Interrupts is
            "mfsrr0   r3"              & ASCII.LF & ASCII.HT &
            "stw      r3,  0x00(r1)"   & ASCII.LF & ASCII.HT &
            "mfsrr1   r3"              & ASCII.LF & ASCII.HT &
+           "stw      r3,  0x04(r1)"   & ASCII.LF & ASCII.HT &
            --  Load INTC_IACKR address
            "lis      r3,  %0@ha"      & ASCII.LF & ASCII.HT &
            "lwz      r3,  %0@l(r3)"   & ASCII.LF & ASCII.HT &
-           --  Read ISR Address from vector table
+           --  Read ISR Address from vector table.
+           "lwz      r4,  0x4(r3)"    & ASCII.LF & ASCII.HT &
+           --  Read object address from vector table.
            "lwz      r3,  0x0(r3)"    & ASCII.LF & ASCII.HT &
            --  Save r9 and r10
            "evstdd   r9,  0x50(r1)"   & ASCII.LF & ASCII.HT &
@@ -65,16 +68,16 @@ package body Oak.Processor_Support_Package.Interrupts is
            "evstdd   r8,  0x48(r1)"   & ASCII.LF & ASCII.HT &
            "evstdd   r11, 0x60(r1)"   & ASCII.LF & ASCII.HT &
            "evstdd   r12, 0x68(r1)"   & ASCII.LF & ASCII.HT &
-           "mflr     r4"              & ASCII.LF & ASCII.HT &
-           "stw      r4,  0x08(r1)"   & ASCII.LF & ASCII.HT &
-           "mfctr    r4"              & ASCII.LF & ASCII.HT &
-           "stw      r4,  0x0C(r1)"   & ASCII.LF & ASCII.HT &
-           "mfxer    r4"              & ASCII.LF & ASCII.HT &
-           "stw      r4,  0x10(r1)"   & ASCII.LF & ASCII.HT &
-           "mfcr     r4"              & ASCII.LF & ASCII.HT &
-           "stw      r4,  0x14(r1)"   & ASCII.LF & ASCII.HT &
+           "mflr     r5"              & ASCII.LF & ASCII.HT &
+           "stw      r5,  0x08(r1)"   & ASCII.LF & ASCII.HT &
+           "mfctr    r5"              & ASCII.LF & ASCII.HT &
+           "stw      r5,  0x0C(r1)"   & ASCII.LF & ASCII.HT &
+           "mfxer    r5"              & ASCII.LF & ASCII.HT &
+           "stw      r5,  0x10(r1)"   & ASCII.LF & ASCII.HT &
+           "mfcr     r5"              & ASCII.LF & ASCII.HT &
+           "stw      r5,  0x14(r1)"   & ASCII.LF & ASCII.HT &
            --  Store ISR address to link register
-           "mtlr     r3"              & ASCII.LF & ASCII.HT &
+           "mtlr     r4"              & ASCII.LF & ASCII.HT &
            --  Branch to ISR...
            "blrl"                     & ASCII.LF & ASCII.HT &
            --  ... and return here when done. Restore the context except for
@@ -129,24 +132,26 @@ package body Oak.Processor_Support_Package.Interrupts is
 
    procedure Default_Handler is
    begin
-      null;
+      loop
+         null;
+      end loop;
    end Default_Handler;
 
    procedure Initialise_Interrupts is
    begin
-      Module_Config_Register.Vector_Table_Entry_Size := Four_Bytes;
+      Module_Config_Register.Vector_Table_Entry_Size := Eight_Bytes;
       Module_Config_Register.Hardware_Vector_Enable := Software_Vector_Mode;
       Interrupt_Acknowledge_Register := INTC_Vector_Table'Address;
       Current_Priority_Register := MPC5554_Interrupt_Priority'First;
    end Initialise_Interrupts;
 
-   procedure Attach_Handler (Interrupt       : Oak_Interrupt_Id;
-                             Handler_Address : Address;
-                             Priority        : Interrupt_Priority) is
+   procedure Attach_Handler (Interrupt : Oak_Interrupt_Id;
+                             Handler   : Parameterless_Handler;
+                             Priority  : Interrupt_Priority) is
       use Oak.Core_Support_Package.Task_Interrupts;
    begin
       Disable_Core_Interrupts;
-      INTC_Vector_Table (Interrupt) := Handler_Address;
+      INTC_Vector_Table (Interrupt) := Handler;
       Priority_Select_Register_Array (Interrupt)
         := MPC5554_Interrupt_Priority (Priority - Interrupt_Priority'First);
       ISA.Power.Memory_Barrier;

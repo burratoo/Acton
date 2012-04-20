@@ -6,8 +6,6 @@ package Oak.Interrupts is
 
    pragma Preelaborate;
 
-   type Parameterless_Handler is access protected procedure;
-
    type Interrupt_Handler_Pair is record
       Interrupt : Oak_Interrupt_Id;
       Handler   : Parameterless_Handler;

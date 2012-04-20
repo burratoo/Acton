@@ -154,12 +154,6 @@ SECTIONS
     *(.acton_intr_branch_table)
   } > interrupts_flash
 
-  /* INTC for software vector mode */
-  .intc_vector_table ALIGN (2048):
-  {
-    *(.intc_hw_branch_table)
-  } > interrupts_flash
-
   /* CRT0 startup code */
   .pecrt0 ALIGN(4) :
   {
@@ -420,6 +414,12 @@ SECTIONS
    *(.bss)
    *(COMMON)
    PROVIDE (__bss_end = .);
+  } > int_sram
+
+  /* INTC for software vector mode */
+  .intc_vector_table ALIGN (4096):
+  {
+    *(.intc_hw_branch_table)
   } > int_sram
 
   /******************************************************************/
