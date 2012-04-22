@@ -1,5 +1,7 @@
 with Oak.Oak_Task.Protected_Object; use Oak.Oak_Task.Protected_Object;
 with Oak.Oak_Task.Data_Access;
+with Oak.Processor_Support_Package.Interrupts;
+use Oak.Processor_Support_Package.Interrupts;
 
 package body Oak.Protected_Object is
 
@@ -34,6 +36,14 @@ package body Oak.Protected_Object is
          return;
       end if;
 
+      --  Need to inform the interrupt system that we are acquiring the object.
+      --  The resource is released in three places when:
+      --     1. We encounter an error while evaluating the barrier states when
+      --        a task calls an entry.
+      --     2. There are no tasks able to run in the protected object.
+      --     3. Once the protected action is completed in Process_Exit_Request.
+      Get_Resource (PO);
+
       if Oak_Task.Data_Access.Get_State (PO) = Inactive then
          Scheduler.Remove_Task_From_Scheduler (T);
          Chosen_Task := null;
@@ -41,7 +51,7 @@ package body Oak.Protected_Object is
          declare
          begin
             if Subprogram_Kind = Protected_Entry and then
-               not Is_Barrier_Open (PO => PO, Entry_Id => Entry_Id) then
+              not Is_Barrier_Open (PO => PO, Entry_Id => Entry_Id) then
                Oak_Task.Data_Access.Set_State (T => T, State => Waiting);
                Add_Task_To_Entry_Queue (PO       => PO,
                                         T        => T,
@@ -68,6 +78,8 @@ package body Oak.Protected_Object is
                Oak_Task.Data_Access.Set_State (T     => T,
                                                State => Enter_PO_Refused);
                Chosen_Task := T;
+               --  Object release point 1.
+               Release_Resource;
                return;
          end;
 
@@ -98,6 +110,10 @@ package body Oak.Protected_Object is
       end if;
 
       if Chosen_Task = null then
+         --  Object release point 2.
+         --  Inform the interrupt subsystem that we are releasing the object
+         --  since no task inside the protected object is able to run.
+         Release_Resource;
          Scheduler.Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
            (Scheduler_Info => Scheduler_Info,
             Chosen_Task    => Chosen_Task);
@@ -125,14 +141,18 @@ package body Oak.Protected_Object is
         (PO => PO, Next_Task => Chosen_Task);
 
       if Chosen_Task = null then
+         --  Protected action ends.
          Set_Acquiring_Tasks_State (For_Protected_Object => PO,
                                     To_State             => Entering_PO);
          Scheduler.Deactivate_Task (Scheduler_Info => Scheduler_Info,
                                     T              => PO);
+         --  Object release pont 3.
+         Release_Resource;
          Scheduler.Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
            (Scheduler_Info => Scheduler_Info,
             Chosen_Task    => Chosen_Task);
       else
+         --  Protected action continues.
          Oak_Task.Data_Access.Set_State (T     => Chosen_Task,
                                          State => Runnable);
          Add_Task_To_Protected_Object (T  => Chosen_Task, PO => PO);

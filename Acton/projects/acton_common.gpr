@@ -6,14 +6,16 @@ abstract project Acton_Common is
    Library_Dir       := "../adalib/";
    Library_Version   := ".1";
    Library_Src_Dir   := "../adainclude/";
-   Library_Interface := ("ARPART", "ARPART.Tasks", "ARPART.Protected_Objects", "Acton", "Acton.Scheduler_Agent", "Acton.Scheduler_Agent.FIFO_Within_Priorities", "Ada", "Ada.Exceptions", "Ada.Real_Time", "Ada.Real_Time.Delays", "Ada.Unchecked_Conversion", "Interfaces", "Oak", "Oak.Core", "Oak.Memory",
+   Library_Interface := ("ARPART", "ARPART.Interrupts", "ARPART.Tasks", "ARPART.Protected_Objects", "Acton", "Acton.Scheduler_Agent", "Acton.Scheduler_Agent.FIFO_Within_Priorities", "Ada", "Ada.Exceptions", "Ada.Interrupts", "Ada.Real_Time", "Ada.Real_Time.Delays", "Ada.Unchecked_Conversion", "Interfaces", "Oak", "Oak.Core", "Oak.Memory",
                               "Oak.Memory.Call_Stack",
                               "Oak.Core_Support_Package",
                               "Oak.Core_Support_Package.Call_Stack",
                               "Oak.Core_Support_Package.Time",
+                              "Oak.Interrupts",
                               "Oak.Oak_Task", "Oak.Oak_Task.Activation", "Oak.Oak_Task.Data_Access", "Oak.Oak_Task.Queue",
                               "Oak.Oak_Task.Protected_Object",
                               "Oak.Oak_Task.Scheduler_Agent",
+                              "Oak.Processor_Support_Package", "Oak.Processor_Support_Package.Interrupts",
                               "System", "System.Machine_Code", "System.Storage_Elements", "System.Unsigned_Types",
                              --  Only needed for their ali files
                               "Oak.Memory.Call_Stack.Ops",

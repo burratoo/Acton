@@ -2,7 +2,7 @@ with Oak.Core_Support_Package; use Oak.Core_Support_Package;
 with Oak.Memory;                    use Oak.Memory;
 with Ada.Real_Time;                 use Ada.Real_Time;
 with Oak.Memory.Call_Stack;         use Oak.Memory.Call_Stack;
-
+with Oak.Interrupts;
 with System; use System;
 
 package Oak.Oak_Task is
@@ -58,7 +58,8 @@ package Oak.Oak_Task is
                        Exiting_PO,                  -- 17
                        Exit_PO_Error,               -- 18
                        Waiting_On_Protected_Object, -- 19
-                       No_State);                   -- 20
+                       Attach_Interrupt_Handlers,   -- 20
+                       No_State);                   -- 21
 
    type Shared_Task_State is access all Task_State;
    No_Shared_State : constant Shared_Task_State
@@ -120,7 +121,10 @@ package Oak.Oak_Task is
             Subprogram_Kind  : Protected_Subprogram_Type := Protected_Function;
             Entry_Id_Enter   : Entry_Index := No_Entry;
          when Exiting_PO =>
-            PO_Exit : Oak_Task_Handler := null;
+            PO_Exit           : Oak_Task_Handler := null;
+         when Attach_Interrupt_Handlers =>
+            Attach_Handlers   : Oak.Interrupts.Interrupt_Handlers_Access;
+            Attach_Handler_PO : Oak_Task_Handler;
          when others =>
             null;
       end case;

@@ -3,6 +3,7 @@ with System;                                     use System;
 with Oak.Core;
 with Oak.Core_Support_Package.Task_Support;
 use  Oak.Core_Support_Package.Task_Support;
+with Oak.Processor_Support_Package.Interrupts;
 with Oak.Oak_Task;
 
 with ISA.Power.e200.z6.HID;
@@ -11,9 +12,6 @@ with Oak.Oak_Task.Internal;
 
 package body Oak.Core_Support_Package.Task_Interrupts is
 
-   procedure Enable_SPE_Instructions;
-   pragma Inline_Always (Enable_SPE_Instructions);
-
    procedure Clear_Decrementer_Interrupt;
    pragma Inline_Always
      (Clear_Decrementer_Interrupt);
@@ -21,25 +19,26 @@ package body Oak.Core_Support_Package.Task_Interrupts is
    procedure Initialise_Task_Enviroment is
       subtype HID0_Type is
         ISA.Power.e200.z6.HID.
-        Hardware_Implementation_Dependent_Register_0_Type;
+          Hardware_Implementation_Dependent_Register_0_Type;
       HID0 : HID0_Type;
    begin
+      Disable_Core_Interrupts;
       --  Setup interrupt pointers
       Asm
-        ("lis       r14, %0@ha" & ASCII.LF & ASCII.HT &
-         "addi r14, r14, %0@l"  & ASCII.LF & ASCII.HT &
-         "mtivpr    r14"        & ASCII.LF & ASCII.HT &
-         "lwz       r15, %1"    & ASCII.LF & ASCII.HT &
-         "mtivor8   r15"        & ASCII.LF & ASCII.HT &
-         "lwz       r16, %2"    & ASCII.LF & ASCII.HT &
-         "mtivor10  r16"        & ASCII.LF & ASCII.HT &
-         "lis       r14, 0"     & ASCII.LF & ASCII.HT &
-         "mttbl     r14"        & ASCII.LF & ASCII.HT &
-         "mttbu     r14",
-         Inputs   => (Integer'Asm_Input ("i", IVPR),
+        ("lwz       r3, %0"    & ASCII.LF & ASCII.HT &
+         "mtivpr    r3"        & ASCII.LF & ASCII.HT &
+         "mtivor4   r3"        & ASCII.LF & ASCII.HT &
+         "lwz       r3, %1"    & ASCII.LF & ASCII.HT &
+         "mtivor8   r3"        & ASCII.LF & ASCII.HT &
+         "lwz       r3, %2"    & ASCII.LF & ASCII.HT &
+         "mtivor10  r3"        & ASCII.LF & ASCII.HT &
+         "lis       r3, 0"     & ASCII.LF & ASCII.HT &
+         "mttbl     r3"        & ASCII.LF & ASCII.HT &
+         "mttbu     r3",
+         Inputs   => (System.Address'Asm_Input ("m", IVOR4_Ex_Interrupt),
                       System.Address'Asm_Input ("m", IVOR8_CS_To_Task),
                       System.Address'Asm_Input ("m", IVOR10_Decrementer_Intr)),
-         Clobber  => "r14, r15, r16",
+         Clobber  => "r3",
          Volatile => True);
       Asm
         ("mfspr  %0, 1008",
@@ -50,6 +49,8 @@ package body Oak.Core_Support_Package.Task_Interrupts is
         ("mtspr  1008, %0",
          Inputs   => (HID0_Type'Asm_Input ("r", HID0)),
          Volatile => True);
+      Oak.Processor_Support_Package.Interrupts.Initialise_Interrupts;
+      Enable_Core_Interrupts;
    end Initialise_Task_Enviroment;
 
    --  We use r2 and r13 as they are the only registers guaranteed not to
@@ -90,6 +91,16 @@ package body Oak.Core_Support_Package.Task_Interrupts is
          "stwu    r1,  4(r1)",
          Volatile => True);
    end Clear_Decrementer_Interrupt;
+
+   procedure Enable_Core_Interrupts is
+   begin
+      Asm ("wrteei 1", Volatile => True);
+   end Enable_Core_Interrupts;
+
+   procedure Disable_Core_Interrupts is
+   begin
+      Asm ("wrteei 0", Volatile => True);
+   end Disable_Core_Interrupts;
 
    ---------------------------------
    -- E200_Context_Switch_To_Task --
