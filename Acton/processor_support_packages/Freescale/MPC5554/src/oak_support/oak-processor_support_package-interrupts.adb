@@ -130,13 +130,6 @@ package body Oak.Processor_Support_Package.Interrupts is
 
    end External_Interrupt_Handler;
 
-   procedure Default_Handler is
-   begin
-      loop
-         null;
-      end loop;
-   end Default_Handler;
-
    procedure Initialise_Interrupts is
    begin
       Module_Config_Register.Vector_Table_Entry_Size := Eight_Bytes;

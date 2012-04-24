@@ -26,8 +26,8 @@ MEMORY
 /* MPC5554 2M Internal Flash, but subtract one 128K block for use by BAM. */
 /* MPC5554 64K Internal SRAM */
         flash_rcw        : org = 0x00000000, len = 0x00010000
-        interrupts_flash : org = 0x00010000, len = 0x000020000
-        int_flash        : org = 0x00020000, len = 0x001A0000
+        interrupts_flash : org = 0x00010000, len = 0x00020000
+        int_flash        : org = 0x00020000, len = 0x001E0000
         int_sram         : org = 0x40000000, len = 0x10000
 }
 
@@ -72,7 +72,9 @@ __heap_start   =
  * | etext = .               |
  * | _etext = .              |
  * | __etext = .             |
- * |                         | > int_flash
+ * .						 .
+ * .						 .
+ * | .acton_def_ext_handler  | > int_flash
  * +-------------------------+
  * | __DATA_ROM = .          | Global/static data
  * | .PPC.EMB.sdata2         |
@@ -152,6 +154,12 @@ SECTIONS
   .acton_intr_branch_table :
   {
     *(.acton_intr_branch_table)
+  } > interrupts_flash
+
+  /* INTC for software vector mode */
+  .intc_vector_table ALIGN (4096):
+  {
+    *(.intc_hw_branch_table)
   } > interrupts_flash
 
   /* CRT0 startup code */
@@ -416,12 +424,6 @@ SECTIONS
    PROVIDE (__bss_end = .);
   } > int_sram
 
-  /* INTC for software vector mode */
-  .intc_vector_table ALIGN (4096):
-  {
-    *(.intc_hw_branch_table)
-  } > int_sram
-
   /******************************************************************/
 
   /*
@@ -470,6 +472,12 @@ SECTIONS
   .debug_varnames  0 : { *(.debug_varnames) }
   /* */
   .eh_frame         : { *(.eh_frame) } > int_flash
+
+  /*****************************************************************/
+  .acton_def_ext_handler (ORIGIN(int_flash) + LENGTH(int_flash) - 4) : 
+  {
+    *(.acton_def_ext_handler)
+  } > int_flash
 
  /DISCARD/ :
   	{ *(.jcr) }
