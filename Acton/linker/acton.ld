@@ -159,7 +159,7 @@ SECTIONS
   /* INTC for software vector mode */
   .intc_vector_table ALIGN (4096):
   {
-    *(.intc_hw_branch_table)
+    *(.intc_vector_table)
   } > interrupts_flash
 
   /* CRT0 startup code */

@@ -1,4 +1,5 @@
 with System;
+with Interfaces; use Interfaces;
 with System.Storage_Elements; use System.Storage_Elements;
 
 package MPC5554.Flash with Preelaborate is
@@ -17,9 +18,16 @@ package MPC5554.Flash with Preelaborate is
    BIUCR_Offset_Address  : constant Integer_Address := 16#001C#;
    BIUAPR_Offset_Address : constant Integer_Address := 16#0020#;
 
+   Array_Bases_Address   : constant Integer_Address := 16#0000_0000#;
+   Shadow_Base_Address   : constant Integer_Address := 16#00FF_FFC00#;
+
    ----------------------------------------------------------------------------
    --  Hardware Features
    ----------------------------------------------------------------------------
+
+   LMLR_Password  : constant Unsigned_32 := 16#A1A1_1111#;
+   SLMLR_Password : constant Unsigned_32 := 16#C3C3_3333#;
+   HLR_Password   : constant Unsigned_32 := 16#B2B2_2222#;
 
    ----------------------------------------------------------------------------
    --  Flash Types
@@ -237,4 +245,16 @@ package MPC5554.Flash with Preelaborate is
      Flash_Bus_Interface_Unit_Control_Type
        with Address => System'To_Address (Flash_Base_Address +
                                             BIUCR_Offset_Address);
+
+   ----------------------------------------------------------------------------
+   --  Helper Subprograms
+   ----------------------------------------------------------------------------
+
+   procedure Write_Flash_Bus_Interface_Unit_Control_Register
+     (Contents : Flash_Bus_Interface_Unit_Control_Type);
+
+   type Program_Space is array (Integer_Address range <>) of Unsigned_32;
+   SRAM_LOAD : Program_Space := (16#90E6_0000#, 16#4C00_012C#,
+                                 16#4E80_0020#);
+
 end MPC5554.Flash;

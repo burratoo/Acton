@@ -9,8 +9,8 @@ package Oak.Core_Support_Package.Task_Interrupts is
    procedure Enable_SPE_Instructions;
    pragma Inline_Always (Enable_SPE_Instructions);
 
-   procedure Enable_Core_Interrupts  with Inline_Always;
-   procedure Disable_Core_Interrupts with Inline_Always;
+   procedure Enable_External_Interrupts  with Inline_Always;
+   procedure Disable_External_Interrupts with Inline_Always;
 
    procedure E200_Context_Switch_To_Task;
    procedure E200_Context_Switch_To_Kernel;

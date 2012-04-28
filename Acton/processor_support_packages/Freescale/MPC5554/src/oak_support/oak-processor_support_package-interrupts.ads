@@ -1,6 +1,9 @@
 with Interfaces; use Interfaces;
 with System; use System;
+with MPC5554; use MPC5554;
 with MPC5554.INTC; use MPC5554.INTC;
+with MPC5554.H7F_Driver;
+with MPC5554.Flash;
 
 limited with Oak.Oak_Task;
 
@@ -16,6 +19,7 @@ package Oak.Processor_Support_Package.Interrupts is
 
    procedure External_Interrupt_Handler;
    procedure Initialise_Interrupts;
+   procedure Complete_Interrupt_Initialisation;
 
    procedure Attach_Handler (Interrupt : Oak_Interrupt_Id;
                              Handler   : Parameterless_Handler;
@@ -38,6 +42,25 @@ private
    end record;
 
    Interrupt_Priority_FIFO : Interrupt_FIFO;
+
+   Flash_Driver_Config     : aliased H7F_Driver.SSD_Config :=
+     (Control_Register_Base => System'To_Address (Flash.Flash_Base_Address),
+      Main_Array_Base       => System'To_Address (Flash.Array_Bases_Address),
+      Main_Array_Size       => 0,
+      Shadow_Row_Base       => System'To_Address (Flash.Shadow_Base_Address),
+      Shadow_Row_Size       => 1024,
+      Low_Block_Number      => 0,
+      Mid_Block_Number      => 0,
+      High_Block_Number     => 0,
+      Page_Size             => H7F_Driver.H7FA_Page_Size,
+      Debug_Mode_Selection  => 0);
+
+   Saved_FBIUCR            : Flash.Flash_Bus_Interface_Unit_Control_Type;
+   Handler_Staging_Slot    : Parameterless_Handler;
+
+   Interrupt_Address_Block : constant := 16#FFFB#;
+   Lock_All_Blocks         : constant := 16#FFFF#;
+   Interrupt_Entry_Size    : constant := 8;
 
    ------------------------
    --  INTC Vector Table --

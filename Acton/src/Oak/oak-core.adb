@@ -11,6 +11,7 @@ with Oak.Core_Support_Package.Task_Interrupts;
 with Oak.Core_Support_Package.Call_Stack;
 with Oak.Interrupts;
 with Oak.Protected_Object;
+with Oak.Processor_Support_Package.Interrupts;
 
 package body Oak.Core is
 
@@ -30,6 +31,15 @@ package body Oak.Core is
       end loop;
       Oak.Core_Support_Package.Task_Interrupts.Initialise_Task_Enviroment;
    end Initialise;
+
+   -----------------------------
+   -- Complete_Initialisation --
+   -----------------------------
+
+   procedure Complete_Initialisation is
+   begin
+      Processor_Support_Package.Interrupts.Complete_Interrupt_Initialisation;
+   end Complete_Initialisation;
 
    -----------
    -- Start --

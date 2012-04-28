@@ -3,7 +3,7 @@ with MPC5554.Flash; use MPC5554.Flash;
 with System; use System;
 with System.Storage_Elements; use System.Storage_Elements;
 
-package MPC5554.H7F_Driver is
+package MPC5554.H7F_Driver with Preelaborate is
 
    type Return_Code is (Ok,
                         Info_Read_Write_Error_For_Previous_Reads,
@@ -34,7 +34,7 @@ package MPC5554.H7F_Driver is
    type H7F_Page_Size is (H7FA_Page_Size, H7FB_Page_Size);
 
    type SSD_Config is record
-      H7F_Control_Register_Base : Address;
+      Control_Register_Base     : Address;
       Main_Array_Base           : Address;
       Main_Array_Size           : Unsigned_32;
       Shadow_Row_Base           : Address;
@@ -96,11 +96,6 @@ private
                                 High             => 6);
 
    for H7F_Page_Size use (H7FA_Page_Size => 0, H7FB_Page_Size => 1);
-
-   pragma Import (C, Flash_Init, "mpc5554__h4f_driver__flash_int");
-   pragma Import (C, Flash_Program, "mpc5554__h4f_Driver__flash_program");
-   pragma Import (C, Get_Lock, "mpc5554__h4f_driver__get_lock");
-   pragma Import (C, Set_Lock, "mpc5554__h4f_driver__set_lock");
 
    type Driver_Program_Space is array (Integer_Address range <>) of
      Unsigned_32;
@@ -193,6 +188,10 @@ private
       16#4E800020#,  16#4D504348#, 16#37467853#, 16#4C333230#);
 
    pragma Export (Assembly, Set_Lock_Store,
-                    "mpc5554__h4f_driver__Set_lock");
+                    "mpc5554__h4f_driver__set_lock");
 
+   pragma Import (C, Flash_Init, "mpc5554__h4f_driver__flash_int");
+   pragma Import (C, Flash_Program, "mpc5554__h4f_driver__flash_program");
+   pragma Import (C, Get_Lock, "mpc5554__h4f_driver__get_lock");
+   pragma Import (C, Set_Lock, "mpc5554__h4f_driver__set_lock");
 end MPC5554.H7F_Driver;
