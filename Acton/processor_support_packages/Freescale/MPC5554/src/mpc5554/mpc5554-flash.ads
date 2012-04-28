@@ -255,6 +255,6 @@ package MPC5554.Flash with Preelaborate is
 
    type Program_Space is array (Integer_Address range <>) of Unsigned_32;
    SRAM_LOAD : Program_Space := (16#90E6_0000#, 16#4C00_012C#,
-                                 16#4E80_0020#);
+                                 16#4E80_0020#, 16#0000_0000#);
 
 end MPC5554.Flash;
