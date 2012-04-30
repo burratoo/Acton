@@ -3,6 +3,7 @@ with ISA.Power;
 with Oak.Core_Support_Package.Task_Interrupts;
 with Oak.Core_Support_Package.Task_Support;
 with Oak.Oak_Task.Data_Access;
+with MPC5554.Flash;
 
 package body Oak.Processor_Support_Package.Interrupts is
    --  Stack frame design for interrupt handling on the MPC5554 with support
@@ -131,11 +132,7 @@ package body Oak.Processor_Support_Package.Interrupts is
    end External_Interrupt_Handler;
 
    procedure Initialise_Interrupts is
-      use MPC5554.H7F_Driver;
       use MPC5554.Flash;
-
-      FBIUCR : Flash_Bus_Interface_Unit_Control_Type;
-      R      : Return_Code;
    begin
       Oak.Core_Support_Package.Task_Interrupts.Disable_External_Interrupts;
 
@@ -145,62 +142,37 @@ package body Oak.Processor_Support_Package.Interrupts is
       Interrupt_Acknowledge_Register := INTC_Vector_Table'Address;
       Current_Priority_Register := MPC5554_Interrupt_Priority'First;
 
-      if Flash_Init (Flash_Driver_Config'Access) /= Ok then
-         raise Program_Error;
-      end if;
+      Initialise_For_Flash_Programming;
 
-      --  Disable Prefetching and pipelining prior to programming.
+      Unlock_Space_Block_Locking_Register (Space => Low_Primary);
+      Low_Mid_Address_Space_Block_Locking_Register :=
+        (Locks => Editable,
+         Shadow_Lock => Locked,
+         Mid_Address_Locks => (others => Locked),
+         Low_Address_Locks => (B2 => Unlocked, others => Locked));
 
-      Saved_FBIUCR := MPC5554.Flash.Flash_Bus_Interface_Unit_Control_Register;
-      FBIUCR := (Master_Prefetch => (others => Disable),
-                 Address_Pipeline_Control => No_Pipelining,
-                 Write_Wait_State_Control =>
-                   Saved_FBIUCR.Write_Wait_State_Control,
-                 Read_Wait_State_Control  =>
-                   Saved_FBIUCR.Read_Wait_State_Control,
-                 Data_Prefetch            => No_Prefetching,
-                 Instruction_Prefetch     => No_Prefetching,
-                 Prefetch_Limit           => Saved_FBIUCR.Prefetch_Limit,
-                 FBIU_Line_Read_Buffers   => Disable);
-      Write_Flash_Bus_Interface_Unit_Control_Register (FBIUCR);
+      Unlock_Space_Block_Locking_Register (Space => Low_Secondary);
+      Secondary_Low_Mid_Address_Space_Block_Locking_Register :=
+        (Locks => Editable,
+         Shadow_Lock => Locked,
+         Mid_Address_Locks => (others => Locked),
+         Low_Address_Locks => (B2 => Unlocked, others => Locked));
 
-      --  Unlock the block that contains the external interrupt vector table
-      R := Set_Lock (Config => Flash_Driver_Config'Access,
-                     Lock_Indicator => Low_Primary,
-                     Lock_State     => Interrupt_Address_Block,
-                     Password       => LMLR_Password);
-      if R /= Ok then
-         raise Program_Error;
-      end if;
-
-      R := Set_Lock (Config => Flash_Driver_Config'Access,
-                     Lock_Indicator => Low_Secondary,
-                     Lock_State     => Interrupt_Address_Block,
-                     Password       => SLMLR_Password);
-      if R /= Ok then
-         raise Program_Error;
-      end if;
       Oak.Core_Support_Package.Task_Interrupts.Enable_External_Interrupts;
    end Initialise_Interrupts;
 
    procedure Complete_Interrupt_Initialisation is
-      use MPC5554.H7F_Driver;
       use MPC5554.Flash;
-      R : Return_Code;
    begin
       Oak.Core_Support_Package.Task_Interrupts.Disable_External_Interrupts;
 
-      --  Lock the block that contains the external interrupt vector table
-      R := Set_Lock (Config => Flash_Driver_Config'Access,
-                     Lock_Indicator => Low_Primary,
-                     Lock_State     => Lock_All_Blocks,
-                     Password       => LMLR_Password);
-      if R /= Ok then
-         raise Program_Error;
-      end if;
+      Low_Mid_Address_Space_Block_Locking_Register :=
+        (Locks => Editable,
+         Shadow_Lock => Locked,
+         Mid_Address_Locks => (others => Locked),
+         Low_Address_Locks => (others => Locked));
 
-      --  Restore orginal Flash Bus Interface Unit Control Register
-      Write_Flash_Bus_Interface_Unit_Control_Register (Saved_FBIUCR);
+      Completed_Flash_Programming;
 
       Oak.Core_Support_Package.Task_Interrupts.Enable_External_Interrupts;
    end Complete_Interrupt_Initialisation;
@@ -209,28 +181,25 @@ package body Oak.Processor_Support_Package.Interrupts is
                              Handler   : Parameterless_Handler;
                              Priority  : Interrupt_Priority)
    is
-      use MPC5554.H7F_Driver;
+      use MPC5554.Flash;
       use Oak.Core_Support_Package.Task_Interrupts;
-      R : Return_Code;
    begin
+      Oak.Core_Support_Package.Task_Interrupts.Disable_External_Interrupts;
+
       if INTC_Vector_Table (Interrupt) /= Handler then
          if Programmed_Vector_Table (Interrupt) /= Default_Handler then
             raise Program_Error;
          end if;
-         Handler_Staging_Slot := Handler;
-         R :=
-           Flash_Program (Config      => Flash_Driver_Config'Access,
-                          Destination => INTC_Vector_Table (Interrupt)'Address,
-                          Size        => Interrupt_Entry_Size,
-                          Source      => Handler_Staging_Slot'Address,
-                          Call_Back   => Null_Callback);
-         if R /= Ok then
-            raise Program_Error;
-         end if;
+
+         Program_Protected_Access
+           (P           => Handler,
+            Destination => INTC_Vector_Table (Interrupt)'Address);
       end if;
 
       Priority_Select_Register_Array (Interrupt)
         := MPC5554_Interrupt_Priority (Priority - Interrupt_Priority'First);
+
+      Oak.Core_Support_Package.Task_Interrupts.Enable_External_Interrupts;
    end Attach_Handler;
 
    procedure Get_Resource (PO : Oak.Oak_Task.Oak_Task_Handler) is

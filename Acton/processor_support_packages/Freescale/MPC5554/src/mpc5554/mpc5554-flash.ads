@@ -1,4 +1,4 @@
-with System;
+with System; use System;
 with Interfaces; use Interfaces;
 with System.Storage_Elements; use System.Storage_Elements;
 
@@ -29,6 +29,14 @@ package MPC5554.Flash with Preelaborate is
    SLMLR_Password : constant Unsigned_32 := 16#C3C3_3333#;
    HLR_Password   : constant Unsigned_32 := 16#B2B2_2222#;
 
+   type Address_Space is (Shadow_Primary,
+                          Low_Primary,
+                          Mid_Primary,
+                          Shadow_Secondary,
+                          Low_Secondary,
+                          Mid_Secondary,
+                          High);
+
    ----------------------------------------------------------------------------
    --  Flash Types
    ----------------------------------------------------------------------------
@@ -43,7 +51,7 @@ package MPC5554.Flash with Preelaborate is
       Read_While_Write_Error_Event : Occurred_Type;
       Progream_Erase_Access_Space  : PEAS_Type;
       Done                         : Yes_No_Type;
-      Program_Erase                : Success_Type;
+      Program_Erase_Good           : Yes_No_Type;
       Stop_Mode                    : Enable_Type;
       Program                      : Execute_Type;
       Program_Suspend              : Yes_No_Type;
@@ -55,30 +63,33 @@ package MPC5554.Flash with Preelaborate is
    --  Low-/Mid-Address Space Block Locking Register (FLASH_LMLR)
 
    type Lock_Enable_Type is (Not_Editable, Editable);
-   type Block_Lock_Array is array (Register_Elements range <>)
-     of Lock_Enable_Type with Pack;
+   type Lock_Type is (Unlocked, Locked);
+   type Block_Id is (B27, B26, B25, B24, B23, B22, B21, B20, B19, B18, B17,
+                     B16, B15, B14, B13, B12, B11, B10, B9, B8, B7, B6, B5, B4,
+                     B3, B2, B1, B0);
+   pragma Ordered (Block_Id);
+
+   type Block_Lock_Array is array (Block_Id range <>)
+     of Lock_Type with Pack;
+
+   subtype Shadow_Lock_Array is Block_Lock_Array (B0 .. B0);
+   subtype Low_Address_Lock_Array is Block_Lock_Array (B3 .. B0);
+   subtype Mid_Address_Lock_Array is Block_Lock_Array (B15 .. B0);
 
    type Low_Mid_Address_Space_Block_Locking_Type is record
       Locks     : Lock_Enable_Type;
-      Shadow_Lock : Enable_Type;
-      Mid_Address_Locks : Block_Lock_Array (0 .. 3);
-      Low_Address_Locks : Block_Lock_Array (0 .. 15);
+      Shadow_Lock : Lock_Type;
+      Mid_Address_Locks : Low_Address_Lock_Array;
+      Low_Address_Locks : Mid_Address_Lock_Array;
    end record;
 
    --  High-Address Space Block Locking Register (FLASH_LMLR)
 
+   subtype High_Address_Lock_Array is Block_Lock_Array (B27 .. B0);
+
    type High_Address_Space_Block_Locking_Type is record
       Locks     : Lock_Enable_Type;
-      High_Address_Locks : Block_Lock_Array (0 .. 27);
-   end record;
-
-   --  Secondary Low-/Mid-Address Space Block Locking Register (FLASH_SLMLR)
-
-   type Secondary_Low_Mid_Address_Space_Block_Locking_Type is record
-      Locks     : Lock_Enable_Type;
-      Shadow_Lock : Enable_Type;
-      Mid_Address_Locks : Block_Lock_Array (0 .. 3);
-      Low_Address_Locks : Block_Lock_Array (0 .. 15);
+      High_Address_Locks : High_Address_Lock_Array;
    end record;
 
    --  Low-/Mid-Address Address Space Block Select Register (FLASH_LMSR)
@@ -146,7 +157,7 @@ package MPC5554.Flash with Preelaborate is
       Read_While_Write_Error_Event at 0 range 17 .. 17;
       Progream_Erase_Access_Space  at 0 range 20 .. 20;
       Done                         at 0 range 21 .. 21;
-      Program_Erase                at 0 range 22 .. 22;
+      Program_Erase_Good           at 0 range 22 .. 22;
       Stop_Mode                    at 0 range 25 .. 25;
       Program                      at 0 range 27 .. 27;
       Program_Suspend              at 0 range 28 .. 28;
@@ -156,6 +167,7 @@ package MPC5554.Flash with Preelaborate is
    end record;
 
    for Lock_Enable_Type use (Not_Editable => 0, Editable => 1);
+   for Lock_Type use (Unlocked => 0, Locked => 1);
 
    for Low_Mid_Address_Space_Block_Locking_Type use record
       Locks     at 0 range 0 .. 0;
@@ -167,13 +179,6 @@ package MPC5554.Flash with Preelaborate is
    for High_Address_Space_Block_Locking_Type use record
       Locks     at 0 range 0 .. 0;
       High_Address_Locks at 0 range 4 .. 31;
-   end record;
-
-   for Secondary_Low_Mid_Address_Space_Block_Locking_Type use record
-      Locks     at 0 range 0 .. 0;
-      Shadow_Lock at 0 range 11 .. 11;
-      Mid_Address_Locks at 0 range 12 .. 15;
-      Low_Address_Locks at 0 range 16 .. 31;
    end record;
 
    for Select_Type use (Not_Selected => 0, Selected => 1);
@@ -222,8 +227,8 @@ package MPC5554.Flash with Preelaborate is
        with Address => System'To_Address (Flash_Base_Address +
                                             HLR_Offset_Address);
 
-   Secondary_Low_Mid_Address_Space_Block_Locking_Type_Register :
-     Secondary_Low_Mid_Address_Space_Block_Locking_Type
+   Secondary_Low_Mid_Address_Space_Block_Locking_Register :
+     Low_Mid_Address_Space_Block_Locking_Type
        with Address => System'To_Address (Flash_Base_Address +
                                             SLMLR_Offset_Address);
 
@@ -250,11 +255,31 @@ package MPC5554.Flash with Preelaborate is
    --  Helper Subprograms
    ----------------------------------------------------------------------------
 
+   procedure Initialise_For_Flash_Programming;
+   procedure Completed_Flash_Programming;
+
+   procedure Program_Protected_Access
+     (P           : access protected procedure;
+      Destination : in Address);
+
+   procedure Unlock_Space_Block_Locking_Register
+     (Space   : in Address_Space);
+
    procedure Write_Flash_Bus_Interface_Unit_Control_Register
-     (Contents : Flash_Bus_Interface_Unit_Control_Type);
+     (Contents : in Flash_Bus_Interface_Unit_Control_Type);
+
+   procedure Do_Not_Clear_Error_States (MCR : in out Module_Configuration_Type)
+     with Inline_Always;
+
+   Flash_Exception : exception;
+   Lock_Exception  : exception;
+
+private
 
    type Program_Space is array (Integer_Address range <>) of Unsigned_32;
    SRAM_LOAD : Program_Space := (16#90E6_0000#, 16#4C00_012C#,
                                  16#4E80_0020#, 16#0000_0000#);
+
+   Saved_FBIUCR            : Flash.Flash_Bus_Interface_Unit_Control_Type;
 
 end MPC5554.Flash;
