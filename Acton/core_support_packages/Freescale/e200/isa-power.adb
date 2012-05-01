@@ -12,4 +12,8 @@ package body ISA.Power is
       Asm ("isync", Volatile => True);
    end Instruction_Synchronize;
 
+   procedure Memory_Synchronize is
+   begin
+      Asm ("msync", Volatile => True);
+   end Memory_Synchronize;
 end ISA.Power;

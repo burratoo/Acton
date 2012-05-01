@@ -149,14 +149,14 @@ package body Oak.Processor_Support_Package.Interrupts is
         (Locks => Editable,
          Shadow_Lock => Locked,
          Mid_Address_Locks => (others => Locked),
-         Low_Address_Locks => (B2 => Unlocked, others => Locked));
+         Low_Address_Locks => (B3 => Unlocked, others => Locked));
 
       Unlock_Space_Block_Locking_Register (Space => Low_Secondary);
       Secondary_Low_Mid_Address_Space_Block_Locking_Register :=
         (Locks => Editable,
          Shadow_Lock => Locked,
          Mid_Address_Locks => (others => Locked),
-         Low_Address_Locks => (B2 => Unlocked, others => Locked));
+         Low_Address_Locks => (B3 => Unlocked, others => Locked));
 
       Oak.Core_Support_Package.Task_Interrupts.Enable_External_Interrupts;
    end Initialise_Interrupts;

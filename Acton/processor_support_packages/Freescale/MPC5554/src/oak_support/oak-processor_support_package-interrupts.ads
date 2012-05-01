@@ -58,13 +58,6 @@ private
    --  to be easily written to when handlers are later attached in the second
    --  stage.
 
-   --  The choice of the value 16#1F_FFFC# for the default handler address is
-   --  because we can only easily programm bits in Flash from 1 to 0. From this
-   --  value we can easily program any valid word align address that falls
-   --  within the Flash's memory space. It also points to the last word in
-   --  Flash, enabling a default handler to run if an unregistered interrupt
-   --  occurs.
-
    type Vector_Pair is record
       Protected_Object : Unsigned_32;
       Handler_Address  : Unsigned_32;
@@ -233,7 +226,4 @@ private
 
    INTC_Vector_Table : array (Oak_Interrupt_Id) of Parameterless_Handler;
    pragma Import (Assembly, INTC_Vector_Table, "__OI_Vector_Table");
-
-   --  Ensure we link to the defualt handler
-   pragma Linker_Options ("-Wl,--undefined=__OI_Default_Handler");
 end Oak.Processor_Support_Package.Interrupts;
