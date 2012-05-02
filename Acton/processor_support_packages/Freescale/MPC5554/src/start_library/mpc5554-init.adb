@@ -207,102 +207,64 @@ package body MPC5554.Init is
          Write_Protect      => Disable,
          Trusted_Protect    => Disable);
 
+      Default_Master_Privilege_Setting : constant
+        MPCR_Access_Field_Type :=
+        (Buffer_Writes   => Disable,
+         Trusted_Reads   => Trusted,
+         Trusted_Writes  => Trusted,
+         Privilege_Level => Not_Forced);
+
+      PBRIDGE_Master_Privilege_Control : constant
+        Master_Privilege_Control_Type :=
+        (CPU   => Default_Master_Privilege_Setting,
+         Nexus => Default_Master_Privilege_Setting,
+         eDMA  => Default_Master_Privilege_Setting,
+         EBI   => Default_Master_Privilege_Setting);
+
    begin
-      PBRIDGE.A_Master_Privilege_Control_Register.CPU   :=
-        (Buffer_Writes   => Disable,
-         Trusted_Reads   => Trusted,
-         Trusted_Writes  => Trusted,
-         Privilege_Level => Not_Forced);
-      PBRIDGE.A_Master_Privilege_Control_Register.Nexus :=
-        (Buffer_Writes   => Disable,
-         Trusted_Reads   => Trusted,
-         Trusted_Writes  => Trusted,
-         Privilege_Level => Not_Forced);
-      PBRIDGE.A_Master_Privilege_Control_Register.eDMA  :=
-        (Buffer_Writes   => Disable,
-         Trusted_Reads   => Trusted,
-         Trusted_Writes  => Trusted,
-         Privilege_Level => Not_Forced);
-      PBRIDGE.A_Master_Privilege_Control_Register.EBI   :=
-        (Buffer_Writes   => Disable,
-         Trusted_Reads   => Trusted,
-         Trusted_Writes  => Trusted,
-         Privilege_Level => Not_Forced);
+      PBRIDGE.A_Master_Privilege_Control_Register :=
+        PBRIDGE_Master_Privilege_Control;
 
-      PBRIDGE.B_Master_Privilege_Control_Register.CPU   :=
-        (Buffer_Writes   => Disable,
-         Trusted_Reads   => Trusted,
-         Trusted_Writes  => Trusted,
-         Privilege_Level => Not_Forced);
-      PBRIDGE.B_Master_Privilege_Control_Register.Nexus :=
-        (Buffer_Writes   => Disable,
-         Trusted_Reads   => Trusted,
-         Trusted_Writes  => Trusted,
-         Privilege_Level => Not_Forced);
-      PBRIDGE.B_Master_Privilege_Control_Register.eDMA  :=
-        (Buffer_Writes   => Disable,
-         Trusted_Reads   => Trusted,
-         Trusted_Writes  => Trusted,
-         Privilege_Level => Not_Forced);
-      PBRIDGE.B_Master_Privilege_Control_Register.EBI   :=
-        (Buffer_Writes   => Disable,
-         Trusted_Reads   => Trusted,
-         Trusted_Writes  => Trusted,
-         Privilege_Level => Not_Forced);
+      PBRIDGE.B_Master_Privilege_Control_Register :=
+        PBRIDGE_Master_Privilege_Control;
 
-      PBRIDGE.A_Peripheral_Access_Control_Register_0.PBRIDGE_A :=
-        PBRIDGE_Access_Settings;
-      PBRIDGE.A_Off_Platform_Peripheral_Access_Control_Register_0.FMPLL :=
-        Off_Platform_Access_Settings;
-      PBRIDGE.A_Off_Platform_Peripheral_Access_Control_Register_0.EBI_Control
-         := Off_Platform_Access_Settings;
-      PBRIDGE.A_Off_Platform_Peripheral_Access_Control_Register_0.
-        Flash_Control := Off_Platform_Access_Settings;
-      PBRIDGE.A_Off_Platform_Peripheral_Access_Control_Register_0.SIU :=
-        Off_Platform_Access_Settings;
-      PBRIDGE.A_Off_Platform_Peripheral_Access_Control_Register_1.eMIOS :=
-        Off_Platform_Access_Settings;
-      PBRIDGE.A_Off_Platform_Peripheral_Access_Control_Register_2.eTPU :=
-        Off_Platform_Access_Settings;
-      PBRIDGE.A_Off_Platform_Peripheral_Access_Control_Register_2.eTPU_PRAM :=
-        Off_Platform_Access_Settings;
-      PBRIDGE.A_Off_Platform_Peripheral_Access_Control_Register_2.
-        eTPU_PRAM_Mirror := Off_Platform_Access_Settings;
-      PBRIDGE.A_Off_Platform_Peripheral_Access_Control_Register_2.eTPU_SCM :=
-        Off_Platform_Access_Settings;
+      PBRIDGE.A_Peripheral_Access_Control_Register_0 :=
+        (PBRIDGE_A => PBRIDGE_Access_Settings);
+      PBRIDGE.A_Off_Platform_Peripheral_Access_Control_Register_0 :=
+        (FMPLL         => Off_Platform_Access_Settings,
+         EBI_Control   => Off_Platform_Access_Settings,
+         Flash_Control => Off_Platform_Access_Settings,
+         SIU           => Off_Platform_Access_Settings);
+      PBRIDGE.A_Off_Platform_Peripheral_Access_Control_Register_1 :=
+        (eMIOS => Off_Platform_Access_Settings);
+      PBRIDGE.A_Off_Platform_Peripheral_Access_Control_Register_2 :=
+        (eTPU             => Off_Platform_Access_Settings,
+         eTPU_PRAM        => Off_Platform_Access_Settings,
+         eTPU_PRAM_Mirror => Off_Platform_Access_Settings,
+         eTPU_SCM         => Off_Platform_Access_Settings);
 
-      PBRIDGE.B_Peripheral_Access_Control_Register_0.PBRIDGE_B              :=
-        PBRIDGE_Access_Settings;
-      PBRIDGE.B_Peripheral_Access_Control_Register_0.XBAR                   :=
-        Off_Platform_Access_Settings;
-      PBRIDGE.B_Peripheral_Access_Control_Register_2.ESCM                   :=
-        Off_Platform_Access_Settings;
-      PBRIDGE.B_Peripheral_Access_Control_Register_2.eDMA                   :=
-        Off_Platform_Access_Settings;
-      PBRIDGE.B_Peripheral_Access_Control_Register_2.INTC                   :=
-        Off_Platform_Access_Settings;
-      PBRIDGE.B_Off_Platform_Peripheral_Access_Control_Register_0.eQADC     :=
-        Off_Platform_Access_Settings;
-      PBRIDGE.B_Off_Platform_Peripheral_Access_Control_Register_0.DSPI_A    :=
-        Off_Platform_Access_Settings;
-      PBRIDGE.B_Off_Platform_Peripheral_Access_Control_Register_0.DSPI_B    :=
-        Off_Platform_Access_Settings;
-      PBRIDGE.B_Off_Platform_Peripheral_Access_Control_Register_0.DSPI_C    :=
-        Off_Platform_Access_Settings;
-      PBRIDGE.B_Off_Platform_Peripheral_Access_Control_Register_0.DSPI_D    :=
-        Off_Platform_Access_Settings;
-      PBRIDGE.B_Off_Platform_Peripheral_Access_Control_Register_1.eSCI_A    :=
-        Off_Platform_Access_Settings;
-      PBRIDGE.B_Off_Platform_Peripheral_Access_Control_Register_1.eSCI_B    :=
-        Off_Platform_Access_Settings;
-      PBRIDGE.B_Off_Platform_Peripheral_Access_Control_Register_2.FlexCAN_A :=
-        Off_Platform_Access_Settings;
-      PBRIDGE.B_Off_Platform_Peripheral_Access_Control_Register_2.FlexCAN_B :=
-        Off_Platform_Access_Settings;
-      PBRIDGE.B_Off_Platform_Peripheral_Access_Control_Register_2.FlexCAN_C :=
-        Off_Platform_Access_Settings;
-      PBRIDGE.B_Off_Platform_Peripheral_Access_Control_Register_3.BAM       :=
-        Off_Platform_Access_Settings;
+      PBRIDGE.B_Peripheral_Access_Control_Register_0 :=
+        (PBRIDGE_B => PBRIDGE_Access_Settings,
+         XBAR      => PBRIDGE_Access_Settings);
+      PBRIDGE.B_Peripheral_Access_Control_Register_2 :=
+        (ESCM   => Off_Platform_Access_Settings,
+         eDMA   => Off_Platform_Access_Settings,
+         INTC   => Off_Platform_Access_Settings);
+      PBRIDGE.B_Off_Platform_Peripheral_Access_Control_Register_0 :=
+        (eQADC  => Off_Platform_Access_Settings,
+         DSPI_A => Off_Platform_Access_Settings,
+         DSPI_B => Off_Platform_Access_Settings,
+         DSPI_C => Off_Platform_Access_Settings,
+         DSPI_D => Off_Platform_Access_Settings);
+      PBRIDGE.B_Off_Platform_Peripheral_Access_Control_Register_1 :=
+        (eSCI_A => Off_Platform_Access_Settings,
+         eSCI_B => Off_Platform_Access_Settings);
+      PBRIDGE.B_Off_Platform_Peripheral_Access_Control_Register_2 :=
+        (FlexCAN_A => Off_Platform_Access_Settings,
+         FlexCAN_B => Off_Platform_Access_Settings,
+         FlexCAN_C => Off_Platform_Access_Settings);
+      PBRIDGE.B_Off_Platform_Peripheral_Access_Control_Register_3 :=
+        (BAM => Off_Platform_Access_Settings);
 
    end Setup_PBRIDGE;
 
