@@ -12,7 +12,8 @@ project Acton_MPC5554 is
                         "MPC5554.eMIOS", "MPC5554.eQADC", "MPC5554.eQADC.ADC",
                         "MPC5554.eSCI", "MPC5554.eTPU", "MPC5554.eTPU.PWM",
                         "MPC5554.eTPU.PWM.AUTO", "MPC5554.eTPU.Util",
-                        "MPC5554.INTC", "MPC5554.PBRIDGE", "MPC5554.SIU",
+                        "MPC5554.Flash", "MPC5554.INTC",
+                        "MPC5554.PBRIDGE", "MPC5554.SIU",
                         "MPC5554.XBAR");
 
    --  IDE

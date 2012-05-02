@@ -22,7 +22,7 @@ package body Oak.Core_Support_Package.Task_Interrupts is
           Hardware_Implementation_Dependent_Register_0_Type;
       HID0 : HID0_Type;
    begin
-      Disable_Core_Interrupts;
+      Disable_External_Interrupts;
       --  Setup interrupt pointers
       Asm
         ("lwz       r3, %0"    & ASCII.LF & ASCII.HT &
@@ -50,7 +50,6 @@ package body Oak.Core_Support_Package.Task_Interrupts is
          Inputs   => (HID0_Type'Asm_Input ("r", HID0)),
          Volatile => True);
       Oak.Processor_Support_Package.Interrupts.Initialise_Interrupts;
-      Enable_Core_Interrupts;
    end Initialise_Task_Enviroment;
 
    --  We use r2 and r13 as they are the only registers guaranteed not to
@@ -92,15 +91,15 @@ package body Oak.Core_Support_Package.Task_Interrupts is
          Volatile => True);
    end Clear_Decrementer_Interrupt;
 
-   procedure Enable_Core_Interrupts is
+   procedure Enable_External_Interrupts is
    begin
       Asm ("wrteei 1", Volatile => True);
-   end Enable_Core_Interrupts;
+   end Enable_External_Interrupts;
 
-   procedure Disable_Core_Interrupts is
+   procedure Disable_External_Interrupts is
    begin
       Asm ("wrteei 0", Volatile => True);
-   end Disable_Core_Interrupts;
+   end Disable_External_Interrupts;
 
    ---------------------------------
    -- E200_Context_Switch_To_Task --

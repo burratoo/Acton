@@ -19,6 +19,10 @@ package Oak.Core is
    procedure Initialise;
    pragma Export (Ada, Initialise, "__oak_initialise");
 
+   procedure Complete_Initialisation;
+   pragma Export (Ada, Complete_Initialisation,
+                  "__oak_complete_initialisation");
+
    procedure Start; --  System initialisation routine.
    pragma Export (Ada, Start, "__oak_start");
 
