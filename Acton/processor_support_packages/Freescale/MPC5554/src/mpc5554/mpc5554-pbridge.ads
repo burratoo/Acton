@@ -1,6 +1,7 @@
+with System; use System;
 with System.Storage_Elements; use System.Storage_Elements;
 
-package MPC5554.PBRIDGE is
+package MPC5554.PBRIDGE with Preelaborate is
 
    ----------------------------------------------------------------------------
    --  Memory Addresses
@@ -118,6 +119,7 @@ package MPC5554.PBRIDGE is
       eDMA  at 0 range 8 .. 11;
       EBI   at 0 range 12 .. 15;
    end record;
+   for Master_Privilege_Control_Type'Size use Word_Size;
 
    for Buffer_Type use (Not_Bufferable => 0, Bufferable => 1);
    for PACR_OPACR_Access_Field_Type use record
@@ -130,6 +132,7 @@ package MPC5554.PBRIDGE is
    for A_PACR0_Type use record
       PBRIDGE_A at 0 range 0 .. 3;
    end record;
+   for A_PACR0_Type'Size use Word_Size;
 
    for A_OPACR0_Type use record
       FMPLL         at 0 range 0 .. 3;
@@ -137,10 +140,12 @@ package MPC5554.PBRIDGE is
       Flash_Control at 0 range 8 .. 11;
       SIU           at 0 range 16 .. 19;
    end record;
+   for A_OPACR0_Type'Size use Word_Size;
 
    for A_OPACR1_Type use record
       eMIOS at 0 range 0 .. 3;
    end record;
+   for A_OPACR1_Type'Size use Word_Size;
 
    for A_OPACR2_Type use record
       eTPU             at 0 range 0 .. 3;
@@ -148,17 +153,20 @@ package MPC5554.PBRIDGE is
       eTPU_PRAM_Mirror at 0 range 12 .. 15;
       eTPU_SCM         at 0 range 16 .. 19;
    end record;
+   for A_OPACR2_Type'Size use Word_Size;
 
    for B_PACR0_Type use record
       PBRIDGE_B at 0 range 0 .. 3;
       XBAR      at 0 range 4 .. 7;
    end record;
+   for B_PACR0_Type'Size use Word_Size;
 
    for B_PACR2_Type use record
       ESCM at 0 range 0 .. 3;
       eDMA at 0 range 4 .. 7;
       INTC at 0 range 8 .. 11;
    end record;
+   for B_PACR2_Type'Size use Word_Size;
 
    for B_OPACR0_Type use record
       eQADC  at 0 range 0 .. 3;
@@ -167,70 +175,75 @@ package MPC5554.PBRIDGE is
       DSPI_C at 0 range 24 .. 27;
       DSPI_D at 0 range 28 .. 31;
    end record;
+   for B_OPACR0_Type'Size use Word_Size;
 
    for B_OPACR1_Type use record
       eSCI_A at 0 range 16 .. 19;
       eSCI_B at 0 range 20 .. 23;
    end record;
+   for B_OPACR1_Type'Size use Word_Size;
 
    for B_OPACR2_Type use record
       FlexCAN_A at 0 range 0 .. 3;
       FlexCAN_B at 0 range 4 .. 7;
       FlexCAN_C at 0 range 8 .. 11;
    end record;
+   for B_OPACR2_Type'Size use Word_Size;
 
    for B_OPACR3_Type use record
       BAM at 0 range 28 .. 31;
    end record;
+   for B_OPACR3_Type'Size use Word_Size;
+
    ----------------------------------------------------------------------------
    --  EBI Registers
    ----------------------------------------------------------------------------
    A_Master_Privilege_Control_Register : Master_Privilege_Control_Type;
    for A_Master_Privilege_Control_Register'Address use
-     To_Address (PBRIDGE_A_Base_Address + A_MPCR_Offset_Address);
+     System'To_Address (PBRIDGE_A_Base_Address + A_MPCR_Offset_Address);
 
    A_Peripheral_Access_Control_Register_0 : A_PACR0_Type;
    for A_Peripheral_Access_Control_Register_0'Address use
-     To_Address (PBRIDGE_A_Base_Address + A_PACR0_Offset_Address);
+     System'To_Address (PBRIDGE_A_Base_Address + A_PACR0_Offset_Address);
 
    A_Off_Platform_Peripheral_Access_Control_Register_0 : A_OPACR0_Type;
    for A_Off_Platform_Peripheral_Access_Control_Register_0'Address use
-     To_Address (PBRIDGE_A_Base_Address + A_OPACR0_Offset_Address);
+     System'To_Address (PBRIDGE_A_Base_Address + A_OPACR0_Offset_Address);
 
    A_Off_Platform_Peripheral_Access_Control_Register_1 : A_OPACR1_Type;
    for A_Off_Platform_Peripheral_Access_Control_Register_1'Address use
-     To_Address (PBRIDGE_A_Base_Address + A_OPACR1_Offset_Address);
+     System'To_Address (PBRIDGE_A_Base_Address + A_OPACR1_Offset_Address);
 
    A_Off_Platform_Peripheral_Access_Control_Register_2 : A_OPACR2_Type;
    for A_Off_Platform_Peripheral_Access_Control_Register_2'Address use
-     To_Address (PBRIDGE_A_Base_Address + A_OPACR2_Offset_Address);
+     System'To_Address (PBRIDGE_A_Base_Address + A_OPACR2_Offset_Address);
 
    B_Master_Privilege_Control_Register : Master_Privilege_Control_Type;
    for B_Master_Privilege_Control_Register'Address use
-     To_Address (PBRIDGE_B_Base_Address + B_MPCR_Offset_Address);
+     System'To_Address (PBRIDGE_B_Base_Address + B_MPCR_Offset_Address);
 
    B_Peripheral_Access_Control_Register_0 : B_PACR0_Type;
    for B_Peripheral_Access_Control_Register_0'Address use
-     To_Address (PBRIDGE_B_Base_Address + B_PACR0_Offset_Address);
+     System'To_Address (PBRIDGE_B_Base_Address + B_PACR0_Offset_Address);
 
    B_Peripheral_Access_Control_Register_2 : B_PACR2_Type;
    for B_Peripheral_Access_Control_Register_2'Address use
-     To_Address (PBRIDGE_B_Base_Address + B_PACR2_Offset_Address);
+     System'To_Address (PBRIDGE_B_Base_Address + B_PACR2_Offset_Address);
 
    B_Off_Platform_Peripheral_Access_Control_Register_0 : B_OPACR0_Type;
    for B_Off_Platform_Peripheral_Access_Control_Register_0'Address use
-     To_Address (PBRIDGE_B_Base_Address + B_OPACR0_Offset_Address);
+     System'To_Address (PBRIDGE_B_Base_Address + B_OPACR0_Offset_Address);
 
    B_Off_Platform_Peripheral_Access_Control_Register_1 : B_OPACR1_Type;
    for B_Off_Platform_Peripheral_Access_Control_Register_1'Address use
-     To_Address (PBRIDGE_B_Base_Address + B_OPACR1_Offset_Address);
+     System'To_Address (PBRIDGE_B_Base_Address + B_OPACR1_Offset_Address);
 
    B_Off_Platform_Peripheral_Access_Control_Register_2 : B_OPACR2_Type;
    for B_Off_Platform_Peripheral_Access_Control_Register_2'Address use
-     To_Address (PBRIDGE_B_Base_Address + B_OPACR2_Offset_Address);
+     System'To_Address (PBRIDGE_B_Base_Address + B_OPACR2_Offset_Address);
 
    B_Off_Platform_Peripheral_Access_Control_Register_3 : B_OPACR3_Type;
    for B_Off_Platform_Peripheral_Access_Control_Register_3'Address use
-     To_Address (PBRIDGE_B_Base_Address + B_OPACR3_Offset_Address);
+     System'To_Address (PBRIDGE_B_Base_Address + B_OPACR3_Offset_Address);
 
 end MPC5554.PBRIDGE;

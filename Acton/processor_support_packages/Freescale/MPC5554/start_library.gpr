@@ -12,6 +12,8 @@ project Start_Library is
                          "mpc5554-pbridge.ads",
                          "mpc5554-xbar.ads",
                          "isa.ads",
+                         "isa-power.adb", "isa-power.ads",
+                         "isa-power-e200.ads",
                          "isa-power-e200-processor_control_registers.ads");
    for Object_Dir use "obj/";
    for Library_Name use "acton-crt0";
@@ -23,18 +25,18 @@ project Start_Library is
    end Naming;
 
    package Builder is
-      for Default_Switches ("ada") use ("-s");
+      for Default_Switches ("ada") use ("-s", "-j2");
    end Builder;
 
    package Compiler is
-      for Default_Switches ("ada") use ("-gnatn", "-gnatg", "-Wa,-mregnames");
+      for Default_Switches ("ada") use ("-gnatn", "-gnatg", "-Wa,-mregnames", "-O2");
       for Default_Switches ("asm") use ("-mregnames");
    end Compiler;
 
    package Ide is
-      for Gnat use "powerpc-eabispe-gnat";
-      for Gnatlist use "powerpc-eabispe-gnatls";
-      for Debugger_Command use "powerpc-eabispe-gdb";
+      for Gnat use "powerpc-burratoo-acton-gnat";
+      for Gnatlist use "powerpc-burratoo-acton-gnatls";
+      for Debugger_Command use "powerpc-burratoo-acton-gdb";
    end Ide;
 
 end Start_Library;

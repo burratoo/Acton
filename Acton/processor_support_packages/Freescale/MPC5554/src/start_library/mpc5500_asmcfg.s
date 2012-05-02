@@ -50,7 +50,7 @@
 #**************************************************************************/
 
 #    .ifeq __MPC5500_USERDEFS__
-	    .include "../src/mpc5500_usrdefs.inc"
+	    .include "../src/start_library/mpc5500_usrdefs.inc"
 #   .endif
 
     .globl cfg_CACHE, cfg_FMPLL, cfg_SRAM
