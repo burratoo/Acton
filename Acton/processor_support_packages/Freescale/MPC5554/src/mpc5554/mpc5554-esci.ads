@@ -1,6 +1,6 @@
 with System.Storage_Elements; use System.Storage_Elements;
 
-package MPC5554.eSCI is
+package MPC5554.eSCI with Preelaborate is
 
    ----------------------------------------------------------------------------
    --  Memory Addresses
@@ -199,33 +199,33 @@ package MPC5554.eSCI is
 
    A_Control_Register_1 : Control_1_Type;
    for A_Control_Register_1'Address use
-     To_Address (eSCIA_Base_Address + CR1_Offset_Address);
+     System'To_Address (eSCIA_Base_Address + CR1_Offset_Address);
 
    A_Control_Register_2 : Control_2_Type;
    for A_Control_Register_2'Address use
-     To_Address (eSCIA_Base_Address + CR2_Offset_Address);
+     System'To_Address (eSCIA_Base_Address + CR2_Offset_Address);
 
    A_Data_Register : Data_Type;
    for A_Data_Register'Address use
-     To_Address (eSCIA_Base_Address + DR_Offset_Address);
+     System'To_Address (eSCIA_Base_Address + DR_Offset_Address);
 
    A_Status_Register : Status_Type;
    for A_Status_Register'Address use
-     To_Address (eSCIA_Base_Address + SR_Offset_Address);
+     System'To_Address (eSCIA_Base_Address + SR_Offset_Address);
 
    B_Control_Register_1 : Control_1_Type;
    for B_Control_Register_1'Address use
-     To_Address (eSCIB_Base_Address + CR1_Offset_Address);
+     System'To_Address (eSCIB_Base_Address + CR1_Offset_Address);
 
    B_Control_Register_2 : Control_2_Type;
    for B_Control_Register_2'Address use
-     To_Address (eSCIB_Base_Address + CR2_Offset_Address);
+     System'To_Address (eSCIB_Base_Address + CR2_Offset_Address);
 
    B_Data_Register : Data_Type;
    for B_Data_Register'Address use
-     To_Address (eSCIB_Base_Address + DR_Offset_Address);
+     System'To_Address (eSCIB_Base_Address + DR_Offset_Address);
 
    B_Status_Register : Status_Type;
    for B_Status_Register'Address use
-     To_Address (eSCIB_Base_Address + SR_Offset_Address);
+     System'To_Address (eSCIB_Base_Address + SR_Offset_Address);
 end MPC5554.eSCI;

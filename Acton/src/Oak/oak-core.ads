@@ -4,9 +4,7 @@ with Oak.Oak_Task;                  use Oak.Oak_Task;
 with System;                        use System;
 with Oak.Memory.Call_Stack;         use Oak.Memory.Call_Stack;
 
-package Oak.Core is
-
-   pragma Preelaborate;
+package Oak.Core with Preelaborate is
 
    type Activation_Reason is (
       First_Run,
@@ -36,21 +34,16 @@ package Oak.Core is
    --  Hmmm...
    procedure Run_Loop (Oak_Instance : in out Oak_Data);
 
-   function Get_Current_Task_Stack_Pointer return Address;
-   procedure Set_Current_Task_Stack_Pointer (SP : Address);
-   procedure Set_Current_Task (T : Oak_Task_Handler);
-   function Get_Current_Task return Oak_Task_Handler;
+   function Get_Current_Task_Stack_Pointer return Address with Inline_Always;
+   procedure Set_Current_Task_Stack_Pointer (SP : Address) with Inline_Always;
+   procedure Set_Current_Task (T : Oak_Task_Handler) with Inline_Always;
+   function Get_Current_Task return Oak_Task_Handler with Inline_Always;
 
-   function Get_Oak_Instance return access Oak_Data;
+   function Get_Oak_Instance return access Oak_Data with Inline_Always;
    function Get_Scheduler_Info
      (Oak_Instance : access Oak_Data)
-      return         access Oak_Scheduler_Info;
+      return         access Oak_Scheduler_Info with Inline_Always;
    function Get_Main_Task return Oak_Task_Handler;
-
-   pragma Inline_Always (Get_Current_Task_Stack_Pointer);
-   pragma Inline_Always (Set_Current_Task_Stack_Pointer);
-   pragma Inline_Always (Get_Current_Task);
-   pragma Inline_Always (Get_Scheduler_Info);
 
 private
    Main_Task_OTCR : aliased Oak.Oak_Task.Oak_Task;

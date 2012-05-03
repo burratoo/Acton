@@ -1,19 +1,17 @@
-package Oak.Core_Support_Package.Call_Stack is
-
-   pragma Pure;
+package Oak.Core_Support_Package.Call_Stack with Pure is
 
    --  Call_Stack_Size could be defined in the linker script (Enviroment
    --  defined variables don't make sense in this system) Call_Stack_Size in
    --  Storage_Elements
-   Call_Stack_Size           : constant := 4 * 1024;
-   Default_Call_Stack_Size   : constant := Call_Stack_Size;
-   Main_Task_Call_Stack_Size : constant := 4 * 1024;
-   Oak_Call_Stack_Size       : constant := 4 * 1024;
+   Call_Stack_Size            : constant := 4 * 1024;
+   Default_Call_Stack_Size    : constant := Call_Stack_Size;
+   Main_Task_Call_Stack_Size  : constant := 4 * 1024;
+   Oak_Call_Stack_Size        : constant := 4 * 1024;
 
    --  Call_Stack_Alignment in bytes
-   Call_Stack_Allignment : constant := 8;
+   Call_Stack_Allignment      : constant := 8;
 
-   Minimum_Call_Stack_Size : constant := 1 * 1024;
+   Minimum_Call_Stack_Size    : constant := 1 * 1024;
 
    Task_Registers_Save_Size   : constant := 296;
    Kernel_Registers_Save_Size : constant := 152;

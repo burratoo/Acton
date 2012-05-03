@@ -3,16 +3,14 @@ with Oak.Oak_Task;
 with System;
 with System.Storage_Elements;
 
-package Oak.Core_Support_Package.Call_Stack.Ops is
-
-   pragma Preelaborate;
+package Oak.Core_Support_Package.Call_Stack.Ops with Preelaborate is
 
    package OT renames Oak.Oak_Task;
 
    procedure Set_Task_Instruction_Pointer
      (Stack               : in Oak.Memory.Call_Stack.Call_Stack_Handler;
-      Instruction_Address : in System.Address);
-   pragma Inline (Set_Task_Instruction_Pointer);
+      Instruction_Address : in System.Address)
+     with Inline;
 
    procedure Set_Task_Body_Procedure
      (Stack             : in Oak.Memory.Call_Stack.Call_Stack_Handler;

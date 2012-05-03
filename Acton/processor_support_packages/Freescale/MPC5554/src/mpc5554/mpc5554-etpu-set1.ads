@@ -1,7 +1,7 @@
 with MPC5554;           use MPC5554;
 with MPC5554.eTPU;      use MPC5554.eTPU;
 
-package MPC5554.eTPU.Set1 is
+package MPC5554.eTPU.Set1 with Preelaborate is
 
    eTPU_Entry_Table : constant ETB_Type        := 16#0000#;
    eTPU_MISC        : constant MISC_Value_Type := 16#019FF9F8#;

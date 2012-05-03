@@ -1,6 +1,6 @@
 with Ada.Unchecked_Conversion;
 
-package MPC5554.eQADC.ADC is
+package MPC5554.eQADC.ADC with Preelaborate is
 
    ----------------------------------------------------------------------------
    --  Memory Addresses

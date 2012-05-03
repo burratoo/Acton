@@ -2,7 +2,7 @@ with MPC5554;           use MPC5554;
 with MPC5554.eTPU;      use MPC5554.eTPU;
 with MPC5554.eTPU.Util; use MPC5554.eTPU.Util;
 
-package MPC5554.eTPU.PWM.AUTO is
+package MPC5554.eTPU.PWM.AUTO with Preelaborate is
 
    --  Function Configuration Information
    PWM_Function_Number : constant Function_Number   := 1;

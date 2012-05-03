@@ -1,5 +1,4 @@
-package ISA.Power.e200.Processor_Control_Registers is
-   pragma Pure;
+package ISA.Power.e200.Processor_Control_Registers with Pure is
 
    ---------------
    --  Machine State Register
@@ -28,7 +27,7 @@ package ISA.Power.e200.Processor_Control_Registers is
       Instruction_Address_Space  : Address_Space;
       Data_Address_Space         : Address_Space;
       Performance_Monitor        : Enable_Type;
-   end record;
+   end record with Size => Standard'Word_Size;
 
    for Computation_Mode_Type use (Mode_32 => 0, Mode_64 => 1);
    for Set_Type use (Clear => 0, Set => 1);
@@ -53,7 +52,5 @@ package ISA.Power.e200.Processor_Control_Registers is
       Data_Address_Space         at 0 range 27 .. 27;
       Performance_Monitor        at 0 range 29 .. 29;
    end record;
-
-   for Machine_State_Register_Type'Size use Register_Size_32;
 
 end ISA.Power.e200.Processor_Control_Registers;

@@ -1,5 +1,4 @@
-package ISA.Power is
-   pragma Pure;
+package ISA.Power with Pure is
 
    procedure Memory_Barrier with Inline_Always;
    procedure Instruction_Synchronize with Inline_Always;

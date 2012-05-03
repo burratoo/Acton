@@ -1,6 +1,4 @@
-package Oak.Oak_Task.Deadline_List is
-
-   pragma Preelaborate;
+package Oak.Oak_Task.Deadline_List with Preelaborate is
 
    procedure Insert_Task
      (List_Head   : in out Oak_Task_Handler;

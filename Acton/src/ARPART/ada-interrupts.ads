@@ -2,9 +2,7 @@ with System;
 with Oak.Processor_Support_Package.Interrupts;
 --  with System.Multiprocessors;
 
-package Ada.Interrupts is
-
-   pragma Preelaborate;
+package Ada.Interrupts with Preelaborate is
 
    type Interrupt_Id is new
      Oak.Processor_Support_Package.Interrupts.Oak_Interrupt_Id;

@@ -1,3 +1,2 @@
-package ARPART is
-   pragma Pure;
+package ARPART with Pure is
 end ARPART;

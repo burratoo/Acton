@@ -1,5 +1,4 @@
-package Oak.Oak_Task.Activation is
-   pragma Preelaborate;
+package Oak.Oak_Task.Activation with Preelaborate is
 
    function Continue_Activation
      (Activator : Oak_Task_Handler)

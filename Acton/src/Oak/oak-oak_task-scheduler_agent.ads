@@ -1,6 +1,4 @@
-package Oak.Oak_Task.Scheduler_Agent is
-
-   pragma Preelaborate;
+package Oak.Oak_Task.Scheduler_Agent with Preelaborate is
 
    procedure Initialise_Agent
      (Agent        : access Oak_Task;

@@ -5,9 +5,7 @@ with Oak.Memory.Call_Stack;         use Oak.Memory.Call_Stack;
 with Oak.Interrupts;
 with System; use System;
 
-package Oak.Oak_Task is
-
-   pragma Preelaborate;
+package Oak.Oak_Task with Preelaborate is
 
    type Oak_Task_Kind is (Regular, Scheduler);
 

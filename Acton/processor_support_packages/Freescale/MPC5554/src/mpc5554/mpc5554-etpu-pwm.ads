@@ -1,6 +1,6 @@
 with MPC5554;           use MPC5554;
 
-package MPC5554.eTPU.PWM is
+package MPC5554.eTPU.PWM with Preelaborate is
    subtype Time_Unit is Unsigned_32;
    subtype Frequency_Unit is Time_Unit range 0 .. 100 * 10 ** 5;
    subtype Duty_Unit is Time_Unit range 0 .. 10000;

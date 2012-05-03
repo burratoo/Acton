@@ -5,9 +5,7 @@ with MPC5554.INTC; use MPC5554.INTC;
 
 limited with Oak.Oak_Task;
 
-package Oak.Processor_Support_Package.Interrupts is
-
-   pragma Preelaborate;
+package Oak.Processor_Support_Package.Interrupts with Preelaborate is
 
    subtype Oak_Interrupt_Id is MPC5554.INTC.INTC_ID_Type;
    Default_Interrupt_Priority : constant Interrupt_Priority :=

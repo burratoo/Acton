@@ -1,8 +1,6 @@
 with System.Storage_Elements;
 
-package Oak.Oak_Task.Data_Access is
-
-   pragma Preelaborate;
+package Oak.Oak_Task.Data_Access with Preelaborate is
 
    procedure Initialise_Task
      (T                 : in Oak_Task_Handler;

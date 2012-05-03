@@ -2,8 +2,7 @@ with Oak.Oak_Task.Activation;
 with Ada.Real_Time;
 with Oak.Oak_Task;
 
-package ARPART.Tasks is
-   pragma Preelaborate;
+package ARPART.Tasks with Preelaborate is
 
    package Oak_Activation renames Oak.Oak_Task.Activation;
    package OT renames Oak.Oak_Task;

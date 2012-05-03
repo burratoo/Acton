@@ -29,14 +29,12 @@
 --  microcontrollers as their timer resolution moves into the microseconds
 --  region. Also makes the time range useable similar to existing systems.
 
-package Oak.Core_Support_Package.Time is
-   pragma Preelaborate;
+package Oak.Core_Support_Package.Time with Preelaborate is
 
    MHz         : constant := 1E6;
    Clock_Speed : constant := 132 * MHz;
 
-   type Oak_Time is range -(2 ** 63) .. +(2 ** 63 - 1);
-   for Oak_Time'Size use 64;
+   type Oak_Time is range -(2 ** 63) .. +(2 ** 63 - 1) with Size => 64;
 
    --     type Oak_Time_Span is new Oak_Time; for Oak_Time_Span'Size use 64;
 

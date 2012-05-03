@@ -6,9 +6,7 @@ with Ada.Real_Time;
 with Oak.Oak_Task;
 with System.Storage_Elements;
 
-package Oak.Core_Support_Package.Task_Support is
-
-   pragma Preelaborate;
+package Oak.Core_Support_Package.Task_Support with Preelaborate is
 
    package OT renames Oak.Oak_Task;
 
@@ -32,26 +30,17 @@ package Oak.Core_Support_Package.Task_Support is
    --  registers to store is the Stack Pointer. Even then, this could just be
    --  set up by the kernel before the context switch... mmmm........
 
-   procedure Context_Switch_To_Task;
-   procedure Context_Switch_To_Kernel;
-   procedure Context_Switch_To_Scheduler_Agent;
+   procedure Context_Switch_To_Task with Inline_Always;
+   procedure Context_Switch_To_Kernel with Inline_Always;
+   procedure Context_Switch_To_Scheduler_Agent with Inline_Always;
 
-   procedure Yield_Processor_To_Kernel;
-
-   pragma Inline_Always (Context_Switch_To_Task);
-   pragma Inline_Always (Context_Switch_To_Kernel);
-   pragma Inline_Always (Context_Switch_To_Scheduler_Agent);
-   pragma Inline_Always (Yield_Processor_To_Kernel);
+   procedure Yield_Processor_To_Kernel with Inline_Always;
 
    procedure Set_Oak_Wake_Up_Timer (Wake_Up_At : Ada.Real_Time.Time);
-   procedure Disable_Oak_Wake_Up_Interrupt;
-   procedure Enable_Oak_Wake_Up_Interrupt;
+   procedure Disable_Oak_Wake_Up_Interrupt with Inline_Always;
+   procedure Enable_Oak_Wake_Up_Interrupt with Inline_Always;
 
    procedure Sleep_Kernel;
-
-   pragma Inline_Always (Enable_Oak_Wake_Up_Interrupt);
-   pragma Inline_Always (Disable_Oak_Wake_Up_Interrupt);
-   --  pragma Inline_Always (Sleep_Kernel);
 
    DI, SI : System.Storage_Elements.Storage_Element;
    pragma Import (Assembler, DI, "__OTS_DI");

@@ -1,5 +1,4 @@
-package ISA.Power.e200.z6.HID is
-   pragma Pure;
+package ISA.Power.e200.z6.HID with Pure is
 
    type Branch_Prediction_Type is (
       Enable,
@@ -24,7 +23,7 @@ package ISA.Power.e200.z6.HID is
       Critical_Interrupt_Clears_MSR_DE      : Decision_Type;
       Machine_Check_Interrupt_Clears_MSR_DE : Decision_Type;
       Debug_APU                             : Enable_Type;
-   end record;
+   end record with Size => Standard'Word_Size;
 
    for Branch_Prediction_Type use
      (Enable            => 2#00#,
@@ -50,8 +49,5 @@ package ISA.Power.e200.z6.HID is
       Machine_Check_Interrupt_Clears_MSR_DE at 0 range 22 .. 22;
       Debug_APU                             at 0 range 23 .. 23;
    end record;
-
-   for Hardware_Implementation_Dependent_Register_0_Type'Size use
-     Register_Size_32;
 
 end ISA.Power.e200.z6.HID;

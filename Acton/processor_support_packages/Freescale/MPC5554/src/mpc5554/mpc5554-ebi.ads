@@ -1,6 +1,6 @@
 with System.Storage_Elements; use System.Storage_Elements;
 
-package MPC5554.EBI is
+package MPC5554.EBI with Preelaborate is
 
    ----------------------------------------------------------------------------
    --  Memory Addresses
@@ -178,42 +178,42 @@ package MPC5554.EBI is
 
    Module_Configuration_Register : Module_Configuration_Type;
    for Module_Configuration_Register'Address use
-     To_Address (EBI_Base_Address + MCR_Offset_Address);
+     System'To_Address (EBI_Base_Address + MCR_Offset_Address);
 
    Transfer_Error_Status_Register : Transfer_Error_Status_Type;
    for Transfer_Error_Status_Register'Address use
-     To_Address (EBI_Base_Address + TESR_Offset_Address);
+     System'To_Address (EBI_Base_Address + TESR_Offset_Address);
 
    Bus_Monitor_Control_Register : Bus_Monitor_Control_Type;
    for Bus_Monitor_Control_Register'Address use
-     To_Address (EBI_Base_Address + BMCR_Offset_Address);
+     System'To_Address (EBI_Base_Address + BMCR_Offset_Address);
 
    Base_Register_Bank_0 : Base_Register_Type;
    for Base_Register_Bank_0'Address use
-     To_Address (EBI_Base_Address + BR0_Offset_Address);
+     System'To_Address (EBI_Base_Address + BR0_Offset_Address);
    Option_Register_Bank_0 : Option_Register_Type;
    for Option_Register_Bank_0'Address use
-     To_Address (EBI_Base_Address + OR0_Offset_Address);
+     System'To_Address (EBI_Base_Address + OR0_Offset_Address);
 
    Base_Register_Bank_1 : Base_Register_Type;
    for Base_Register_Bank_1'Address use
-     To_Address (EBI_Base_Address + BR1_Offset_Address);
+     System'To_Address (EBI_Base_Address + BR1_Offset_Address);
    Option_Register_Bank_1 : Option_Register_Type;
    for Option_Register_Bank_1'Address use
-     To_Address (EBI_Base_Address + OR1_Offset_Address);
+     System'To_Address (EBI_Base_Address + OR1_Offset_Address);
 
    Base_Register_Bank_2 : Base_Register_Type;
    for Base_Register_Bank_2'Address use
-     To_Address (EBI_Base_Address + BR2_Offset_Address);
+     System'To_Address (EBI_Base_Address + BR2_Offset_Address);
    Option_Register_Bank_2 : Option_Register_Type;
    for Option_Register_Bank_2'Address use
-     To_Address (EBI_Base_Address + OR2_Offset_Address);
+     System'To_Address (EBI_Base_Address + OR2_Offset_Address);
 
    Base_Register_Bank_3 : Base_Register_Type;
    for Base_Register_Bank_3'Address use
-     To_Address (EBI_Base_Address + BR3_Offset_Address);
+     System'To_Address (EBI_Base_Address + BR3_Offset_Address);
    Option_Register_Bank_3 : Option_Register_Type;
    for Option_Register_Bank_3'Address use
-     To_Address (EBI_Base_Address + OR3_Offset_Address);
+     System'To_Address (EBI_Base_Address + OR3_Offset_Address);
 
 end MPC5554.EBI;

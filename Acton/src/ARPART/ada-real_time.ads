@@ -1,8 +1,6 @@
 with Oak.Core_Support_Package.Time;
 
-package Ada.Real_Time is
-
-   pragma Preelaborate;
+package Ada.Real_Time with Preelaborate is
 
    package Oak_CSP_Time renames Oak.Core_Support_Package.Time;
 

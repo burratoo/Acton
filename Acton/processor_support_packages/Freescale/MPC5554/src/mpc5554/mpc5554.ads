@@ -1,7 +1,6 @@
 with System;
 
-package MPC5554 is
-   pragma Pure;
+package MPC5554 with Pure is
 
    type Enable_Type is (Disable, Enable);
    for Enable_Type use (Disable => 0, Enable => 1);

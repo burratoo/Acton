@@ -12,9 +12,7 @@ with Oak.Oak_Task.Internal;
 
 package body Oak.Core_Support_Package.Task_Interrupts is
 
-   procedure Clear_Decrementer_Interrupt;
-   pragma Inline_Always
-     (Clear_Decrementer_Interrupt);
+   procedure Clear_Decrementer_Interrupt with Inline_Always;
 
    procedure Initialise_Task_Enviroment is
       subtype HID0_Type is

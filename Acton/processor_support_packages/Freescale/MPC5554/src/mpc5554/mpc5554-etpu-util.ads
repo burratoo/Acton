@@ -1,7 +1,7 @@
 with MPC5554;                 use MPC5554;
 with MPC5554.eTPU;            use MPC5554.eTPU;
 
-package MPC5554.eTPU.Util is
+package MPC5554.eTPU.Util with Preelaborate is
 
    type eTPU_Config_Type is record
       MISC_Enable               : Enable_Type;

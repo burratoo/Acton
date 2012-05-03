@@ -48,7 +48,7 @@ package MPC5554.PBRIDGE with Preelaborate is
       Nexus : MPCR_Access_Field_Type;
       eDMA  : MPCR_Access_Field_Type;
       EBI   : MPCR_Access_Field_Type;
-   end record;
+   end record with Size => Standard'Word_Size;
 
    --  PBRIDGE A and B Peripheral Access Control Registers (PBRIDGE_x_OPACR)
    --  and Off-Platform Peripheral Access Control Registers (PBRIDGE_x_OPACR)
@@ -62,44 +62,44 @@ package MPC5554.PBRIDGE with Preelaborate is
 
    type A_PACR0_Type is record
       PBRIDGE_A : PACR_OPACR_Access_Field_Type;
-   end record;
+   end record with Size => Standard'Word_Size;
 
    type A_OPACR0_Type is record
       FMPLL, EBI_Control, Flash_Control, SIU : PACR_OPACR_Access_Field_Type;
-   end record;
+   end record with Size => Standard'Word_Size;
 
    type A_OPACR1_Type is record
       eMIOS : PACR_OPACR_Access_Field_Type;
-   end record;
+   end record with Size => Standard'Word_Size;
 
    type A_OPACR2_Type is record
       eTPU, eTPU_PRAM, eTPU_PRAM_Mirror, eTPU_SCM :
         PACR_OPACR_Access_Field_Type;
-   end record;
+   end record with Size => Standard'Word_Size;
 
    type B_PACR0_Type is record
       PBRIDGE_B, XBAR : PACR_OPACR_Access_Field_Type;
-   end record;
+   end record with Size => Standard'Word_Size;
 
    type B_PACR2_Type is record
       ESCM, eDMA, INTC : PACR_OPACR_Access_Field_Type;
-   end record;
+   end record with Size => Standard'Word_Size;
 
    type B_OPACR0_Type is record
       eQADC, DSPI_A, DSPI_B, DSPI_C, DSPI_D : PACR_OPACR_Access_Field_Type;
-   end record;
+   end record with Size => Standard'Word_Size;
 
    type B_OPACR1_Type is record
       eSCI_A, eSCI_B : PACR_OPACR_Access_Field_Type;
-   end record;
+   end record with Size => Standard'Word_Size;
 
    type B_OPACR2_Type is record
       FlexCAN_A, FlexCAN_B, FlexCAN_C : PACR_OPACR_Access_Field_Type;
-   end record;
+   end record with Size => Standard'Word_Size;
 
    type B_OPACR3_Type is record
       BAM : PACR_OPACR_Access_Field_Type;
-   end record;
+   end record with Size => Standard'Word_Size;
    ----------------------------------------------------------------------------
    --  Hardware Respresentations
    ----------------------------------------------------------------------------
@@ -119,7 +119,6 @@ package MPC5554.PBRIDGE with Preelaborate is
       eDMA  at 0 range 8 .. 11;
       EBI   at 0 range 12 .. 15;
    end record;
-   for Master_Privilege_Control_Type'Size use Word_Size;
 
    for Buffer_Type use (Not_Bufferable => 0, Bufferable => 1);
    for PACR_OPACR_Access_Field_Type use record
@@ -132,7 +131,6 @@ package MPC5554.PBRIDGE with Preelaborate is
    for A_PACR0_Type use record
       PBRIDGE_A at 0 range 0 .. 3;
    end record;
-   for A_PACR0_Type'Size use Word_Size;
 
    for A_OPACR0_Type use record
       FMPLL         at 0 range 0 .. 3;
@@ -140,12 +138,10 @@ package MPC5554.PBRIDGE with Preelaborate is
       Flash_Control at 0 range 8 .. 11;
       SIU           at 0 range 16 .. 19;
    end record;
-   for A_OPACR0_Type'Size use Word_Size;
 
    for A_OPACR1_Type use record
       eMIOS at 0 range 0 .. 3;
    end record;
-   for A_OPACR1_Type'Size use Word_Size;
 
    for A_OPACR2_Type use record
       eTPU             at 0 range 0 .. 3;
@@ -153,20 +149,17 @@ package MPC5554.PBRIDGE with Preelaborate is
       eTPU_PRAM_Mirror at 0 range 12 .. 15;
       eTPU_SCM         at 0 range 16 .. 19;
    end record;
-   for A_OPACR2_Type'Size use Word_Size;
 
    for B_PACR0_Type use record
       PBRIDGE_B at 0 range 0 .. 3;
       XBAR      at 0 range 4 .. 7;
    end record;
-   for B_PACR0_Type'Size use Word_Size;
 
    for B_PACR2_Type use record
       ESCM at 0 range 0 .. 3;
       eDMA at 0 range 4 .. 7;
       INTC at 0 range 8 .. 11;
    end record;
-   for B_PACR2_Type'Size use Word_Size;
 
    for B_OPACR0_Type use record
       eQADC  at 0 range 0 .. 3;
@@ -175,25 +168,21 @@ package MPC5554.PBRIDGE with Preelaborate is
       DSPI_C at 0 range 24 .. 27;
       DSPI_D at 0 range 28 .. 31;
    end record;
-   for B_OPACR0_Type'Size use Word_Size;
 
    for B_OPACR1_Type use record
       eSCI_A at 0 range 16 .. 19;
       eSCI_B at 0 range 20 .. 23;
    end record;
-   for B_OPACR1_Type'Size use Word_Size;
 
    for B_OPACR2_Type use record
       FlexCAN_A at 0 range 0 .. 3;
       FlexCAN_B at 0 range 4 .. 7;
       FlexCAN_C at 0 range 8 .. 11;
    end record;
-   for B_OPACR2_Type'Size use Word_Size;
 
    for B_OPACR3_Type use record
       BAM at 0 range 28 .. 31;
    end record;
-   for B_OPACR3_Type'Size use Word_Size;
 
    ----------------------------------------------------------------------------
    --  EBI Registers

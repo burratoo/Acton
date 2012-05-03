@@ -3,8 +3,7 @@ with System.Storage_Elements;
 with Oak.Core_Support_Package;
 with Oak.Core_Support_Package.Call_Stack;
 
-package Oak.Memory.Call_Stack is
-   pragma Preelaborate;
+package Oak.Memory.Call_Stack with Preelaborate is
 
    use System;
    package CSP_Stack renames Oak.Core_Support_Package.Call_Stack;
