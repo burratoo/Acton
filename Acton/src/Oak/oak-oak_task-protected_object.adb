@@ -48,9 +48,7 @@ package body Oak.Oak_Task.Protected_Object is
          Object_Record          => Object_Record_Address,
          Controlling_Shared_State => Waiting);
 
-      if Ceiling_Priority >= Any_Priority'First and
-        Ceiling_Priority <= Any_Priority'Last
-      then
+      if Ceiling_Priority in Any_Priority then
          PO.Normal_Priority := System.Any_Priority (Ceiling_Priority);
       elsif Ceiling_Priority = Unspecified_Priority then
          PO.Normal_Priority := Any_Priority'Last;
