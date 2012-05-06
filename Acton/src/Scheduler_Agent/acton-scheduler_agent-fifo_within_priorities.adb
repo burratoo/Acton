@@ -108,8 +108,8 @@ package body Acton.Scheduler_Agent.FIFO_Within_Priorities is
       begin
          Move_Woken_Tasks_To_Runnable_Queue;
 
-         for T_Priority in reverse Runnable_Queues'Range loop
-            Head_Task := Runnable_Queues (T_Priority);
+         for Queue_Head of reverse Runnable_Queues loop
+            Head_Task := Queue_Head;
             if Head_Task /= null then
                Selected_Task := Head_Task;
                while Task_Data.Get_State (T => Selected_Task) = Shared_State

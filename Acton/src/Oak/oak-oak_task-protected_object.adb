@@ -214,14 +214,14 @@ package body Oak.Oak_Task.Protected_Object is
    is
       Current_Task : Oak_Task_Handler := null;
    begin
-      for Entry_Id in PO.Entry_Queues'Range loop
-         Current_Task := PO.Entry_Queues (Entry_Id);
+      for Queue_Head of PO.Entry_Queues loop
+         Current_Task := Queue_Head;
          while Current_Task /= null loop
-            Queue.Remove_Task (Queue => PO.Entry_Queues (Entry_Id),
+            Queue.Remove_Task (Queue => Queue_Head,
                                T     => Current_Task);
             Current_Task.State := New_Task_State;
             Current_Task.Shared_State := No_Shared_State;
-            Current_Task := PO.Entry_Queues (Entry_Id);
+            Current_Task := Queue_Head;
          end loop;
       end loop;
    end Purge_Entry_Queues;

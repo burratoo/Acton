@@ -11,10 +11,10 @@ package body Oak.Interrupts is
    is
       P : constant Interrupt_Priority := Get_Normal_Priority (Handler_PO);
    begin
-      for J in Handlers'Range loop
+      for Handler of Handlers.all loop
          Oak.Processor_Support_Package.Interrupts.Attach_Handler
-           (Interrupt => Handlers (J).Interrupt,
-            Handler   => Handlers (J).Handler,
+           (Interrupt => Handler.Interrupt,
+            Handler   => Handler.Handler,
             Priority  => P);
       end loop;
       Chosen_Task := T;
