@@ -12,9 +12,8 @@ abstract project Acton_Common is
                               "Oak.Core_Support_Package.Call_Stack",
                               "Oak.Core_Support_Package.Time",
                               "Oak.Interrupts",
-                              "Oak.Oak_Task", "Oak.Oak_Task.Activation", "Oak.Oak_Task.Data_Access", "Oak.Oak_Task.Queue",
-                              "Oak.Oak_Task.Protected_Object",
-                              "Oak.Oak_Task.Scheduler_Agent",
+                         "Oak.Agent", "Oak.Agent.Protected_Agent", "Oak.Agent.Queue", "Oak.Agent.Scheduler_Agent",
+                         "Oak.Agent.Task_Agent", "Oak.Agent.Task_Agent.Activation",
                               "Oak.Processor_Support_Package", "Oak.Processor_Support_Package.Interrupts",
                               "System", "System.Machine_Code", "System.Storage_Elements", "System.Unsigned_Types",
                              --  Only needed for their ali files
@@ -23,7 +22,7 @@ abstract project Acton_Common is
                               "Oak.Core_Support_Package.Task_Interrupts",
                               "Oak.Core_Support_Package.Task_Support",
                               "Oak.Protected_Object",
-                              "Oak.Oak_Task.Internal",
+                              "Oak.Agent.Task_Agent.Internal",
                               "Oak.Scheduler",
                               "Oak.Scheduler.Agent_List"
                              );
