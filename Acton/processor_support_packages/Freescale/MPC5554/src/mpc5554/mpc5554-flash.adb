@@ -3,8 +3,8 @@ with Ada.Unchecked_Conversion;
 
 package body MPC5554.Flash is
 
---  Instead of throwing an exception, should probably return a code like
---  the Standard Software Driver does.
+   --  Instead of throwing an exception, should probably return a code like
+   --  the Standard Software Driver does.
    procedure Initialise_For_Flash_Programming is
       MCR : Module_Configuration_Type renames Module_Configuration_Register;
       FBIUCR : Flash_Bus_Interface_Unit_Control_Type;

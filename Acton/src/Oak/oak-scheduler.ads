@@ -1,8 +1,7 @@
 with Oak.Oak_Task;  use Oak.Oak_Task;
 with Ada.Real_Time; use Ada.Real_Time;
 
-package Oak.Scheduler is
-   pragma Preelaborate;
+package Oak.Scheduler with Preelaborate is
 
    type Oak_Scheduler_Info is private;
 

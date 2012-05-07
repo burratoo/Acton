@@ -1,8 +1,7 @@
 with Oak.Core_Support_Package.Call_Stack.Ops;
 with Oak.Oak_Task;
 
-package Oak.Memory.Call_Stack.Ops is
-   pragma Preelaborate;
+package Oak.Memory.Call_Stack.Ops with Preelaborate is
    package OT renames Oak.Oak_Task;
 
    procedure Allocate_Call_Stack

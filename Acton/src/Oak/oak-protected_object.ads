@@ -1,8 +1,7 @@
 with Oak.Oak_Task; use Oak.Oak_Task;
 with Oak.Scheduler;
 
-package Oak.Protected_Object is
-   pragma Preelaborate;
+package Oak.Protected_Object with Preelaborate is
 
    procedure Process_Enter_Request
      (Scheduler_Info  : in out Scheduler.Oak_Scheduler_Info;

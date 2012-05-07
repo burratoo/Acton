@@ -1,4 +1,4 @@
-package MPC5554.Init is
+package MPC5554.Init with Preelaborate is
    procedure Setup;
    pragma Export (C, Setup, "cfg_mpc5500ada");
 

@@ -1,6 +1,5 @@
-package Oak.Core_Support_Package.Processor is
-   pragma Pure;
+package Oak.Core_Support_Package.Processor with Pure is
 
-   function Get_Proccessor_Id return Oak_Instance_Id;
-   pragma Inline_Always (Get_Proccessor_Id);
+   function Get_Proccessor_Id return Oak_Instance_Id with Inline_Always;
+
 end Oak.Core_Support_Package.Processor;

@@ -1,6 +1,6 @@
 with System.Storage_Elements; use System.Storage_Elements;
 
-package MPC5554.XBAR is
+package MPC5554.XBAR with Preelaborate is
 
    ----------------------------------------------------------------------------
    --  Memory Addresses
@@ -30,9 +30,9 @@ package MPC5554.XBAR is
 
    --  Master Priority Register XBAR_MPRn
    type Master_Priority_Type is record
-      Master_3_Priority, Master_2_Priority, Master_1_Priority,
-Master_0_Priority : Priority_Type;
-   end record;
+      Master_3_Priority, Master_2_Priority : Priority_Type;
+      Master_1_Priority, Master_0_Priority : Priority_Type;
+   end record with Size => Standard'Word_Size;
 
    --  Slave General-Purpose Control Registers
    type ARB_Type is (Fixed, Round_Robin);
@@ -44,7 +44,7 @@ Master_0_Priority : Priority_Type;
       Arbitration_Mode : ARB_Type;
       Parking_Control  : PCTL_Type;
       Park             : Park_Type;
-   end record;
+   end record with Size => Standard'Word_Size;
 
    ----------------------------------------------------------------------------
    --  Hardware Respresentations
@@ -85,41 +85,41 @@ Master_0_Priority : Priority_Type;
 
    Master_Priority_Register_0 : Master_Priority_Type;
    for Master_Priority_Register_0'Address use
-     To_Address (XBAR_Base_Address + MPR0_Offset_Address);
+     System'To_Address (XBAR_Base_Address + MPR0_Offset_Address);
 
    GP_Control_Register_0 : Slave_GP_Control_Type;
    for GP_Control_Register_0'Address use
-     To_Address (XBAR_Base_Address + SGPCR0_Offset_Address);
+     System'To_Address (XBAR_Base_Address + SGPCR0_Offset_Address);
 
    Master_Priority_Register_1 : Master_Priority_Type;
    for Master_Priority_Register_1'Address use
-     To_Address (XBAR_Base_Address + MPR0_Offset_Address);
+     System'To_Address (XBAR_Base_Address + MPR0_Offset_Address);
 
    GP_Control_Register_1 : Slave_GP_Control_Type;
    for GP_Control_Register_1'Address use
-     To_Address (XBAR_Base_Address + SGPCR1_Offset_Address);
+     System'To_Address (XBAR_Base_Address + SGPCR1_Offset_Address);
 
    Master_Priority_Register_3 : Master_Priority_Type;
    for Master_Priority_Register_3'Address use
-     To_Address (XBAR_Base_Address + MPR3_Offset_Address);
+     System'To_Address (XBAR_Base_Address + MPR3_Offset_Address);
 
    GP_Control_Register_3 : Slave_GP_Control_Type;
    for GP_Control_Register_3'Address use
-     To_Address (XBAR_Base_Address + SGPCR3_Offset_Address);
+     System'To_Address (XBAR_Base_Address + SGPCR3_Offset_Address);
 
    Master_Priority_Register_6 : Master_Priority_Type;
    for Master_Priority_Register_6'Address use
-     To_Address (XBAR_Base_Address + MPR6_Offset_Address);
+     System'To_Address (XBAR_Base_Address + MPR6_Offset_Address);
 
    GP_Control_Register_6 : Slave_GP_Control_Type;
    for GP_Control_Register_6'Address use
-     To_Address (XBAR_Base_Address + SGPCR6_Offset_Address);
+     System'To_Address (XBAR_Base_Address + SGPCR6_Offset_Address);
 
    Master_Priority_Register_7 : Master_Priority_Type;
    for Master_Priority_Register_7'Address use
-     To_Address (XBAR_Base_Address + MPR7_Offset_Address);
+     System'To_Address (XBAR_Base_Address + MPR7_Offset_Address);
 
    GP_Control_Register_7 : Slave_GP_Control_Type;
    for GP_Control_Register_7'Address use
-     To_Address (XBAR_Base_Address + SGPCR7_Offset_Address);
+     System'To_Address (XBAR_Base_Address + SGPCR7_Offset_Address);
 end MPC5554.XBAR;

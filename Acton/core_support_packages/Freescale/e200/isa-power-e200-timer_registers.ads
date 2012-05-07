@@ -1,6 +1,5 @@
-package ISA.Power.e200.Timer_Registers is
+package ISA.Power.e200.Timer_Registers with Pure is
 
-   pragma Pure;
    -------
    --  Time Control Register Type
    -------
@@ -20,7 +19,7 @@ package ISA.Power.e200.Timer_Registers is
       Auto_Reload                           : Enable_Type;
       Watchdog_Timer_Period_Extension       : WPEXT_Type;
       Fixed_Interval_Timer_Period_Extension : FPEXT_Type;
-   end record;
+   end record with Size => Standard'Word_Size;
 
    type Event_Status is (Not_Occurred, Occurred);
    type Watchgdog_Status_Type is mod 2 ** 2;
@@ -31,7 +30,7 @@ package ISA.Power.e200.Timer_Registers is
       Watchdog_Timer_Reset     : Watchgdog_Status_Type;
       Decrement_Interrupt      : Event_Status;
       Fixed_Interval_Interrupt : Event_Status;
-   end record;
+   end record with Size => Standard'Word_Size;
 
    ---------------
    --  Hardware Representation
@@ -49,8 +48,6 @@ package ISA.Power.e200.Timer_Registers is
       Fixed_Interval_Timer_Period_Extension at 0 range 15 .. 18;
    end record;
 
-   for Timer_Control_Register_Type'Size use Register_Size_32;
-
    for Event_Status use (Not_Occurred => 0, Occurred => 1);
 
    for Timer_Status_Register_Type use record
@@ -60,7 +57,5 @@ package ISA.Power.e200.Timer_Registers is
       Decrement_Interrupt      at 0 range 4 .. 4;
       Fixed_Interval_Interrupt at 0 range 5 .. 5;
    end record;
-
-   for Timer_Status_Register_Type'Size use Register_Size_32;
 
 end ISA.Power.e200.Timer_Registers;

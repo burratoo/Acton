@@ -1,7 +1,7 @@
 with System;
 with System.Storage_Elements; use System.Storage_Elements;
 
-package MPC5554.eQADC is
+package MPC5554.eQADC with Preelaborate is
 
    ----------------------------------------------------------------------------
    --  Memory Addresses
@@ -253,60 +253,60 @@ package MPC5554.eQADC is
    ----------------------------------------------------------------------------
    Module_Control_Register : Module_Configuration_Type;
    for Module_Control_Register'Address use
-     To_Address (eQADC_Base_Address + MCR_Offset_Address);
+     System'To_Address (eQADC_Base_Address + MCR_Offset_Address);
 
    Null_Message_Send_Format_Register : External_Device_Message;
    for Null_Message_Send_Format_Register'Address use
-     To_Address (eQADC_Base_Address + NMSFR_Offset_Address);
+     System'To_Address (eQADC_Base_Address + NMSFR_Offset_Address);
 
    External_Trigger_Digital_Filter_Register :
      External_Trigger_Digital_Filter_Type;
    for External_Trigger_Digital_Filter_Register'Address use
-     To_Address (eQADC_Base_Address + ETDFR_Offset_Address);
+     System'To_Address (eQADC_Base_Address + ETDFR_Offset_Address);
 
    Command_FIFO_Push_Registers : array (FIFO_ID) of aliased eQADC_Command;
    for Command_FIFO_Push_Registers'Address use
-     To_Address (eQADC_Base_Address + CFPR_Offset_Address);
+     System'To_Address (eQADC_Base_Address + CFPR_Offset_Address);
 
    Result_FIFO_Push_Registers : array (FIFO_ID) of aliased eQADC_Data;
    for Result_FIFO_Push_Registers'Address use
-     To_Address (eQADC_Base_Address + RFPR_Offset_Address);
+     System'To_Address (eQADC_Base_Address + RFPR_Offset_Address);
 
    Command_FIFO_Control_Registers :
      array (FIFO_ID) of aliased CFIFO_Control_Type;
    for Command_FIFO_Control_Registers'Address use
-     To_Address (eQADC_Base_Address + CFCR_Offset_Address);
+     System'To_Address (eQADC_Base_Address + CFCR_Offset_Address);
 
    Interrupt_eDMA_Control_Registers :
      array (FIFO_ID) of aliased Interrupt_eDMA_Control_Type;
    for Interrupt_eDMA_Control_Registers'Address use
-     To_Address (eQADC_Base_Address + IDCR_Offset_Address);
+     System'To_Address (eQADC_Base_Address + IDCR_Offset_Address);
 
    FIFO_Interrupt_Status_Registers :
      array (FIFO_ID) of aliased FIFO_Interrupt_Status_Type;
    for FIFO_Interrupt_Status_Registers'Address use
-     To_Address (eQADC_Base_Address + FISR_Offset_Address);
+     System'To_Address (eQADC_Base_Address + FISR_Offset_Address);
 
    CFIFO_Transfer_Counter_Registers :
      array (FIFO_ID) of aliased Transfer_Counter;
    for CFIFO_Transfer_Counter_Registers'Address use
-     To_Address (eQADC_Base_Address + CFTCR_Offset_Address);
+     System'To_Address (eQADC_Base_Address + CFTCR_Offset_Address);
 
    CFIFO_Status_Snapshot_Registers :
      array (FIFO_ID) of aliased CFIFO_Status_Snapshot_Type;
    for CFIFO_Status_Snapshot_Registers'Address use
-     To_Address (eQADC_Base_Address + CFSSR_Offset_Address);
+     System'To_Address (eQADC_Base_Address + CFSSR_Offset_Address);
 
    CFIFO_Status_Register : CFIFO_Status_Type;
    for CFIFO_Status_Register'Address use
-     To_Address (eQADC_Base_Address + CFSR_Offset_Address);
+     System'To_Address (eQADC_Base_Address + CFSR_Offset_Address);
 
    SSI_Control_Register : SSI_Control_Type;
    for SSI_Control_Register'Address use
-     To_Address (eQADC_Base_Address + SSICR_Offset_Address);
+     System'To_Address (eQADC_Base_Address + SSICR_Offset_Address);
 
    SSI_Receive_Data_Register : External_Device_Message;
    for SSI_Receive_Data_Register'Address use
-     To_Address (eQADC_Base_Address + SSIRDR_Offset_Address);
+     System'To_Address (eQADC_Base_Address + SSIRDR_Offset_Address);
 
 end MPC5554.eQADC;

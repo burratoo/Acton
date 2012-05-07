@@ -1,3 +1,2 @@
-package Acton is
-   pragma Pure;
+package Acton with Pure is
 end Acton;

@@ -1,9 +1,7 @@
 with System;       use System;
 with Oak.Oak_Task; use Oak.Oak_Task;
 
-package Acton.Scheduler_Agent.FIFO_Within_Priorities is
-
-   --  pragma Pure;
+package Acton.Scheduler_Agent.FIFO_Within_Priorities with Preelaborate is
 
    procedure Create_Agent
      (Agent                      : Oak_Task_Handler;

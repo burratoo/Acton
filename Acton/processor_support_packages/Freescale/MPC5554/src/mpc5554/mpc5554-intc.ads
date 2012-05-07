@@ -1,8 +1,7 @@
 with System;
 with System.Storage_Elements; use System.Storage_Elements;
 
-package MPC5554.INTC is
-   pragma Preelaborate;
+package MPC5554.INTC with Preelaborate  is
 
    ----------------------------------------------------------------------------
    --  Memory Addresses
@@ -24,8 +23,8 @@ package MPC5554.INTC is
    ---------------------------------------------------------------------------
 
    --  Common Types
-   type MPC5554_Interrupt_Priority is range 0 .. 15;
-   for MPC5554_Interrupt_Priority'Size use Priority_Select_Register_Size;
+   type MPC5554_Interrupt_Priority is range 0 .. 15
+     with Size => Priority_Select_Register_Size;
 
    --  INTC Module Configuration Register
    type VTES_Type is (Four_Bytes, Eight_Bytes);

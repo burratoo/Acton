@@ -1,6 +1,4 @@
-package Oak.Oak_Task.Protected_Object is
-
-   pragma Preelaborate;
+package Oak.Oak_Task.Protected_Object with Preelaborate is
 
    procedure Initialise_Protected_Object
      (PO                    : in Oak_Task_Handler;

@@ -1,6 +1,7 @@
-with System.Storage_Elements; use System.Storage_Elements;
 with Interfaces;              use Interfaces;
-package MPC5554.eTPU is
+with System.Storage_Elements; use System.Storage_Elements;
+
+package MPC5554.eTPU with Preelaborate is
 
    ----------------------------------------------------------------------------
    --  Memory Addresses
@@ -282,11 +283,13 @@ Channel_31 : Service_Type;
       Host_Service_Request : HSR_Type;
    end record;
 
+   pragma Warnings (Off, "*bits of*unused");
    type Channel_Configuration_Control_Type is record
       Configuration_Register        : Channel_Configuration_Type;
       Status_Register               : Channel_Status_Type;
       Host_Service_Request_Register : Channel_Host_Service_Request_Type;
-   end record;
+   end record with Size => Channel_Configuration_Control_Type_Size;
+   pragma Warnings (On, "*bits of*unused");
 
    ----------------------------------------------------------------------------
    --  Hardware Respresentations
@@ -538,113 +541,108 @@ Channel_31 : Service_Type;
       Host_Service_Request_Register at 8 range 0 .. 31;
    end record;
 
-   pragma Warnings (Off, "*bits of*unused");
-   for Channel_Configuration_Control_Type'Size use
-     Channel_Configuration_Control_Type_Size;
-   pragma Warnings (On, "*bits of*unused");
-
    ----------------------------------------------------------------------------
    --  eTPU Registers
    ----------------------------------------------------------------------------
 
    Module_Configuration_Register : Module_Configuration_Type;
    for Module_Configuration_Register'Address use
-     To_Address (eTPU_Base_Address + MCR_Offset_Address);
+     System'To_Address (eTPU_Base_Address + MCR_Offset_Address);
 
    Coherent_Dual_Parameter_Controller_Register :
      Coherent_Dual_Parameter_Controller_Type;
    for Coherent_Dual_Parameter_Controller_Register'Address use
-     To_Address (eTPU_Base_Address + CDCR_Offset_Address);
+     System'To_Address (eTPU_Base_Address + CDCR_Offset_Address);
 
    MISC_Compare_Register : MISC_Value_Type;
    for MISC_Compare_Register'Address use
-     To_Address (eTPU_Base_Address + MISCCMPR_Offset_Address);
+     System'To_Address (eTPU_Base_Address + MISCCMPR_Offset_Address);
 
    SCM_Off_Range_Data_Register : SCM_Off_Range_Data_Type;
    for SCM_Off_Range_Data_Register'Address use
-     To_Address (eTPU_Base_Address + SCMOFFDATAR_Offset_Address);
+     System'To_Address (eTPU_Base_Address + SCMOFFDATAR_Offset_Address);
 
    Engine_Configuration_Register_A : Engine_Configuration_Type;
    for Engine_Configuration_Register_A'Address use
-     To_Address (eTPU_Base_Address + ECR_A_Offset_Address);
+     System'To_Address (eTPU_Base_Address + ECR_A_Offset_Address);
    Engine_Configuration_Register_B : Engine_Configuration_Type;
    for Engine_Configuration_Register_B'Address use
-     To_Address (eTPU_Base_Address + ECR_B_Offset_Address);
+     System'To_Address (eTPU_Base_Address + ECR_B_Offset_Address);
 
    Time_Base_Configuration_Register_A : Time_Base_Configuration_Type;
    for Time_Base_Configuration_Register_A'Address use
-     To_Address (eTPU_Base_Address + TBCR_A_Offset_Address);
+     System'To_Address (eTPU_Base_Address + TBCR_A_Offset_Address);
    Time_Base_1_Register_A : Time_Count_Register_Type;
    for Time_Base_1_Register_A'Address use
-     To_Address (eTPU_Base_Address + TB1R_A_Offset_Address);
+     System'To_Address (eTPU_Base_Address + TB1R_A_Offset_Address);
    Time_Base_2_Register_A : Time_Count_Register_Type;
    for Time_Base_2_Register_A'Address use
-     To_Address (eTPU_Base_Address + TB2R_A_Offset_Address);
+     System'To_Address (eTPU_Base_Address + TB2R_A_Offset_Address);
    STAC_Bus_Configuration_Register_A : STAC_Bus_Configuration_Type;
    for STAC_Bus_Configuration_Register_A'Address use
-     To_Address (eTPU_Base_Address + REDCR_A_Offset_Address);
+     System'To_Address (eTPU_Base_Address + REDCR_A_Offset_Address);
 
    Time_Base_Configuration_Register_B : Time_Base_Configuration_Type;
    for Time_Base_Configuration_Register_B'Address use
-     To_Address (eTPU_Base_Address + TBCR_B_Offset_Address);
+     System'To_Address (eTPU_Base_Address + TBCR_B_Offset_Address);
    Time_Base_1_Register_B : Time_Count_Register_Type;
    for Time_Base_1_Register_B'Address use
-     To_Address (eTPU_Base_Address + TB1R_B_Offset_Address);
+     System'To_Address (eTPU_Base_Address + TB1R_B_Offset_Address);
    Time_Base_2_Register_B : Time_Count_Register_Type;
    for Time_Base_2_Register_B'Address use
-     To_Address (eTPU_Base_Address + TB2R_B_Offset_Address);
+     System'To_Address (eTPU_Base_Address + TB2R_B_Offset_Address);
    STAC_Bus_Configuration_Register_B : STAC_Bus_Configuration_Type;
    for STAC_Bus_Configuration_Register_B'Address use
-     To_Address (eTPU_Base_Address + REDCR_B_Offset_Address);
+     System'To_Address (eTPU_Base_Address + REDCR_B_Offset_Address);
 
    Interrupt_Status_A : Channel_Pending_Type;
    for Interrupt_Status_A'Address use
-     To_Address (eTPU_Base_Address + CISR_A_Offset_Address);
+     System'To_Address (eTPU_Base_Address + CISR_A_Offset_Address);
    Interrupt_Status_B : Channel_Pending_Type;
    for Interrupt_Status_B'Address use
-     To_Address (eTPU_Base_Address + CISR_B_Offset_Address);
+     System'To_Address (eTPU_Base_Address + CISR_B_Offset_Address);
 
    Channel_Data_Transfer_Request_Status_A : Channel_Pending_Type;
    for Channel_Data_Transfer_Request_Status_A'Address use
-     To_Address (eTPU_Base_Address + CDTRSR_A_Offset_Address);
+     System'To_Address (eTPU_Base_Address + CDTRSR_A_Offset_Address);
    Channel_Data_Transfer_Request_Status_B : Channel_Pending_Type;
    for Channel_Data_Transfer_Request_Status_B'Address use
-     To_Address (eTPU_Base_Address + CDTRSR_B_Offset_Address);
+     System'To_Address (eTPU_Base_Address + CDTRSR_B_Offset_Address);
 
    Interrupt_Overflow_Status_A : Channel_Occured_Type;
    for Interrupt_Overflow_Status_A'Address use
-     To_Address (eTPU_Base_Address + CIOSR_A_Offset_Address);
+     System'To_Address (eTPU_Base_Address + CIOSR_A_Offset_Address);
    Interrupt_Overflow_Status_B : Channel_Occured_Type;
    for Interrupt_Overflow_Status_B'Address use
-     To_Address (eTPU_Base_Address + CIOSR_B_Offset_Address);
+     System'To_Address (eTPU_Base_Address + CIOSR_B_Offset_Address);
 
    Channel_Data_Transfer_Request_Overflow_Status_A : Channel_Occured_Type;
    for Channel_Data_Transfer_Request_Overflow_Status_A'Address use
-     To_Address (eTPU_Base_Address + CDTROSR_A_Offset_Address);
+     System'To_Address (eTPU_Base_Address + CDTROSR_A_Offset_Address);
    Channel_Data_Transfer_Request_Overflow_Status_B : Channel_Occured_Type;
    for Channel_Data_Transfer_Request_Overflow_Status_B'Address use
-     To_Address (eTPU_Base_Address + CDTROSR_B_Offset_Address);
+     System'To_Address (eTPU_Base_Address + CDTROSR_B_Offset_Address);
 
    Interrupt_Enable_Register_A : Channel_Enable_Type;
    for Interrupt_Enable_Register_A'Address use
-     To_Address (eTPU_Base_Address + CIER_A_Offset_Address);
+     System'To_Address (eTPU_Base_Address + CIER_A_Offset_Address);
    Interrupt_Enable_Register_B : Channel_Enable_Type;
    for Interrupt_Enable_Register_B'Address use
-     To_Address (eTPU_Base_Address + CIER_B_Offset_Address);
+     System'To_Address (eTPU_Base_Address + CIER_B_Offset_Address);
 
    Data_Transfer_Request_Enable_Register_A : Channel_Enable_Type;
    for Data_Transfer_Request_Enable_Register_A'Address use
-     To_Address (eTPU_Base_Address + CDTRER_A_Offset_Address);
+     System'To_Address (eTPU_Base_Address + CDTRER_A_Offset_Address);
    Data_Transfer_Request_Enable_Register_B : Channel_Enable_Type;
    for Data_Transfer_Request_Enable_Register_B'Address use
-     To_Address (eTPU_Base_Address + CDTRER_B_Offset_Address);
+     System'To_Address (eTPU_Base_Address + CDTRER_B_Offset_Address);
 
    Channel_Pending_Service_Status_Register_A : Channel_Pending_Type;
    for Channel_Pending_Service_Status_Register_A'Address use
-     To_Address (eTPU_Base_Address + CPSSR_A_Offset_Address);
+     System'To_Address (eTPU_Base_Address + CPSSR_A_Offset_Address);
    Channel_Pending_Service_Status_Register_B : Channel_Pending_Type;
    for Channel_Pending_Service_Status_Register_B'Address use
-     To_Address (eTPU_Base_Address + CPSSR_B_Offset_Address);
+     System'To_Address (eTPU_Base_Address + CPSSR_B_Offset_Address);
 
    pragma Warnings (Off, "*component of*padded*");
 
@@ -658,20 +656,20 @@ Channel_31 : Service_Type;
 
    Channel : Channel_Registers_Array_Type;
    for Channel'Address use
-     To_Address (eTPU_Base_Address + A_Channel_Offset_Address);
+     System'To_Address (eTPU_Base_Address + A_Channel_Offset_Address);
 
    type Shared_Code_Type is
      array (Shared_Code_Offset range <>) of Shared_Code_Element_Type;
    Shared_Code_Memory : Shared_Code_Type (Shared_Code_Offset);
    for Shared_Code_Memory'Address use
-     To_Address (eTPU_Base_Address + SCM_Offset_Address);
+     System'To_Address (eTPU_Base_Address + SCM_Offset_Address);
 
    type Shared_Data_Type_32 is
      array (Shared_Data_Offset range <>) of Unsigned_32;
    Shared_Data_Memory_32 : Shared_Data_Type_32 (
       0 .. Shared_Data_Offset'Last / 4);
    for Shared_Data_Memory_32'Address use
-     To_Address (eTPU_Base_Address + SDM_Offset_Address);
+     System'To_Address (eTPU_Base_Address + SDM_Offset_Address);
 
    Shared_Data_Memory_16 :
      array (0 .. Shared_Data_Offset'Last / 2) of Unsigned_16;
@@ -684,7 +682,7 @@ Channel_31 : Service_Type;
 
    Shared_Data_Extended_Memory_32 : array (Shared_Data_Offset) of Integer_32;
    for Shared_Data_Extended_Memory_32'Address use
-     To_Address (eTPU_Base_Address + SDM_SPE_Mirror_Offset_Address);
+     System'To_Address (eTPU_Base_Address + SDM_SPE_Mirror_Offset_Address);
    pragma Import (Ada, Shared_Data_Extended_Memory_32);
 
 end MPC5554.eTPU;

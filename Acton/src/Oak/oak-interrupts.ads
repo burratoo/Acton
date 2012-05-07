@@ -2,9 +2,7 @@ limited with Oak.Oak_Task;
 with Oak.Processor_Support_Package.Interrupts;
 use Oak.Processor_Support_Package.Interrupts;
 
-package Oak.Interrupts is
-
-   pragma Preelaborate;
+package Oak.Interrupts with Preelaborate is
 
    type Interrupt_Handler_Pair is record
       Interrupt : Oak_Interrupt_Id;

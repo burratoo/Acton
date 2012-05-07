@@ -1,6 +1,6 @@
 with System.Storage_Elements; use System.Storage_Elements;
 
-package MPC5554.eMIOS is
+package MPC5554.eMIOS with Preelaborate is
 
    --  Disable forced biased representation warning.
    pragma Warnings (".B");
@@ -126,14 +126,15 @@ package MPC5554.eMIOS is
       Flag                     : Occurred_Type;
    end record;
 
+   pragma Warnings (Off, "*bits of*unused");
    type Unified_Channel_Type is record
       Channel_A_Data_Register  : Channel_Register_Type;
       Channel_B_Data_Register  : Channel_Register_Type;
       Channel_Counter_Register : Channel_Register_Type;
       Channel_Control_Register : CCR_Type;
       Channel_Status_Register  : CSR_Type;
-   end record;
-
+   end record with Size => Unified_Channel_Type_Size;
+   pragma Warnings (On, "*bits of*unused");
    ----------------------------------------------------------------------------
    --  Hardware Respresentations
    ----------------------------------------------------------------------------
@@ -248,22 +249,18 @@ package MPC5554.eMIOS is
       Channel_Status_Register  at 16 range 0 .. 31;
    end record;
 
-   pragma Warnings (Off, "*bits of*unused");
-   for Unified_Channel_Type'Size use Unified_Channel_Type_Size;
-   pragma Warnings (On, "*bits of*unused");
-
    ----------------------------------------------------------------------------
    --  eMIOS Registers
    ----------------------------------------------------------------------------
 
    Module_Configuration_Register : Module_Configuration_Type;
    for Module_Configuration_Register'Address use
-     To_Address (EMIOS_Base_Address);
+     System'To_Address (EMIOS_Base_Address);
 
    Unified_Channel_Register_Array :
      array (EMIOS_ID_Type) of aliased Unified_Channel_Type;
    for Unified_Channel_Register_Array'Address use
-     To_Address (EMIOS_Base_Address + Unified_Channel_Offset_Address);
+     System'To_Address (EMIOS_Base_Address + Unified_Channel_Offset_Address);
    type Unified_Channel_Pointer is access all Unified_Channel_Type;
 
 end MPC5554.eMIOS;

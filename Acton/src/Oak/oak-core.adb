@@ -23,9 +23,9 @@ package body Oak.Core is
 
    procedure Initialise is
    begin
-      for J in Processor_Kernels'Range loop
+      for K of Processor_Kernels loop
          Oak.Memory.Call_Stack.Ops.Allocate_Call_Stack
-           (Stack            => Processor_Kernels (J).Call_Stack,
+           (Stack            => K.Call_Stack,
             Size_In_Elements =>
               Oak.Core_Support_Package.Call_Stack.Oak_Call_Stack_Size);
       end loop;

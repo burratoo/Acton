@@ -1,7 +1,7 @@
 with System;
 with System.Storage_Elements; use System.Storage_Elements;
 
-package MPC5554.DSPI is
+package MPC5554.DSPI with Preelaborate is
 
    ----------------------------------------------------------------------------
    --  Memory Addresses
@@ -35,7 +35,7 @@ package MPC5554.DSPI is
    type MS_Type is (Slave, Master);
    type Configuration_Type is (SPI, DSI, CSI);
    type Sample_Type is mod 2;
-   type PCSIS_Type is array (Slave_ID) of Pin_State_Type;
+   type PCSIS_Type is array (Slave_ID) of Pin_State_Type with Pack;
 
    type Module_Configuration_Type is record
       Master_Slave_Select                   : MS_Type;
@@ -53,14 +53,14 @@ package MPC5554.DSPI is
       Clear_Rx_FIFO                         : Yes_No_Type;
       Sample_Point                          : Sample_Type;
       Halt                                  : Yes_No_Type;
-   end record;
+   end record with Size => Standard'Word_Size;
 
    --  DSPI Transfer Count Register (DSPIx_TCR)
    type Transfer_Counter_Type is mod 2 ** 16;
 
    type Transfer_Count_Type is record
       SPI_Transfer_Counter : Transfer_Counter_Type;
-   end record;
+   end record with Size => Standard'Word_Size;
 
    --  DSPI Clock and Transfer Attributes Registers 0-7 (DSPIx_CTAREn)
    type Frame_Size_Type is mod 2 ** 4;
@@ -95,7 +95,7 @@ package MPC5554.DSPI is
       After_SCK_Delay_Scaler         : Scaler_Type;
       Delay_After_Transfer_Scaler    : Scaler_Type;
       Baud_Rate_Scaler               : Scaler_Type;
-   end record;
+   end record with Size => Standard'Word_Size;
 
    --  DSPI Status Register (DSPIx_SR)
    type FIFO_Counter is mod 2 ** 4;
@@ -113,7 +113,7 @@ package MPC5554.DSPI is
       Transmit_Next_Pointer        : FIFO_Pointer;
       Rx_FIFO_Counter              : FIFO_Counter;
       Pop_Next_Pointer             : FIFO_Pointer;
-   end record;
+   end record with Size => Standard'Word_Size;
 
    --  DSPI DMA/Interrupt Request Select and Enable Register (DSPIx_RSER)
    type DMA_Interrupt_Request_Type is record
@@ -125,12 +125,12 @@ package MPC5554.DSPI is
       Recieve_FIFO_Overflow_Request   : Enable_Type;
       Recieve_FIFO_Drain_Request      : Enable_Type;
       Recieve_FIFO_Drain_Select       : Select_Type;
-   end record;
+   end record with Size => Standard'Word_Size;
 
    --  DSPI PUSH TX FIFO Register (DSPIx_PUSHR)
    type Assert_Type is (Negate, Assert);
 
-   type PCS_Type is array (Slave_ID) of Pin_State_Type;
+   type PCS_Type is array (Slave_ID) of Pin_State_Type with Pack;
 
    type Push_Tx_FIFO_Type is record
       Continuous_Peripheral_Chip_Select    : Enable_Type;
@@ -139,17 +139,16 @@ package MPC5554.DSPI is
       Clear_Transfer_Counter               : Yes_No_Type;
       Peripheral_Chip_Select               : PCS_Type;
       Tx_Data                              : SPI_Data;
-   end record;
+   end record with Size => Standard'Word_Size;
 
    --  DSPI POP RX FIFO Register (DSPI_POPR)
    type Pop_Rx_FIFO_Type is record
       Rx_Data : SPI_Data;
-   end record;
+   end record with Size => Standard'Word_Size;
 
    ----------------------------------------------------------------------------
    --  Hardware Respresentations
    ----------------------------------------------------------------------------
-   pragma Pack (PCSIS_Type);
    for MS_Type use (Slave => 0, Master => 1);
    for Configuration_Type use (SPI => 0, DSI => 1, CSI => 2);
 
@@ -174,7 +173,6 @@ package MPC5554.DSPI is
    for Transfer_Count_Type use record
       SPI_Transfer_Counter at 0 range 0 .. 16;
    end record;
-   for Transfer_Counter_Type'Size use 32;
 
    for Clock_Transfer_Attributes_Type use record
       Double_Baud_Rate               at 0 range 0 .. 0;
@@ -218,7 +216,6 @@ package MPC5554.DSPI is
    end record;
 
    for Assert_Type use (Negate => 0, Assert => 1);
-   pragma Pack (PCS_Type);
 
    for Push_Tx_FIFO_Type use record
       Continuous_Peripheral_Chip_Select    at 0 range 0 .. 0;
@@ -262,7 +259,7 @@ package MPC5554.DSPI is
       Status_Register                        at SR_Offset_Address range
          0 .. 31;
       DMA_Interrupt_Request_Register         at RSER_Offset_Address range
-         0 .. 15;
+         0 .. 31;
       Push_Tx_FIFO_Register                  at PUSHR_Offset_Address range
          0 .. 31;
       Pop_Rx_FIFO_Register                   at POPR_Offset_Address range
@@ -270,10 +267,12 @@ package MPC5554.DSPI is
    end record;
 
    pragma Warnings (Off, "*component of*padded*");
-   type Module_Type is array (DSPI_Module_ID) of DSPI_Module_Type;
-   for Module_Type'Component_Size use 4000;
+
+   type Module_Type is array (DSPI_Module_ID) of DSPI_Module_Type
+     with Component_Size => 4000;
    Module : Module_Type;
-   for Module'Address use To_Address (DSPI_Base_Address);
+   for Module'Address use System'To_Address (DSPI_Base_Address);
+
    pragma Warnings (On, "*component of*padded*");
 
 end MPC5554.DSPI;

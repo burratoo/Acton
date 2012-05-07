@@ -1,6 +1,4 @@
-package ISA is
-
-   pragma Pure;
+package ISA with Pure is
 
    type Enable_Type is (Disable, Enable);
    for Enable_Type use (Disable => 0, Enable => 1);

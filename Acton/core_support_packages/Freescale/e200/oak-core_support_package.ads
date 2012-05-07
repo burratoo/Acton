@@ -1,7 +1,6 @@
 --  with Ada.Real_Time; use Ada.Real_Time;
 
-package Oak.Core_Support_Package is
-   pragma Pure;
+package Oak.Core_Support_Package with Pure is
 
    Number_Of_Processors : constant := 1;
    type Oak_Instance_Id is range 1 .. Number_Of_Processors;

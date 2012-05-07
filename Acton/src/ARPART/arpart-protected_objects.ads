@@ -1,6 +1,6 @@
 with Oak.Oak_Task;
 
-package ARPART.Protected_Objects is
+package ARPART.Protected_Objects with Preelaborate is
 
    procedure Enter_Protected_Object
      (PO              : Oak.Oak_Task.Oak_Task_Handler;

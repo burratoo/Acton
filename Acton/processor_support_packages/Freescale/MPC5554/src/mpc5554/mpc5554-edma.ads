@@ -1,7 +1,7 @@
 with System;
 with System.Storage_Elements; use System.Storage_Elements;
 
-package MPC5554.eDMA is
+package MPC5554.eDMA with Preelaborate is
 
    ----------------------------------------------------------------------------
    --  Memory Addresses
@@ -39,14 +39,17 @@ package MPC5554.eDMA is
 
    --  Common Types
    type DMA_Enable_Bit_Array is
-     array (DMA_Channel_Number'Range) of Enable_Type;
+     array (DMA_Channel_Number'Range) of Enable_Type
+     with Pack, Size => DMA_Size;
 
    type DMA_Occured_Bit_Array is
-     array (DMA_Channel_Number'Range) of Occurred_Type;
+     array (DMA_Channel_Number'Range) of Occurred_Type
+     with Pack, Size => DMA_Size;
 
    type Active_Type is (Clear, Active);
    type DMA_Active_Bit_Array is
-     array (DMA_Channel_Number'Range) of Enable_Type;
+     array (DMA_Channel_Number'Range) of Enable_Type
+     with Pack, Size => DMA_Size;
 
    --  eDMA Control Register (EDMA_CR)
    type Group_Priority_Type is range 0 .. 3;
@@ -132,15 +135,8 @@ Channel_Group_1_Priority, Channel_Group_0_Priority : Group_Priority_Type;
    ----------------------------------------------------------------------------
    --  Hardware Respresentations
    ----------------------------------------------------------------------------
-   pragma Pack (DMA_Enable_Bit_Array);
-   for DMA_Enable_Bit_Array'Size use DMA_Size;
 
    for Active_Type use (Clear => 0, Active => 1);
-   pragma Pack (DMA_Active_Bit_Array);
-   for DMA_Active_Bit_Array'Size use DMA_Size;
-
-   pragma Pack (DMA_Occured_Bit_Array);
-   for DMA_Occured_Bit_Array'Size use DMA_Size;
 
    for Arbitration_Type use (Fixed => 0, Round_Robin => 1);
    for Control_Type use record
@@ -219,68 +215,69 @@ Channel_Group_1_Priority, Channel_Group_0_Priority : Group_Priority_Type;
 
    Control_Register : Control_Type;
    for Control_Register'Address use
-     To_Address (eDMA_Base_Address + CR_Offset_Address);
+     System'To_Address (eDMA_Base_Address + CR_Offset_Address);
 
    Error_Status_Register : Error_Status_Type;
    for Error_Status_Register'Address use
-     To_Address (eDMA_Base_Address + ESR_Offset_Address);
+     System'To_Address (eDMA_Base_Address + ESR_Offset_Address);
 
    Enable_Request_Register : DMA_Enable_Bit_Array;
    for Enable_Request_Register'Address use
-     To_Address (eDMA_Base_Address + ERQR_Offset_Address);
+     System'To_Address (eDMA_Base_Address + ERQR_Offset_Address);
 
    Enable_Error_Interrupt_Register : DMA_Enable_Bit_Array;
    for Enable_Error_Interrupt_Register'Address use
-     To_Address (eDMA_Base_Address + EEIR_Offset_Address);
+     System'To_Address (eDMA_Base_Address + EEIR_Offset_Address);
 
    Set_Enable_Request_Register : DMA_Channel_Number_With_Set_All;
    for Set_Enable_Request_Register'Address use
-     To_Address (eDMA_Base_Address + SERQR_Offset_Address);
+     System'To_Address (eDMA_Base_Address + SERQR_Offset_Address);
 
    Clear_Enable_Request_Register : DMA_Channel_Number_With_Set_All;
    for Clear_Enable_Request_Register'Address use
-     To_Address (eDMA_Base_Address + CERQR_Offset_Address);
+     System'To_Address (eDMA_Base_Address + CERQR_Offset_Address);
 
    Set_Enable_Error_Interrupt_Register : DMA_Channel_Number_With_Set_All;
    for Set_Enable_Error_Interrupt_Register'Address use
-     To_Address (eDMA_Base_Address + SEEIR_Offset_Address);
+     System'To_Address (eDMA_Base_Address + SEEIR_Offset_Address);
 
    Clear_Enable_Error_Interrupt_Register : DMA_Channel_Number_With_Set_All;
    for Clear_Enable_Error_Interrupt_Register'Address use
-     To_Address (eDMA_Base_Address + CEEIR_Offset_Address);
+     System'To_Address (eDMA_Base_Address + CEEIR_Offset_Address);
 
    Clear_Interrupt_Request_Register : DMA_Channel_Number_With_Set_All;
    for Clear_Interrupt_Request_Register'Address use
-     To_Address (eDMA_Base_Address + CIRQR_Offset_Address);
+     System'To_Address (eDMA_Base_Address + CIRQR_Offset_Address);
 
    Clear_Error_Register : DMA_Channel_Number_With_Set_All;
    for Clear_Error_Register'Address use
-     To_Address (eDMA_Base_Address + CER_Offset_Address);
+     System'To_Address (eDMA_Base_Address + CER_Offset_Address);
 
    Set_Start_Bit_Register : DMA_Channel_Number_With_Set_All;
    for Set_Start_Bit_Register'Address use
-     To_Address (eDMA_Base_Address + SSBR_Offset_Address);
+     System'To_Address (eDMA_Base_Address + SSBR_Offset_Address);
 
    Clear_DONE_Status_Bit_Register : DMA_Channel_Number_With_Set_All;
    for Clear_DONE_Status_Bit_Register'Address use
-     To_Address (eDMA_Base_Address + CDSBR_Offset_Address);
+     System'To_Address (eDMA_Base_Address + CDSBR_Offset_Address);
 
    Interrupt_Request_Register : DMA_Active_Bit_Array;
    for Interrupt_Request_Register'Address use
-     To_Address (eDMA_Base_Address + IRQR_Offset_Address);
+     System'To_Address (eDMA_Base_Address + IRQR_Offset_Address);
 
    Error_Register : DMA_Occured_Bit_Array;
    for Error_Register'Address use
-     To_Address (eDMA_Base_Address + ER_Offset_Address);
+     System'To_Address (eDMA_Base_Address + ER_Offset_Address);
 
    Channel_Prioirty_Register_Array :
      array (DMA_Channel_Number) of aliased Channel_Priority_Type;
    for Channel_Prioirty_Register_Array'Address use
-     To_Address (eDMA_Base_Address + CPR_Offset_Address);
+     System'To_Address (eDMA_Base_Address + CPR_Offset_Address);
    type Channel_Prioirty_Register_Pointer is access all Channel_Priority_Type;
 
    Transfer_Control_Descriptor : array (DMA_Channel_Number) of  TCD_Type;
    for Transfer_Control_Descriptor'Address use
-     To_Address (eDMA_Base_Address + TCD_Offset_Address);
-   --  type Transfer_Control_Descriptor_Pointer is access all TCD_Type;
+     System'To_Address (eDMA_Base_Address + TCD_Offset_Address);
+   pragma Import (Ada, Transfer_Control_Descriptor);
+   type Transfer_Control_Descriptor_Pointer is access all TCD_Type;
 end MPC5554.eDMA;
