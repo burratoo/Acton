@@ -25,4 +25,11 @@ package body Oak.Agent is
       return Chosen_Id;
    end New_Task_Id;
 
+   procedure Set_Stack_Pointer
+     (Agent         : in out Oak_Agent'Class;
+      Stack_Pointer : in System.Address) is
+   begin
+      Agent.Call_Stack.Pointer := Stack_Pointer;
+   end Set_Stack_Pointer;
+
 end Oak.Agent;

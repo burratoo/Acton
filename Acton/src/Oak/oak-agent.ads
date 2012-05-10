@@ -1,8 +1,9 @@
 with Oak.Core_Support_Package;
+with System;
 
 with Oak.Memory.Call_Stack;         use Oak.Memory.Call_Stack;
 
-package Oak.Agent with Pure is
+package Oak.Agent with Preelaborate is
 
    type Task_Id is range 0 .. Oak.Core_Support_Package.Max_Tasks;
    subtype Task_Name is String
@@ -20,8 +21,16 @@ package Oak.Agent with Pure is
 
    type Oak_Agent is abstract tagged private;
 
-   function Id   (Agent : Oak_Agent'Class) return Task_Id;
-   function Name (Agent : Oak_Agent'Class) return Task_Name;
+   function Agent_Id (Agent : in Oak_Agent'Class) return Task_Id;
+   function Name (Agent : in Oak_Agent'Class) return Task_Name;
+   function Stack_Pointer
+     (Agent : in Oak_Agent'Class)
+      return System.Address with Inline_Always;
+
+   procedure Set_Stack_Pointer
+     (Agent         : in out Oak_Agent'Class;
+      Stack_Pointer : in System.Address)
+      with Inline_Always;
 
 private
 
@@ -47,10 +56,14 @@ private
       Name       : in String;
       Call_Stack : in Call_Stack_Handler);
 
-   function Id (Agent : Oak_Agent'Class) return Task_Id is
+   function Agent_Id (Agent : in Oak_Agent'Class) return Task_Id is
      (Agent.Id);
 
-   function Name (Agent : Oak_Agent'Class) return Task_Name is
+   function Name (Agent : in Oak_Agent'Class) return Task_Name is
      (Agent.Name);
+
+   function Stack_Pointer
+     (Agent : in Oak_Agent'Class)
+      return System.Address is (Agent.Call_Stack.Pointer);
 
 end Oak.Agent;
