@@ -16,7 +16,6 @@ package Oak.Real_Time with Pure is
    Time_Span_Zero  : constant Time_Span;
    Time_Span_Unit  : constant Time_Span;
 
-   Tick : constant Time_Span;
    function Clock return Time;
 
    function "+" (Left : Time; Right : Time_Span) return Time;
