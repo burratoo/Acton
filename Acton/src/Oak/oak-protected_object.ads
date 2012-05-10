@@ -1,7 +1,11 @@
-with Oak.Oak_Task; use Oak.Oak_Task;
 with Oak.Scheduler;
 
 package Oak.Protected_Object with Preelaborate is
+
+   type Protected_Subprogram_Type is
+     (Protected_Function,
+      Protected_Procedure,
+      Protected_Entry);
 
    procedure Process_Enter_Request
      (Scheduler_Info  : in out Scheduler.Oak_Scheduler_Info;

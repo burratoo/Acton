@@ -1,9 +1,10 @@
 with System;
-with System.Storage_Elements;
 with Oak.Core_Support_Package;
 with Oak.Core_Support_Package.Call_Stack;
 
-package Oak.Memory.Call_Stack with Preelaborate is
+with System.Storage_Elements; use System.Storage_Elements;
+
+package Oak.Memory.Call_Stack with Pure is
 
    use System;
    package CSP_Stack renames Oak.Core_Support_Package.Call_Stack;
@@ -34,6 +35,4 @@ private
    --  only a memory address is attached.
    Stack_Pointer_Init : constant Storage_Elements.Storage_Element;
    pragma Import (Assembler, Stack_Pointer_Init, "__SP_INIT");
-
-   Stack_Pool_Bottom : System.Address := Stack_Pointer_Init'Address;
 end Oak.Memory.Call_Stack;

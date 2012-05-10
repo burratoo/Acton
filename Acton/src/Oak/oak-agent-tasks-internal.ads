@@ -31,8 +31,6 @@ package Oak.Oak_Task.Internal with Preelaborate is
 
    procedure Next_Run_Cycle (T : in Oak_Task_Handler);
 
-   function New_Task_Id return Task_Id;
-
    procedure Set_Cycle_Period (T : in Oak_Task_Handler; CP : in Time_Span);
 
    procedure Set_Relative_Deadline

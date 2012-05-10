@@ -45,6 +45,25 @@ package body Oak.Core_Support_Package.Call_Stack.Ops is
 
    procedure Initialise_Call_Stack
      (Stack             : in out Oak.Memory.Call_Stack.Call_Stack_Handler;
+      Start_Instruction : in System.Address)
+   is
+      pragma Warnings (Off);
+      function To_Message_Loc is
+        new Ada.Unchecked_Conversion (Source => System.Address,
+                                    Target => OT.Oak_Task_Message_Location);
+      pragma Warnings (On);
+   begin
+      Stack.Pointer := Stack.Pointer -
+        Oak.Oak_Task.Oak_Task_Message_Store'Size / System.Storage_Unit;
+      Stack.Pointer := Stack.Pointer - Task_Registers_Save_Size;
+      Set_Task_Body_Procedure
+        (Stack             => Stack,
+         Procedure_Address => Start_Instruction,
+         Task_Value_Record => System.Null_Address);
+   end Initialise_Call_Stack;
+
+   procedure Initialise_Call_Stack
+     (Stack             : in out Oak.Memory.Call_Stack.Call_Stack_Handler;
       Start_Instruction : in System.Address;
       Task_Value_Record : in System.Address;
       Message_Location  : out OT.Oak_Task_Message_Location)

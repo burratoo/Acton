@@ -71,13 +71,6 @@ package body Oak.Oak_Task.Internal is
       T.Next_Run_Cycle := T.Next_Run_Cycle + T.Cycle_Period;
    end Next_Run_Cycle;
 
-   function New_Task_Id return Task_Id is
-      Chosen_Id : constant Task_Id := Global_Task_Id;
-   begin
-      Global_Task_Id := Global_Task_Id + 1;
-      return Chosen_Id;
-   end New_Task_Id;
-
    procedure Set_Cycle_Period (T : in Oak_Task_Handler; CP : in Time_Span) is
    begin
       T.Cycle_Period := CP;

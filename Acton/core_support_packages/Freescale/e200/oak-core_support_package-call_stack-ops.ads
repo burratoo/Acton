@@ -19,6 +19,10 @@ package Oak.Core_Support_Package.Call_Stack.Ops with Preelaborate is
 
    procedure Initialise_Call_Stack
      (Stack             : in out Oak.Memory.Call_Stack.Call_Stack_Handler;
+      Start_Instruction : in System.Address);
+
+   procedure Initialise_Call_Stack
+     (Stack             : in out Oak.Memory.Call_Stack.Call_Stack_Handler;
       Start_Instruction : in System.Address;
       Task_Value_Record : in System.Address;
       Message_Location  : out OT.Oak_Task_Message_Location);

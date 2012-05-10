@@ -11,6 +11,12 @@ package Oak.Memory.Call_Stack.Ops with Preelaborate is
 
    procedure Initialise_Call_Stack
      (Stack             : in out Oak.Memory.Call_Stack.Call_Stack_Handler;
+      Start_Instruction : in System.Address)
+      renames
+     Oak.Core_Support_Package.Call_Stack.Ops.Initialise_Call_Stack;
+
+   procedure Initialise_Call_Stack
+     (Stack             : in out Oak.Memory.Call_Stack.Call_Stack_Handler;
       Start_Instruction : in System.Address;
       Task_Value_Record : in System.Address := Null_Address;
       Message_Location  : out OT.Oak_Task_Message_Location)
@@ -26,5 +32,8 @@ package Oak.Memory.Call_Stack.Ops with Preelaborate is
       Message_Location  : out OT.Oak_Task_Message_Location)
       renames
      Oak.Core_Support_Package.Call_Stack.Ops.Initialise_Call_Stack;
+
+private
+   Stack_Pool_Bottom : System.Address := Stack_Pointer_Init'Address;
 
 end Oak.Memory.Call_Stack.Ops;
