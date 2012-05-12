@@ -2,13 +2,10 @@
 --  Processor Support Package for the e200z6 PowerPC Core.
 --
 with System;
-with Ada.Real_Time;
-with Oak.Oak_Task;
+with Oak.Real_Time;
 with System.Storage_Elements;
 
-package Oak.Core_Support_Package.Task_Support with Preelaborate is
-
-   package OT renames Oak.Oak_Task;
+package Oak.Core_Support_Package.Task_Support with Pure is
 
    --  This procedure saves the Kernel's registers to its respective store,
    --  loads in the task's registers, enables Oak's wakeup call and then
@@ -36,17 +33,17 @@ package Oak.Core_Support_Package.Task_Support with Preelaborate is
 
    procedure Yield_Processor_To_Kernel with Inline_Always;
 
-   procedure Set_Oak_Wake_Up_Timer (Wake_Up_At : Ada.Real_Time.Time);
+   procedure Set_Oak_Wake_Up_Timer (Wake_Up_At : Oak.Real_Time.Time);
    procedure Disable_Oak_Wake_Up_Interrupt with Inline_Always;
    procedure Enable_Oak_Wake_Up_Interrupt with Inline_Always;
 
    procedure Sleep_Kernel;
 
-   DI, SI : System.Storage_Elements.Storage_Element;
+   DI, SI : constant System.Storage_Elements.Storage_Element;
    pragma Import (Assembler, DI, "__OTS_DI");
    pragma Import (Assembler, SI, "__OTS_SI");
 
-   IVOR10_Decrementer_Intr : System.Address := DI'Address;
-   IVOR10_Sleep_Intr       : System.Address := SI'Address;
+   IVOR10_Decrementer_Intr : constant System.Address := DI'Address;
+   IVOR10_Sleep_Intr       : constant System.Address := SI'Address;
 
 end Oak.Core_Support_Package.Task_Support;

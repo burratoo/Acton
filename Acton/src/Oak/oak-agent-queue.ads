@@ -14,7 +14,7 @@ generic
 
 package Oak.Agent.Queue is
 
-   pragma Pure;
+   pragma Preelaborate;
 
    type Agent_Handler is access all Agent_Type'Class;
 

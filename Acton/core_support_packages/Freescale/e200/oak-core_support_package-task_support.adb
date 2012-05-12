@@ -1,7 +1,8 @@
-with System.Machine_Code;            use System.Machine_Code;
-with ISA.Power.e200.Timer_Registers;
 with ISA;
+with ISA.Power.e200.Timer_Registers;
+
 with System;                         use System;
+with System.Machine_Code;            use System.Machine_Code;
 
 package body Oak.Core_Support_Package.Task_Support is
    ----------------------------
@@ -49,13 +50,13 @@ package body Oak.Core_Support_Package.Task_Support is
    -- Set_Oak_Wake_Up_Timer --
    ---------------------------
 
-   procedure Set_Oak_Wake_Up_Timer (Wake_Up_At : in Ada.Real_Time.Time) is
-      use Ada.Real_Time;
-      Decrementer_Value : Ada.Real_Time.Time_Span;
+   procedure Set_Oak_Wake_Up_Timer (Wake_Up_At : in Oak.Real_Time.Time) is
+      use Oak.Real_Time;
+      Decrementer_Value : Time_Span;
    begin
       --  Do have a problem when the TBL overflows into the TBU
       Decrementer_Value := Wake_Up_At - Clock;
-      if Decrementer_Value <= Ada.Real_Time.Time_Span_Zero then
+      if Decrementer_Value <= Time_Span_Zero then
          Decrementer_Value := Time_Span_Unit;
       end if;
 

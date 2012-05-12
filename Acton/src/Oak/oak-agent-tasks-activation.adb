@@ -1,18 +1,18 @@
 with Oak.Core;
+with Oak.Real_Time;
 with Oak.Scheduler;
-with Ada.Real_Time;
 
-package body Oak.Oak_Task.Activation is
-
-   function Next_Task
-     (Current_Task : Oak_Task_Handler)
-      return         Oak_Task_Handler;
-
-   End_Of_List : constant Oak_Task_Handler := null;
+package body Oak.Agent.Tasks.Activation is
 
    function Next_Task
-     (Current_Task : Oak_Task_Handler)
-      return         Oak_Task_Handler
+     (Current_Task : access Task_Agent'Class)
+      return access Task_Agent'Class;
+
+   End_Of_List : constant access Task_Agent'Class := null;
+
+   function Next_Task
+     (Current_Task : access Task_Agent'Class)
+      return access Task_Agent'Class
    is
    begin
       return Current_Task.Activation_List;
@@ -23,10 +23,10 @@ package body Oak.Oak_Task.Activation is
    -------------------------
 
    function Continue_Activation
-     (Activator : Oak_Task_Handler)
-      return      Oak_Task_Handler
+     (Activator : access Task_Agent'Class)
+      return      access Task_Agent'Class
    is
-      TP : Oak_Task_Handler;
+      TP : access Task_Agent'Class;
    begin
       --  Possibly redundant check to make sure that the Activator has tasks to
       --  activate
@@ -73,14 +73,15 @@ package body Oak.Oak_Task.Activation is
    -- Finish_Activation --
    -----------------------
 
-   procedure Finish_Activation (Activator : Oak_Task_Handler) is
+   procedure Finish_Activation (Activator : in out Task_Agent'Class) is
       OI        : constant access Oak.Core.Oak_Data                :=
-         Oak.Core.Get_Oak_Instance;
+         Core.Oak_Instance;
       Scheduler : constant access Oak.Scheduler.Oak_Scheduler_Info :=
-         Oak.Core.Get_Scheduler_Info (OI);
+         Core.Scheduler_Info (OI);
 
-      TP              : Oak_Task_Handler := Next_Task (Activator);
-      Activation_Time : constant Time    := Ada.Real_Time.Clock;
+      TP              : access Task_Agent'Class :=
+                          Next_Task (Activator'Access);
+      Activation_Time : constant Time    := Real_Time.Clock;
    begin
       while TP /= End_Of_List loop
          TP.State          := Runnable;
@@ -90,7 +91,7 @@ package body Oak.Oak_Task.Activation is
          --  If the deadline is set to zero, disable the deadline by setting
          --  Next_Deadline to last possible time.
          if TP.Deadline = Time_Span_Zero then
-            TP.Next_Deadline := Ada.Real_Time.Time_Last;
+            TP.Next_Deadline := Oak.Real_Time.Time_Last;
          else
             TP.Next_Deadline := TP.Wake_Time + TP.Deadline;
          end if;
@@ -104,4 +105,4 @@ package body Oak.Oak_Task.Activation is
       Activator.Activation_List := End_Of_List;
    end Finish_Activation;
 
-end Oak.Oak_Task.Activation;
+end Oak.Agent.Tasks.Activation;

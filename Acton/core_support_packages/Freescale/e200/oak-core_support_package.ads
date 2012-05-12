@@ -1,5 +1,3 @@
---  with Ada.Real_Time; use Ada.Real_Time;
-
 package Oak.Core_Support_Package with Pure is
 
    Number_Of_Processors : constant := 1;

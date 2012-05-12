@@ -1,12 +1,10 @@
-with Ada.Real_Time;                                 use Ada.Real_Time;
+with Oak.Agent.Tasks.Activation;
+with Oak.Agent.Tasks.Internal;
+with Oak.Agent.Tasks.Protected_Object; use Oak.Agent.Tasks.Protected_Object;
+with Oak.Real_Time;                                 use Oak.Real_Time;
 with Oak.Memory.Call_Stack.Ops;
 with Oak.Core_Support_Package.Task_Support;
 use  Oak.Core_Support_Package.Task_Support;
-with Oak.Core_Support_Package.Processor;
-with Oak.Oak_Task.Internal;                         use Oak.Oak_Task.Internal;
-with Oak.Oak_Task.Data_Access;
-with Oak.Oak_Task.Activation;
-with Oak.Oak_Task.Protected_Object;
 with Oak.Core_Support_Package.Task_Interrupts;
 with Oak.Core_Support_Package.Call_Stack;
 with Oak.Interrupts;
@@ -14,8 +12,6 @@ with Oak.Protected_Object;
 with Oak.Processor_Support_Package.Interrupts;
 
 package body Oak.Core is
-
-   package Processor renames Oak.Core_Support_Package.Processor;
 
    ----------------
    -- Initialise --
@@ -73,8 +69,8 @@ package body Oak.Core is
 
    procedure Run_Loop (Oak_Instance : in out Oak_Data) is
       Wake_Up_Time, Earliest_Deadline : Time;
-      Earliest_Scheduler_Agent_Time   : Time;
-      Next_Task                       : Oak_Task_Handler := null;
+      Earliest_Scheduler_Time   : Time;
+      Next_Task                       : Task_Handler := null;
 
       Task_Message : Oak_Task_Message := (Message_Type => No_State);
    begin
@@ -138,34 +134,35 @@ package body Oak.Core is
                        (Chosen_Task => Next_Task);
 
                   when Activation_Complete =>
-                     Oak.Oak_Task.Activation.Finish_Activation
-                       (Activator => Get_Current_Task);
+                     Agent.Tasks.Activation.Finish_Activation
+                       (Activator => Current_Task.all);
                      Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
                        (Scheduler_Info => Oak_Instance.Scheduler,
                         Chosen_Task    => Next_Task);
 
                   when Sleeping =>
-                     Oak.Oak_Task.Data_Access.Set_Wake_Time
-                       (T  => Next_Task,
+                     Agent.Tasks.Set_Wake_Time
+                       (T  => Next_Task.all,
                         WT => Task_Message.Wake_Up_At);
                      Inform_Scheduler_Agent_Task_Has_Yielded
                        (Chosen_Task => Next_Task);
 
                   when Cycle_Completed =>
-                     Next_Run_Cycle (T => Get_Current_Task);
+                     Agent.Tasks.Internal.Next_Run_Cycle
+                       (T => Current_Task.all);
                      Inform_Scheduler_Agent_Task_Has_Yielded
                        (Chosen_Task => Next_Task);
 
                   when Change_Cycle_Period =>
-                     Oak.Oak_Task.Internal.Set_Cycle_Period
-                       (T  => Get_Current_Task,
+                     Agent.Tasks.Internal.Set_Cycle_Period
+                       (T  => Current_Task.all,
                         CP => Task_Message.New_Cycle_Period);
                      Inform_Scheduler_Agent_Task_Has_Yielded
                        (Chosen_Task => Next_Task);
 
                   when Change_Relative_Deadline =>
-                     Oak.Oak_Task.Internal.Set_Relative_Deadline
-                       (T  => Get_Current_Task,
+                     Agent.Tasks.Internal.Set_Relative_Deadline
+                       (T  => Current_Task.all,
                         RD => Task_Message.New_Deadline_Span);
                      Inform_Scheduler_Agent_Task_Has_Yielded
                        (Chosen_Task => Next_Task);
@@ -173,8 +170,8 @@ package body Oak.Core is
                   when Entering_PO =>
                      Oak.Protected_Object.Process_Enter_Request
                        (Scheduler_Info  => Oak_Instance.Scheduler,
-                        T               => Get_Current_Task,
-                        PO              => Task_Message.PO_Enter,
+                        T               => Current_Task.all,
+                        PO              => Task_Message.PO_Enter.all,
                         Subprogram_Kind => Task_Message.Subprogram_Kind,
                         Entry_Id        => Task_Message.Entry_Id_Enter,
                         Chosen_Task => Next_Task);
@@ -182,14 +179,14 @@ package body Oak.Core is
                   when Exiting_PO =>
                      Oak.Protected_Object.Process_Exit_Request
                        (Scheduler_Info    => Oak_Instance.Scheduler,
-                        T                 => Get_Current_Task,
-                        PO                => Task_Message.PO_Exit,
+                        T                 => Current_Task.all,
+                        PO                => Task_Message.PO_Exit.all,
                         Chosen_Task       => Next_Task);
                   when Attach_Interrupt_Handlers =>
                      Oak.Interrupts.Attach_Handlers
                        (Handlers    => Task_Message.Attach_Handlers,
                         Handler_PO  => Task_Message.Attach_Handler_PO,
-                        T           => Get_Current_Task,
+                        T           => Current_Task,
                         Chosen_Task => Next_Task);
                   when others =>
                      null;
@@ -207,26 +204,23 @@ package body Oak.Core is
          end case;
 
          if Next_Task /= null and then
-           Oak_Task.Protected_Object.Is_Protected_Object
-             (PO => Next_Task) then
-            Next_Task := Oak_Task.Protected_Object.Get_Task_Within
-              (PO => Next_Task);
+           Next_Task.all in Protected_Agent'Class then
+            Next_Task := Task_Within (Protected_Agent'Class (Next_Task.all));
          end if;
 
          if Next_Task /= null then
-            case Oak_Task.Data_Access.Get_State (T => Next_Task) is
+            case State (T => Next_Task.all) is
                when Shared_State =>
-                  if Oak_Task.Data_Access.Get_Shared_State
-                    (For_Task => Next_Task) = Entering_PO then
+                  if Shared_State (Next_Task.all) = Entering_PO then
                      declare
                         M : constant Oak_Task_Message
-                          := Oak_Task.Data_Access.Get_Oak_Task_Message
-                            (For_Task => Next_Task);
+                          := Agent.Tasks.Task_Message
+                            (For_Task => Next_Task.all);
                      begin
                         Oak.Protected_Object.Process_Enter_Request
                          (Scheduler_Info  => Oak_Instance.Scheduler,
-                          T               => Next_Task,
-                          PO              => M.PO_Enter,
+                          T               => Next_Task.all,
+                          PO              => M.PO_Enter.all,
                           Subprogram_Kind => M.Subprogram_Kind,
                           Entry_Id        => M.Entry_Id_Enter,
                           Chosen_Task => Next_Task);
@@ -248,19 +242,19 @@ package body Oak.Core is
          --  loop). Note that the kernel jumps to the task in question, rather
          --  than call a procedure.
          -------------------
-         Earliest_Scheduler_Agent_Time :=
-            Get_Earliest_Scheduler_Agent_Time
+         Earliest_Scheduler_Time :=
+            Earliest_Scheduler_Agent_Time
               (Scheduler_Info => Oak_Instance.Scheduler);
          Earliest_Deadline             := Time_Last;
          --              Get_Earliest_Deadline (Scheduler_Info =>
          --  Oak_Instance.Scheduler);
 
-         if Earliest_Deadline <= Earliest_Scheduler_Agent_Time then
+         if Earliest_Deadline <= Earliest_Scheduler_Time then
             Oak_Instance.Woken_By := Missed_Deadline;
             Wake_Up_Time          := Earliest_Deadline;
          else
             Oak_Instance.Woken_By := Scheduler_Agent;
-            Wake_Up_Time          := Earliest_Scheduler_Agent_Time;
+            Wake_Up_Time          := Earliest_Scheduler_Time;
          end if;
 
          --  These called functions are responsible for enabling the sleep
@@ -273,20 +267,19 @@ package body Oak.Core is
             --   Set MMU is applicable.
 
             --  Switch registers and enable Wake Up Interrupt.
-            Oak_Instance.Current_Task := Next_Task;
+            Oak_Instance.Current_Agent := Next_Task;
             Context_Switch_To_Task;
-            Task_Message := Oak_Task.Data_Access.Get_Oak_Task_Message
-                                   (For_Task => Next_Task);
-            case Oak_Task.Internal.Get_Task_Yield_Status
-              (For_Task => Next_Task) is
+            Task_Message := Agent.Tasks.Task_Message
+                              (For_Task => Next_Task.all);
+            case Internal.Task_Yield_Status (For_Task => Next_Task.all) is
                when Voluntary =>
                   Oak_Instance.Woken_By := Task_Yield;
                   Set_State
-                    (T         => Oak_Instance.Current_Task,
-                     New_State => Task_Message.Message_Type);
+                    (T     => Task_Handler (Oak_Instance.Current_Agent).all,
+                     State => Task_Message.Message_Type);
                when Forced =>
-                  Oak_Task.Internal.Store_Task_Yield_Status
-                    (For_Task => Next_Task,
+                  Internal.Store_Task_Yield_Status
+                    (For_Task => Next_Task.all,
                      Yielded  => Voluntary);
             end case;
          end if;
@@ -294,46 +287,16 @@ package body Oak.Core is
       end loop;
    end Run_Loop;
 
-   function Get_Current_Task_Stack_Pointer return Address is
-   begin
-      return (Get_Stack_Pointer
-                 (T =>
-                    Processor_Kernels (Processor.Get_Proccessor_Id).
-        Current_Task));
-   end Get_Current_Task_Stack_Pointer;
-
-   procedure Set_Current_Task_Stack_Pointer (SP : Address) is
+   procedure Set_Current_Agent_Stack_Pointer (SP : Address) is
    begin
       Set_Stack_Pointer
-        (T             =>
-           Processor_Kernels (Processor.Get_Proccessor_Id).Current_Task,
+        (Agent           =>
+           Processor_Kernels (Processor.Proccessor_Id).Current_Agent.all,
          Stack_Pointer => SP);
-   end Set_Current_Task_Stack_Pointer;
+   end Set_Current_Agent_Stack_Pointer;
 
-   procedure Set_Current_Task (T : Oak_Task_Handler) is
+   procedure Set_Current_Agent (Agent : access Oak_Agent'Class) is
    begin
-      Processor_Kernels (Processor.Get_Proccessor_Id).Current_Task := T;
-   end Set_Current_Task;
-
-   function Get_Current_Task return Oak_Task_Handler is
-   begin
-      return Processor_Kernels (Processor.Get_Proccessor_Id).Current_Task;
-   end Get_Current_Task;
-
-   function Get_Oak_Instance return access Oak_Data is
-   begin
-      return Processor_Kernels (Processor_Kernels'First)'Access;
-   end Get_Oak_Instance;
-
-   function Get_Scheduler_Info
-     (Oak_Instance : access Oak_Data)
-      return         access Oak_Scheduler_Info is
-   begin
-      return Oak_Instance.Scheduler'Access;
-   end Get_Scheduler_Info;
-
-   function Get_Main_Task return Oak_Task_Handler is
-   begin
-      return Main_Task_OTCR'Access;
-   end Get_Main_Task;
+      Processor_Kernels (Processor.Proccessor_Id).Current_Agent := Agent;
+   end Set_Current_Agent;
 end Oak.Core;

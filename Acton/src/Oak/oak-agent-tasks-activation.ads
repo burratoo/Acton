@@ -1,8 +1,9 @@
-package Oak.Oak_Task.Activation with Preelaborate is
+package Oak.Agent.Tasks.Activation with Preelaborate is
 
    function Continue_Activation
-     (Activator : Oak_Task_Handler)
-      return      Oak_Task_Handler;
-   procedure Finish_Activation (Activator : Oak_Task_Handler);
+     (Activator : access Task_Agent'Class)
+      return access Task_Agent'Class;
 
-end Oak.Oak_Task.Activation;
+   procedure Finish_Activation (Activator : in out Task_Agent'Class);
+
+end Oak.Agent.Tasks.Activation;

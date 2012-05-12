@@ -5,7 +5,8 @@ with Oak.Protected_Object; use Oak.Protected_Object;
 
 package Oak.Agent.Tasks.Protected_Object with Preelaborate is
 
-   type Protected_Agent (Num_Entries : Entry_Index) is tagged private;
+   type Protected_Agent (Num_Entries : Entry_Index)
+     is new Task_Agent with private;
 
    type Entry_Barrier_Function_Handler is private;
 
@@ -57,7 +58,7 @@ package Oak.Agent.Tasks.Protected_Object with Preelaborate is
    function Has_Entries (PO : in Protected_Agent'Class) return Boolean;
 
    function Task_Within
-     (PO : in Protected_Agent'Class) return Oak_Task_Handler;
+     (PO : in Protected_Agent'Class) return access Task_Agent'Class;
 
    procedure Add_Task_To_Entry_Queue
      (PO       : in out Protected_Agent'Class;
@@ -136,6 +137,6 @@ private
 
    function Task_Within
      (PO : in Protected_Agent'Class)
-      return Oak_Task_Handler is (PO.Tasks_Within);
+      return access Task_Agent'Class is (PO.Tasks_Within);
 
 end Oak.Agent.Tasks.Protected_Object;

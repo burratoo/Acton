@@ -1,5 +1,5 @@
-with System.Storage_Elements;
 with System;
+with System.Storage_Elements;
 
 package Oak.Core_Support_Package.Task_Interrupts with Preelaborate is
 
@@ -27,7 +27,7 @@ package Oak.Core_Support_Package.Task_Interrupts with Preelaborate is
    pragma Export (Asm, Decrementer_Interrupt, "__OTS_Decrementer_Interrupt");
    pragma Export (Asm, Sleep_Interrupt, "__OTS_Sleep_Interrupt");
 
-   CSTT, CSTK, EI : System.Storage_Elements.Storage_Element;
+   CSTT, CSTK, EI : constant System.Storage_Elements.Storage_Element;
    pragma Import (Assembler, CSTT, "__OTS_CSTT");
    pragma Import (Assembler, CSTK, "__OTS_CSTK");
    pragma Import (Assembler, EI, "__OI_EI");

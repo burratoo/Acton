@@ -16,7 +16,7 @@ package body Oak.Agent.Tasks.Protected_Object is
    begin
 
       Oak.Agent.Tasks.Initialise_Agent
-        (Agent             => Agent,
+        (Agent             => Agent'Access,
          Stack_Address     => Null_Address,
          Stack_Size        => 0,
          Name              => Name,
@@ -34,8 +34,8 @@ package body Oak.Agent.Tasks.Protected_Object is
       Agent.Controlling_Shared_State := Waiting;
 
       Oak.Scheduler.Add_New_Task_To_Inactive_List
-        (Scheduler_Info => Core.Get_Scheduler_Info (Core.Get_Oak_Instance).all,
-         T              => Agent);
+        (Scheduler_Info => Core.Scheduler_Info (Core.Oak_Instance).all,
+         T              => Agent'Access);
    end Initialise_Agent;
 
    procedure Add_Task_To_Entry_Queue
@@ -61,7 +61,8 @@ package body Oak.Agent.Tasks.Protected_Object is
      (PO       : in Protected_Agent'Class;
       Entry_Id : in Entry_Index) return Natural
    is
-      Head_Task    : access Task_Agent'Class := PO.Entry_Queues (Entry_Id);
+      Head_Task    : constant access Task_Agent'Class :=
+                       PO.Entry_Queues (Entry_Id);
       Current_Task : access Task_Agent'Class := Head_Task;
       Length       : Natural := 0;
    begin

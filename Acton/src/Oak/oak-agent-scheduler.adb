@@ -1,4 +1,3 @@
-with Oak.Agent.Tasks; use Oak.Agent.Tasks;
 with Oak.Memory.Call_Stack.Ops; use Oak.Memory.Call_Stack.Ops;
 
 package body Oak.Agent.Scheduler is
@@ -19,7 +18,7 @@ package body Oak.Agent.Scheduler is
 
       Agent.Lowest_Prioirty        := Min_Prioirty;
       Agent.Highest_Prioirty       := Max_Priority;
-      Agent.Desired_Agent_Run_Time := Ada.Real_Time.Time_Zero;
+      Agent.Desired_Agent_Run_Time := Real_Time.Time_Zero;
 
       Initialise_Call_Stack
         (Stack             => Agent.Call_Stack,
@@ -28,21 +27,21 @@ package body Oak.Agent.Scheduler is
 
    procedure Set_Chosen_Task
      (Agent : in out Scheduler_Agent'Class;
-      T     : not null access Task_Agent'Class) is
+      T     : access Tasks.Task_Agent'Class) is
    begin
       Agent.Task_To_Run := T;
    end Set_Chosen_Task;
 
    procedure Set_Desired_Run_Time
      (Agent    : in out Scheduler_Agent'Class;
-      Run_Time : in Ada.Real_Time.Time) is
+      Run_Time : in Oak.Real_Time.Time) is
    begin
       Agent.Desired_Agent_Run_Time := Run_Time;
    end Set_Desired_Run_Time;
 
    procedure Set_Next_Agent
-     (Agent      : in out Scheduler_Agent'Class;
-      Next_Agent : not null access Scheduler_Agent'Class)
+     (Agent      : not null access Scheduler_Agent'Class;
+      Next_Agent : access Scheduler_Agent'Class)
    is
    begin
       Agent.Next_Agent := Next_Agent;
@@ -57,7 +56,7 @@ package body Oak.Agent.Scheduler is
 
    procedure Set_Task_To_Manage
      (Agent : in out Scheduler_Agent'Class;
-      MT    : not null access Task_Agent'Class) is
+      MT    : access Tasks.Task_Agent'Class) is
    begin
       Agent.Manage_Task := MT;
    end Set_Task_To_Manage;

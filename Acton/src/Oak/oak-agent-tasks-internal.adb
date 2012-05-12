@@ -22,7 +22,7 @@ package body Oak.Agent.Tasks.Internal is
 
    procedure Set_Scheduler_Agent_For_Task
      (T     : in out Task_Agent'Class;
-      Agent : access Scheduler_Agent'Class) is
+      Agent : access Scheduler.Scheduler_Agent'Class) is
    begin
       T.Scheduler_Agent := Agent;
    end Set_Scheduler_Agent_For_Task;
