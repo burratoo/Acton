@@ -1,5 +1,6 @@
 with ISA.Power;
 with MPC5554.Flash;
+with Oak.Agent.Tasks;
 with Oak.Core_Support_Package.Task_Interrupts;
 with Oak.Core_Support_Package.Task_Support;
 
@@ -207,7 +208,7 @@ package body Oak.Processor_Support_Package.Interrupts is
       FIFO : Interrupt_FIFO renames Interrupt_Priority_FIFO;
       P : constant MPC5554_Interrupt_Priority :=
         MPC5554_Interrupt_Priority (
-          Oak_Task.Data_Access.Get_Normal_Priority (PO) -
+          Agent.Tasks.Normal_Priority (PO) -
             Interrupt_Priority'First);
    begin
       FIFO.Top := FIFO.Top + 1;

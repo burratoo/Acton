@@ -11,7 +11,7 @@ limited with Oak.Agent.Tasks.Protected_Object;
 
 package Oak.Agent.Tasks with Preelaborate is
 
-   type Task_Agent is new Oak_Agent with private;
+   type Task_Agent is tagged private;
 
    type Task_Handler is access all Task_Agent'Class;
 
@@ -85,7 +85,7 @@ package Oak.Agent.Tasks with Preelaborate is
    Unspecified_Priority : constant Integer := -1;
 
    procedure Initialise_Agent
-     (Agent             : access Task_Agent'Class;
+     (Agent             : in out Task_Agent'Class;
       Stack_Address     : in System.Address;
       Stack_Size        : in System.Storage_Elements.Storage_Count;
       Name              : in String;

@@ -10,7 +10,7 @@ package body Oak.Agent.Tasks is
    -- Set_Up_Task --
    ------------------
    procedure Initialise_Agent
-     (Agent             : access Task_Agent'Class;
+     (Agent             : in out Task_Agent'Class;
       Stack_Address     : in System.Address;
       Stack_Size        : in System.Storage_Elements.Storage_Count;
       Name              : in String;
@@ -26,7 +26,7 @@ package body Oak.Agent.Tasks is
       Call_Stack : Call_Stack_Handler;
    begin
       Oak.Agent.Initialise_Agent
-        (Agent      => Agent.all,
+        (Agent      => Agent,
          Name       => Name,
          Call_Stack => Call_Stack);
 
@@ -67,7 +67,7 @@ package body Oak.Agent.Tasks is
 
       if Chain.Head /= null then
          Agent.Activation_List := Chain.Head;
-         Chain.Head            := Agent;
+         Chain.Head            := Agent'Unrestricted_Access;
       end if;
 
    end Initialise_Agent;
@@ -87,7 +87,7 @@ package body Oak.Agent.Tasks is
       No_Chain : Activation_Chain := (Head => null);
    begin
       Initialise_Agent
-        (Agent             => Agent,
+        (Agent             => Agent.all,
          Stack_Address     => Null_Address,
          Stack_Size        => Stack_Size,
          Name              => Name,

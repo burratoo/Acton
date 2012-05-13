@@ -474,41 +474,41 @@ package body Ada.Tags is
    -- Expanded_Name --
    -------------------
 
-   function Expanded_Name (T : Tag) return String is
-      Result  : Cstring_Ptr;
-      TSD_Ptr : Addr_Ptr;
-      TSD     : Type_Specific_Data_Ptr;
-
-   begin
-      if T = No_Tag then
-         raise Tag_Error;
-      end if;
-
-      TSD_Ptr := To_Addr_Ptr (To_Address (T) - DT_Typeinfo_Ptr_Size);
-      TSD     := To_Type_Specific_Data_Ptr (TSD_Ptr.all);
-      Result  := TSD.Expanded_Name;
-      return Result (1 .. Length (Result));
-   end Expanded_Name;
+--     function Expanded_Name (T : Tag) return String is
+--        Result  : Cstring_Ptr;
+--        TSD_Ptr : Addr_Ptr;
+--        TSD     : Type_Specific_Data_Ptr;
+--
+--     begin
+--        if T = No_Tag then
+--           raise Tag_Error;
+--        end if;
+--
+--        TSD_Ptr := To_Addr_Ptr (To_Address (T) - DT_Typeinfo_Ptr_Size);
+--        TSD     := To_Type_Specific_Data_Ptr (TSD_Ptr.all);
+--        Result  := TSD.Expanded_Name;
+--        return Result (1 .. Length (Result));
+--     end Expanded_Name;
 
    ------------------
    -- External_Tag --
    ------------------
 
-   function External_Tag (T : Tag) return String is
-      Result  : Cstring_Ptr;
-      TSD_Ptr : Addr_Ptr;
-      TSD     : Type_Specific_Data_Ptr;
-
-   begin
-      if T = No_Tag then
-         raise Tag_Error;
-      end if;
-
-      TSD_Ptr := To_Addr_Ptr (To_Address (T) - DT_Typeinfo_Ptr_Size);
-      TSD     := To_Type_Specific_Data_Ptr (TSD_Ptr.all);
-      Result  := TSD.External_Tag;
-      return Result (1 .. Length (Result));
-   end External_Tag;
+--     function External_Tag (T : Tag) return String is
+--        Result  : Cstring_Ptr;
+--        TSD_Ptr : Addr_Ptr;
+--        TSD     : Type_Specific_Data_Ptr;
+--
+--     begin
+--        if T = No_Tag then
+--           raise Tag_Error;
+--        end if;
+--
+--        TSD_Ptr := To_Addr_Ptr (To_Address (T) - DT_Typeinfo_Ptr_Size);
+--        TSD     := To_Type_Specific_Data_Ptr (TSD_Ptr.all);
+--        Result  := TSD.External_Tag;
+--        return Result (1 .. Length (Result));
+--     end External_Tag;
 
    ---------------------
    -- Get_Entry_Index --
@@ -560,32 +560,32 @@ package body Ada.Tags is
    -- Interface_Ancestor_Tags --
    -----------------------------
 
-   function Interface_Ancestor_Tags (T : Tag) return Tag_Array is
-      TSD_Ptr     : constant Addr_Ptr :=
-                      To_Addr_Ptr (To_Address (T) - DT_Typeinfo_Ptr_Size);
-      TSD         : constant Type_Specific_Data_Ptr :=
-                      To_Type_Specific_Data_Ptr (TSD_Ptr.all);
-      Iface_Table : constant Interface_Data_Ptr := TSD.Interfaces_Table;
-
-   begin
-      if Iface_Table = null then
-         declare
-            Table : Tag_Array (1 .. 0);
-         begin
-            return Table;
-         end;
-      else
-         declare
-            Table : Tag_Array (1 .. Iface_Table.Nb_Ifaces);
-         begin
-            for J in 1 .. Iface_Table.Nb_Ifaces loop
-               Table (J) := Iface_Table.Ifaces_Table (J).Iface_Tag;
-            end loop;
-
-            return Table;
-         end;
-      end if;
-   end Interface_Ancestor_Tags;
+--     function Interface_Ancestor_Tags (T : Tag) return Tag_Array is
+--        TSD_Ptr     : constant Addr_Ptr :=
+--                        To_Addr_Ptr (To_Address (T) - DT_Typeinfo_Ptr_Size);
+--        TSD         : constant Type_Specific_Data_Ptr :=
+--                        To_Type_Specific_Data_Ptr (TSD_Ptr.all);
+--        Iface_Table : constant Interface_Data_Ptr := TSD.Interfaces_Table;
+--
+--     begin
+--        if Iface_Table = null then
+--           declare
+--              Table : Tag_Array (1 .. 0);
+--           begin
+--              return Table;
+--           end;
+--        else
+--           declare
+--              Table : Tag_Array (1 .. Iface_Table.Nb_Ifaces);
+--           begin
+--              for J in 1 .. Iface_Table.Nb_Ifaces loop
+--                 Table (J) := Iface_Table.Ifaces_Table (J).Iface_Tag;
+--              end loop;
+--
+--              return Table;
+--           end;
+--        end if;
+--     end Interface_Ancestor_Tags;
 
    ------------------
    -- Internal_Tag --
@@ -1018,32 +1018,32 @@ package body Ada.Tags is
    -- Wide_Expanded_Name --
    ------------------------
 
-   WC_Encoding : Character;
-   pragma Import (C, WC_Encoding, "__gl_wc_encoding");
+--     WC_Encoding : Character;
+--     pragma Import (C, WC_Encoding, "__gl_wc_encoding");
    --  Encoding method for source, as exported by binder
 
-   function Wide_Expanded_Name (T : Tag) return Wide_String is
-      S : constant String := Expanded_Name (T);
-      W : Wide_String (1 .. S'Length);
-      L : Natural;
-   begin
-      String_To_Wide_String
-        (S, W, L, Get_WC_Encoding_Method (WC_Encoding));
-      return W (1 .. L);
-   end Wide_Expanded_Name;
+--     function Wide_Expanded_Name (T : Tag) return Wide_String is
+--        S : constant String := Expanded_Name (T);
+--        W : Wide_String (1 .. S'Length);
+--        L : Natural;
+--     begin
+--        String_To_Wide_String
+--          (S, W, L, Get_WC_Encoding_Method (WC_Encoding));
+--        return W (1 .. L);
+--     end Wide_Expanded_Name;
 
    -----------------------------
    -- Wide_Wide_Expanded_Name --
    -----------------------------
 
-   function Wide_Wide_Expanded_Name (T : Tag) return Wide_Wide_String is
-      S : constant String := Expanded_Name (T);
-      W : Wide_Wide_String (1 .. S'Length);
-      L : Natural;
-   begin
-      String_To_Wide_Wide_String
-        (S, W, L, Get_WC_Encoding_Method (WC_Encoding));
-      return W (1 .. L);
-   end Wide_Wide_Expanded_Name;
+--     function Wide_Wide_Expanded_Name (T : Tag) return Wide_Wide_String is
+--        S : constant String := Expanded_Name (T);
+--        W : Wide_Wide_String (1 .. S'Length);
+--        L : Natural;
+--     begin
+--        String_To_Wide_Wide_String
+--          (S, W, L, Get_WC_Encoding_Method (WC_Encoding));
+--        return W (1 .. L);
+--     end Wide_Wide_Expanded_Name;
 
 end Ada.Tags;

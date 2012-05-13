@@ -45,15 +45,15 @@ package Ada.Tags is
 
    No_Tag : constant Tag;
 
-   function Expanded_Name (T : Tag) return String;
+   --  function Expanded_Name (T : Tag) return String;
 
-   function Wide_Expanded_Name (T : Tag) return Wide_String;
-   pragma Ada_05 (Wide_Expanded_Name);
+   --  function Wide_Expanded_Name (T : Tag) return Wide_String;
+   --  pragma Ada_05 (Wide_Expanded_Name);
 
-   function Wide_Wide_Expanded_Name (T : Tag) return Wide_Wide_String;
-   pragma Ada_05 (Wide_Wide_Expanded_Name);
+   --  function Wide_Wide_Expanded_Name (T : Tag) return Wide_Wide_String;
+   --  pragma Ada_05 (Wide_Wide_Expanded_Name);
 
-   function External_Tag (T : Tag) return String;
+--     function External_Tag (T : Tag) return String;
 
    function Internal_Tag (External : String) return Tag;
 
@@ -72,8 +72,8 @@ package Ada.Tags is
 
    type Tag_Array is array (Positive range <>) of Tag;
 
-   function Interface_Ancestor_Tags (T : Tag) return Tag_Array;
-   pragma Ada_05 (Interface_Ancestor_Tags);
+--     function Interface_Ancestor_Tags (T : Tag) return Tag_Array;
+--     pragma Ada_05 (Interface_Ancestor_Tags);
 
    function Type_Is_Abstract (T : Tag) return Boolean;
    pragma Ada_2012 (Type_Is_Abstract);

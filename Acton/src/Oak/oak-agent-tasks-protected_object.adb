@@ -16,7 +16,7 @@ package body Oak.Agent.Tasks.Protected_Object is
    begin
 
       Oak.Agent.Tasks.Initialise_Agent
-        (Agent             => Agent'Access,
+        (Agent             => Agent,
          Stack_Address     => Null_Address,
          Stack_Size        => 0,
          Name              => Name,
