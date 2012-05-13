@@ -11,7 +11,7 @@ limited with Oak.Agent.Tasks.Protected_Object;
 
 package Oak.Agent.Tasks with Preelaborate is
 
-   type Task_Agent is tagged private;
+   type Task_Agent is new Oak_Agent with private;
 
    type Task_Handler is access all Task_Agent'Class;
 
