@@ -142,7 +142,7 @@ package body Oak.Core is
 
                   when Sleeping =>
                      Agent.Tasks.Set_Wake_Time
-                       (T  => Next_Task.all,
+                       (T  => Next_Task,
                         WT => Task_Message.Wake_Up_At);
                      Inform_Scheduler_Agent_Task_Has_Yielded
                        (Chosen_Task => Next_Task);

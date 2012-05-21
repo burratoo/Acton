@@ -109,7 +109,7 @@ package body Oak.Agent.Tasks is
    end Initialise_Main_Task;
 
    procedure Set_Activation_List
-     (T     : in out Task_Agent'Class;
+     (T     : not null access Task_Agent'Class;
       Chain : in Activation_Chain_Access)
    is
       TP : access Task_Agent'Class := Chain.Head;
@@ -129,14 +129,14 @@ package body Oak.Agent.Tasks is
    end Set_Activation_List;
 
    procedure Store_Oak_Task_Message
-     (For_Task : in out Task_Agent'Class;
+     (For_Task : not null access Task_Agent'Class;
       Message  : in Oak_Task_Message) is
    begin
       For_Task.Message_Location.Message := Message;
    end Store_Oak_Task_Message;
 
    procedure Set_Scheduler_Agent
-     (T               : in out Task_Agent'Class;
+     (T               : not null access Task_Agent'Class;
       Scheduler_Agent : access Scheduler.Scheduler_Agent'Class)
    is
    begin
@@ -157,7 +157,9 @@ package body Oak.Agent.Tasks is
       T.State := State;
    end Set_State;
 
-   procedure Set_Wake_Time (T : in out Task_Agent'Class; WT : in Time) is
+   procedure Set_Wake_Time
+     (T  : not null access Task_Agent'Class;
+      WT : in Time) is
    begin
       T.Wake_Time := WT;
    end Set_Wake_Time;
