@@ -105,32 +105,34 @@ package Oak.Agent.Tasks with Preelaborate is
       Run_Loop        : in System.Address);
 
    function Activation_List
-     (T    : in Task_Agent'Class)
+     (T    : access Task_Agent'Class)
       return access Task_Agent'Class;
 
-   function Cycle_Period (T : in Task_Agent'Class) return Time_Span;
+   function Cycle_Period (T : access Task_Agent'Class) return Time_Span;
 
-   function Deadline (T : in Task_Agent'Class) return Time_Span;
+   function Deadline (T : access Task_Agent'Class) return Time_Span;
 
-   function Is_Elaborated (T : in Task_Agent'Class) return Boolean;
+   function Is_Elaborated (T : access Task_Agent'Class) return Boolean;
 
-   function Next_Run_Time (T : in Task_Agent'Class) return Time;
+   function Next_Run_Time (T : access Task_Agent'Class) return Time;
 
    function Normal_Priority
-     (T : in Task_Agent'Class)
+     (T : access Task_Agent'Class)
       return System.Any_Priority;
 
    function Task_Message
-     (For_Task : in Task_Agent'Class)
+     (For_Task : access Task_Agent'Class)
       return Oak_Task_Message;
 
-   function Phase (T : in Task_Agent'Class) return Time_Span;
+   function Phase (T : access Task_Agent'Class) return Time_Span;
 
-   function Shared_State (For_Task : in Task_Agent'Class) return Task_State;
+   function Shared_State
+     (For_Task : access Task_Agent'Class)
+      return Task_State;
 
-   function State (T : in Task_Agent'Class) return Task_State;
+   function State (T : access Task_Agent'Class) return Task_State;
 
-   function Wake_Time (T : in Task_Agent'Class) return Time;
+   function Wake_Time (T : access Task_Agent'Class) return Time;
 
    procedure Set_Activation_List
      (T     : in out Task_Agent'Class;
@@ -145,10 +147,12 @@ package Oak.Agent.Tasks with Preelaborate is
       Scheduler_Agent : access Scheduler.Scheduler_Agent'Class);
 
    procedure Set_Shared_State
-     (For_Task : in out Task_Agent'Class;
+     (For_Task : not null access Task_Agent'Class;
       With_State_Pointer : in Shared_Task_State);
 
-   procedure Set_State (T : in out Task_Agent'Class; State : in Task_State);
+   procedure Set_State
+     (T     : not null access Task_Agent'Class;
+      State : in Task_State);
 
    procedure Set_Wake_Time (T : in out Task_Agent'Class; WT : in Time);
 
@@ -185,47 +189,47 @@ private
    end record;
 
    function Activation_List
-     (T    : in Task_Agent'Class)
+     (T    : access Task_Agent'Class)
       return access Task_Agent'Class is (T.Activation_List);
 
    function Cycle_Period
-     (T : in Task_Agent'Class)
+     (T : access Task_Agent'Class)
       return Time_Span is (T.Cycle_Period);
 
    function Deadline
-     (T : in Task_Agent'Class)
+     (T : access Task_Agent'Class)
       return Time_Span is (T.Deadline);
 
    function Is_Elaborated
-     (T : in Task_Agent'Class)
+     (T : access Task_Agent'Class)
       return Boolean is (T.Elaborated.all);
 
    function Next_Run_Time
-     (T : in Task_Agent'Class)
+     (T : access Task_Agent'Class)
       return Time is (T.Next_Run_Cycle);
 
    function Normal_Priority
-     (T : in Task_Agent'Class)
+     (T : access Task_Agent'Class)
       return System.Any_Priority is (T.Normal_Priority);
 
    function Task_Message
-     (For_Task : in Task_Agent'Class)
+     (For_Task : access Task_Agent'Class)
       return Oak_Task_Message is (For_Task.Message_Location.Message);
 
    function Phase
-     (T : in Task_Agent'Class)
+     (T : access Task_Agent'Class)
       return Time_Span is (T.Phase);
 
    function Shared_State
-     (For_Task : in Task_Agent'Class)
+     (For_Task : access Task_Agent'Class)
       return Task_State is (For_Task.Shared_State.all);
 
    function State
-     (T : in Task_Agent'Class)
+     (T : access Task_Agent'Class)
       return Task_State is (T.State);
 
    function Wake_Time
-     (T : in Task_Agent'Class)
+     (T : access Task_Agent'Class)
       return Time is (T.Wake_Time);
 
 end Oak.Agent.Tasks;

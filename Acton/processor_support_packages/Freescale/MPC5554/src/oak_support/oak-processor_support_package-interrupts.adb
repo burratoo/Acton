@@ -205,7 +205,7 @@ package body Oak.Processor_Support_Package.Interrupts is
    end Attach_Handler;
 
    procedure Get_Resource
-     (PO : in Agent.Tasks.Protected_Object.Protected_Agent'Class) is
+     (PO : access Agent.Tasks.Protected_Object.Protected_Agent'Class) is
       FIFO : Interrupt_FIFO renames Interrupt_Priority_FIFO;
       P : constant MPC5554_Interrupt_Priority :=
         MPC5554_Interrupt_Priority (

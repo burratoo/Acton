@@ -14,7 +14,7 @@ package body Oak.Interrupts is
    is
       P : constant Interrupt_Priority :=
             Agent.Tasks.Normal_Priority
-              (Oak.Agent.Tasks.Task_Agent'Class (Handler_PO.all));
+              (Oak.Agent.Tasks.Task_Agent'Class (Handler_PO.all)'Access);
    begin
       for Handler of Handlers.all loop
          Oak.Processor_Support_Package.Interrupts.Attach_Handler

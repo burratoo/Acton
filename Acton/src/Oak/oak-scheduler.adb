@@ -15,13 +15,13 @@ package body Oak.Scheduler is
       T              : access Task_Agent'Class)
    is
       Agent : constant access Scheduler_Agent'Class :=
-                Scheduler_Agent_For_Task (T.all);
+                Scheduler_Agent_For_Task (T);
    begin
       Inactive_Queue.Remove_Agent
         (Queue => Scheduler_Info.Inactive_Task_List,
          Agent => T);
-      Set_State (T => T.all, State => Runnable);
-      Set_Task_To_Manage (Agent => Agent.all, MT => T);
+      Set_State (T => T, State => Runnable);
+      Set_Task_To_Manage (Agent => Agent, MT => T);
       Run_Scheduler_Agent (Agent => Agent, Reason => Add_Task);
    end Activate_Task;
 
@@ -29,17 +29,17 @@ package body Oak.Scheduler is
      (Scheduler_Info : in out Oak_Scheduler_Info;
       T              : access Task_Agent'Class)
    is
-      Task_Priority : constant Any_Priority := Normal_Priority (T.all);
+      Task_Priority : constant Any_Priority := Normal_Priority (T);
       Agent         : access Scheduler_Agent'Class :=
                         Scheduler_Info.Scheduler_Agent_Table;
    begin
       while Agent /= null
-        and then Task_Priority < Lowest_Priority (Agent.all)
+        and then Task_Priority < Lowest_Priority (Agent)
       loop
          Agent := Next_Agent (Agent);
       end loop;
-      Set_Scheduler_Agent_For_Task (T => T.all, Agent => Agent);
-      Set_State (T => T.all, State => Inactive);
+      Set_Scheduler_Agent_For_Task (T => T, Agent => Agent);
+      Set_State (T => T, State => Inactive);
       Inactive_Queue.Add_Agent_To_Head
         (Queue => Scheduler_Info.Inactive_Task_List,
          Agent => T);
@@ -49,17 +49,17 @@ package body Oak.Scheduler is
      (Scheduler_Info : in out Oak_Scheduler_Info;
       T              : access Task_Agent'Class)
    is
-      Task_Priority : constant Any_Priority := Normal_Priority (T.all);
+      Task_Priority : constant Any_Priority := Normal_Priority (T);
       Agent         : access Scheduler_Agent'Class :=
         Scheduler_Info.Scheduler_Agent_Table;
    begin
       while Agent /= null
-        and then Task_Priority < Lowest_Priority (Agent.all)
+        and then Task_Priority < Lowest_Priority (Agent)
       loop
          Agent := Next_Agent (Agent);
       end loop;
-      Set_Scheduler_Agent_For_Task (T => T.all, Agent => Agent);
-      Set_Task_To_Manage (Agent => Agent.all, MT => T);
+      Set_Scheduler_Agent_For_Task (T => T, Agent => Agent);
+      Set_Task_To_Manage (Agent => Agent, MT => T);
       Run_Scheduler_Agent (Agent => Agent, Reason => Add_Task);
    end Add_Task_To_Scheduler;
 
@@ -68,11 +68,11 @@ package body Oak.Scheduler is
       T              : access Task_Agent'Class)
    is
       Agent : constant access Scheduler_Agent'Class :=
-                Scheduler_Agent_For_Task (T.all);
+                Scheduler_Agent_For_Task (T);
    begin
-      Set_Task_To_Manage (Agent => Agent.all, MT => T);
+      Set_Task_To_Manage (Agent => Agent, MT => T);
       Run_Scheduler_Agent (Agent => Agent, Reason => Remove_Task);
-      Set_State (T => T.all, State => Inactive);
+      Set_State (T => T, State => Inactive);
       Inactive_Queue.Add_Agent_To_Head
         (Queue => Scheduler_Info.Inactive_Task_List,
          Agent => T);
@@ -88,8 +88,8 @@ package body Oak.Scheduler is
                 Scheduler_Info.Scheduler_Agent_Table;
    begin
       while Agent /= null loop
-         if Earliest_Time > Desired_Run_Time (Agent.all) then
-            Earliest_Time := Desired_Run_Time (Agent.all);
+         if Earliest_Time > Desired_Run_Time (Agent) then
+            Earliest_Time := Desired_Run_Time (Agent);
          end if;
          Agent := Next_Agent (Agent);
       end loop;
@@ -139,7 +139,7 @@ package body Oak.Scheduler is
      (Chosen_Task : in out Task_Handler)
    is
       Agent : constant access Scheduler_Agent'Class :=
-         Scheduler_Agent_For_Task (Chosen_Task.all);
+         Scheduler_Agent_For_Task (Chosen_Task);
    begin
       Chosen_Task :=
          Run_Scheduler_Agent (Agent => Agent, Reason => Task_Yield);
@@ -175,11 +175,11 @@ package body Oak.Scheduler is
      (T : access Task_Agent'Class)
    is
       Agent : constant access Scheduler_Agent'Class :=
-                Scheduler_Agent_For_Task (T.all);
+                Scheduler_Agent_For_Task (T);
    begin
-      Set_Task_To_Manage (Agent => Agent.all, MT => T);
+      Set_Task_To_Manage (Agent => Agent, MT => T);
       Run_Scheduler_Agent (Agent => Agent, Reason => Remove_Task);
-      Set_Scheduler_Agent_For_Task (T => T.all, Agent => null);
+      Set_Scheduler_Agent_For_Task (T => T, Agent => null);
    end Remove_Task_From_Scheduler;
 
    function Run_Scheduler_Agent
@@ -188,14 +188,14 @@ package body Oak.Scheduler is
       return access Task_Agent'Class is
    begin
       Run_Scheduler_Agent (Agent => Agent, Reason => Reason);
-      return Task_To_Run (Agent.all);
+      return Task_To_Run (Agent);
    end Run_Scheduler_Agent;
 
    procedure Run_Scheduler_Agent
      (Agent  : access Scheduler_Agent'Class;
       Reason : in Reason_For_Run) is
    begin
-      Set_Run_Reason (Agent => Agent.all, Reason => Reason);
+      Set_Run_Reason (Agent => Agent, Reason => Reason);
       Core.Set_Current_Agent (Agent => Agent);
       Core_Support_Package.Task_Support.Context_Switch_To_Scheduler_Agent;
    end Run_Scheduler_Agent;
@@ -219,7 +219,7 @@ package body Oak.Scheduler is
    begin
       Chosen_Task := null;
       while Agent /= null and Chosen_Task = null loop
-         if Desired_Run_Time (Agent.all) < Current_Time then
+         if Desired_Run_Time (Agent) < Current_Time then
             Chosen_Task :=
                Run_Scheduler_Agent
                  (Agent  => Agent,
@@ -227,8 +227,8 @@ package body Oak.Scheduler is
          end if;
          Agent := Next_Agent (Agent);
          exit when (Current_Task /= null and Agent /= null)
-                  and then Normal_Priority (Current_Task.all) >
-                           Highest_Priority (Agent.all);
+                  and then Normal_Priority (Current_Task) >
+                           Highest_Priority (Agent);
       end loop;
 
       if Chosen_Task = null then

@@ -144,13 +144,15 @@ package body Oak.Agent.Tasks is
    end Set_Scheduler_Agent;
 
    procedure Set_Shared_State
-     (For_Task : in out Task_Agent'Class;
+     (For_Task : not null access Task_Agent'Class;
       With_State_Pointer : in Shared_Task_State) is
    begin
       For_Task.Shared_State := With_State_Pointer;
    end Set_Shared_State;
 
-   procedure Set_State (T : in out Task_Agent'Class; State : in Task_State) is
+   procedure Set_State
+     (T     : not null access Task_Agent'Class;
+      State : in Task_State) is
    begin
       T.State := State;
    end Set_State;

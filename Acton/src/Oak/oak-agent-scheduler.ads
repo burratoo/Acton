@@ -7,6 +7,8 @@ package Oak.Agent.Scheduler with Preelaborate is
 
    type Scheduler_Agent is new Oak_Agent with private;
 
+   type Scheduler_Handler is access all Scheduler_Agent;
+
    type Reason_For_Run is (Task_Yield,
                            Select_Next_Task,
                            Add_Task,
@@ -21,15 +23,15 @@ package Oak.Agent.Scheduler with Preelaborate is
       Run_Loop     : in System.Address);
 
    function Desired_Run_Time
-     (Agent : in Scheduler_Agent'Class)
+     (Agent : access Scheduler_Agent'Class)
       return Oak.Real_Time.Time;
 
    function Lowest_Priority
-     (Agent : in Scheduler_Agent'Class)
+     (Agent : access Scheduler_Agent'Class)
       return  System.Any_Priority;
 
    function Highest_Priority
-     (Agent : in Scheduler_Agent'Class)
+     (Agent : access Scheduler_Agent'Class)
       return System.Any_Priority;
 
    function Next_Agent
@@ -37,22 +39,23 @@ package Oak.Agent.Scheduler with Preelaborate is
       return access Scheduler_Agent'Class;
 
    function Run_Reason
-     (Agent : in Scheduler_Agent'Class)
+     (Agent : access Scheduler_Agent'Class)
       return  Reason_For_Run;
 
    function Task_To_Run
-     (Agent : in Scheduler_Agent'Class)
+     (Agent : access Scheduler_Agent'Class)
       return access Tasks.Task_Agent'Class;
 
    function Task_To_Manage
-     (Agent : in Scheduler_Agent'Class)
+     (Agent : access Scheduler_Agent'Class)
       return access Tasks.Task_Agent'Class;
 
-   procedure Set_Chosen_Task (Agent : in out Scheduler_Agent'Class;
-                              T     : access Tasks.Task_Agent'Class);
+   procedure Set_Chosen_Task
+     (Agent : not null access Scheduler_Agent'Class;
+      T     : access Tasks.Task_Agent'Class);
 
    procedure Set_Desired_Run_Time
-     (Agent    : in out Scheduler_Agent'Class;
+     (Agent    : not null access Scheduler_Agent'Class;
       Run_Time : in Oak.Real_Time.Time);
 
    procedure Set_Next_Agent
@@ -60,11 +63,11 @@ package Oak.Agent.Scheduler with Preelaborate is
       Next_Agent : access Scheduler_Agent'Class);
 
    procedure Set_Run_Reason
-     (Agent  : in out Scheduler_Agent'Class;
+     (Agent  : not null access Scheduler_Agent'Class;
       Reason : in Reason_For_Run);
 
    procedure Set_Task_To_Manage
-     (Agent : in out Scheduler_Agent'Class;
+     (Agent : not null access Scheduler_Agent'Class;
       MT    : access Tasks.Task_Agent'Class);
 
 private
@@ -83,15 +86,15 @@ private
    end record;
 
    function Desired_Run_Time
-     (Agent : in Scheduler_Agent'Class)
+     (Agent : access Scheduler_Agent'Class)
       return Oak.Real_Time.Time is (Agent.Desired_Agent_Run_Time);
 
    function Lowest_Priority
-     (Agent : in Scheduler_Agent'Class)
+     (Agent : access Scheduler_Agent'Class)
       return System.Any_Priority is (Agent.Lowest_Prioirty);
 
    function Highest_Priority
-     (Agent : in Scheduler_Agent'Class)
+     (Agent : access Scheduler_Agent'Class)
       return System.Any_Priority is (Agent.Highest_Prioirty);
 
    function Next_Agent
@@ -99,14 +102,14 @@ private
       return access Scheduler_Agent'Class is (Agent.Next_Agent);
 
    function Run_Reason
-     (Agent : in Scheduler_Agent'Class)
+     (Agent : access Scheduler_Agent'Class)
       return Reason_For_Run is (Agent.Run_Reason);
 
    function Task_To_Run
-     (Agent : in Scheduler_Agent'Class)
+     (Agent : access Scheduler_Agent'Class)
       return access Tasks.Task_Agent'Class is (Agent.Task_To_Run);
 
    function Task_To_Manage
-     (Agent : in Scheduler_Agent'Class)
+     (Agent : access Scheduler_Agent'Class)
       return access Tasks.Task_Agent'Class is (Agent.Manage_Task);
 end Oak.Agent.Scheduler;

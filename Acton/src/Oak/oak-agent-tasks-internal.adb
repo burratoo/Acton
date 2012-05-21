@@ -21,7 +21,7 @@ package body Oak.Agent.Tasks.Internal is
    end Set_Relative_Deadline;
 
    procedure Set_Scheduler_Agent_For_Task
-     (T     : in out Task_Agent'Class;
+     (T     : access Task_Agent'Class;
       Agent : access Scheduler.Scheduler_Agent'Class) is
    begin
       T.Scheduler_Agent := Agent;

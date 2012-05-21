@@ -12,8 +12,8 @@ package Oak.Protected_Object with Preelaborate is
 
    procedure Process_Enter_Request
      (Scheduler_Info  : in out Scheduler.Oak_Scheduler_Info;
-      T               : in out Agent.Tasks.Task_Agent'Class;
-      PO              : in out
+      T               : not null access Agent.Tasks.Task_Agent'Class;
+      PO              : not null access
         Agent.Tasks.Protected_Object.Protected_Agent'Class;
       Subprogram_Kind : in Protected_Subprogram_Type;
       Entry_Id        : in Entries.Entry_Index;
@@ -21,8 +21,8 @@ package Oak.Protected_Object with Preelaborate is
 
    procedure Process_Exit_Request
      (Scheduler_Info : in out Scheduler.Oak_Scheduler_Info;
-      T              : in out Agent.Tasks.Task_Agent'Class;
-      PO             : in out
+      T              : not null access Agent.Tasks.Task_Agent'Class;
+      PO             : not null access
         Agent.Tasks.Protected_Object.Protected_Agent'Class;
       Chosen_Task    : out Agent.Tasks.Task_Handler);
 

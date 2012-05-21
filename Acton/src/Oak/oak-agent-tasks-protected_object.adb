@@ -6,6 +6,8 @@ with System; use System;
 
 package body Oak.Agent.Tasks.Protected_Object is
 
+   package Queue renames Oak.Agent.Tasks.Queues.General;
+
    procedure Initialise_Agent
      (Agent                 : in out Protected_Agent'Class;
       Name                  : in String;
@@ -39,26 +41,26 @@ package body Oak.Agent.Tasks.Protected_Object is
    end Initialise_Agent;
 
    procedure Add_Task_To_Entry_Queue
-     (PO       : in out Protected_Agent'Class;
+     (PO       : not null access Protected_Agent'Class;
       T        : access Task_Agent'Class;
       Entry_Id : Entry_Index) is
    begin
       Queues.General.Add_Agent_To_Tail
-        (Queue => PO.Entry_Queues (Entry_Id),
+        (Queue => Queue.Agent_Handler (PO.Entry_Queues (Entry_Id)),
          Agent => T);
    end Add_Task_To_Entry_Queue;
 
    procedure Add_Task_To_Protected_Object
-     (PO : in out Protected_Agent'Class;
+     (PO : not null access Protected_Agent'Class;
       T  : access Task_Agent'Class) is
    begin
       Queues.General.Add_Agent_To_Head
-        (Queue => PO.Tasks_Within,
+        (Queue => Queue.Agent_Handler (PO.Tasks_Within),
          Agent => T);
    end Add_Task_To_Protected_Object;
 
    function Entry_Queue_Length
-     (PO       : in Protected_Agent'Class;
+     (PO       : not null access Protected_Agent'Class;
       Entry_Id : in Entry_Index) return Natural
    is
       Head_Task    : constant access Task_Agent'Class :=
@@ -77,16 +79,16 @@ package body Oak.Agent.Tasks.Protected_Object is
    end Entry_Queue_Length;
 
    procedure Get_And_Remove_Next_Task_From_Entry_Queues
-     (PO         : in out Protected_Agent'Class;
+     (PO         : not null access Protected_Agent'Class;
       Next_Task  : out Task_Handler) is
    begin
       Next_Task := null;
       for Entry_Id in PO.Entry_Queues'Range loop
-         Next_Task := PO.Entry_Queues (Entry_Id);
+         Next_Task := Task_Handler (PO.Entry_Queues (Entry_Id));
          if Next_Task /= null and then
            Is_Barrier_Open (PO, Entry_Id) then
             Queues.General.Remove_Agent
-              (Queue => PO.Entry_Queues (Entry_Id),
+              (Queue => Queue.Agent_Handler (PO.Entry_Queues (Entry_Id)),
                Agent => Next_Task);
             exit;
          else
@@ -99,7 +101,7 @@ package body Oak.Agent.Tasks.Protected_Object is
    end Get_And_Remove_Next_Task_From_Entry_Queues;
 
    function Is_Barrier_Open
-     (PO       : in out Protected_Agent'Class;
+     (PO       : not null access Protected_Agent'Class;
       Entry_Id : in Entry_Index) return Boolean is
    begin
       return PO.Entry_Barriers (PO.Object_Record, Entry_Id);
@@ -112,7 +114,7 @@ package body Oak.Agent.Tasks.Protected_Object is
    end Is_Barrier_Open;
 
    function Is_Task_Inside_Protect_Object
-     (PO : in Protected_Agent'Class;
+     (PO : not null access Protected_Agent'Class;
       T  : access Task_Agent'Class)
       return Boolean is
       Current_Task : access Task_Agent'Class := PO.Tasks_Within;
@@ -129,7 +131,7 @@ package body Oak.Agent.Tasks.Protected_Object is
    end Is_Task_Inside_Protect_Object;
 
    procedure Purge_Entry_Queues
-     (PO             : in out Protected_Agent'Class;
+     (PO             : not null access Protected_Agent'Class;
       New_Task_State : in Task_State)
    is
       Current_Task : access Task_Agent'Class := null;
@@ -138,7 +140,7 @@ package body Oak.Agent.Tasks.Protected_Object is
          Current_Task := Queue_Head;
          while Current_Task /= null loop
             Queues.General.Remove_Agent
-              (Queue => Queue_Head,
+              (Queue => Queue.Agent_Handler (Queue_Head),
                Agent => Current_Task);
             Current_Task.State := New_Task_State;
             Current_Task.Shared_State := No_Shared_State;
@@ -148,24 +150,26 @@ package body Oak.Agent.Tasks.Protected_Object is
    end Purge_Entry_Queues;
 
    procedure Remove_Task_From_Entry_Queue
-     (PO       : in out Protected_Agent'Class;
+     (PO       : not null access Protected_Agent'Class;
       T        : access Task_Agent'Class;
       Entry_Id : Entry_Index) is
    begin
       Queues.General.Remove_Agent
-        (Queue => PO.Entry_Queues (Entry_Id),
+        (Queue => Queue.Agent_Handler (PO.Entry_Queues (Entry_Id)),
          Agent     => T);
    end Remove_Task_From_Entry_Queue;
 
    procedure Remove_Task_From_Protected_Object
-     (PO : in out Protected_Agent'Class;
+     (PO : not null access Protected_Agent'Class;
       T  : access Task_Agent'Class) is
    begin
-      Queues.General.Remove_Agent (Queue => PO.Tasks_Within, Agent => T);
+      Queues.General.Remove_Agent
+        (Queue => Queue.Agent_Handler (PO.Tasks_Within),
+         Agent => T);
    end Remove_Task_From_Protected_Object;
 
    procedure Set_Acquiring_Tasks_State
-     (For_Protected_Object : in out Protected_Agent'Class;
+     (For_Protected_Object : not null access Protected_Agent'Class;
       To_State             : in Task_State) is
    begin
       For_Protected_Object.Controlling_Shared_State := To_State;

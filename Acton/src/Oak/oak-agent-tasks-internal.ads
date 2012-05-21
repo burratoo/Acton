@@ -1,11 +1,11 @@
 package Oak.Agent.Tasks.Internal with Preelaborate is
 
    function Scheduler_Agent_For_Task
-     (T    : in Task_Agent'Class)
+     (T    : access Task_Agent'Class)
      return access Scheduler.Scheduler_Agent'Class with Inline_Always;
 
    function Task_Yield_Status
-     (For_Task : in Task_Agent'Class)
+     (For_Task : access Task_Agent'Class)
       return Yielded_State;
 
    procedure Next_Run_Cycle (T : in out Task_Agent'Class);
@@ -17,7 +17,7 @@ package Oak.Agent.Tasks.Internal with Preelaborate is
       RD : in Time_Span);
 
    procedure Set_Scheduler_Agent_For_Task
-     (T     : in out Task_Agent'Class;
+     (T     : access Task_Agent'Class;
       Agent : access Scheduler.Scheduler_Agent'Class);
 
    procedure Set_State
@@ -31,11 +31,11 @@ package Oak.Agent.Tasks.Internal with Preelaborate is
 
 private
    function Scheduler_Agent_For_Task
-     (T    : in Task_Agent'Class)
+     (T    : access Task_Agent'Class)
       return access Scheduler.Scheduler_Agent'Class is (T.Scheduler_Agent);
 
    function Task_Yield_Status
-     (For_Task : in Task_Agent'Class)
+     (For_Task : access Task_Agent'Class)
       return Yielded_State is (For_Task.Message_Location.Yield_Status);
 
 end Oak.Agent.Tasks.Internal;

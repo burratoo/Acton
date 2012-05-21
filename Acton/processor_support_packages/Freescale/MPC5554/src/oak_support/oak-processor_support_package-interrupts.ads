@@ -21,7 +21,7 @@ package Oak.Processor_Support_Package.Interrupts with Preelaborate is
                              Handler   : Parameterless_Handler;
                              Priority  : Interrupt_Priority);
    procedure Get_Resource
-     (PO : in Agent.Tasks.Protected_Object.Protected_Agent'Class);
+     (PO : access Agent.Tasks.Protected_Object.Protected_Agent'Class);
    procedure Release_Resource;
 
    pragma Export (Asm,

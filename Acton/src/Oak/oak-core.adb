@@ -170,8 +170,8 @@ package body Oak.Core is
                   when Entering_PO =>
                      Oak.Protected_Object.Process_Enter_Request
                        (Scheduler_Info  => Oak_Instance.Scheduler,
-                        T               => Current_Task.all,
-                        PO              => Task_Message.PO_Enter.all,
+                        T               => Current_Task,
+                        PO              => Task_Message.PO_Enter,
                         Subprogram_Kind => Task_Message.Subprogram_Kind,
                         Entry_Id        => Task_Message.Entry_Id_Enter,
                         Chosen_Task => Next_Task);
@@ -179,8 +179,8 @@ package body Oak.Core is
                   when Exiting_PO =>
                      Oak.Protected_Object.Process_Exit_Request
                        (Scheduler_Info    => Oak_Instance.Scheduler,
-                        T                 => Current_Task.all,
-                        PO                => Task_Message.PO_Exit.all,
+                        T                 => Current_Task,
+                        PO                => Task_Message.PO_Exit,
                         Chosen_Task       => Next_Task);
                   when Attach_Interrupt_Handlers =>
                      Oak.Interrupts.Attach_Handlers
@@ -205,22 +205,23 @@ package body Oak.Core is
 
          if Next_Task /= null and then
            Next_Task.all in Protected_Agent'Class then
-            Next_Task := Task_Within (Protected_Agent'Class (Next_Task.all));
+            Next_Task := Task_Within
+              (Protected_Agent'Class (Next_Task.all)'Access);
          end if;
 
          if Next_Task /= null then
-            case State (T => Next_Task.all) is
+            case State (T => Next_Task) is
                when Shared_State =>
-                  if Shared_State (Next_Task.all) = Entering_PO then
+                  if Shared_State (Next_Task) = Entering_PO then
                      declare
                         M : constant Oak_Task_Message
                           := Agent.Tasks.Task_Message
-                            (For_Task => Next_Task.all);
+                            (For_Task => Next_Task);
                      begin
                         Oak.Protected_Object.Process_Enter_Request
                          (Scheduler_Info  => Oak_Instance.Scheduler,
-                          T               => Next_Task.all,
-                          PO              => M.PO_Enter.all,
+                          T               => Next_Task,
+                          PO              => M.PO_Enter,
                           Subprogram_Kind => M.Subprogram_Kind,
                           Entry_Id        => M.Entry_Id_Enter,
                           Chosen_Task => Next_Task);
@@ -270,12 +271,12 @@ package body Oak.Core is
             Oak_Instance.Current_Agent := Next_Task;
             Context_Switch_To_Task;
             Task_Message := Agent.Tasks.Task_Message
-                              (For_Task => Next_Task.all);
-            case Internal.Task_Yield_Status (For_Task => Next_Task.all) is
+                              (For_Task => Next_Task);
+            case Internal.Task_Yield_Status (For_Task => Next_Task) is
                when Voluntary =>
                   Oak_Instance.Woken_By := Task_Yield;
                   Set_State
-                    (T     => Task_Handler (Oak_Instance.Current_Agent).all,
+                    (T     => Task_Handler (Oak_Instance.Current_Agent),
                      State => Task_Message.Message_Type);
                when Forced =>
                   Internal.Store_Task_Yield_Status
