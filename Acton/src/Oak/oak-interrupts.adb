@@ -6,7 +6,7 @@ with System; use System;
 package body Oak.Interrupts is
 
    procedure Attach_Handlers
-     (Handlers        : in Interrupt_Handlers_Access;
+     (Handlers        : access Interrupt_Handler_Array;
       Handler_PO      : access
         Agent.Tasks.Protected_Object.Protected_Agent'Class;
       T               : access Agent.Tasks.Task_Agent'Class;

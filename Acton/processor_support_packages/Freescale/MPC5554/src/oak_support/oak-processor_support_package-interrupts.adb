@@ -1,6 +1,7 @@
 with ISA.Power;
 with MPC5554.Flash;
 with Oak.Agent.Tasks;
+with Oak.Agent.Tasks.Protected_Object;
 with Oak.Core_Support_Package.Task_Interrupts;
 with Oak.Core_Support_Package.Task_Support;
 

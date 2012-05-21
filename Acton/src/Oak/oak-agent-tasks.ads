@@ -1,5 +1,4 @@
 with Oak.Entries;
-with Oak.Interrupts;
 with Oak.Protected_Object;
 with System;
 with System.Storage_Elements;
@@ -8,6 +7,7 @@ with Oak.Real_Time; use Oak.Real_Time;
 
 limited with Oak.Agent.Scheduler;
 limited with Oak.Agent.Tasks.Protected_Object;
+limited with Oak.Interrupts;
 
 package Oak.Agent.Tasks with Preelaborate is
 
@@ -56,7 +56,7 @@ package Oak.Agent.Tasks with Preelaborate is
             PO_Exit           : not null access
               Protected_Object.Protected_Agent'Class;
          when Attach_Interrupt_Handlers =>
-            Attach_Handlers   : Oak.Interrupts.Interrupt_Handlers_Access;
+            Attach_Handlers   : access Oak.Interrupts.Interrupt_Handler_Array;
             Attach_Handler_PO : not null access
               Protected_Object.Protected_Agent'Class;
          when others =>

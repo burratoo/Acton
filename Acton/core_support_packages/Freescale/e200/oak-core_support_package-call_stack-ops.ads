@@ -1,7 +1,8 @@
-with Oak.Agent.Tasks;
 with Oak.Memory.Call_Stack;
 with System;
 with System.Storage_Elements;
+
+limited with Oak.Agent.Tasks;
 
 package Oak.Core_Support_Package.Call_Stack.Ops with Preelaborate is
 

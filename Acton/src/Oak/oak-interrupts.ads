@@ -15,10 +15,8 @@ package Oak.Interrupts with Preelaborate is
      is array
      (Oak_Interrupt_Id range <>) of Interrupt_Handler_Pair;
 
-   type Interrupt_Handlers_Access is access all Interrupt_Handler_Array;
-
    procedure Attach_Handlers
-     (Handlers        : in Interrupt_Handlers_Access;
+     (Handlers        : access Interrupt_Handler_Array;
       Handler_PO      : access
         Agent.Tasks.Protected_Object.Protected_Agent'Class;
       T               : access Agent.Tasks.Task_Agent'Class;
