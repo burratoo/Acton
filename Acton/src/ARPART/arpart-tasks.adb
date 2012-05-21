@@ -1,7 +1,5 @@
-with Oak.Core_Support_Package.Task_Support;
-with Oak.Oak_Task.Data_Access;
 with Oak.Core;
-use Oak.Oak_Task;
+with Oak.Core_Support_Package.Task_Support;
 
 package body ARPART.Tasks is
 
@@ -11,19 +9,19 @@ package body ARPART.Tasks is
    -- Called by the Activator --
    -----------------------------
 
-   procedure Activate_Tasks (Chain : Oak.Oak_Task.Activation_Chain_Access) is
-      Self     : constant access Oak_Task       :=
-         Oak.Core.Get_Current_Task;
+   procedure Activate_Tasks (Chain : Activation_Chain_Access) is
+      Self     : constant access Task_Agent'Class       :=
+         Oak.Core.Current_Task;
       Activation_Pending_Message : constant Oak_Task_Message
         := (Message_Type => Activation_Pending);
       Activation_Complete_Message : constant Oak_Task_Message :=
         (Message_Type      => Activation_Complete);
    begin
-      Data_Access.Set_Activation_List (T => Self, Chain => Chain);
+      Set_Activation_List (T => Self, Chain => Chain);
       Yield_Processor_To_Kernel
         (Task_Message => Activation_Pending_Message);
 
-      if Data_Access.Get_State (Self) = Activation_Successful then
+      if State (Self) = Activation_Successful then
          Yield_Processor_To_Kernel
            (Task_Message => Activation_Complete_Message);
       else
@@ -39,13 +37,13 @@ package body ARPART.Tasks is
    -----------------------------
 
    procedure Complete_Activation is
-      Self     : constant access Oak_Task := Oak.Core.Get_Current_Task;
+      Self     : constant access Task_Agent'Class := Oak.Core.Current_Task;
       Activation_Successful_Message : constant Oak_Task_Message :=
         (Message_Type      => Activation_Successful);
    begin
       Yield_Processor_To_Kernel
         (Task_Message => Activation_Successful_Message);
-      if Data_Access.Get_State (Self) = Activation_Successful then
+      if State (Self) = Activation_Successful then
          Yield_Processor_To_Kernel
            (Task_Message => Activation_Successful_Message);
       else
@@ -60,12 +58,12 @@ package body ARPART.Tasks is
    procedure Complete_Task is
       Message : constant Oak_Task_Message :=
         (Message_Type => Sleeping,
-         Wake_Up_At   => Ada.Real_Time.Time_Last);
+         Wake_Up_At   => Time_Last);
    begin
       Yield_Processor_To_Kernel (Task_Message => Message);
    end Complete_Task;
 
-   procedure Change_Cycle_Period (New_Period : in Ada.Real_Time.Time_Span) is
+   procedure Change_Cycle_Period (New_Period : in Time_Span) is
       Message : constant Oak_Task_Message :=
         (Message_Type         => Change_Cycle_Period,
          New_Cycle_Period => New_Period);
@@ -74,7 +72,7 @@ package body ARPART.Tasks is
    end Change_Cycle_Period;
 
    procedure Change_Relative_Deadline
-     (New_Deadline : in Ada.Real_Time.Time_Span)
+     (New_Deadline : in Time_Span)
    is
       Message : constant Oak_Task_Message :=
         (Message_Type         => Change_Relative_Deadline,
@@ -91,10 +89,10 @@ package body ARPART.Tasks is
    end Cycle_Completed;
 
    procedure Yield_Processor_To_Kernel
-     (Task_Message : OT.Oak_Task_Message) is
+     (Task_Message : in Oak_Task_Message) is
    begin
-      OT.Data_Access.Store_Oak_Task_Message
-        (For_Task     => Oak.Core.Get_Current_Task,
+      Store_Oak_Task_Message
+        (For_Task     => Oak.Core.Current_Task,
          Message      => Task_Message);
       Oak.Core_Support_Package.Task_Support.Yield_Processor_To_Kernel;
    end Yield_Processor_To_Kernel;
