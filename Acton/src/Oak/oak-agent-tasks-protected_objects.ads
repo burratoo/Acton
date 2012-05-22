@@ -8,10 +8,12 @@ package Oak.Agent.Tasks.Protected_Objects with Preelaborate is
    type Protected_Agent (Num_Entries : Entry_Index)
      is new Task_Agent with private;
 
-   type Entry_Barrier_Function_Handler is private;
+   type Entry_Barrier_Function_Handler is
+     access function (PO : System.Address;
+                      E  : Protected_Entry_Index) return Boolean;
 
    procedure Initialise_Protected_Agent
-     (Agent                 : in out Protected_Agent'Class;
+     (Agent                 : access Protected_Agent'Class;
       Name                  : in String;
       Ceiling_Priority      : in Integer;
       Barriers_Function     : in Entry_Barrier_Function_Handler;
@@ -94,10 +96,6 @@ package Oak.Agent.Tasks.Protected_Objects with Preelaborate is
       To_State             : in Task_State);
 
 private
-
-   type Entry_Barrier_Function_Handler is
-     access function (PO : System.Address;
-                      E  : Protected_Entry_Index) return Boolean;
 
    type Entry_Queue_Array is array (Entry_Index range <>)
      of access Task_Agent'Class;

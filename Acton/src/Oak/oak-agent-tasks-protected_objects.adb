@@ -9,7 +9,7 @@ package body Oak.Agent.Tasks.Protected_Objects is
    package Queue renames Oak.Agent.Tasks.Queues.General;
 
    procedure Initialise_Protected_Agent
-     (Agent                 : in out Protected_Agent'Class;
+     (Agent                 : access Protected_Agent'Class;
       Name                  : in String;
       Ceiling_Priority      : in Integer;
       Barriers_Function     : in Entry_Barrier_Function_Handler;
@@ -37,7 +37,7 @@ package body Oak.Agent.Tasks.Protected_Objects is
 
       Oak.Scheduler.Add_New_Task_To_Inactive_List
         (Scheduler_Info => Core.Scheduler_Info (Core.Oak_Instance).all,
-         T              => Agent'Access);
+         T              => Agent);
    end Initialise_Protected_Agent;
 
    procedure Add_Task_To_Entry_Queue

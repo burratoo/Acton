@@ -35,7 +35,7 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
          Size_In_Elements => Stack_Size);
 
       Initialise_Scheduler_Agent
-        (Agent        => Agent,
+        (Agent        => Agent'Access,
          Name         => Agent_Name,
          Call_Stack   => Call_Stack,
          Max_Priority => Max_Priority,

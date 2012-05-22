@@ -42,11 +42,12 @@ package Oak.Agent.Tasks with Preelaborate is
    type Oak_Task_Message (Message_Type : Task_State := No_State) is record
       case Message_Type is
          when Sleeping =>
-            Wake_Up_At : Time := Time_Last;
+            Wake_Up_At : Real_Time.Time := Real_Time.Time_Last;
          when Change_Cycle_Period =>
-            New_Cycle_Period : Time_Span := Time_Span_Zero;
+            New_Cycle_Period : Real_Time.Time_Span := Real_Time.Time_Span_Zero;
          when Change_Relative_Deadline =>
-            New_Deadline_Span : Time_Span := Time_Span_Zero;
+            New_Deadline_Span : Real_Time.Time_Span :=
+                                  Real_Time.Time_Span_Zero;
          when Entering_PO =>
             PO_Enter          : not null access
               Protected_Objects.Protected_Agent'Class;
@@ -85,14 +86,14 @@ package Oak.Agent.Tasks with Preelaborate is
    Unspecified_Priority : constant Integer := -1;
 
    procedure Initialise_Task_Agent
-     (Agent             : in out Task_Agent'Class;
+     (Agent             : access Task_Agent'Class;
       Stack_Address     : in System.Address;
       Stack_Size        : in System.Storage_Elements.Storage_Count;
       Name              : in String;
       Normal_Priority   : in Integer;
-      Relative_Deadline : in Time_Span;
-      Cycle_Period      : in Time_Span;
-      Phase             : in Time_Span;
+      Relative_Deadline : in Real_Time.Time_Span;
+      Cycle_Period      : in Real_Time.Time_Span;
+      Phase             : in Real_Time.Time_Span;
       Run_Loop          : in System.Address;
       Task_Value_Record : in System.Address;
       Chain             : in out Activation_Chain;
@@ -108,13 +109,15 @@ package Oak.Agent.Tasks with Preelaborate is
      (T    : access Task_Agent'Class)
       return access Task_Agent'Class;
 
-   function Cycle_Period (T : access Task_Agent'Class) return Time_Span;
+   function Cycle_Period
+     (T : access Task_Agent'Class)
+      return Real_Time.Time_Span;
 
-   function Deadline (T : access Task_Agent'Class) return Time_Span;
+   function Deadline (T : access Task_Agent'Class) return Real_Time.Time_Span;
 
    function Is_Elaborated (T : access Task_Agent'Class) return Boolean;
 
-   function Next_Run_Time (T : access Task_Agent'Class) return Time;
+   function Next_Run_Time (T : access Task_Agent'Class) return Real_Time.Time;
 
    function Normal_Priority
      (T : access Task_Agent'Class)
@@ -124,7 +127,7 @@ package Oak.Agent.Tasks with Preelaborate is
      (For_Task : access Task_Agent'Class)
       return Oak_Task_Message;
 
-   function Phase (T : access Task_Agent'Class) return Time_Span;
+   function Phase (T : access Task_Agent'Class) return Real_Time.Time_Span;
 
    function Shared_State
      (For_Task : access Task_Agent'Class)
@@ -132,7 +135,7 @@ package Oak.Agent.Tasks with Preelaborate is
 
    function State (T : access Task_Agent'Class) return Task_State;
 
-   function Wake_Time (T : access Task_Agent'Class) return Time;
+   function Wake_Time (T : access Task_Agent'Class) return Real_Time.Time;
 
    procedure Set_Activation_List
      (T     : not null access Task_Agent'Class;
@@ -156,7 +159,7 @@ package Oak.Agent.Tasks with Preelaborate is
 
    procedure Set_Wake_Time
      (T  : not null access Task_Agent'Class;
-      WT : in Time);
+      WT : in Real_Time.Time);
 
 private
    type Task_Agent_Link_Element is record
@@ -170,13 +173,13 @@ private
       Message_Location : Oak_Task_Message_Location := null;
 
       Normal_Priority : System.Any_Priority := System.Default_Priority;
-      Deadline        : Time_Span           := Time_Span_Zero;
-      Cycle_Period    : Time_Span           := Time_Span_Zero;
-      Phase           : Time_Span           := Time_Span_Zero;
+      Deadline        : Real_Time.Time_Span := Real_Time.Time_Span_Zero;
+      Cycle_Period    : Real_Time.Time_Span := Real_Time.Time_Span_Zero;
+      Phase           : Real_Time.Time_Span := Real_Time.Time_Span_Zero;
 
-      Next_Deadline  : Time := Time_Last;
-      Next_Run_Cycle : Time := Time_Last;
-      Wake_Time      : Time := Time_Last;
+      Next_Deadline  : Real_Time.Time := Real_Time.Time_Last;
+      Next_Run_Cycle : Real_Time.Time := Real_Time.Time_Last;
+      Wake_Time      : Real_Time.Time := Real_Time.Time_Last;
 
       Scheduler_Agent : access Schedulers.Scheduler_Agent'Class := null;
       Queue_Link      : Task_Agent_Link_Element;
@@ -196,11 +199,11 @@ private
 
    function Cycle_Period
      (T : access Task_Agent'Class)
-      return Time_Span is (T.Cycle_Period);
+      return Real_Time.Time_Span is (T.Cycle_Period);
 
    function Deadline
      (T : access Task_Agent'Class)
-      return Time_Span is (T.Deadline);
+      return Real_Time.Time_Span is (T.Deadline);
 
    function Is_Elaborated
      (T : access Task_Agent'Class)
@@ -208,7 +211,7 @@ private
 
    function Next_Run_Time
      (T : access Task_Agent'Class)
-      return Time is (T.Next_Run_Cycle);
+      return Real_Time.Time is (T.Next_Run_Cycle);
 
    function Normal_Priority
      (T : access Task_Agent'Class)
@@ -220,7 +223,7 @@ private
 
    function Phase
      (T : access Task_Agent'Class)
-      return Time_Span is (T.Phase);
+      return Real_Time.Time_Span is (T.Phase);
 
    function Shared_State
      (For_Task : access Task_Agent'Class)
@@ -232,6 +235,6 @@ private
 
    function Wake_Time
      (T : access Task_Agent'Class)
-      return Time is (T.Wake_Time);
+      return Real_Time.Time is (T.Wake_Time);
 
 end Oak.Agent.Tasks;

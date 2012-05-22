@@ -15,7 +15,7 @@ package Oak.Agent.Schedulers with Preelaborate is
                            Remove_Task);
 
    procedure Initialise_Scheduler_Agent
-     (Agent        : in out Scheduler_Agent'Class;
+     (Agent        : access Scheduler_Agent'Class;
       Name         : in String;
       Call_Stack   : in Call_Stack_Handler;
       Max_Priority : in System.Any_Priority;

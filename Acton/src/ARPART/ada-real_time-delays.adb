@@ -1,4 +1,6 @@
 with ARPART.Tasks;
+with Oak.Real_Time.Conversion; use Oak.Real_Time.Conversion;
+
 with Oak.Agent.Tasks; use Oak.Agent.Tasks;
 
 package body Ada.Real_Time.Delays is

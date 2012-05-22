@@ -52,7 +52,7 @@ private
    end record;
 
    procedure Initialise_Agent
-     (Agent      : in out Oak_Agent'Class;
+     (Agent      : access Oak_Agent'Class;
       Name       : in String;
       Call_Stack : in Call_Stack_Handler);
 

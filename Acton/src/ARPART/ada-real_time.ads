@@ -1,6 +1,4 @@
-with Ada.Unchecked_Conversion;
 with Oak.Core_Support_Package.Time;
-with Oak.Real_Time;
 
 package Ada.Real_Time is
 
@@ -74,9 +72,6 @@ private
    Time_Span_Unit  : constant Time_Span := Oak_CSP_Time.Oak_Time_Span_Unit;
 
    Tick : constant Time_Span := Oak_CSP_Time.Oak_Tick;
-
-   function To_Oak_Time is
-     new Unchecked_Conversion (Time, Oak.Real_Time.Time);
 
    pragma Import (Intrinsic, "+");
    pragma Import (Intrinsic, "-");

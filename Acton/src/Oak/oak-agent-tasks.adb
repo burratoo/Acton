@@ -11,14 +11,14 @@ package body Oak.Agent.Tasks is
    ------------------
 
    procedure Initialise_Task_Agent
-     (Agent             : in out Task_Agent'Class;
+     (Agent             : access Task_Agent'Class;
       Stack_Address     : in System.Address;
       Stack_Size        : in System.Storage_Elements.Storage_Count;
       Name              : in String;
       Normal_Priority   : in Integer;
-      Relative_Deadline : in Time_Span;
-      Cycle_Period      : in Time_Span;
-      Phase             : in Time_Span;
+      Relative_Deadline : in Real_Time.Time_Span;
+      Cycle_Period      : in Real_Time.Time_Span;
+      Phase             : in Real_Time.Time_Span;
       Run_Loop          : in System.Address;
       Task_Value_Record : in System.Address;
       Chain             : in out Activation_Chain;
@@ -68,16 +68,16 @@ package body Oak.Agent.Tasks is
 
       if Chain.Head /= null then
          Agent.Activation_List := Chain.Head;
-         Chain.Head            := Agent'Unrestricted_Access;
+         Chain.Head            := Agent;
       end if;
 
    end Initialise_Task_Agent;
 
    procedure Initialise_Main_Task
-     (Stack_Size      : System.Storage_Elements.Storage_Count;
-      Name            : String;
-      Normal_Priority : Integer;
-      Run_Loop        : Address)
+     (Stack_Size      : in System.Storage_Elements.Storage_Count;
+      Name            : in String;
+      Normal_Priority : in Integer;
+      Run_Loop        : in Address)
    is
       Agent : constant access Task_Agent  := Oak.Core.Main_Task;
       OI : constant access Oak.Core.Oak_Data := Oak.Core.Oak_Instance;
@@ -88,7 +88,7 @@ package body Oak.Agent.Tasks is
       No_Chain : Activation_Chain := (Head => null);
    begin
       Initialise_Task_Agent
-        (Agent             => Agent.all,
+        (Agent             => Agent,
          Stack_Address     => Null_Address,
          Stack_Size        => Stack_Size,
          Name              => Name,
