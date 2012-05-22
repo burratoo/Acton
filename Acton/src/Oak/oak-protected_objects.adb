@@ -1,12 +1,12 @@
 with Oak.Entries;
 
-with Oak.Agent.Tasks; use Oak.Agent.Tasks;
-with Oak.Agent.Tasks.Protected_Object; use Oak.Agent.Tasks.Protected_Object;
-with Oak.Scheduler; use Oak.Scheduler;
+with Oak.Agent.Tasks;                   use Oak.Agent.Tasks;
+with Oak.Agent.Tasks.Protected_Objects; use Oak.Agent.Tasks.Protected_Objects;
+with Oak.Scheduler;                     use Oak.Scheduler;
 with Oak.Processor_Support_Package.Interrupts;
 use Oak.Processor_Support_Package.Interrupts;
 
-package body Oak.Protected_Object is
+package body Oak.Protected_Objects is
 
    procedure Process_Enter_Request
      (Scheduler_Info  : in out Oak_Scheduler_Info;
@@ -122,7 +122,7 @@ package body Oak.Protected_Object is
      (Scheduler_Info : in out Scheduler.Oak_Scheduler_Info;
       T              : not null access Agent.Tasks.Task_Agent'Class;
       PO             : not null access
-        Agent.Tasks.Protected_Object.Protected_Agent'Class;
+        Agent.Tasks.Protected_Objects.Protected_Agent'Class;
       Chosen_Task    : out Agent.Tasks.Task_Handler) is
    begin
       if not Is_Task_Inside_Protect_Object (PO  => PO, T => T) then
@@ -159,4 +159,4 @@ package body Oak.Protected_Object is
       end if;
    end Process_Exit_Request;
 
-end Oak.Protected_Object;
+end Oak.Protected_Objects;
