@@ -1,12 +1,12 @@
 with Oak.Entries;
-with Oak.Protected_Object;
+with Oak.Protected_Objects;
 with System;
 with System.Storage_Elements;
 
 with Oak.Real_Time; use Oak.Real_Time;
 
-limited with Oak.Agent.Scheduler;
-limited with Oak.Agent.Tasks.Protected_Object;
+limited with Oak.Agent.Schedulers;
+limited with Oak.Agent.Tasks.Protected_Objects;
 limited with Oak.Interrupts;
 
 package Oak.Agent.Tasks with Preelaborate is
@@ -49,16 +49,16 @@ package Oak.Agent.Tasks with Preelaborate is
             New_Deadline_Span : Time_Span := Time_Span_Zero;
          when Entering_PO =>
             PO_Enter          : not null access
-              Protected_Object.Protected_Agent'Class;
-            Subprogram_Kind  : Oak.Protected_Object.Protected_Subprogram_Type;
+              Protected_Objects.Protected_Agent'Class;
+            Subprogram_Kind  : Oak.Protected_Objects.Protected_Subprogram_Type;
             Entry_Id_Enter   : Entries.Entry_Index;
          when Exiting_PO =>
             PO_Exit           : not null access
-              Protected_Object.Protected_Agent'Class;
+              Protected_Objects.Protected_Agent'Class;
          when Attach_Interrupt_Handlers =>
             Attach_Handlers   : access Oak.Interrupts.Interrupt_Handler_Array;
             Attach_Handler_PO : not null access
-              Protected_Object.Protected_Agent'Class;
+              Protected_Objects.Protected_Agent'Class;
          when others =>
             null;
       end case;
@@ -144,7 +144,7 @@ package Oak.Agent.Tasks with Preelaborate is
 
    procedure Set_Scheduler_Agent
      (T               : not null access Task_Agent'Class;
-      Scheduler_Agent : access Scheduler.Scheduler_Agent'Class);
+      Scheduler_Agent : access Schedulers.Scheduler_Agent'Class);
 
    procedure Set_Shared_State
      (For_Task : not null access Task_Agent'Class;
@@ -178,7 +178,7 @@ private
       Next_Run_Cycle : Time := Time_Last;
       Wake_Time      : Time := Time_Last;
 
-      Scheduler_Agent : access Scheduler.Scheduler_Agent'Class := null;
+      Scheduler_Agent : access Schedulers.Scheduler_Agent'Class := null;
       Queue_Link      : Task_Agent_Link_Element;
       Deadline_List   : Task_Agent_Link_Element;
 

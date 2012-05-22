@@ -1,5 +1,5 @@
-with Oak.Agent.Scheduler; use Oak.Agent.Scheduler;
-with System;              use System;
+with Oak.Agent.Schedulers; use Oak.Agent.Schedulers;
+with System;               use System;
 
 package Acton.Scheduler_Agents.FIFO_Within_Priorities with Preelaborate is
 

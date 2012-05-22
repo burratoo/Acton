@@ -1,5 +1,5 @@
 with Oak.Agent.Tasks;
-with Oak.Agent.Tasks.Protected_Object;
+with Oak.Agent.Tasks.Protected_Objects;
 
 with System; use System;
 
@@ -8,7 +8,7 @@ package body Oak.Interrupts is
    procedure Attach_Handlers
      (Handlers        : access Interrupt_Handler_Array;
       Handler_PO      : access
-        Agent.Tasks.Protected_Object.Protected_Agent'Class;
+        Agent.Tasks.Protected_Objects.Protected_Agent'Class;
       T               : access Agent.Tasks.Task_Agent'Class;
       Chosen_Task     : out Agent.Tasks.Task_Handler)
    is

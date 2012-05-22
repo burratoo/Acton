@@ -137,7 +137,7 @@ package body Oak.Agent.Tasks is
 
    procedure Set_Scheduler_Agent
      (T               : not null access Task_Agent'Class;
-      Scheduler_Agent : access Scheduler.Scheduler_Agent'Class)
+      Scheduler_Agent : access Schedulers.Scheduler_Agent'Class)
    is
    begin
       T.Scheduler_Agent := Scheduler_Agent;

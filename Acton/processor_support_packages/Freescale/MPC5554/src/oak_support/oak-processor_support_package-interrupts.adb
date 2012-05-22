@@ -1,7 +1,7 @@
 with ISA.Power;
 with MPC5554.Flash;
 with Oak.Agent.Tasks;
-with Oak.Agent.Tasks.Protected_Object;
+with Oak.Agent.Tasks.Protected_Objects;
 with Oak.Core_Support_Package.Task_Interrupts;
 with Oak.Core_Support_Package.Task_Support;
 
@@ -205,7 +205,7 @@ package body Oak.Processor_Support_Package.Interrupts is
    end Attach_Handler;
 
    procedure Get_Resource
-     (PO : access Agent.Tasks.Protected_Object.Protected_Agent'Class) is
+     (PO : access Agent.Tasks.Protected_Objects.Protected_Agent'Class) is
       FIFO : Interrupt_FIFO renames Interrupt_Priority_FIFO;
       P : constant MPC5554_Interrupt_Priority :=
         MPC5554_Interrupt_Priority (

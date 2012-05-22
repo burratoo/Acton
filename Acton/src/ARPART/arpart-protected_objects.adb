@@ -7,7 +7,7 @@ package body ARPART.Protected_Objects is
 
    procedure Enter_Protected_Object
      (PO              : not null access Protected_Agent'Class;
-      Subprogram_Kind : in Oak.Protected_Object.Protected_Subprogram_Type;
+      Subprogram_Kind : in Oak.Protected_Objects.Protected_Subprogram_Type;
       Entry_Id        : in Entry_Index := No_Entry)
    is
       Self : constant access Task_Agent'Class := Oak.Core.Current_Task;

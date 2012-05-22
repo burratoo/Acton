@@ -1,6 +1,6 @@
 with Oak.Agent.Tasks.Activation;
 with Oak.Agent.Tasks.Internal;
-with Oak.Agent.Tasks.Protected_Object; use Oak.Agent.Tasks.Protected_Object;
+with Oak.Agent.Tasks.Protected_Objects; use Oak.Agent.Tasks.Protected_Objects;
 with Oak.Real_Time;                                 use Oak.Real_Time;
 with Oak.Memory.Call_Stack.Ops;
 with Oak.Core_Support_Package.Task_Support;
@@ -8,7 +8,7 @@ use  Oak.Core_Support_Package.Task_Support;
 with Oak.Core_Support_Package.Task_Interrupts;
 with Oak.Core_Support_Package.Call_Stack;
 with Oak.Interrupts;
-with Oak.Protected_Object;
+with Oak.Protected_Objects;
 with Oak.Processor_Support_Package.Interrupts;
 
 package body Oak.Core is
@@ -168,7 +168,7 @@ package body Oak.Core is
                        (Chosen_Task => Next_Task);
 
                   when Entering_PO =>
-                     Oak.Protected_Object.Process_Enter_Request
+                     Protected_Objects.Process_Enter_Request
                        (Scheduler_Info  => Oak_Instance.Scheduler,
                         T               => Current_Task,
                         PO              => Task_Message.PO_Enter,
@@ -177,13 +177,13 @@ package body Oak.Core is
                         Chosen_Task => Next_Task);
 
                   when Exiting_PO =>
-                     Oak.Protected_Object.Process_Exit_Request
+                     Protected_Objects.Process_Exit_Request
                        (Scheduler_Info    => Oak_Instance.Scheduler,
                         T                 => Current_Task,
                         PO                => Task_Message.PO_Exit,
                         Chosen_Task       => Next_Task);
                   when Attach_Interrupt_Handlers =>
-                     Oak.Interrupts.Attach_Handlers
+                     Interrupts.Attach_Handlers
                        (Handlers    => Task_Message.Attach_Handlers,
                         Handler_PO  => Task_Message.Attach_Handler_PO,
                         T           => Current_Task,
@@ -218,7 +218,7 @@ package body Oak.Core is
                           := Agent.Tasks.Task_Message
                             (For_Task => Next_Task);
                      begin
-                        Oak.Protected_Object.Process_Enter_Request
+                        Protected_Objects.Process_Enter_Request
                          (Scheduler_Info  => Oak_Instance.Scheduler,
                           T               => Next_Task,
                           PO              => M.PO_Enter,

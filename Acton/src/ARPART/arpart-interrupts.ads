@@ -1,4 +1,4 @@
-with Oak.Agent.Tasks.Protected_Object; use Oak.Agent.Tasks.Protected_Object;
+with Oak.Agent.Tasks.Protected_Objects; use Oak.Agent.Tasks.Protected_Objects;
 with Oak.Interrupts;  use Oak.Interrupts;
 
 package ARPART.Interrupts with Preelaborate is

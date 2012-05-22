@@ -294,7 +294,7 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
 
    begin
       loop
-         Run_Reason := Oak.Agent.Scheduler.Run_Reason (Agent => Self);
+         Run_Reason := Oak.Agent.Schedulers.Run_Reason (Agent => Self);
          case Run_Reason is
             when Task_Yield =>
                Task_Yielded;
