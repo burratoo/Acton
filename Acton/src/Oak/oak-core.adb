@@ -1,7 +1,7 @@
 with Oak.Agent.Tasks.Activation;
 with Oak.Agent.Tasks.Internal;
 with Oak.Agent.Tasks.Protected_Objects; use Oak.Agent.Tasks.Protected_Objects;
-with Oak.Real_Time;                                 use Oak.Real_Time;
+with Oak.Oak_Time;                                 use Oak.Oak_Time;
 with Oak.Memory.Call_Stack.Ops;
 with Oak.Core_Support_Package.Task_Support;
 use  Oak.Core_Support_Package.Task_Support;

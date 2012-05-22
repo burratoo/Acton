@@ -8,7 +8,7 @@ with Oak.Agent.Tasks;        use Oak.Agent.Tasks;
 with Oak.Agent.Tasks.Queues; use Oak.Agent.Tasks.Queues;
 with Oak.Core_Support_Package.Task_Support;
 use  Oak.Core_Support_Package.Task_Support;
-with Oak.Real_Time;         use Oak.Real_Time;
+with Oak.Oak_Time;         use Oak.Oak_Time;
 
 package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
 

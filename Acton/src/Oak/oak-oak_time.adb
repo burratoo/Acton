@@ -1,4 +1,4 @@
-package body Oak.Real_Time is
+package body Oak.Oak_Time is
 
    -----------
    -- Clock --
@@ -9,4 +9,4 @@ package body Oak.Real_Time is
       return Time (Oak_CSP_Time.Get_Clock);
    end Clock;
 
-end Oak.Real_Time;
+end Oak.Oak_Time;

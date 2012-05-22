@@ -1,3 +1,5 @@
+with Oak.Oak_Time; use Oak.Oak_Time;
+
 package body Oak.Agent.Tasks.Internal is
 
    procedure Next_Run_Cycle (T : in out Task_Agent'Class) is

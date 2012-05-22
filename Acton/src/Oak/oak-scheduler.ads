@@ -1,6 +1,6 @@
 with Oak.Agent.Schedulers; use Oak.Agent.Schedulers;
 with Oak.Agent.Tasks;      use Oak.Agent.Tasks;
-with Oak.Real_Time;        use Oak.Real_Time;
+with Oak.Oak_Time;        use Oak.Oak_Time;
 
 package Oak.Scheduler with Preelaborate is
 

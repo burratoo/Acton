@@ -16,9 +16,9 @@ package body Oak.Agent.Tasks is
       Stack_Size        : in System.Storage_Elements.Storage_Count;
       Name              : in String;
       Normal_Priority   : in Integer;
-      Relative_Deadline : in Real_Time.Time_Span;
-      Cycle_Period      : in Real_Time.Time_Span;
-      Phase             : in Real_Time.Time_Span;
+      Relative_Deadline : in Oak_Time.Time_Span;
+      Cycle_Period      : in Oak_Time.Time_Span;
+      Phase             : in Oak_Time.Time_Span;
       Run_Loop          : in System.Address;
       Task_Value_Record : in System.Address;
       Chain             : in out Activation_Chain;

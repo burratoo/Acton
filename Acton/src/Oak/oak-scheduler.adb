@@ -212,7 +212,7 @@ package body Oak.Scheduler is
      (Scheduler_Info : in out Oak_Scheduler_Info;
       Chosen_Task    : in out Task_Handler)
    is
-      Current_Time : constant Time         := Real_Time.Clock;
+      Current_Time : constant Time         := Oak_Time.Clock;
       Current_Task : constant Task_Handler := Chosen_Task;
       Agent        : access Scheduler_Agent'Class :=
         Scheduler_Info.Scheduler_Agent_Table;

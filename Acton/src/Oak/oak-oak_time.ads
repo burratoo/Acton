@@ -1,6 +1,6 @@
 with Oak.Core_Support_Package.Time;
 
-package Oak.Real_Time with Pure is
+package Oak.Oak_Time with Pure is
 
    package Oak_CSP_Time renames Oak.Core_Support_Package.Time;
 
@@ -61,4 +61,4 @@ private
 
    pragma Inline (Clock);
 
-end Oak.Real_Time;
+end Oak.Oak_Time;

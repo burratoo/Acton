@@ -18,7 +18,7 @@ package body Oak.Agent.Schedulers is
 
       Agent.Lowest_Prioirty        := Min_Prioirty;
       Agent.Highest_Prioirty       := Max_Priority;
-      Agent.Desired_Agent_Run_Time := Real_Time.Time_Zero;
+      Agent.Desired_Agent_Run_Time := Oak_Time.Time_Zero;
 
       Initialise_Call_Stack
         (Stack             => Agent.Call_Stack,
@@ -34,7 +34,7 @@ package body Oak.Agent.Schedulers is
 
    procedure Set_Desired_Run_Time
      (Agent    : not null access Scheduler_Agent'Class;
-      Run_Time : in Oak.Real_Time.Time) is
+      Run_Time : in Oak.Oak_Time.Time) is
    begin
       Agent.Desired_Agent_Run_Time := Run_Time;
    end Set_Desired_Run_Time;

@@ -1,5 +1,5 @@
 with Oak.Agent.Tasks; use Oak.Agent.Tasks;
-with Oak.Real_Time;   use Oak.Real_Time;
+with Oak.Oak_Time;   use Oak.Oak_Time;
 
 package ARPART.Tasks with Preelaborate is
 

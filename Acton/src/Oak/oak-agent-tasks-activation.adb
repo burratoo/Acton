@@ -1,5 +1,5 @@
 with Oak.Core;
-with Oak.Real_Time;
+with Oak.Oak_Time;
 with Oak.Scheduler;
 
 package body Oak.Agent.Tasks.Activation is
@@ -81,7 +81,7 @@ package body Oak.Agent.Tasks.Activation is
 
       TP              : access Task_Agent'Class :=
                           Next_Task (Activator'Access);
-      Activation_Time : constant Time    := Real_Time.Clock;
+      Activation_Time : constant Time    := Oak_Time.Clock;
    begin
       while TP /= End_Of_List loop
          TP.State          := Runnable;
@@ -91,7 +91,7 @@ package body Oak.Agent.Tasks.Activation is
          --  If the deadline is set to zero, disable the deadline by setting
          --  Next_Deadline to last possible time.
          if TP.Deadline = Time_Span_Zero then
-            TP.Next_Deadline := Oak.Real_Time.Time_Last;
+            TP.Next_Deadline := Oak.Oak_Time.Time_Last;
          else
             TP.Next_Deadline := TP.Wake_Time + TP.Deadline;
          end if;

@@ -50,8 +50,8 @@ package body Oak.Core_Support_Package.Task_Support is
    -- Set_Oak_Wake_Up_Timer --
    ---------------------------
 
-   procedure Set_Oak_Wake_Up_Timer (Wake_Up_At : in Oak.Real_Time.Time) is
-      use Oak.Real_Time;
+   procedure Set_Oak_Wake_Up_Timer (Wake_Up_At : in Oak.Oak_Time.Time) is
+      use Oak.Oak_Time;
       Decrementer_Value : Time_Span;
    begin
       --  Do have a problem when the TBL overflows into the TBU

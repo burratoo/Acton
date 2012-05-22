@@ -2,7 +2,7 @@
 --  Processor Support Package for the e200z6 PowerPC Core.
 --
 with System;
-with Oak.Real_Time;
+with Oak.Oak_Time;
 with System.Storage_Elements;
 
 package Oak.Core_Support_Package.Task_Support with Pure is
@@ -33,7 +33,7 @@ package Oak.Core_Support_Package.Task_Support with Pure is
 
    procedure Yield_Processor_To_Kernel with Inline_Always;
 
-   procedure Set_Oak_Wake_Up_Timer (Wake_Up_At : Oak.Real_Time.Time);
+   procedure Set_Oak_Wake_Up_Timer (Wake_Up_At : Oak.Oak_Time.Time);
    procedure Disable_Oak_Wake_Up_Interrupt with Inline_Always;
    procedure Enable_Oak_Wake_Up_Interrupt with Inline_Always;
 

@@ -1,4 +1,4 @@
-with Oak.Real_Time;
+with Oak.Oak_Time;
 with System;
 
 limited with Oak.Agent.Tasks;
@@ -24,7 +24,7 @@ package Oak.Agent.Schedulers with Preelaborate is
 
    function Desired_Run_Time
      (Agent : access Scheduler_Agent'Class)
-      return Oak.Real_Time.Time;
+      return Oak.Oak_Time.Time;
 
    function Lowest_Priority
      (Agent : access Scheduler_Agent'Class)
@@ -56,7 +56,7 @@ package Oak.Agent.Schedulers with Preelaborate is
 
    procedure Set_Desired_Run_Time
      (Agent    : not null access Scheduler_Agent'Class;
-      Run_Time : in Oak.Real_Time.Time);
+      Run_Time : in Oak.Oak_Time.Time);
 
    procedure Set_Next_Agent
      (Agent      : not null access Scheduler_Agent'Class;
@@ -77,7 +77,7 @@ private
       Highest_Prioirty       : System.Any_Priority;
 
       Task_To_Run            : access Tasks.Task_Agent'Class := null;
-      Desired_Agent_Run_Time : Oak.Real_Time.Time   := Oak.Real_Time.Time_Last;
+      Desired_Agent_Run_Time : Oak.Oak_Time.Time   := Oak.Oak_Time.Time_Last;
 
       Manage_Task            : access Tasks.Task_Agent'Class := null;
       Run_Reason             : Reason_For_Run := Select_Next_Task;
@@ -87,7 +87,7 @@ private
 
    function Desired_Run_Time
      (Agent : access Scheduler_Agent'Class)
-      return Oak.Real_Time.Time is (Agent.Desired_Agent_Run_Time);
+      return Oak.Oak_Time.Time is (Agent.Desired_Agent_Run_Time);
 
    function Lowest_Priority
      (Agent : access Scheduler_Agent'Class)
