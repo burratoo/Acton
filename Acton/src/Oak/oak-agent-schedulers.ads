@@ -3,7 +3,7 @@ with System;
 
 limited with Oak.Agent.Tasks;
 
-package Oak.Agent.Scheduler with Preelaborate is
+package Oak.Agent.Schedulers with Preelaborate is
 
    type Scheduler_Agent is new Oak_Agent with private;
 
@@ -14,7 +14,7 @@ package Oak.Agent.Scheduler with Preelaborate is
                            Add_Task,
                            Remove_Task);
 
-   procedure Initialise_Agent
+   procedure Initialise_Scheduler_Agent
      (Agent        : in out Scheduler_Agent'Class;
       Name         : in String;
       Call_Stack   : in Call_Stack_Handler;
@@ -112,4 +112,4 @@ private
    function Task_To_Manage
      (Agent : access Scheduler_Agent'Class)
       return access Tasks.Task_Agent'Class is (Agent.Manage_Task);
-end Oak.Agent.Scheduler;
+end Oak.Agent.Schedulers;

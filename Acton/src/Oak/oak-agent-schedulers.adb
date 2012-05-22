@@ -1,8 +1,8 @@
 with Oak.Memory.Call_Stack.Ops; use Oak.Memory.Call_Stack.Ops;
 
-package body Oak.Agent.Scheduler is
+package body Oak.Agent.Schedulers is
 
-   procedure Initialise_Agent
+   procedure Initialise_Scheduler_Agent
      (Agent        : in out Scheduler_Agent'Class;
       Name         : in String;
       Call_Stack   : in Call_Stack_Handler;
@@ -23,7 +23,7 @@ package body Oak.Agent.Scheduler is
       Initialise_Call_Stack
         (Stack             => Agent.Call_Stack,
          Start_Instruction => Run_Loop);
-   end Initialise_Agent;
+   end Initialise_Scheduler_Agent;
 
    procedure Set_Chosen_Task
      (Agent : not null access Scheduler_Agent'Class;
@@ -61,4 +61,4 @@ package body Oak.Agent.Scheduler is
       Agent.Manage_Task := MT;
    end Set_Task_To_Manage;
 
-end Oak.Agent.Scheduler;
+end Oak.Agent.Schedulers;

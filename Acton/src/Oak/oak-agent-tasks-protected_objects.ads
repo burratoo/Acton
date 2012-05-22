@@ -1,16 +1,16 @@
 with System;
 
-with Oak.Entries; use Oak.Entries;
-with Oak.Protected_Object; use Oak.Protected_Object;
+with Oak.Entries;           use Oak.Entries;
+with Oak.Protected_Objects; use Oak.Protected_Objects;
 
-package Oak.Agent.Tasks.Protected_Object with Preelaborate is
+package Oak.Agent.Tasks.Protected_Objects with Preelaborate is
 
    type Protected_Agent (Num_Entries : Entry_Index)
      is new Task_Agent with private;
 
    type Entry_Barrier_Function_Handler is private;
 
-   procedure Initialise_Agent
+   procedure Initialise_Protected_Agent
      (Agent                 : in out Protected_Agent'Class;
       Name                  : in String;
       Ceiling_Priority      : in Integer;
@@ -142,4 +142,4 @@ private
      (PO : not null access Protected_Agent'Class)
       return access Task_Agent'Class is (PO.Tasks_Within);
 
-end Oak.Agent.Tasks.Protected_Object;
+end Oak.Agent.Tasks.Protected_Objects;

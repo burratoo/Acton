@@ -4,11 +4,11 @@ with Oak.Scheduler;
 
 with System; use System;
 
-package body Oak.Agent.Tasks.Protected_Object is
+package body Oak.Agent.Tasks.Protected_Objects is
 
    package Queue renames Oak.Agent.Tasks.Queues.General;
 
-   procedure Initialise_Agent
+   procedure Initialise_Protected_Agent
      (Agent                 : in out Protected_Agent'Class;
       Name                  : in String;
       Ceiling_Priority      : in Integer;
@@ -17,7 +17,7 @@ package body Oak.Agent.Tasks.Protected_Object is
       No_Chain : Activation_Chain := (Head => null);
    begin
 
-      Oak.Agent.Tasks.Initialise_Agent
+      Oak.Agent.Tasks.Initialise_Task_Agent
         (Agent             => Agent,
          Stack_Address     => Null_Address,
          Stack_Size        => 0,
@@ -38,7 +38,7 @@ package body Oak.Agent.Tasks.Protected_Object is
       Oak.Scheduler.Add_New_Task_To_Inactive_List
         (Scheduler_Info => Core.Scheduler_Info (Core.Oak_Instance).all,
          T              => Agent'Access);
-   end Initialise_Agent;
+   end Initialise_Protected_Agent;
 
    procedure Add_Task_To_Entry_Queue
      (PO       : not null access Protected_Agent'Class;
@@ -175,4 +175,4 @@ package body Oak.Agent.Tasks.Protected_Object is
       For_Protected_Object.Controlling_Shared_State := To_State;
    end Set_Acquiring_Tasks_State;
 
-end Oak.Agent.Tasks.Protected_Object;
+end Oak.Agent.Tasks.Protected_Objects;

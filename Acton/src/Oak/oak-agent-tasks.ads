@@ -84,7 +84,7 @@ package Oak.Agent.Tasks with Preelaborate is
 
    Unspecified_Priority : constant Integer := -1;
 
-   procedure Initialise_Agent
+   procedure Initialise_Task_Agent
      (Agent             : in out Task_Agent'Class;
       Stack_Address     : in System.Address;
       Stack_Size        : in System.Storage_Elements.Storage_Count;
