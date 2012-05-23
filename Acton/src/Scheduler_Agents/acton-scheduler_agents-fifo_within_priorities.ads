@@ -10,7 +10,7 @@ package Acton.Scheduler_Agents.FIFO_Within_Priorities with Preelaborate is
    pragma Export
      (Ada,
       Create_Agent,
-      "__acton_scheduler_agent_fifo_within_priorities");
+      "__acton_scheduler_agents_fifo_within_priorities");
 
    procedure Run_Loop;
    procedure Remove_Task;
