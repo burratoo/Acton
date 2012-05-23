@@ -29,7 +29,7 @@
 --  microcontrollers as their timer resolution moves into the microseconds
 --  region. Also makes the time range useable similar to existing systems.
 
-package Oak.Core_Support_Package.Time with Preelaborate is
+package Oak.Core_Support_Package.Time with Pure is
 
    MHz         : constant := 1E6;
    Clock_Speed : constant := 132 * MHz;

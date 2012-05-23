@@ -1,9 +1,11 @@
-with System.Machine_Code;     use System.Machine_Code;
 with ISA.Power;
+with MPC5554.Flash;
+with Oak.Agent.Tasks;
+with Oak.Agent.Tasks.Protected_Objects;
 with Oak.Core_Support_Package.Task_Interrupts;
 with Oak.Core_Support_Package.Task_Support;
-with Oak.Oak_Task.Data_Access;
-with MPC5554.Flash;
+
+with System.Machine_Code;     use System.Machine_Code;
 
 package body Oak.Processor_Support_Package.Interrupts is
    --  Stack frame design for interrupt handling on the MPC5554 with support
@@ -202,11 +204,12 @@ package body Oak.Processor_Support_Package.Interrupts is
       Oak.Core_Support_Package.Task_Interrupts.Enable_External_Interrupts;
    end Attach_Handler;
 
-   procedure Get_Resource (PO : Oak.Oak_Task.Oak_Task_Handler) is
+   procedure Get_Resource
+     (PO : access Agent.Tasks.Protected_Objects.Protected_Agent'Class) is
       FIFO : Interrupt_FIFO renames Interrupt_Priority_FIFO;
       P : constant MPC5554_Interrupt_Priority :=
         MPC5554_Interrupt_Priority (
-          Oak_Task.Data_Access.Get_Normal_Priority (PO) -
+          Agent.Tasks.Normal_Priority (PO) -
             Interrupt_Priority'First);
    begin
       FIFO.Top := FIFO.Top + 1;

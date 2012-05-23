@@ -1,6 +1,6 @@
 with Oak.Core_Support_Package.Time;
 
-package Ada.Real_Time with Preelaborate is
+package Ada.Real_Time is
 
    package Oak_CSP_Time renames Oak.Core_Support_Package.Time;
 
@@ -87,5 +87,4 @@ private
    pragma Inline (Milliseconds);
    pragma Inline (Seconds);
    pragma Inline (Minutes);
-
 end Ada.Real_Time;

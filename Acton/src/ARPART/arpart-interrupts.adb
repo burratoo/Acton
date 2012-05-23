@@ -1,9 +1,10 @@
 with ARPART.Tasks;
-with Oak.Oak_Task; use Oak.Oak_Task;
+with Oak.Agent.Tasks; use Oak.Agent.Tasks;
 
 package body ARPART.Interrupts is
-   procedure Attach_Handlers (PO        : in Oak.Oak_Task.Oak_Task_Handler;
-                              Handlers  : in Interrupt_Handler_Array)
+   procedure Attach_Handlers
+     (PO        : not null access Protected_Agent'Class;
+      Handlers  : in Interrupt_Handler_Array)
    is
       Handler_Store : aliased Interrupt_Handler_Array := Handlers;
       Message : constant Oak_Task_Message :=

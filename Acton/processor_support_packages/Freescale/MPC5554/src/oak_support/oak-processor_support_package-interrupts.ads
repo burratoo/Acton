@@ -3,7 +3,7 @@ with System; use System;
 with MPC5554; use MPC5554;
 with MPC5554.INTC; use MPC5554.INTC;
 
-limited with Oak.Oak_Task;
+limited with Oak.Agent.Tasks.Protected_Objects;
 
 package Oak.Processor_Support_Package.Interrupts with Preelaborate is
 
@@ -20,7 +20,8 @@ package Oak.Processor_Support_Package.Interrupts with Preelaborate is
    procedure Attach_Handler (Interrupt : Oak_Interrupt_Id;
                              Handler   : Parameterless_Handler;
                              Priority  : Interrupt_Priority);
-   procedure Get_Resource (PO : Oak.Oak_Task.Oak_Task_Handler);
+   procedure Get_Resource
+     (PO : access Agent.Tasks.Protected_Objects.Protected_Agent'Class);
    procedure Release_Resource;
 
    pragma Export (Asm,

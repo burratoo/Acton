@@ -1,14 +1,14 @@
-with System.Machine_Code;                        use System.Machine_Code;
-with System;                                     use System;
+with ISA;
+with ISA.Power.e200.z6.HID;
+with Oak.Agent.Tasks;
+with Oak.Agent.Tasks.Internal;
 with Oak.Core;
+with Oak.Processor_Support_Package.Interrupts;
+
 with Oak.Core_Support_Package.Task_Support;
 use  Oak.Core_Support_Package.Task_Support;
-with Oak.Processor_Support_Package.Interrupts;
-with Oak.Oak_Task;
-
-with ISA.Power.e200.z6.HID;
-with ISA;
-with Oak.Oak_Task.Internal;
+with System;                                     use System;
+with System.Machine_Code;                        use System.Machine_Code;
 
 package body Oak.Core_Support_Package.Task_Interrupts is
 
@@ -103,7 +103,6 @@ package body Oak.Core_Support_Package.Task_Interrupts is
    -- E200_Context_Switch_To_Task --
    ---------------------------------
    procedure E200_Context_Switch_To_Task is
-      use Oak.Oak_Task;
       use Oak.Core_Support_Package;
 
       Task_Stack_Pointer : Address;
@@ -170,8 +169,8 @@ package body Oak.Core_Support_Package.Task_Interrupts is
            Inputs   => Address'Asm_Input ("m", IVOR8_CS_To_Kernel),
            Volatile => True);
 
-      Task_Stack_Pointer := Oak.Core.Get_Current_Task_Stack_Pointer;
-      if Internal.Is_Regular_Task (T => Oak.Core.Get_Current_Task) then
+      Task_Stack_Pointer := Core.Current_Agent_Stack_Pointer;
+      if Core.Current_Agent.all in Agent.Tasks.Task_Agent'Class then
          Task_Support.Enable_Oak_Wake_Up_Interrupt;
       end if;
 
@@ -309,8 +308,8 @@ package body Oak.Core_Support_Package.Task_Interrupts is
            Inputs   => (Address'Asm_Input ("m", IVOR8_CS_To_Task)),
            Volatile => True);
 
-      Oak.Core.Set_Current_Task_Stack_Pointer (SP => Task_Stack_Pointer);
-      Oak.Core_Support_Package.Task_Support.Disable_Oak_Wake_Up_Interrupt;
+      Core.Set_Current_Agent_Stack_Pointer (SP => Task_Stack_Pointer);
+      Core_Support_Package.Task_Support.Disable_Oak_Wake_Up_Interrupt;
 
       Asm
         ("mfsprg0         r1" & ASCII.LF & ASCII.HT & -- load kernel stack ptr
@@ -377,9 +376,9 @@ package body Oak.Core_Support_Package.Task_Interrupts is
          "evstdd r10,  0(r1)" & ASCII.LF & ASCII.HT &
          "evstdd r9,   8(r1)",
          Volatile => True);
-      Oak.Oak_Task.Internal.Store_Task_Yield_Status
-        (For_Task => Oak.Core.Get_Current_Task,
-         Yielded  => Oak.Oak_Task.Forced);
+      Agent.Tasks.Internal.Store_Task_Yield_Status
+        (For_Task => Oak.Core.Current_Task.all,
+         Yielded  => Agent.Tasks.Forced);
       Asm
         ("evldd  r9,   8(r1)" & ASCII.LF & ASCII.HT &
          "evldd  r10,  0(r1)" & ASCII.LF & ASCII.HT &

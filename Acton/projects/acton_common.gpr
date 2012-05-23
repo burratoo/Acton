@@ -1,20 +1,23 @@
 abstract project Acton_Common is
-   Source_Dirs       := ("../src", "../src/ARPART", "../src/GNARL", "../src/Oak", "../src/Scheduler_Agent", "../core_support_packages");
+   Source_Dirs       := ("../src", "../src/ARPART", "../src/GNARL", "../src/Oak", "../src/Scheduler_Agents", "../core_support_packages");
    Object_Dir        := "../obj/";
    Languages         := ("Ada", "Asm");
    Library_Name      := "acton";
    Library_Dir       := "../adalib/";
    Library_Version   := ".1";
    Library_Src_Dir   := "../adainclude/";
-   Library_Interface := ("ARPART", "ARPART.Interrupts", "ARPART.Tasks", "ARPART.Protected_Objects", "Acton", "Acton.Scheduler_Agent", "Acton.Scheduler_Agent.FIFO_Within_Priorities", "Ada", "Ada.Exceptions", "Ada.Interrupts", "Ada.Real_Time", "Ada.Real_Time.Delays", "Ada.Unchecked_Conversion", "Interfaces", "Oak", "Oak.Core", "Oak.Memory",
+   Library_Interface := ("ARPART", "ARPART.Interrupts", "ARPART.Tasks", "ARPART.Protected_Objects",
+                         "Acton", "Acton.Scheduler_Agents", "Acton.Scheduler_Agents.FIFO_Within_Priorities",
+                         "Ada", "Ada.Exceptions", "Ada.Interrupts", "Ada.Real_Time", "Ada.Real_Time.Delays", "Ada.Tags", "Ada.Unchecked_Conversion",
+                         "Interfaces", "Oak", "Oak.Core", "Oak.Memory",
                               "Oak.Memory.Call_Stack",
                               "Oak.Core_Support_Package",
                               "Oak.Core_Support_Package.Call_Stack",
                               "Oak.Core_Support_Package.Time",
                               "Oak.Interrupts",
-                              "Oak.Oak_Task", "Oak.Oak_Task.Activation", "Oak.Oak_Task.Data_Access", "Oak.Oak_Task.Queue",
-                              "Oak.Oak_Task.Protected_Object",
-                              "Oak.Oak_Task.Scheduler_Agent",
+                         "Oak.Agent", "Oak.Agent.Tasks", "Oak.Agent.Tasks.Activation", "Oak.Agent.Tasks.Protected_Objects", "Oak.Agent.Queue", "Oak.Agent.Schedulers",
+                         "Oak.Entries",
+                         "Oak.Oak_Time", "Oak.Oak_Time.Conversion",
                               "Oak.Processor_Support_Package", "Oak.Processor_Support_Package.Interrupts",
                               "System", "System.Machine_Code", "System.Storage_Elements", "System.Unsigned_Types",
                              --  Only needed for their ali files
@@ -22,10 +25,9 @@ abstract project Acton_Common is
                               "Oak.Core_Support_Package.Processor",
                               "Oak.Core_Support_Package.Task_Interrupts",
                               "Oak.Core_Support_Package.Task_Support",
-                              "Oak.Protected_Object",
-                              "Oak.Oak_Task.Internal",
-                              "Oak.Scheduler",
-                              "Oak.Scheduler.Agent_List"
+                              "Oak.Protected_Objects",
+                              "Oak.Agent.Tasks.Internal", "Oak.Agent.Tasks.Queues",
+                         "Oak.Scheduler", "Oak.Scheduler.Agent_List"
                              );
 
    Ada_Switches := ("-gnatwa.Xl", "-g", "-gnatn", "-gnatg", "-O2");
