@@ -7,8 +7,13 @@
 # and the least significant bit in r4
 
 .global oak_get_clock
+
+# Note below, even though we only use 4 bytes, we take 8 for the case where
+# a decrementer interrupt occurs, as it requires the stack to be double word
+# aligned.
+
 oak_get_clock:
-        stwu   r1,-4(r1)
+        stwu   r1,-8(r1)
         stw    r14,0(r1)
 oak_get_clock_loop:
 	mftbu  r3                       # load from TBU into r3
@@ -17,5 +22,5 @@ oak_get_clock_loop:
 	cmp    CR0, 0, r14, r3          # see if 'old TBU' = 'new TBU'
 	bc     4, 2, oak_get_clock_loop # loop if carry has occured
         lwz    r14,0(r1)
-        stwu   r1,4(r1)
+        stwu   r1,8(r1)
 	blr
