@@ -12,6 +12,10 @@ with System.Machine_Code;                        use System.Machine_Code;
 
 package body Oak.Core_Support_Package.Task_Interrupts is
 
+   pragma Suppress (All_Checks);
+   --  Suppress all checks since they get in the way and cause unpredictable
+   --  problems.
+
    procedure Clear_Decrementer_Interrupt with Inline_Always;
 
    procedure Initialise_Task_Enviroment is
@@ -80,12 +84,12 @@ package body Oak.Core_Support_Package.Task_Interrupts is
       --     Decrement_Interrupt      => Occurred,
       --     Fixed_Interval_Interrupt => Not_Occurred);
       Asm
-        ("stwu    r1, -4(r1)"    & ASCII.LF & ASCII.HT &
+        ("stwu    r1, -8(r1)"    & ASCII.LF & ASCII.HT &
          "stw     r2,  0(r1)"    & ASCII.LF & ASCII.HT &
          "lis     r2,  0x800"    & ASCII.LF & ASCII.HT &
          "mttsr   r2"            & ASCII.LF & ASCII.HT &
          "lwz     r2,  0(r1)"    & ASCII.LF & ASCII.HT &
-         "stwu    r1,  4(r1)",
+         "stwu    r1,  8(r1)",
          Volatile => True);
    end Clear_Decrementer_Interrupt;
 
@@ -106,7 +110,6 @@ package body Oak.Core_Support_Package.Task_Interrupts is
       use Oak.Core_Support_Package;
 
       Task_Stack_Pointer : Address;
-      pragma Suppress (Access_Check);
    begin
 
       Enable_SPE_Instructions;
@@ -237,7 +240,6 @@ package body Oak.Core_Support_Package.Task_Interrupts is
    -----------------------------------
    procedure E200_Context_Switch_To_Kernel is
       Task_Stack_Pointer : Address;
-      pragma Suppress (Access_Check);
    begin
 
       Enable_SPE_Instructions;
@@ -367,7 +369,6 @@ package body Oak.Core_Support_Package.Task_Interrupts is
    --  Check that the assembly code for Store_Task_Yielded_Status always uses
    --  r0 and r9.
    procedure Decrementer_Interrupt is
-      pragma Suppress (Access_Check);
    begin
       Clear_Decrementer_Interrupt;
       Enable_SPE_Instructions;

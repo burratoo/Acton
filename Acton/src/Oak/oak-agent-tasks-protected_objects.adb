@@ -35,6 +35,10 @@ package body Oak.Agent.Tasks.Protected_Objects is
       Agent.Object_Record            := Object_Record_Address;
       Agent.Controlling_Shared_State := Waiting;
 
+      Agent.Wake_Time      := Time_First;
+      Agent.Next_Run_Cycle := Time_First;
+      Agent.Next_Deadline  := Time_First;
+
       Oak.Scheduler.Add_New_Task_To_Inactive_List
         (Scheduler_Info => Core.Scheduler_Info (Core.Oak_Instance).all,
          T              => Agent);
@@ -70,7 +74,7 @@ package body Oak.Agent.Tasks.Protected_Objects is
    begin
       if Current_Task /= null then
          Length := Length + 1;
-         while Current_Task.Queue_Link.Next /= Head_Task loop
+         while Queues.Next_Task (Current_Task) /= Head_Task loop
             Length := Length + 1;
             Current_Task := Queues.Next_Task (Current_Task);
          end loop;

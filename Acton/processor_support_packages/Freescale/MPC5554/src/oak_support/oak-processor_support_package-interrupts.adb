@@ -205,29 +205,35 @@ package body Oak.Processor_Support_Package.Interrupts is
    end Attach_Handler;
 
    procedure Get_Resource
-     (PO : access Agent.Tasks.Protected_Objects.Protected_Agent'Class) is
+     (PO : access Agent.Tasks.Protected_Objects.Protected_Agent'Class)
+   is
       FIFO : Interrupt_FIFO renames Interrupt_Priority_FIFO;
-      P : constant MPC5554_Interrupt_Priority :=
-        MPC5554_Interrupt_Priority (
-          Agent.Tasks.Normal_Priority (PO) -
-            Interrupt_Priority'First);
+      P : MPC5554_Interrupt_Priority;
    begin
-      FIFO.Top := FIFO.Top + 1;
-      FIFO.Stack (FIFO.Top) := P;
-      Current_Priority_Register := P;
-      ISA.Power.Memory_Barrier;
-      ISA.Power.Instruction_Synchronize;
+      if Agent.Tasks.Normal_Priority (PO) in Interrupt_Priority then
+         P := MPC5554_Interrupt_Priority (Agent.Tasks.Normal_Priority (PO) -
+            Interrupt_Priority'First);
+         FIFO.Top := FIFO.Top + 1;
+         FIFO.Stack (FIFO.Top) := P;
+         Current_Priority_Register := P;
+         ISA.Power.Memory_Barrier;
+         ISA.Power.Instruction_Synchronize;
+      end if;
    end Get_Resource;
 
-   procedure Release_Resource is
+   procedure Release_Resource
+     (PO : access Agent.Tasks.Protected_Objects.Protected_Agent'Class)
+   is
       FIFO : Interrupt_FIFO renames Interrupt_Priority_FIFO;
    begin
-      ISA.Power.Memory_Barrier;
-      FIFO.Top := FIFO.Top - 1;
-      if FIFO.Top = 0 then
-         Current_Priority_Register := 0;
-      else
-         Current_Priority_Register := FIFO.Stack (FIFO.Top);
+      if Agent.Tasks.Normal_Priority (PO) in Interrupt_Priority then
+         ISA.Power.Memory_Barrier;
+         FIFO.Top := FIFO.Top - 1;
+         if FIFO.Top = 0 then
+            Current_Priority_Register := 0;
+         else
+            Current_Priority_Register := FIFO.Stack (FIFO.Top);
+         end if;
       end if;
    end Release_Resource;
 

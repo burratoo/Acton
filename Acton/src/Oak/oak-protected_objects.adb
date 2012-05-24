@@ -75,7 +75,7 @@ package body Oak.Protected_Objects is
                           State => Enter_PO_Refused);
                Chosen_Task := Task_Handler (T);
                --  Object release point 1.
-               Release_Resource;
+               Release_Resource (PO);
                return;
          end;
 
@@ -110,7 +110,7 @@ package body Oak.Protected_Objects is
          --  Object release point 2.
          --  Inform the interrupt subsystem that we are releasing the object
          --  since no task inside the protected object is able to run.
-         Release_Resource;
+         Release_Resource (PO);
          Scheduler.Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
            (Scheduler_Info => Scheduler_Info,
             Chosen_Task    => Chosen_Task);
@@ -148,7 +148,7 @@ package body Oak.Protected_Objects is
            (Scheduler_Info => Scheduler_Info,
             T              => PO);
          --  Object release pont 3.
-         Release_Resource;
+         Release_Resource (PO);
          Scheduler.Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
            (Scheduler_Info => Scheduler_Info,
             Chosen_Task    => Chosen_Task);

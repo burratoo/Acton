@@ -48,7 +48,7 @@ package body Oak.Agent.Tasks is
             Start_Instruction => Run_Loop,
             Task_Value_Record => Task_Value_Record,
             Message_Location  => Agent.Message_Location);
-      else
+      elsif Stack_Address /= Null_Address then
          Initialise_Call_Stack
            (Stack             => Agent.Call_Stack,
             Start_Instruction => Run_Loop,
@@ -66,10 +66,8 @@ package body Oak.Agent.Tasks is
          raise Program_Error with "Priority out of range";
       end if;
 
-      if Chain.Head /= null then
-         Agent.Activation_List := Chain.Head;
-         Chain.Head            := Agent;
-      end if;
+      Agent.Activation_List := Chain.Head;
+      Chain.Head            := Agent;
 
    end Initialise_Task_Agent;
 
