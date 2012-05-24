@@ -66,10 +66,8 @@ package body Oak.Agent.Tasks is
          raise Program_Error with "Priority out of range";
       end if;
 
-      if Chain.Head /= null then
-         Agent.Activation_List := Chain.Head;
-         Chain.Head            := Agent;
-      end if;
+      Agent.Activation_List := Chain.Head;
+      Chain.Head            := Agent;
 
    end Initialise_Task_Agent;
 

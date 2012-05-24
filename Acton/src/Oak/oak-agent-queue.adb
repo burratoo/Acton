@@ -76,7 +76,7 @@ package body Oak.Agent.Queue is
       else
          Add_Agent_After (Queue => Queue,
                          Agent => Agent,
-                         After => Prev_Agent (Agent));
+                         After => Prev_Agent (Queue));
       end if;
    end Add_Agent_To_Tail;
 
