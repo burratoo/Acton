@@ -48,7 +48,7 @@ package body Oak.Agent.Tasks is
             Start_Instruction => Run_Loop,
             Task_Value_Record => Task_Value_Record,
             Message_Location  => Agent.Message_Location);
-      else
+      elsif Stack_Address /= Null_Address then
          Initialise_Call_Stack
            (Stack             => Agent.Call_Stack,
             Start_Instruction => Run_Loop,

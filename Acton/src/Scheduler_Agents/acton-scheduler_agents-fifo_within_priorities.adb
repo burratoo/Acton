@@ -35,7 +35,7 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
          Size_In_Elements => Stack_Size);
 
       Initialise_Scheduler_Agent
-        (Agent        => Agent'Access,
+        (Agent        => Agent'Unchecked_Access,
          Name         => Agent_Name,
          Call_Stack   => Call_Stack,
          Max_Priority => Max_Priority,
@@ -44,7 +44,7 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
 
       Oak.Scheduler.Agent_List.Add_Scheduler_Agent
         (Scheduler_Info => Scheduler.all,
-         New_Agent      => Agent'Access);
+         New_Agent      => Agent'Unchecked_Access);
 
    end Create_Agent;
 
