@@ -10,8 +10,6 @@ package Oak.Scheduler with Preelaborate is
 --       (Scheduler_Info : Oak_Scheduler_Info)
 --        return Time;
 
-   function Inital_Info_Record return Oak_Scheduler_Info with Inline;
-
    function Next_Task
      (Scheduler_Info : Oak_Scheduler_Info)
       return access Task_Agent'Class;
@@ -107,14 +105,6 @@ private
 --       (Scheduler_Info : Oak_Scheduler_Info)
 --        return Time is (Deadline_List.Get_Earliest_Deadline
 --                         (List_Head => Scheduler_Info.Task_Deadline_List));
-
-   function Inital_Info_Record
-     return Oak_Scheduler_Info is
-      (Running_Task          => null,
-       Next_Task             => null,
-       Scheduler_Agent_Table => null,
-       Task_Deadline_List    => null,
-       Inactive_Task_List    => null);
 
    function Next_Task
      (Scheduler_Info : Oak_Scheduler_Info)
