@@ -151,7 +151,7 @@ package Oak.Agent.Tasks with Preelaborate is
 
    procedure Store_Oak_Task_Message
      (For_Task : in out Task_Agent'Class;
-      Message  : in Oak_Task_Message);
+      Message  : in Oak_Task_Message) with Inline_Always;
 
    procedure Set_Relative_Deadline
      (T  : in out Task_Agent'Class;
