@@ -1,5 +1,4 @@
 with Oak.Agent.Tasks.Activation;
-with Oak.Agent.Tasks.Internal;
 with Oak.Agent.Tasks.Protected_Objects; use Oak.Agent.Tasks.Protected_Objects;
 with Oak.Oak_Time;                                 use Oak.Oak_Time;
 with Oak.Memory.Call_Stack.Ops;
@@ -141,29 +140,24 @@ package body Oak.Core is
                         Chosen_Task    => Next_Task);
 
                   when Sleeping =>
-                     Agent.Tasks.Set_Wake_Time
-                       (T  => Next_Task,
-                        WT => Task_Message.Wake_Up_At);
+                     Next_Task.Set_Wake_Time (WT => Task_Message.Wake_Up_At);
                      Inform_Scheduler_Agent_Task_Has_Yielded
                        (Chosen_Task => Next_Task);
 
                   when Cycle_Completed =>
-                     Agent.Tasks.Internal.Next_Run_Cycle
-                       (T => Current_Task.all);
+                     Current_Task.Next_Run_Cycle;
                      Inform_Scheduler_Agent_Task_Has_Yielded
                        (Chosen_Task => Next_Task);
 
                   when Change_Cycle_Period =>
-                     Agent.Tasks.Internal.Set_Cycle_Period
-                       (T  => Current_Task.all,
-                        CP => Task_Message.New_Cycle_Period);
+                     Current_Task.Set_Cycle_Period
+                        (Task_Message.New_Cycle_Period);
                      Inform_Scheduler_Agent_Task_Has_Yielded
                        (Chosen_Task => Next_Task);
 
                   when Change_Relative_Deadline =>
-                     Agent.Tasks.Internal.Set_Relative_Deadline
-                       (T  => Current_Task.all,
-                        RD => Task_Message.New_Deadline_Span);
+                     Current_Task.Set_Relative_Deadline
+                        (Task_Message.New_Deadline_Span);
                      Inform_Scheduler_Agent_Task_Has_Yielded
                        (Chosen_Task => Next_Task);
 
@@ -205,18 +199,16 @@ package body Oak.Core is
 
          if Next_Task /= null and then
            Next_Task.all in Protected_Agent'Class then
-            Next_Task := Task_Within
-              (Protected_Agent'Class (Next_Task.all)'Access);
+            Next_Task := Protected_Agent (Next_Task.all).Task_Within;
          end if;
 
          if Next_Task /= null then
             case State (T => Next_Task) is
                when Shared_State =>
-                  if Shared_State (Next_Task) = Entering_PO then
+                  if Next_Task.Shared_State = Entering_PO then
                      declare
                         M : constant Oak_Task_Message
-                          := Agent.Tasks.Task_Message
-                            (For_Task => Next_Task);
+                          := Next_Task.Task_Message;
                      begin
                         Protected_Objects.Process_Enter_Request
                          (Scheduler_Info  => Oak_Instance.Scheduler,
@@ -270,18 +262,13 @@ package body Oak.Core is
             --  Switch registers and enable Wake Up Interrupt.
             Oak_Instance.Current_Agent := Next_Task;
             Context_Switch_To_Task;
-            Task_Message := Agent.Tasks.Task_Message
-                              (For_Task => Next_Task);
-            case Internal.Task_Yield_Status (For_Task => Next_Task) is
+            Task_Message := Next_Task.Task_Message;
+            case Next_Task.Task_Yield_Status is
                when Voluntary =>
                   Oak_Instance.Woken_By := Task_Yield;
-                  Set_State
-                    (T     => Task_Handler (Oak_Instance.Current_Agent),
-                     State => Task_Message.Message_Type);
+                  Next_Task.Set_State (State => Task_Message.Message_Type);
                when Forced =>
-                  Internal.Store_Task_Yield_Status
-                    (For_Task => Next_Task.all,
-                     Yielded  => Voluntary);
+                  Next_Task.Store_Task_Yield_Status (Yielded  => Voluntary);
             end case;
          end if;
 

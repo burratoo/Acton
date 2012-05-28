@@ -14,19 +14,19 @@ package body Oak.Scheduler.Agent_List is
    begin
       if Agent = null then
          Scheduler_Info.Scheduler_Agent_Table := New_Agent;
-         Set_Next_Agent (Agent => New_Agent, Next_Agent => null);
-      elsif Lowest_Priority (New_Agent) > Highest_Priority (Agent) then
+         New_Agent.Set_Next_Agent (null);
+      elsif New_Agent.Lowest_Priority > New_Agent.Highest_Priority then
          Scheduler_Info.Scheduler_Agent_Table := New_Agent;
-         Set_Next_Agent (Agent => New_Agent, Next_Agent => Agent);
+         New_Agent.Set_Next_Agent (Agent);
       else
          while Agent /= null
-           and then Lowest_Priority (Agent) > Highest_Priority (New_Agent)
+           and then Agent.Lowest_Priority > New_Agent.Highest_Priority
          loop
             Prev_Agent := Agent;
-            Agent      := Next_Agent (Agent);
+            Agent      := Agent.Next_Agent;
          end loop;
-         Set_Next_Agent (Agent => Prev_Agent, Next_Agent => New_Agent);
-         Set_Next_Agent (Agent => New_Agent, Next_Agent => Agent);
+         Prev_Agent.Set_Next_Agent (Next_Agent => New_Agent);
+         New_Agent.Set_Next_Agent (Next_Agent => Agent);
       end if;
    end Add_Scheduler_Agent;
 

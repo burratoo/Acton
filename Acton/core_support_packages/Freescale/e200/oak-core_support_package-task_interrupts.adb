@@ -1,7 +1,6 @@
 with ISA;
 with ISA.Power.e200.z6.HID;
 with Oak.Agent.Tasks;
-with Oak.Agent.Tasks.Internal;
 with Oak.Core;
 with Oak.Processor_Support_Package.Interrupts;
 
@@ -377,9 +376,7 @@ package body Oak.Core_Support_Package.Task_Interrupts is
          "evstdd r10,  0(r1)" & ASCII.LF & ASCII.HT &
          "evstdd r9,   8(r1)",
          Volatile => True);
-      Agent.Tasks.Internal.Store_Task_Yield_Status
-        (For_Task => Oak.Core.Current_Task.all,
-         Yielded  => Agent.Tasks.Forced);
+      Oak.Core.Current_Task.Store_Task_Yield_Status (Agent.Tasks.Forced);
       Asm
         ("evldd  r9,   8(r1)" & ASCII.LF & ASCII.HT &
          "evldd  r10,  0(r1)" & ASCII.LF & ASCII.HT &

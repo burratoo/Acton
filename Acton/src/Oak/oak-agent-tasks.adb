@@ -1,7 +1,9 @@
+with Oak.Agent.Schedulers;
 with Oak.Core;
 with Oak.Scheduler;             use Oak.Scheduler;
 with Oak.Memory.Call_Stack.Ops; use Oak.Memory.Call_Stack.Ops;
 with System; use System;
+
 with System.Storage_Elements; use System.Storage_Elements;
 
 package body Oak.Agent.Tasks is
@@ -107,6 +109,12 @@ package body Oak.Agent.Tasks is
       Add_Task_To_Scheduler (Scheduler_Info => Scheduler.all, T => Agent);
    end Initialise_Main_Task;
 
+   procedure Next_Run_Cycle (T : in out Task_Agent'Class) is
+   begin
+      T.Wake_Time      := T.Next_Run_Cycle;
+      T.Next_Run_Cycle := T.Next_Run_Cycle + T.Cycle_Period;
+   end Next_Run_Cycle;
+
    procedure Set_Activation_List
      (T     : not null access Task_Agent'Class;
       Chain : in Activation_Chain_Access)
@@ -127,20 +135,34 @@ package body Oak.Agent.Tasks is
       T.Activation_List := Chain.Head;
    end Set_Activation_List;
 
-   procedure Store_Oak_Task_Message
-     (For_Task : not null access Task_Agent'Class;
-      Message  : in Oak_Task_Message) is
+   procedure Set_Cycle_Period
+     (T  : in out Task_Agent'Class;
+      CP : in Oak_Time.Time_Span) is
    begin
-      For_Task.Message_Location.Message := Message;
-   end Store_Oak_Task_Message;
+      T.Cycle_Period := CP;
+   end Set_Cycle_Period;
+
+   procedure Set_Relative_Deadline
+     (T  : in out Task_Agent'Class;
+      RD : in Oak_Time.Time_Span) is
+   begin
+      T.Deadline := RD;
+   end Set_Relative_Deadline;
 
    procedure Set_Scheduler_Agent
      (T               : not null access Task_Agent'Class;
-      Scheduler_Agent : access Schedulers.Scheduler_Agent'Class)
+      Agent : access Schedulers.Scheduler_Agent'Class)
    is
    begin
-      T.Scheduler_Agent := Scheduler_Agent;
+      T.Scheduler_Agent := Agent;
    end Set_Scheduler_Agent;
+
+   procedure Set_Scheduler_Agent_For_Task
+     (T     : access Task_Agent'Class;
+      Agent : access Schedulers.Scheduler_Agent'Class) is
+   begin
+      T.Scheduler_Agent := Agent;
+   end Set_Scheduler_Agent_For_Task;
 
    procedure Set_Shared_State
      (For_Task : not null access Task_Agent'Class;
@@ -156,11 +178,26 @@ package body Oak.Agent.Tasks is
       T.State := State;
    end Set_State;
 
+   procedure Store_Task_Yield_Status
+     (For_Task : in out Task_Agent'Class;
+      Yielded  : in Yielded_State)
+   is
+   begin
+      For_Task.Message_Location.Yield_Status := Yielded;
+   end Store_Task_Yield_Status;
+
    procedure Set_Wake_Time
      (T  : not null access Task_Agent'Class;
-      WT : in Time) is
+      WT : in Oak_Time.Time) is
    begin
       T.Wake_Time := WT;
    end Set_Wake_Time;
+
+   procedure Store_Oak_Task_Message
+     (For_Task : not null access Task_Agent'Class;
+      Message  : in Oak_Task_Message) is
+   begin
+      For_Task.Message_Location.Message := Message;
+   end Store_Oak_Task_Message;
 
 end Oak.Agent.Tasks;

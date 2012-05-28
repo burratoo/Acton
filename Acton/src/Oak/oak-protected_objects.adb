@@ -20,13 +20,13 @@ package body Oak.Protected_Objects is
         (Subprogram_Kind = Protected_Entry and then
            not Is_Entry_Id_Valid (PO => PO, Entry_Id => Entry_Id))
       then
-         Set_State (T => T, State => Enter_PO_Refused);
+         T.Set_State (Enter_PO_Refused);
          Chosen_Task := Task_Handler (T);
          return;
       end if;
 
-      if Normal_Priority (T => T) > Normal_Priority (T => PO) then
-         Set_State (T => T, State => Enter_PO_Refused);
+      if T.Normal_Priority > PO.Normal_Priority then
+         T.Set_State (Enter_PO_Refused);
          Chosen_Task := Task_Handler (T);
          return;
       end if;
@@ -46,8 +46,8 @@ package body Oak.Protected_Objects is
          declare
          begin
             if Subprogram_Kind = Protected_Entry and then
-              not Is_Barrier_Open (PO => PO, Entry_Id => Entry_Id) then
-               Set_State (T => T, State => Waiting);
+              not PO.Is_Barrier_Open (Entry_Id => Entry_Id) then
+               T.Set_State (Waiting);
                Add_Task_To_Entry_Queue
                  (PO       => PO,
                   T        => T,
@@ -58,8 +58,8 @@ package body Oak.Protected_Objects is
                --  We are not able to conditional this to only protected
                --  objects that have barriers that use Count as the front
                --  end does lend itself to achieve this.
-               Get_And_Remove_Next_Task_From_Entry_Queues
-                 (PO => PO, Next_Task => Chosen_Task);
+               PO.Get_And_Remove_Next_Task_From_Entry_Queues
+                 (Next_Task => Chosen_Task);
 
             else
                Chosen_Task := Task_Handler (T);
@@ -71,8 +71,7 @@ package body Oak.Protected_Objects is
                   T              => T);
                --  Add call to check if we need to decativate the PO.
                --  Add call to see if we need to remove the task from the PO.
-               Set_State (T     => T,
-                          State => Enter_PO_Refused);
+               T.Set_State (Enter_PO_Refused);
                Chosen_Task := Task_Handler (T);
                --  Object release point 1.
                Release_Resource (PO);
@@ -80,11 +79,9 @@ package body Oak.Protected_Objects is
          end;
 
          if Chosen_Task /= null then
-            Add_Task_To_Protected_Object (T  => Chosen_Task, PO => PO);
-            Set_State (T => Chosen_Task, State => Runnable);
-            Set_Acquiring_Tasks_State
-              (For_Protected_Object => PO,
-               To_State             => Waiting);
+            PO.Add_Task_To_Protected_Object (Chosen_Task);
+            T.Set_State (State => Runnable);
+            PO.Set_Acquiring_Tasks_State (Waiting);
             Scheduler.Activate_Task
               (Scheduler_Info => Scheduler_Info,
                T              => PO);
@@ -94,15 +91,12 @@ package body Oak.Protected_Objects is
       elsif Subprogram_Kind = Protected_Function and
                Active_Subprogram_Kind (PO) = Protected_Function then
          Scheduler.Remove_Task_From_Scheduler (T);
-         Set_State (T => T, State => Runnable);
-         Add_Task_To_Protected_Object (PO => PO, T  => T);
+         T.Set_State (Runnable);
+         PO.Add_Task_To_Protected_Object (T);
          Chosen_Task := Task_Handler (PO);
       else
-         Set_State (T => T, State => Shared_State);
-         Set_Shared_State
-           (For_Task           => T,
-            With_State_Pointer => Reference_To_Acquiring_Tasks_State
-                                     (For_Protected_Object => PO));
+         T.Set_State (Shared_State);
+         T.Set_Shared_State (PO.Reference_To_Acquiring_Tasks_State);
          Chosen_Task := null;
       end if;
 
@@ -125,25 +119,23 @@ package body Oak.Protected_Objects is
         Agent.Tasks.Protected_Objects.Protected_Agent'Class;
       Chosen_Task    : out Agent.Tasks.Task_Handler) is
    begin
-      if not Is_Task_Inside_Protect_Object (PO  => PO, T => T) then
-         Set_State (T => T, State => Exit_PO_Error);
+      if not PO.Is_Task_Inside_Protect_Object (T) then
+         T.Set_State (Exit_PO_Error);
          return;
       end if;
 
-      Set_State (T => T, State => Runnable);
-      Remove_Task_From_Protected_Object (PO => PO, T => T);
+      T.Set_State (Runnable);
+      PO.Remove_Task_From_Protected_Object (T => T);
       Scheduler.Add_Task_To_Scheduler
         (Scheduler_Info => Scheduler_Info,
          T              => T);
 
-      Get_And_Remove_Next_Task_From_Entry_Queues
-        (PO => PO, Next_Task => Chosen_Task);
+      PO.Get_And_Remove_Next_Task_From_Entry_Queues
+        (Next_Task => Chosen_Task);
 
       if Chosen_Task = null then
          --  Protected action ends.
-         Set_Acquiring_Tasks_State
-           (For_Protected_Object => PO,
-            To_State             => Entering_PO);
+         PO.Set_Acquiring_Tasks_State (Entering_PO);
          Scheduler.Deactivate_Task
            (Scheduler_Info => Scheduler_Info,
             T              => PO);
@@ -154,8 +146,8 @@ package body Oak.Protected_Objects is
             Chosen_Task    => Chosen_Task);
       else
          --  Protected action continues.
-         Set_State (T => Chosen_Task, State => Runnable);
-         Add_Task_To_Protected_Object (PO => PO, T  => Chosen_Task);
+         T.Set_State (Runnable);
+         PO.Add_Task_To_Protected_Object (Chosen_Task);
       end if;
    end Process_Exit_Request;
 

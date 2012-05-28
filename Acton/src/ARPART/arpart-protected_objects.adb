@@ -18,7 +18,7 @@ package body ARPART.Protected_Objects is
                  Entry_Id_Enter  => Entry_Id);
    begin
       Tasks.Yield_Processor_To_Kernel (Task_Message => Message);
-      if State (T => Self) = Enter_PO_Refused then
+      if Self.State = Enter_PO_Refused then
          raise Program_Error;
       end if;
    end Enter_Protected_Object;
@@ -32,7 +32,7 @@ package body ARPART.Protected_Objects is
                  PO_Exit       => PO);
    begin
       Tasks.Yield_Processor_To_Kernel (Task_Message => Message);
-      if State (T => Self) = Exit_PO_Error then
+      if Self.State = Exit_PO_Error then
          raise Program_Error;
       end if;
    end Exit_Protected_Object;
@@ -41,7 +41,7 @@ package body ARPART.Protected_Objects is
      (PO       : not null access Protected_Agent'Class;
       Entry_Id : Entry_Index) return Natural is
    begin
-      return Entry_Queue_Length (PO => PO, Entry_Id => Entry_Id);
+      return PO.Entry_Queue_Length (Entry_Id => Entry_Id);
    end Entry_Count;
 
 end ARPART.Protected_Objects;

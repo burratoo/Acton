@@ -1,6 +1,4 @@
-with Oak.Core_Support_Package.Call_Stack.Ops;
-
-limited with Oak.Agent.Tasks;
+with Oak.Agent.Tasks;
 
 package Oak.Memory.Call_Stack.Ops with Preelaborate is
 
@@ -11,17 +9,13 @@ package Oak.Memory.Call_Stack.Ops with Preelaborate is
 
    procedure Initialise_Call_Stack
      (Stack             : in out Oak.Memory.Call_Stack.Call_Stack_Handler;
-      Start_Instruction : in System.Address)
-      renames
-     Oak.Core_Support_Package.Call_Stack.Ops.Initialise_Call_Stack;
+      Start_Instruction : in System.Address);
 
    procedure Initialise_Call_Stack
      (Stack             : in out Oak.Memory.Call_Stack.Call_Stack_Handler;
       Start_Instruction : in System.Address;
       Task_Value_Record : in System.Address := Null_Address;
-      Message_Location  : out Oak.Agent.Tasks.Oak_Task_Message_Location)
-      renames
-     Oak.Core_Support_Package.Call_Stack.Ops.Initialise_Call_Stack;
+      Message_Location  : out Oak.Agent.Tasks.Oak_Task_Message_Location);
 
    procedure Initialise_Call_Stack
      (Stack             : in out Oak.Memory.Call_Stack.Call_Stack_Handler;
@@ -29,9 +23,7 @@ package Oak.Memory.Call_Stack.Ops with Preelaborate is
       Task_Value_Record : in System.Address := Null_Address;
       Stack_Address     : in System.Address;
       Stack_Size        : in System.Storage_Elements.Storage_Count;
-      Message_Location  : out Oak.Agent.Tasks.Oak_Task_Message_Location)
-      renames
-     Oak.Core_Support_Package.Call_Stack.Ops.Initialise_Call_Stack;
+      Message_Location  : out Oak.Agent.Tasks.Oak_Task_Message_Location);
 
 private
    Stack_Pool_Bottom : System.Address := Stack_Pointer_Init'Address;

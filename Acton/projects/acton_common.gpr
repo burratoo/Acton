@@ -25,8 +25,7 @@ abstract project Acton_Common is
                               "Oak.Core_Support_Package.Processor",
                               "Oak.Core_Support_Package.Task_Interrupts",
                               "Oak.Core_Support_Package.Task_Support",
-                              "Oak.Protected_Objects",
-                              "Oak.Agent.Tasks.Internal", "Oak.Agent.Tasks.Queues",
+                              "Oak.Protected_Objects", "Oak.Agent.Tasks.Queues",
                          "Oak.Scheduler", "Oak.Scheduler.Agent_List"
                              );
 
@@ -36,7 +35,7 @@ abstract project Acton_Common is
    Documentation_Dir := "../doc/";
 
    package Builder is
-      for Default_Switches ("ada") use ("-s", "-m", "-j4", "-g", "-largs");
+      for Default_Switches ("ada") use ("-s", "-m", "-j4", "-g");
    end Builder;
 
    --  package Linker is
