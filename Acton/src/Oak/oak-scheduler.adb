@@ -14,7 +14,7 @@ package body Oak.Scheduler is
       T              : access Task_Agent'Class)
    is
       Agent : constant access Scheduler_Agent'Class :=
-                Scheduler_Agent_For_Task (T);
+                T.Scheduler_Agent_For_Task;
    begin
       Inactive_Queue.Remove_Agent
         (Queue => Scheduler_Info.Inactive_Task_List,
@@ -67,7 +67,7 @@ package body Oak.Scheduler is
       T              : access Task_Agent'Class)
    is
       Agent : constant access Scheduler_Agent'Class :=
-                Scheduler_Agent_For_Task (T);
+                T.Scheduler_Agent_For_Task;
    begin
       Agent.Set_Task_To_Manage (T);
       Run_Scheduler_Agent (Agent => Agent, Reason => Remove_Task);
@@ -138,15 +138,15 @@ package body Oak.Scheduler is
      (Chosen_Task : in out Task_Handler)
    is
       Agent : constant access Scheduler_Agent'Class :=
-         Scheduler_Agent_For_Task (Chosen_Task);
+         Chosen_Task.Scheduler_Agent_For_Task;
    begin
       Chosen_Task :=
          Run_Scheduler_Agent (Agent => Agent, Reason => Task_Yield);
 
       if Chosen_Task = null then
-         if Next_Agent (Agent) /= null then
+         if Agent.Next_Agent /= null then
             Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
-              (From_Scheduler_Agent => Next_Agent (Agent),
+              (From_Scheduler_Agent => Agent.Next_Agent,
                Chosen_Task          => Chosen_Task);
          else
             Chosen_Task := null;
@@ -174,11 +174,11 @@ package body Oak.Scheduler is
      (T : access Task_Agent'Class)
    is
       Agent : constant access Scheduler_Agent'Class :=
-                Scheduler_Agent_For_Task (T);
+                T.Scheduler_Agent_For_Task;
    begin
       Agent.Set_Task_To_Manage (T);
       Run_Scheduler_Agent (Agent => Agent, Reason => Remove_Task);
-      Set_Scheduler_Agent_For_Task (T => T, Agent => null);
+      T.Set_Scheduler_Agent_For_Task (null);
    end Remove_Task_From_Scheduler;
 
    function Run_Scheduler_Agent
@@ -187,7 +187,7 @@ package body Oak.Scheduler is
       return access Task_Agent'Class is
    begin
       Run_Scheduler_Agent (Agent => Agent, Reason => Reason);
-      return Task_To_Run (Agent);
+      return Agent.Task_To_Run;
    end Run_Scheduler_Agent;
 
    procedure Run_Scheduler_Agent

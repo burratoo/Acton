@@ -203,7 +203,7 @@ package body Oak.Core is
          end if;
 
          if Next_Task /= null then
-            case State (T => Next_Task) is
+            case Next_Task.State is
                when Shared_State =>
                   if Next_Task.Shared_State = Entering_PO then
                      declare

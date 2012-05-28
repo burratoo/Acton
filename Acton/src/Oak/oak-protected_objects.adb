@@ -18,7 +18,7 @@ package body Oak.Protected_Objects is
    begin
       if PO.all not in Protected_Agent'Class or
         (Subprogram_Kind = Protected_Entry and then
-           not Is_Entry_Id_Valid (PO => PO, Entry_Id => Entry_Id))
+           not PO.Is_Entry_Id_Valid (Entry_Id))
       then
          T.Set_State (Enter_PO_Refused);
          Chosen_Task := Task_Handler (T);
@@ -39,7 +39,7 @@ package body Oak.Protected_Objects is
       --     3. Once the protected action is completed in Process_Exit_Request.
       Get_Resource (PO);
 
-      if State (PO) = Inactive then
+      if PO.State = Inactive then
          Scheduler.Remove_Task_From_Scheduler (T);
          Chosen_Task := null;
 
@@ -48,9 +48,8 @@ package body Oak.Protected_Objects is
             if Subprogram_Kind = Protected_Entry and then
               not PO.Is_Barrier_Open (Entry_Id => Entry_Id) then
                T.Set_State (Waiting);
-               Add_Task_To_Entry_Queue
-                 (PO       => PO,
-                  T        => T,
+               PO.Add_Task_To_Entry_Queue
+                 (T        => T,
                   Entry_Id => Entry_Id);
 
                --  We need to check the queues here in case a barrier has
@@ -89,7 +88,7 @@ package body Oak.Protected_Objects is
          end if;
 
       elsif Subprogram_Kind = Protected_Function and
-               Active_Subprogram_Kind (PO) = Protected_Function then
+               PO.Active_Subprogram_Kind = Protected_Function then
          Scheduler.Remove_Task_From_Scheduler (T);
          T.Set_State (Runnable);
          PO.Add_Task_To_Protected_Object (T);

@@ -241,7 +241,7 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
               (Queue => Task_Queues.Agent_Handler (Sleeping_Queue),
                Agent => T);
          else
-            while Task_Wake_Time > Wake_Time (T => Current)
+            while Task_Wake_Time > T.Wake_Time
             loop
                Current  := Next_Task (Current);
                if Current = Sleeping_Queue then

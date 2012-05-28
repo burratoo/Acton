@@ -1,6 +1,4 @@
 with Oak.Agent.Schedulers;
-with Oak.Core;
-with Oak.Scheduler;             use Oak.Scheduler;
 with Oak.Memory.Call_Stack.Ops; use Oak.Memory.Call_Stack.Ops;
 with System; use System;
 
@@ -73,42 +71,6 @@ package body Oak.Agent.Tasks is
 
    end Initialise_Task_Agent;
 
-   procedure Initialise_Main_Task
-     (Stack_Size      : in System.Storage_Elements.Storage_Count;
-      Name            : in String;
-      Normal_Priority : in Integer;
-      Run_Loop        : in Address)
-   is
-      Agent : constant access Task_Agent  := Oak.Core.Main_Task;
-      OI : constant access Oak.Core.Oak_Data := Oak.Core.Oak_Instance;
-
-      Scheduler    : constant access Oak_Scheduler_Info :=
-                       Oak.Core.Scheduler_Info (OI);
-      Current_Time : constant Time                      := Clock;
-      No_Chain : Activation_Chain := (Head => null);
-   begin
-      Initialise_Task_Agent
-        (Agent             => Agent,
-         Stack_Address     => Null_Address,
-         Stack_Size        => Stack_Size,
-         Name              => Name,
-         Normal_Priority   => Normal_Priority,
-         Relative_Deadline => Time_Span_Zero,
-         Cycle_Period      => Time_Span_Zero,
-         Phase             => Time_Span_Zero,
-         Run_Loop          => Run_Loop,
-         Task_Value_Record => Null_Address,
-         Chain             => No_Chain,
-         Elaborated        => null);
-
-      Agent.State           := Sleeping;
-      Agent.Next_Deadline   := Time_Last;
-      Agent.Next_Run_Cycle  := Current_Time;
-      Agent.Wake_Time       := Current_Time;
-
-      Add_Task_To_Scheduler (Scheduler_Info => Scheduler.all, T => Agent);
-   end Initialise_Main_Task;
-
    procedure Next_Run_Cycle (T : in out Task_Agent'Class) is
    begin
       T.Wake_Time      := T.Next_Run_Cycle;
@@ -116,7 +78,7 @@ package body Oak.Agent.Tasks is
    end Next_Run_Cycle;
 
    procedure Set_Activation_List
-     (T     : not null access Task_Agent'Class;
+     (T     : in out Task_Agent'Class;
       Chain : in Activation_Chain_Access)
    is
       TP : access Task_Agent'Class := Chain.Head;
@@ -150,7 +112,7 @@ package body Oak.Agent.Tasks is
    end Set_Relative_Deadline;
 
    procedure Set_Scheduler_Agent
-     (T               : not null access Task_Agent'Class;
+     (T     : in out Task_Agent'Class;
       Agent : access Schedulers.Scheduler_Agent'Class)
    is
    begin
@@ -158,21 +120,21 @@ package body Oak.Agent.Tasks is
    end Set_Scheduler_Agent;
 
    procedure Set_Scheduler_Agent_For_Task
-     (T     : access Task_Agent'Class;
+     (T     : in out Task_Agent'Class;
       Agent : access Schedulers.Scheduler_Agent'Class) is
    begin
       T.Scheduler_Agent := Agent;
    end Set_Scheduler_Agent_For_Task;
 
    procedure Set_Shared_State
-     (For_Task : not null access Task_Agent'Class;
+     (For_Task : in out Task_Agent'Class;
       With_State_Pointer : in Shared_Task_State) is
    begin
       For_Task.Shared_State := With_State_Pointer;
    end Set_Shared_State;
 
    procedure Set_State
-     (T     : not null access Task_Agent'Class;
+     (T     : in out Task_Agent'Class;
       State : in Task_State) is
    begin
       T.State := State;
@@ -187,14 +149,14 @@ package body Oak.Agent.Tasks is
    end Store_Task_Yield_Status;
 
    procedure Set_Wake_Time
-     (T  : not null access Task_Agent'Class;
+     (T  : in out Task_Agent'Class;
       WT : in Oak_Time.Time) is
    begin
       T.Wake_Time := WT;
    end Set_Wake_Time;
 
    procedure Store_Oak_Task_Message
-     (For_Task : not null access Task_Agent'Class;
+     (For_Task : in out Task_Agent'Class;
       Message  : in Oak_Task_Message) is
    begin
       For_Task.Message_Location.Message := Message;
