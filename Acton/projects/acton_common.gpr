@@ -15,7 +15,7 @@ abstract project Acton_Common is
                               "Oak.Core_Support_Package.Call_Stack",
                               "Oak.Core_Support_Package.Time",
                               "Oak.Interrupts",
-                         "Oak.Agent", "Oak.Agent.Tasks", "Oak.Agent.Tasks.Activation", "Oak.Agent.Tasks.Protected_Objects", "Oak.Agent.Queue", "Oak.Agent.Schedulers",
+                         "Oak.Agent", "Oak.Agent.Tasks", "Oak.Agent.Tasks.Activation", "Oak.Agent.Tasks.Main_Task", "Oak.Agent.Tasks.Protected_Objects", "Oak.Agent.Queue", "Oak.Agent.Schedulers",
                          "Oak.Entries",
                          "Oak.Oak_Time", "Oak.Oak_Time.Conversion",
                               "Oak.Processor_Support_Package", "Oak.Processor_Support_Package.Interrupts",
@@ -25,8 +25,7 @@ abstract project Acton_Common is
                               "Oak.Core_Support_Package.Processor",
                               "Oak.Core_Support_Package.Task_Interrupts",
                               "Oak.Core_Support_Package.Task_Support",
-                              "Oak.Protected_Objects",
-                              "Oak.Agent.Tasks.Internal", "Oak.Agent.Tasks.Queues",
+                              "Oak.Protected_Objects", "Oak.Agent.Tasks.Queues",
                          "Oak.Scheduler", "Oak.Scheduler.Agent_List"
                              );
 
@@ -36,7 +35,7 @@ abstract project Acton_Common is
    Documentation_Dir := "../doc/";
 
    package Builder is
-      for Default_Switches ("ada") use ("-s", "-m", "-j4", "-g", "-largs");
+      for Default_Switches ("ada") use ("-s", "-m", "-j4", "-g");
    end Builder;
 
    --  package Linker is

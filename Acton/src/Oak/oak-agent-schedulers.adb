@@ -26,21 +26,21 @@ package body Oak.Agent.Schedulers is
    end Initialise_Scheduler_Agent;
 
    procedure Set_Chosen_Task
-     (Agent : not null access Scheduler_Agent'Class;
+     (Agent : in out Scheduler_Agent'Class;
       T     : access Tasks.Task_Agent'Class) is
    begin
       Agent.Task_To_Run := T;
    end Set_Chosen_Task;
 
    procedure Set_Desired_Run_Time
-     (Agent    : not null access Scheduler_Agent'Class;
+     (Agent    : in out Scheduler_Agent'Class;
       Run_Time : in Oak.Oak_Time.Time) is
    begin
       Agent.Desired_Agent_Run_Time := Run_Time;
    end Set_Desired_Run_Time;
 
    procedure Set_Next_Agent
-     (Agent      : not null access Scheduler_Agent'Class;
+     (Agent      : in out Scheduler_Agent'Class;
       Next_Agent : access Scheduler_Agent'Class)
    is
    begin
@@ -48,14 +48,14 @@ package body Oak.Agent.Schedulers is
    end Set_Next_Agent;
 
    procedure Set_Run_Reason
-     (Agent  : not null access Scheduler_Agent'Class;
+     (Agent  : in out Scheduler_Agent'Class;
       Reason : in Reason_For_Run) is
    begin
       Agent.Run_Reason := Reason;
    end Set_Run_Reason;
 
    procedure Set_Task_To_Manage
-     (Agent : not null access Scheduler_Agent'Class;
+     (Agent : in out Scheduler_Agent'Class;
       MT    : access Tasks.Task_Agent'Class) is
    begin
       Agent.Manage_Task := MT;

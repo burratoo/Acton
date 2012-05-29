@@ -210,8 +210,8 @@ package body Oak.Processor_Support_Package.Interrupts is
       FIFO : Interrupt_FIFO renames Interrupt_Priority_FIFO;
       P : MPC5554_Interrupt_Priority;
    begin
-      if Agent.Tasks.Normal_Priority (PO) in Interrupt_Priority then
-         P := MPC5554_Interrupt_Priority (Agent.Tasks.Normal_Priority (PO) -
+      if PO.Normal_Priority in Interrupt_Priority then
+         P := MPC5554_Interrupt_Priority (PO.Normal_Priority -
             Interrupt_Priority'First);
          FIFO.Top := FIFO.Top + 1;
          FIFO.Stack (FIFO.Top) := P;
@@ -226,7 +226,7 @@ package body Oak.Processor_Support_Package.Interrupts is
    is
       FIFO : Interrupt_FIFO renames Interrupt_Priority_FIFO;
    begin
-      if Agent.Tasks.Normal_Priority (PO) in Interrupt_Priority then
+      if PO.Normal_Priority in Interrupt_Priority then
          ISA.Power.Memory_Barrier;
          FIFO.Top := FIFO.Top - 1;
          if FIFO.Top = 0 then

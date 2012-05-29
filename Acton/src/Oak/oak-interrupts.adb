@@ -1,6 +1,3 @@
-with Oak.Agent.Tasks;
-with Oak.Agent.Tasks.Protected_Objects;
-
 with System; use System;
 
 package body Oak.Interrupts is
@@ -12,9 +9,7 @@ package body Oak.Interrupts is
       T               : access Agent.Tasks.Task_Agent'Class;
       Chosen_Task     : out Agent.Tasks.Task_Handler)
    is
-      P : constant Interrupt_Priority :=
-            Agent.Tasks.Normal_Priority
-              (Oak.Agent.Tasks.Task_Agent'Class (Handler_PO.all)'Access);
+      P : constant Interrupt_Priority := Handler_PO.Normal_Priority;
    begin
       for Handler of Handlers.all loop
          Oak.Processor_Support_Package.Interrupts.Attach_Handler

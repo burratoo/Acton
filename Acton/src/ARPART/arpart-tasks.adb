@@ -17,11 +17,11 @@ package body ARPART.Tasks is
       Activation_Complete_Message : constant Oak_Task_Message :=
         (Message_Type      => Activation_Complete);
    begin
-      Set_Activation_List (T => Self, Chain => Chain);
+      Self.Set_Activation_List (Chain);
       Yield_Processor_To_Kernel
         (Task_Message => Activation_Pending_Message);
 
-      if State (Self) = Activation_Successful then
+      if Self.State = Activation_Successful then
          Yield_Processor_To_Kernel
            (Task_Message => Activation_Complete_Message);
       else
@@ -43,7 +43,7 @@ package body ARPART.Tasks is
    begin
       Yield_Processor_To_Kernel
         (Task_Message => Activation_Successful_Message);
-      if State (Self) = Activation_Successful then
+      if Self.State = Activation_Successful then
          Yield_Processor_To_Kernel
            (Task_Message => Activation_Successful_Message);
       else
@@ -91,9 +91,7 @@ package body ARPART.Tasks is
    procedure Yield_Processor_To_Kernel
      (Task_Message : in Oak_Task_Message) is
    begin
-      Store_Oak_Task_Message
-        (For_Task     => Oak.Core.Current_Task,
-         Message      => Task_Message);
+      Oak.Core.Current_Task.Store_Oak_Task_Message (Task_Message);
       Oak.Core_Support_Package.Task_Support.Yield_Processor_To_Kernel;
    end Yield_Processor_To_Kernel;
 end ARPART.Tasks;
