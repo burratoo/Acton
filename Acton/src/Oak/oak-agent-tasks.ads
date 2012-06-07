@@ -1,4 +1,4 @@
-with Oak.Entries;
+with Oak.Indices;
 with Oak.Protected_Objects;
 with System;
 with System.Storage_Elements;
@@ -7,6 +7,7 @@ with Oak.Oak_Time; use Oak.Oak_Time;
 
 limited with Oak.Agent.Schedulers;
 limited with Oak.Agent.Tasks.Protected_Objects;
+limited with Oak.Atomic_Actions;
 limited with Oak.Interrupts;
 
 package Oak.Agent.Tasks with Preelaborate is
@@ -37,7 +38,13 @@ package Oak.Agent.Tasks with Preelaborate is
                        Exit_PO_Error,               -- 18
                        Waiting_On_Protected_Object, -- 19
                        Attach_Interrupt_Handlers,   -- 20
-                       No_State);                   -- 21
+                       Entering_Atomic_Action,      -- 21
+                       Enter_Atomic_Action_Refused, -- 22
+                       Exiting_Atomic_Action,       -- 23
+                       Exit_Atomic_Action_Error,    -- 24
+                       Entering_Exit_Barrier,       -- 25
+                       Atomic_Error,                -- 26
+                       No_State);                   -- 27
 
    type Oak_Task_Message (Message_Type : Task_State := No_State) is record
       case Message_Type is
@@ -52,7 +59,7 @@ package Oak.Agent.Tasks with Preelaborate is
             PO_Enter          : not null access
               Protected_Objects.Protected_Agent'Class;
             Subprogram_Kind  : Oak.Protected_Objects.Protected_Subprogram_Type;
-            Entry_Id_Enter   : Entries.Entry_Index;
+            Entry_Id_Enter   : Indices.Entry_Index;
          when Exiting_PO =>
             PO_Exit           : not null access
               Protected_Objects.Protected_Agent'Class;
@@ -60,6 +67,19 @@ package Oak.Agent.Tasks with Preelaborate is
             Attach_Handlers   : access Oak.Interrupts.Interrupt_Handler_Array;
             Attach_Handler_PO : not null access
               Protected_Objects.Protected_Agent'Class;
+         when Entering_Atomic_Action =>
+            AA_Enter          : not null access
+              Atomic_Actions.Atomic_Action_State;
+            Action_Id_Enter   : Indices.Action_Index;
+         when Entering_Exit_Barrier =>
+            AA_EB             : not null access
+              Atomic_Actions.Atomic_Action_State;
+            Action_Id_EB      : Indices.Action_Index;
+            Exception_Raised  : Boolean;
+         when Exiting_Atomic_Action =>
+            AA_Exit           : not null access
+              Atomic_Actions.Atomic_Action_State;
+            Action_Id_Exit    : Indices.Action_Index;
          when others =>
             null;
       end case;

@@ -1,6 +1,6 @@
 with System;
 
-with Oak.Entries;           use Oak.Entries;
+with Oak.Indices;           use Oak.Indices;
 with Oak.Protected_Objects; use Oak.Protected_Objects;
 
 package Oak.Agent.Tasks.Protected_Objects with Preelaborate is

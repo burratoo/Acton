@@ -1,7 +1,7 @@
 with Oak.Protected_Objects;
 
 with Oak.Agent.Tasks.Protected_Objects; use Oak.Agent.Tasks.Protected_Objects;
-with Oak.Entries; use Oak.Entries;
+with Oak.Indices; use Oak.Indices;
 
 package ARPART.Protected_Objects with Preelaborate is
 

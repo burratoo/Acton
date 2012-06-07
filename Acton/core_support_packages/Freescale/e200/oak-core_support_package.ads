@@ -8,4 +8,5 @@ package Oak.Core_Support_Package with Pure is
 
    Max_Protected_Entries : constant := 10;
    Max_Task_Entries      : constant := 0;
+   Max_Actions           : constant := 10;
 end Oak.Core_Support_Package;

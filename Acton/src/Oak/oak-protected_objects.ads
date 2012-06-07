@@ -1,6 +1,6 @@
 limited with Oak.Agent.Tasks;
 limited with Oak.Agent.Tasks.Protected_Objects;
-limited with Oak.Entries;
+limited with Oak.Indices;
 limited with Oak.Scheduler;
 
 package Oak.Protected_Objects with Preelaborate is
@@ -16,7 +16,7 @@ package Oak.Protected_Objects with Preelaborate is
       PO              : not null access
         Agent.Tasks.Protected_Objects.Protected_Agent'Class;
       Subprogram_Kind : in Protected_Subprogram_Type;
-      Entry_Id        : in Entries.Entry_Index;
+      Entry_Id        : in Indices.Entry_Index;
       Chosen_Task     : out Agent.Tasks.Task_Handler);
 
    procedure Process_Exit_Request

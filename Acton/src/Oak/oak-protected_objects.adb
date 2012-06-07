@@ -1,4 +1,4 @@
-with Oak.Entries;
+with Oak.Indices;
 
 with Oak.Agent.Tasks;                   use Oak.Agent.Tasks;
 with Oak.Agent.Tasks.Protected_Objects; use Oak.Agent.Tasks.Protected_Objects;
@@ -13,7 +13,7 @@ package body Oak.Protected_Objects is
       T               : not null access Task_Agent'Class;
       PO              : not null access Protected_Agent'Class;
       Subprogram_Kind : in Protected_Subprogram_Type;
-      Entry_Id        : in Entries.Entry_Index;
+      Entry_Id        : in Indices.Entry_Index;
       Chosen_Task     : out Task_Handler) is
    begin
       if PO.all not in Protected_Agent'Class or
@@ -120,6 +120,7 @@ package body Oak.Protected_Objects is
    begin
       if not PO.Is_Task_Inside_Protect_Object (T) then
          T.Set_State (Exit_PO_Error);
+         Chosen_Task := Task_Handler (T);
          return;
       end if;
 
