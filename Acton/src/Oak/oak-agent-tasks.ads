@@ -166,6 +166,10 @@ package Oak.Agent.Tasks with Preelaborate is
    procedure Next_Run_Cycle (T : in out Task_Agent'Class);
 
    procedure Set_Activation_List
+     (T   : in out Task_Agent'Class;
+      Add : access Task_Agent'Class);
+
+   procedure Set_Activation_List
      (T     : in out Task_Agent'Class;
       Chain : in Activation_Chain_Access);
 

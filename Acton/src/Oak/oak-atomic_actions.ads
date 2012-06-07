@@ -2,6 +2,7 @@ with Oak.Indices; use Oak.Indices;
 
 with Oak.Agent.Tasks; use Oak.Agent.Tasks;
 
+limited with Oak.Agent.Tasks.Protected_Objects;
 limited with Oak.Scheduler;
 
 package Oak.Atomic_Actions with Preelaborate is
@@ -29,6 +30,15 @@ package Oak.Atomic_Actions with Preelaborate is
       Action_Id      : in Action_Index;
       Chosen_Task    : out Task_Handler);
 
+   procedure Add_Protected_Object
+     (Atomic_Action : not null access Atomic_Action_State;
+      PO            : not null access
+        Agent.Tasks.Protected_Objects.Protected_Agent'Class);
+
+   function Parent
+     (Atomic_Action : not null access Atomic_Action_State)
+     return access Atomic_Action_State;
+
 private
 
    type Action_State is record
@@ -44,13 +54,17 @@ private
       Barrier_Start     : Boolean;
       Barried_End       : Boolean;
       Require_All_Tasks : Boolean;
-      Active            : Boolean;
       Exception_Raised  : Boolean;
 
       Controlling_State : aliased Task_State := No_State;
 
       Parent            : access Atomic_Action_State := null;
       Actions           : Action_State_Array (1 .. Num_Actions);
+      Protected_Objects : access Task_Agent'Class := null;
    end record;
+
+   function Parent
+     (Atomic_Action : not null access Atomic_Action_State)
+     return access Atomic_Action_State is (Atomic_Action.Parent);
 
 end Oak.Atomic_Actions;

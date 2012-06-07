@@ -2,6 +2,7 @@ with Oak.Indices;
 
 with Oak.Agent.Tasks;                   use Oak.Agent.Tasks;
 with Oak.Agent.Tasks.Protected_Objects; use Oak.Agent.Tasks.Protected_Objects;
+with Oak.Atomic_Actions; use Oak.Atomic_Actions;
 with Oak.Scheduler;                     use Oak.Scheduler;
 with Oak.Processor_Support_Package.Interrupts;
 use Oak.Processor_Support_Package.Interrupts;
@@ -39,64 +40,79 @@ package body Oak.Protected_Objects is
       --     3. Once the protected action is completed in Process_Exit_Request.
       Get_Resource (PO);
 
-      if PO.State = Inactive then
-         Scheduler.Remove_Task_From_Scheduler (T);
-         Chosen_Task := null;
-
-         declare
-         begin
-            if Subprogram_Kind = Protected_Entry and then
-              not PO.Is_Barrier_Open (Entry_Id => Entry_Id) then
-               T.Set_State (Waiting);
-               PO.Add_Task_To_Entry_Queue
-                 (T        => T,
-                  Entry_Id => Entry_Id);
-
-               --  We need to check the queues here in case a barrier has
-               --  changed as a result of it using the queue attribute.
-               --  We are not able to conditional this to only protected
-               --  objects that have barriers that use Count as the front
-               --  end does lend itself to achieve this.
-               PO.Get_And_Remove_Next_Task_From_Entry_Queues
-                 (Next_Task => Chosen_Task);
-
-            else
-               Chosen_Task := Task_Handler (T);
-            end if;
-         exception
-            when Program_Error =>
-               Scheduler.Add_Task_To_Scheduler
-                 (Scheduler_Info => Scheduler_Info,
-                  T              => T);
-               --  Add call to check if we need to decativate the PO.
-               --  Add call to see if we need to remove the task from the PO.
-               T.Set_State (Enter_PO_Refused);
-               Chosen_Task := Task_Handler (T);
-               --  Object release point 1.
-               Release_Resource (PO);
-               return;
-         end;
-
-         if Chosen_Task /= null then
-            PO.Add_Task_To_Protected_Object (Chosen_Task);
-            T.Set_State (State => Runnable);
-            PO.Set_Acquiring_Tasks_State (Waiting);
-            Scheduler.Activate_Task
-              (Scheduler_Info => Scheduler_Info,
-               T              => PO);
-            Chosen_Task := Task_Handler (PO);
-         end if;
-
-      elsif Subprogram_Kind = Protected_Function and
-               PO.Active_Subprogram_Kind = Protected_Function then
-         Scheduler.Remove_Task_From_Scheduler (T);
-         T.Set_State (Runnable);
-         PO.Add_Task_To_Protected_Object (T);
-         Chosen_Task := Task_Handler (PO);
-      else
+      if T.Current_Atomic_Action /= PO.Current_Atomic_Action and then
+        Parent (T.Current_Atomic_Action) /= PO.Current_Atomic_Action then
          T.Set_State (Shared_State);
          T.Set_Shared_State (PO.Reference_To_Acquiring_Tasks_State);
          Chosen_Task := null;
+      else
+         if T.Current_Atomic_Action /= PO.Current_Atomic_Action then
+            PO.Set_Current_Atomic_Action (T.Current_Atomic_Action);
+            Atomic_Actions.Add_Protected_Object
+              (Atomic_Action => T.Current_Atomic_Action,
+               PO            => PO);
+         end if;
+
+         if PO.State = Inactive then
+            Scheduler.Remove_Task_From_Scheduler (T);
+            Chosen_Task := null;
+
+            declare
+            begin
+               if Subprogram_Kind = Protected_Entry and then
+                 not PO.Is_Barrier_Open (Entry_Id => Entry_Id) then
+                  T.Set_State (Waiting);
+                  PO.Add_Task_To_Entry_Queue
+                    (T        => T,
+                     Entry_Id => Entry_Id);
+
+                  --  We need to check the queues here in case a barrier has
+                  --  changed as a result of it using the queue attribute.
+                  --  We are not able to conditional this to only protected
+                  --  objects that have barriers that use Count as the front
+                  --  end does lend itself to achieve this.
+                  PO.Get_And_Remove_Next_Task_From_Entry_Queues
+                    (Next_Task => Chosen_Task);
+
+               else
+                  Chosen_Task := Task_Handler (T);
+               end if;
+            exception
+               when Program_Error =>
+                  Scheduler.Add_Task_To_Scheduler
+                    (Scheduler_Info => Scheduler_Info,
+                     T              => T);
+                  --  Add call to check if we need to decativate the PO.
+                  --  Add call to see if we need to remove the task from the
+                  --  PO.
+                  T.Set_State (Enter_PO_Refused);
+                  Chosen_Task := Task_Handler (T);
+                  --  Object release point 1.
+                  Release_Resource (PO);
+                  return;
+            end;
+
+            if Chosen_Task /= null then
+               PO.Add_Task_To_Protected_Object (Chosen_Task);
+               T.Set_State (State => Runnable);
+               PO.Set_Acquiring_Tasks_State (Waiting);
+               Scheduler.Activate_Task
+                 (Scheduler_Info => Scheduler_Info,
+                  T              => PO);
+               Chosen_Task := Task_Handler (PO);
+            end if;
+
+         elsif Subprogram_Kind = Protected_Function and
+                  PO.Active_Subprogram_Kind = Protected_Function then
+            Scheduler.Remove_Task_From_Scheduler (T);
+            T.Set_State (Runnable);
+            PO.Add_Task_To_Protected_Object (T);
+            Chosen_Task := Task_Handler (PO);
+         else
+            T.Set_State (Shared_State);
+            T.Set_Shared_State (PO.Reference_To_Acquiring_Tasks_State);
+            Chosen_Task := null;
+         end if;
       end if;
 
       if Chosen_Task = null then

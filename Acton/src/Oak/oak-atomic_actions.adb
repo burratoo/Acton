@@ -1,9 +1,24 @@
+with Oak.Agent.Tasks.Protected_Objects; use Oak.Agent.Tasks.Protected_Objects;
 with Oak.Agent.Tasks.Queues; use Oak.Agent.Tasks.Queues;
 with Oak.Scheduler;          use Oak.Scheduler;
 
 package body Oak.Atomic_Actions is
 
    package Queue renames Oak.Agent.Tasks.Queues.General;
+
+   procedure Add_Protected_Object
+     (Atomic_Action : not null access Atomic_Action_State;
+      PO            : not null access
+        Agent.Tasks.Protected_Objects.Protected_Agent'Class)
+   is
+      PO_List : access Task_Agent'Class renames
+                  Atomic_Action.Protected_Objects;
+   begin
+      while PO_List.Activation_List /= null loop
+         PO_List := PO_List.Activation_List;
+      end loop;
+      PO_List.Set_Activation_List (PO);
+   end Add_Protected_Object;
 
    procedure Enter_Action
      (Atomic_Action  : not null access Atomic_Action_State;
@@ -143,6 +158,8 @@ package body Oak.Atomic_Actions is
       Action_Id      : in Action_Index;
       Chosen_Task    : out Agent.Tasks.Task_Handler)
    is
+      Protected_Object : access Task_Agent'Class renames
+                           Atomic_Action.Protected_Objects;
    begin
       if T /= Atomic_Action.Actions (Action_Id).Current_Task then
          T.Set_State (Exit_Atomic_Action_Error);
@@ -186,7 +203,11 @@ package body Oak.Atomic_Actions is
                                 Chosen_Task   => Chosen_Task);
                end if;
             end loop;
-            --  insert fancy release PO code here.
+            while Protected_Object /= null loop
+               Protected_Object.Set_Current_Atomic_Action
+                 (Atomic_Action.Parent);
+               Protected_Object := Protected_Object.Activation_List;
+            end loop;
          end if;
       end Release;
 
