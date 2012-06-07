@@ -123,6 +123,10 @@ package Oak.Agent.Tasks with Preelaborate is
      (T    : in Task_Agent'Class)
       return access Task_Agent'Class;
 
+   function Current_Atomic_Action
+     (T : in Task_Agent'Class)
+      return access Atomic_Actions.Atomic_Action_State;
+
    function Cycle_Period
      (T : in Task_Agent'Class)
       return Oak_Time.Time_Span;
@@ -164,6 +168,10 @@ package Oak.Agent.Tasks with Preelaborate is
    procedure Set_Activation_List
      (T     : in out Task_Agent'Class;
       Chain : in Activation_Chain_Access);
+
+   procedure Set_Current_Atomic_Action
+     (T : in out Task_Agent'Class;
+      Atomic_Action : access Atomic_Actions.Atomic_Action_State);
 
    procedure Set_Cycle_Period
      (T  : in out Task_Agent'Class;
@@ -227,6 +235,8 @@ private
 
       Activation_List : access Task_Agent'Class := null;
       Elaborated      : Boolean_Access   := null;
+
+      Atomic_Action : access Atomic_Actions.Atomic_Action_State := null;
    end record;
 
    type Activation_Chain is limited record
@@ -236,6 +246,10 @@ private
    function Activation_List
      (T    : in Task_Agent'Class)
       return access Task_Agent'Class is (T.Activation_List);
+
+   function Current_Atomic_Action
+     (T : in Task_Agent'Class)
+      return access Atomic_Actions.Atomic_Action_State is (T.Atomic_Action);
 
    function Cycle_Period
      (T : in Task_Agent'Class)

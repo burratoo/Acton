@@ -44,10 +44,12 @@ private
       Barrier_Start     : Boolean;
       Barried_End       : Boolean;
       Require_All_Tasks : Boolean;
+      Active            : Boolean;
       Exception_Raised  : Boolean;
 
       Controlling_State : aliased Task_State := No_State;
 
+      Parent            : access Atomic_Action_State := null;
       Actions           : Action_State_Array (1 .. Num_Actions);
    end record;
 

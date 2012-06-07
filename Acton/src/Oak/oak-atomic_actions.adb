@@ -18,6 +18,11 @@ package body Oak.Atomic_Actions is
       Chosen_Task    : in out Task_Handler) is
    begin
       Atomic_Action.Actions (Action_Id).Current_Task := T;
+      T.Set_Current_Atomic_Action (Atomic_Action);
+
+      if not Atomic_Action.Active then
+         Atomic_Action.Active := True;
+      end if;
 
       if Atomic_Action.Barrier_Start then
          declare
@@ -50,42 +55,6 @@ package body Oak.Atomic_Actions is
          Chosen_Task := Task_Handler (T);
       end if;
    end Enter_Action;
-
-   procedure Process_Enter_Request
-     (Atomic_Action  : not null access Atomic_Action_State;
-      T              : not null access Task_Agent'Class;
-      Scheduler_Info : in out Scheduler.Oak_Scheduler_Info;
-      Action_Id      : in Action_Index;
-      Chosen_Task    : out Task_Handler)
-   is
-   begin
-      Chosen_Task := null;
-
-      if Action_Id not in Atomic_Action.Actions'Range then
-         T.Set_State (Enter_Atomic_Action_Refused);
-         Chosen_Task := Task_Handler (T);
-         return;
-      end if;
-
-      if Atomic_Action.Actions (Action_Id).Current_Task /= null then
-
-         Scheduler.Remove_Task_From_Scheduler (T);
-         T.Set_State (Waiting);
-         Queue.Add_Agent_To_Tail
-           (Queue =>
-              Queue.Agent_Handler (Atomic_Action.Actions (Action_Id).Queue),
-            Agent => T);
-
-      else
-         Enter_Action (Atomic_Action, T, Action_Id, Chosen_Task);
-      end if;
-
-      if Chosen_Task = null then
-         Scheduler.Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
-           (Scheduler_Info => Scheduler_Info,
-            Chosen_Task    => Chosen_Task);
-      end if;
-   end Process_Enter_Request;
 
    procedure Exit_Barrier
      (Atomic_Action    : not null access Atomic_Action_State;
@@ -134,6 +103,43 @@ package body Oak.Atomic_Actions is
 
    end Exit_Barrier;
 
+   procedure Process_Enter_Request
+     (Atomic_Action  : not null access Atomic_Action_State;
+      T              : not null access Task_Agent'Class;
+      Scheduler_Info : in out Scheduler.Oak_Scheduler_Info;
+      Action_Id      : in Action_Index;
+      Chosen_Task    : out Task_Handler)
+   is
+   begin
+      Chosen_Task := null;
+
+      if Action_Id not in Atomic_Action.Actions'Range or
+        T.Current_Atomic_Action /= Atomic_Action.Parent then
+         T.Set_State (Enter_Atomic_Action_Refused);
+         Chosen_Task := Task_Handler (T);
+         return;
+      end if;
+
+      if Atomic_Action.Actions (Action_Id).Current_Task /= null then
+
+         Scheduler.Remove_Task_From_Scheduler (T);
+         T.Set_State (Waiting);
+         Queue.Add_Agent_To_Tail
+           (Queue =>
+              Queue.Agent_Handler (Atomic_Action.Actions (Action_Id).Queue),
+            Agent => T);
+
+      else
+         Enter_Action (Atomic_Action, T, Action_Id, Chosen_Task);
+      end if;
+
+      if Chosen_Task = null then
+         Scheduler.Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
+           (Scheduler_Info => Scheduler_Info,
+            Chosen_Task    => Chosen_Task);
+      end if;
+   end Process_Enter_Request;
+
    procedure Process_Exit_Request
      (Atomic_Action  : not null access Atomic_Action_State;
       T              : not null access Agent.Tasks.Task_Agent'Class;
@@ -151,6 +157,7 @@ package body Oak.Atomic_Actions is
       Chosen_Task := null;
 
       T.Set_State (Runnable);
+      T.Set_Current_Atomic_Action (null);
       Atomic_Action.Actions (Action_Id).Current_Task := null;
 
       --  For the last task to exit, need to release any PO's held and unqueue
