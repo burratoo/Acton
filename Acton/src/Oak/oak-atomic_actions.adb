@@ -20,10 +20,6 @@ package body Oak.Atomic_Actions is
       Atomic_Action.Actions (Action_Id).Current_Task := T;
       T.Set_Current_Atomic_Action (Atomic_Action);
 
-      if not Atomic_Action.Active then
-         Atomic_Action.Active := True;
-      end if;
-
       if Atomic_Action.Barrier_Start then
          declare
             Not_All_Present : Boolean := False;
@@ -157,7 +153,7 @@ package body Oak.Atomic_Actions is
       Chosen_Task := null;
 
       T.Set_State (Runnable);
-      T.Set_Current_Atomic_Action (null);
+      T.Set_Current_Atomic_Action (Atomic_Action.Parent);
       Atomic_Action.Actions (Action_Id).Current_Task := null;
 
       --  For the last task to exit, need to release any PO's held and unqueue
