@@ -107,7 +107,7 @@ package body Oak.Agent.Tasks is
 
    procedure Set_Current_Atomic_Action
      (T : in out Task_Agent'Class;
-      Atomic_Action : access Atomic_Actions.Atomic_Action_State) is
+      Atomic_Action : access Atomic_Actions.Atomic_Object) is
    begin
       T.Atomic_Action := Atomic_Action;
    end Set_Current_Atomic_Action;

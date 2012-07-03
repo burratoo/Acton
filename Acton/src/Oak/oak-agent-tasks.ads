@@ -43,7 +43,7 @@ package Oak.Agent.Tasks with Preelaborate is
                        Exiting_Atomic_Action,       -- 23
                        Exit_Atomic_Action_Error,    -- 24
                        Entering_Exit_Barrier,       -- 25
-                       Atomic_Error,                -- 26
+                       Atomic_Err,                  -- 26
                        No_State);                   -- 27
 
    type Oak_Task_Message (Message_Type : Task_State := No_State) is record
@@ -69,16 +69,16 @@ package Oak.Agent.Tasks with Preelaborate is
               Protected_Objects.Protected_Agent'Class;
          when Entering_Atomic_Action =>
             AA_Enter          : not null access
-              Atomic_Actions.Atomic_Action_State;
+              Atomic_Actions.Atomic_Object;
             Action_Id_Enter   : Indices.Action_Index;
          when Entering_Exit_Barrier =>
             AA_EB             : not null access
-              Atomic_Actions.Atomic_Action_State;
+              Atomic_Actions.Atomic_Object;
             Action_Id_EB      : Indices.Action_Index;
             Exception_Raised  : Boolean;
          when Exiting_Atomic_Action =>
             AA_Exit           : not null access
-              Atomic_Actions.Atomic_Action_State;
+              Atomic_Actions.Atomic_Object;
             Action_Id_Exit    : Indices.Action_Index;
          when others =>
             null;
@@ -125,7 +125,7 @@ package Oak.Agent.Tasks with Preelaborate is
 
    function Current_Atomic_Action
      (T : in Task_Agent'Class)
-      return access Atomic_Actions.Atomic_Action_State;
+      return access Atomic_Actions.Atomic_Object;
 
    function Cycle_Period
      (T : in Task_Agent'Class)
@@ -175,7 +175,7 @@ package Oak.Agent.Tasks with Preelaborate is
 
    procedure Set_Current_Atomic_Action
      (T : in out Task_Agent'Class;
-      Atomic_Action : access Atomic_Actions.Atomic_Action_State);
+      Atomic_Action : access Atomic_Actions.Atomic_Object);
 
    procedure Set_Cycle_Period
      (T  : in out Task_Agent'Class;
@@ -240,7 +240,7 @@ private
       Activation_List : access Task_Agent'Class := null;
       Elaborated      : Boolean_Access   := null;
 
-      Atomic_Action : access Atomic_Actions.Atomic_Action_State := null;
+      Atomic_Action : access Atomic_Actions.Atomic_Object := null;
    end record;
 
    type Activation_Chain is limited record
@@ -253,7 +253,7 @@ private
 
    function Current_Atomic_Action
      (T : in Task_Agent'Class)
-      return access Atomic_Actions.Atomic_Action_State is (T.Atomic_Action);
+      return access Atomic_Actions.Atomic_Object is (T.Atomic_Action);
 
    function Cycle_Period
      (T : in Task_Agent'Class)

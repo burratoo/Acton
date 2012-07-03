@@ -5,7 +5,7 @@ with Oak.Agent.Tasks; use Oak.Agent.Tasks;
 
 package body ARPART.Atomic_Actions is
    procedure Enter_Action
-     (Atomic_Action : not null access Atomic_Action_State;
+     (Atomic_Action : not null access Atomic_Object;
       Action_Id     : Action_Index)
    is
       Self : constant access Task_Agent'Class := Oak.Core.Current_Task;
@@ -21,7 +21,7 @@ package body ARPART.Atomic_Actions is
    end Enter_Action;
 
    procedure Action_End_Barrier
-     (Atomic_Action : not null access Atomic_Action_State;
+     (Atomic_Action : not null access Atomic_Object;
       Action_Id     : Action_Index;
       Exception_Raised : Boolean)
    is
@@ -39,7 +39,7 @@ package body ARPART.Atomic_Actions is
    end Action_End_Barrier;
 
    procedure Exit_Action
-     (Atomic_Action : not null access Atomic_Action_State;
+     (Atomic_Action : not null access Atomic_Object;
       Action_Id     : Action_Index)
    is
       Self : constant access Task_Agent'Class := Oak.Core.Current_Task;

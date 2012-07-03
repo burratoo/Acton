@@ -7,7 +7,7 @@ package body Oak.Atomic_Actions is
    package Queue renames Oak.Agent.Tasks.Queues.General;
 
    procedure Add_Protected_Object
-     (Atomic_Action : not null access Atomic_Action_State;
+     (Atomic_Action : not null access Atomic_Object;
       PO            : not null access
         Agent.Tasks.Protected_Objects.Protected_Agent'Class)
    is
@@ -21,13 +21,13 @@ package body Oak.Atomic_Actions is
    end Add_Protected_Object;
 
    procedure Enter_Action
-     (Atomic_Action  : not null access Atomic_Action_State;
+     (Atomic_Action  : not null access Atomic_Object;
       T              : not null access Task_Agent'Class;
       Action_Id      : in Action_Index;
       Chosen_Task    : in out Task_Handler);
 
    procedure Enter_Action
-     (Atomic_Action  : not null access Atomic_Action_State;
+     (Atomic_Action  : not null access Atomic_Object;
       T              : not null access Task_Agent'Class;
       Action_Id      : in Action_Index;
       Chosen_Task    : in out Task_Handler) is
@@ -68,7 +68,7 @@ package body Oak.Atomic_Actions is
    end Enter_Action;
 
    procedure Exit_Barrier
-     (Atomic_Action    : not null access Atomic_Action_State;
+     (Atomic_Action    : not null access Atomic_Object;
       T                : not null access Task_Agent'Class;
       Action_Id        : in Action_Index;
       Exception_Raised : in Boolean;
@@ -91,9 +91,14 @@ package body Oak.Atomic_Actions is
          end if;
       end loop;
 
+      if Exception_Raised then
+         Atomic_Action.Exception_Raised := True;
+      end if;
+
       --  While we use the task agent's shared state to act as the
       --  barrier here, we could have used the activation chain link
       --  as well.
+
       if Not_All_Present then
          Atomic_Action.Controlling_State := Waiting;
          T.Set_State (Shared_State);
@@ -101,8 +106,9 @@ package body Oak.Atomic_Actions is
          Atomic_Action.Actions (Action_Id).End_Barrier := T;
       else
          declare
-            New_State : constant Task_State := (if Exception_Raised
-                                              then Atomic_Error else Runnable);
+            New_State : constant Task_State :=
+                          (if Atomic_Action.Exception_Raised
+                           then Atomic_Err else Runnable);
          begin
             T.Set_State (New_State);
             for A of Atomic_Action.Actions loop
@@ -114,8 +120,22 @@ package body Oak.Atomic_Actions is
 
    end Exit_Barrier;
 
+   procedure Initialise_Atomic_Object
+     (AO            : not null access Atomic_Object;
+      Parent        : access Atomic_Object;
+      End_Barrier   : in Boolean;
+      Start_Barrier : in Boolean;
+      Require_All_Tasks : in Boolean)
+   is
+   begin
+      AO.Parent := Parent;
+      AO.Barrier_Start := Start_Barrier;
+      AO.Barrier_End := End_Barrier;
+      AO.Require_All_Tasks := Require_All_Tasks;
+   end Initialise_Atomic_Object;
+
    procedure Process_Enter_Request
-     (Atomic_Action  : not null access Atomic_Action_State;
+     (Atomic_Action  : not null access Atomic_Object;
       T              : not null access Task_Agent'Class;
       Scheduler_Info : in out Scheduler.Oak_Scheduler_Info;
       Action_Id      : in Action_Index;
@@ -152,7 +172,7 @@ package body Oak.Atomic_Actions is
    end Process_Enter_Request;
 
    procedure Process_Exit_Request
-     (Atomic_Action  : not null access Atomic_Action_State;
+     (Atomic_Action  : not null access Atomic_Object;
       T              : not null access Agent.Tasks.Task_Agent'Class;
       Scheduler_Info : in out Scheduler.Oak_Scheduler_Info;
       Action_Id      : in Action_Index;
@@ -175,41 +195,44 @@ package body Oak.Atomic_Actions is
 
       --  For the last task to exit, need to release any PO's held and unqueue
       --  any tasks queued on the atomic unit's actions.
-      Release :
-      declare
-         Last_Task : Boolean := True;
-         QT        : access Task_Agent'Class;
-      begin
-         for A of Atomic_Action.Actions loop
-            if A.Current_Task /= null then
-               Last_Task := False;
-               exit;
-            end if;
-         end loop;
 
-         if Last_Task then
-            for Id in Atomic_Action.Actions'Range loop
-               if Atomic_Action.Actions (Id).Queue /= null then
-                  QT := Atomic_Action.Actions (Id).Queue;
-                  Queue.Remove_Agent_From_Head
-                    (Queue.Agent_Handler (Atomic_Action.Actions (Id).Queue));
-                  QT.Set_State (Runnable);
-                  Scheduler.Add_Task_To_Scheduler
-                    (Scheduler_Info => Scheduler_Info,
-                     T              => QT);
-                  Enter_Action (Atomic_Action => Atomic_Action,
-                                T             => QT,
-                                Action_Id     => Id,
-                                Chosen_Task   => Chosen_Task);
+      if Atomic_Action.Protected_Objects /= null then
+         Release : declare
+            Last_Task : Boolean := True;
+            QT        : access Task_Agent'Class;
+         begin
+            for A of Atomic_Action.Actions loop
+               if A.Current_Task /= null then
+                  Last_Task := False;
+                  exit;
                end if;
             end loop;
-            while Protected_Object /= null loop
-               Protected_Object.Set_Current_Atomic_Action
-                 (Atomic_Action.Parent);
-               Protected_Object := Protected_Object.Activation_List;
-            end loop;
-         end if;
-      end Release;
+
+            if Last_Task then
+               for Id in Atomic_Action.Actions'Range loop
+                  if Atomic_Action.Actions (Id).Queue /= null then
+                     QT := Atomic_Action.Actions (Id).Queue;
+                     Queue.Remove_Agent_From_Head
+                       (Queue.Agent_Handler
+                          (Atomic_Action.Actions (Id).Queue));
+                     QT.Set_State (Runnable);
+                     Scheduler.Add_Task_To_Scheduler
+                       (Scheduler_Info => Scheduler_Info,
+                        T              => QT);
+                     Enter_Action (Atomic_Action => Atomic_Action,
+                                   T             => QT,
+                                   Action_Id     => Id,
+                                   Chosen_Task   => Chosen_Task);
+                  end if;
+               end loop;
+               while Protected_Object /= null loop
+                  Protected_Object.Set_Current_Atomic_Action
+                    (Atomic_Action.Parent);
+                  Protected_Object := Protected_Object.Activation_List;
+               end loop;
+            end if;
+         end Release;
+      end if;
 
       Scheduler.Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
        (Scheduler_Info => Scheduler_Info,
