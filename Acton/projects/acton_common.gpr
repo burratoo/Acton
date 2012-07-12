@@ -35,7 +35,7 @@ abstract project Acton_Common is
    Documentation_Dir := "../doc/";
 
    package Builder is
-      for Default_Switches ("ada") use ("-s", "-m", "-j4", "-g");
+      for Default_Switches ("ada") use ("-s", "-m", "-j8", "-g");
    end Builder;
 
    --  package Linker is
