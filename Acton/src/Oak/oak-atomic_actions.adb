@@ -85,7 +85,8 @@ package body Oak.Atomic_Actions is
 
       for A of Atomic_Action.Actions loop
          if A.End_Barrier = null and then
-           (Atomic_Action.Require_All_Tasks or A.Current_Task /= null) then
+           (Atomic_Action.Participating = All_Actions
+            or A.Current_Task /= null) then
             Not_All_Present := True;
             exit;
          end if;
@@ -108,7 +109,7 @@ package body Oak.Atomic_Actions is
          declare
             New_State : constant Task_State :=
                           (if Atomic_Action.Exception_Raised
-                           then Atomic_Err else Runnable);
+                           then Atomic_Action_Error else Runnable);
          begin
             T.Set_State (New_State);
             for A of Atomic_Action.Actions loop
@@ -125,13 +126,13 @@ package body Oak.Atomic_Actions is
       Parent        : access Atomic_Object;
       End_Barrier   : in Boolean;
       Start_Barrier : in Boolean;
-      Require_All_Tasks : in Boolean)
+      Participating : in Participating_Actions)
    is
    begin
       AO.Parent := Parent;
       AO.Barrier_Start := Start_Barrier;
-      AO.Barrier_End := End_Barrier;
-      AO.Require_All_Tasks := Require_All_Tasks;
+      AO.Barrier_End   := End_Barrier;
+      AO.Participating := Participating;
    end Initialise_Atomic_Object;
 
    procedure Process_Enter_Request
@@ -172,11 +173,12 @@ package body Oak.Atomic_Actions is
    end Process_Enter_Request;
 
    procedure Process_Exit_Request
-     (Atomic_Action  : not null access Atomic_Object;
-      T              : not null access Agent.Tasks.Task_Agent'Class;
-      Scheduler_Info : in out Scheduler.Oak_Scheduler_Info;
-      Action_Id      : in Action_Index;
-      Chosen_Task    : out Agent.Tasks.Task_Handler)
+     (Atomic_Action    : not null access Atomic_Object;
+      T                : not null access Task_Agent'Class;
+      Scheduler_Info   : in out Scheduler.Oak_Scheduler_Info;
+      Action_Id        : in Action_Index;
+      Exception_Raised : in Boolean;
+      Chosen_Task      : out Task_Handler)
    is
       Protected_Object : access Task_Agent'Class renames
                            Atomic_Action.Protected_Objects;
@@ -189,7 +191,13 @@ package body Oak.Atomic_Actions is
 
       Chosen_Task := null;
 
-      T.Set_State (Runnable);
+      if Exception_Raised or Atomic_Action.Exception_Raised then
+         Atomic_Action.Exception_Raised := True;
+         T.Set_State (Atomic_Action_Error);
+      else
+         T.Set_State (Runnable);
+      end if;
+
       T.Set_Current_Atomic_Action (Atomic_Action.Parent);
       Atomic_Action.Actions (Action_Id).Current_Task := null;
 

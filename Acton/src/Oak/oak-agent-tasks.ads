@@ -43,7 +43,7 @@ package Oak.Agent.Tasks with Preelaborate is
                        Exiting_Atomic_Action,       -- 23
                        Exit_Atomic_Action_Error,    -- 24
                        Entering_Exit_Barrier,       -- 25
-                       Atomic_Err,                  -- 26
+                       Atomic_Action_Error,         -- 26
                        No_State);                   -- 27
 
    type Oak_Task_Message (Message_Type : Task_State := No_State) is record
@@ -80,6 +80,7 @@ package Oak.Agent.Tasks with Preelaborate is
             AA_Exit           : not null access
               Atomic_Actions.Atomic_Object;
             Action_Id_Exit    : Indices.Action_Index;
+            Atomic_Exception  : Boolean;
          when others =>
             null;
       end case;

@@ -21,8 +21,8 @@ package body ARPART.Atomic_Actions is
    end Enter_Action;
 
    procedure Action_End_Barrier
-     (Atomic_Action : not null access Atomic_Object;
-      Action_Id     : Action_Index;
+     (Atomic_Action    : not null access Atomic_Object;
+      Action_Id        : Action_Index;
       Exception_Raised : Boolean)
    is
       Self : constant access Task_Agent'Class := Oak.Core.Current_Task;
@@ -39,18 +39,22 @@ package body ARPART.Atomic_Actions is
    end Action_End_Barrier;
 
    procedure Exit_Action
-     (Atomic_Action : not null access Atomic_Object;
-      Action_Id     : Action_Index)
+     (Atomic_Action    : not null access Atomic_Object;
+      Action_Id        : Action_Index;
+      Exception_Raised : Boolean)
    is
       Self : constant access Task_Agent'Class := Oak.Core.Current_Task;
       Message : constant Oak_Task_Message :=
-                  (Message_Type   => Exiting_Atomic_Action,
-                   AA_Exit        => Atomic_Action,
-                   Action_Id_Exit => Action_Id);
+                  (Message_Type     => Exiting_Atomic_Action,
+                   AA_Exit          => Atomic_Action,
+                   Action_Id_Exit   => Action_Id,
+                   Atomic_Exception => Exception_Raised);
    begin
       Tasks.Yield_Processor_To_Kernel (Task_Message => Message);
       if Self.State = Exit_Atomic_Action_Error then
          raise Program_Error;
+      elsif Self.State = Atomic_Action_Error then
+         raise Atomic_Error;
       end if;
    end Exit_Action;
 

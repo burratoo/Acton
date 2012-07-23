@@ -9,6 +9,8 @@ package Oak.Atomic_Actions with Preelaborate is
 
    type Atomic_Object (Num_Actions : Action_Index) is private;
 
+   type Participating_Actions is (All_Actions, Active_Actions);
+
    procedure Add_Protected_Object
      (Atomic_Action : not null access Atomic_Object;
       PO            : not null access
@@ -26,7 +28,7 @@ package Oak.Atomic_Actions with Preelaborate is
       Parent        : access Atomic_Object;
       End_Barrier   : in Boolean;
       Start_Barrier : in Boolean;
-      Require_All_Tasks : in Boolean);
+      Participating : in Participating_Actions);
 
    function Parent
      (Atomic_Action : not null access Atomic_Object)
@@ -40,11 +42,12 @@ package Oak.Atomic_Actions with Preelaborate is
       Chosen_Task    : out Task_Handler);
 
    procedure Process_Exit_Request
-     (Atomic_Action  : not null access Atomic_Object;
-      T              : not null access Task_Agent'Class;
-      Scheduler_Info : in out Scheduler.Oak_Scheduler_Info;
-      Action_Id      : in Action_Index;
-      Chosen_Task    : out Task_Handler);
+     (Atomic_Action    : not null access Atomic_Object;
+      T                : not null access Task_Agent'Class;
+      Scheduler_Info   : in out Scheduler.Oak_Scheduler_Info;
+      Action_Id        : in Action_Index;
+      Exception_Raised : in Boolean;
+      Chosen_Task      : out Task_Handler);
 
 private
 
@@ -60,8 +63,8 @@ private
    type Atomic_Object (Num_Actions : Action_Index) is record
       Barrier_Start     : Boolean;
       Barrier_End       : Boolean;
-      Require_All_Tasks : Boolean;
       Exception_Raised  : Boolean;
+      Participating     : Participating_Actions;
 
       Controlling_State : aliased Task_State := No_State;
 

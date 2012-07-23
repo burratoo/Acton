@@ -203,11 +203,12 @@ package body Oak.Core is
 
                   when Exiting_Atomic_Action =>
                      Atomic_Actions.Process_Exit_Request
-                       (Atomic_Action  => Task_Message.AA_Exit,
-                        T              => Current_Task,
-                        Scheduler_Info => Oak_Instance.Scheduler,
-                        Action_Id      => Task_Message.Action_Id_Exit,
-                        Chosen_Task    => Next_Task);
+                       (Atomic_Action    => Task_Message.AA_Exit,
+                        T                => Current_Task,
+                        Scheduler_Info   => Oak_Instance.Scheduler,
+                        Action_Id        => Task_Message.Action_Id_Exit,
+                        Exception_Raised => Task_Message.Atomic_Exception,
+                        Chosen_Task      => Next_Task);
 
                   when others =>
                      null;
