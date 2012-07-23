@@ -278,20 +278,7 @@ package System.Standard_Library is
    --  to exceptions that can be requested.
 
    Exception_Trace : Exception_Trace_Kind := RM_Convention;
-   pragma Atomic (Exception_Trace);
+   --  pragma Atomic (Exception_Trace);
    --  By default, follow the RM convention
-
-   -----------------
-   -- Subprograms --
-   -----------------
-
-   procedure Abort_Undefer_Direct;
-   pragma Inline (Abort_Undefer_Direct);
-   --  A little procedure that just calls Abort_Undefer.all, for use in
-   --  clean up procedures, which only permit a simple subprogram name.
-
-   procedure Adafinal;
-   --  Performs the Ada Runtime finalization the first time it is invoked.
-   --  All subsequent calls are ignored.
 
 end System.Standard_Library;
