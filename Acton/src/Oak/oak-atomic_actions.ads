@@ -1,6 +1,6 @@
-with Oak.Indices; use Oak.Indices;
-
-with Oak.Agent.Tasks; use Oak.Agent.Tasks;
+with Ada.Atomic_Actions; use Ada.Atomic_Actions;
+with Oak.Indices;        use Oak.Indices;
+with Oak.Agent.Tasks;    use Oak.Agent.Tasks;
 
 limited with Oak.Agent.Tasks.Protected_Objects;
 limited with Oak.Scheduler;
@@ -8,8 +8,6 @@ limited with Oak.Scheduler;
 package Oak.Atomic_Actions with Preelaborate is
 
    type Atomic_Object (Num_Actions : Action_Index) is private;
-
-   type Participating_Actions is (All_Actions, Active_Actions);
 
    procedure Add_Protected_Object
      (Atomic_Action : not null access Atomic_Object;
