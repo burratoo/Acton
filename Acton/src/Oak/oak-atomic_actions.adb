@@ -49,6 +49,7 @@ package body Oak.Atomic_Actions is
             --  While we use the task agent's shared state to act as the
             --  barrier here, we could have used the activation chain link
             --  as well.
+
             if Not_All_Present then
                Atomic_Action.Controlling_State := Waiting;
                T.Set_State (Shared_State);
@@ -60,6 +61,11 @@ package body Oak.Atomic_Actions is
                   A.Current_Task.Set_State (Runnable);
                end loop;
             end if;
+
+            --  Set Chosen_Task to null as it is not our responsibility to
+            --  identify the task with the highest priority.
+
+            Chosen_Task := null;
          end;
       else
          T.Set_State (Runnable);
@@ -71,17 +77,19 @@ package body Oak.Atomic_Actions is
      (Atomic_Action    : not null access Atomic_Object;
       T                : not null access Task_Agent'Class;
       Action_Id        : in Action_Index;
-      Exception_Raised : in Boolean;
+      Exception_Raised : in out Boolean;
       Chosen_Task      : out Task_Handler)
    is
       Not_All_Present : Boolean := False;
    begin
-      Chosen_Task := Task_Handler (T);
-
       if T /= Atomic_Action.Actions (Action_Id).Current_Task then
          T.Set_State (Exit_Atomic_Action_Error);
          return;
       end if;
+
+      --  Register with the atomic object that we have reached the end barrier.
+
+      Atomic_Action.Actions (Action_Id).End_Barrier := T;
 
       for A of Atomic_Action.Actions loop
          if A.End_Barrier = null and then
@@ -96,6 +104,8 @@ package body Oak.Atomic_Actions is
          Atomic_Action.Exception_Raised := True;
       end if;
 
+      Exception_Raised := Atomic_Action.Exception_Raised;
+
       --  While we use the task agent's shared state to act as the
       --  barrier here, we could have used the activation chain link
       --  as well.
@@ -104,7 +114,6 @@ package body Oak.Atomic_Actions is
          Atomic_Action.Controlling_State := Waiting;
          T.Set_State (Shared_State);
          T.Set_Shared_State (Atomic_Action.Controlling_State'Access);
-         Atomic_Action.Actions (Action_Id).End_Barrier := T;
       else
          declare
             New_State : constant Task_State :=
@@ -118,6 +127,8 @@ package body Oak.Atomic_Actions is
             end loop;
          end;
       end if;
+
+      Chosen_Task := null;
 
    end Exit_Barrier;
 

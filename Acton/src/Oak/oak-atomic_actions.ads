@@ -20,7 +20,7 @@ package Oak.Atomic_Actions with Preelaborate is
      (Atomic_Action    : not null access Atomic_Object;
       T                : not null access Task_Agent'Class;
       Action_Id        : in Action_Index;
-      Exception_Raised : in Boolean;
+      Exception_Raised : in out Boolean;
       Chosen_Task      : out Task_Handler);
 
    procedure Initialise_Atomic_Object
@@ -58,7 +58,7 @@ private
    end record;
 
    type Action_State_Array is array (Action_Index range <>)
-     of access Action_State;
+     of Action_State;
 
    type Atomic_Object (Num_Actions : Action_Index) is record
       Barrier_Start     : Boolean;
