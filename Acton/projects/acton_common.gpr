@@ -6,20 +6,20 @@ abstract project Acton_Common is
    Library_Dir       := "../adalib/";
    Library_Version   := ".1";
    Library_Src_Dir   := "../adainclude/";
-   Library_Interface := ("ARPART", "ARPART.Interrupts", "ARPART.Tasks", "ARPART.Protected_Objects",
+   Library_Interface := ("ARPART", "ARPART.Atomic_Actions", "ARPART.Interrupts", "ARPART.Tasks", "ARPART.Protected_Objects",
                          "Acton", "Acton.Scheduler_Agents", "Acton.Scheduler_Agents.FIFO_Within_Priorities",
                          "Ada", "Ada.Exceptions", "Ada.Interrupts", "Ada.Real_Time", "Ada.Real_Time.Delays", "Ada.Tags", "Ada.Unchecked_Conversion",
-                         "Interfaces", "Oak", "Oak.Core", "Oak.Memory",
+                         "Interfaces", "Oak", "Oak.Atomic_Actions", "Oak.Core", "Oak.Memory",
                               "Oak.Memory.Call_Stack",
                               "Oak.Core_Support_Package",
                               "Oak.Core_Support_Package.Call_Stack",
                               "Oak.Core_Support_Package.Time",
                               "Oak.Interrupts",
                          "Oak.Agent", "Oak.Agent.Tasks", "Oak.Agent.Tasks.Activation", "Oak.Agent.Tasks.Main_Task", "Oak.Agent.Tasks.Protected_Objects", "Oak.Agent.Queue", "Oak.Agent.Schedulers",
-                         "Oak.Entries",
+                         "Oak.Indices",
                          "Oak.Oak_Time", "Oak.Oak_Time.Conversion",
                               "Oak.Processor_Support_Package", "Oak.Processor_Support_Package.Interrupts",
-                              "System", "System.Machine_Code", "System.Storage_Elements", "System.Unsigned_Types",
+                              "System", "System.Assertions", "System.Exceptions_Debug", "System.Machine_Code", "System.Standard_Library", "System.Storage_Elements", "System.Unsigned_Types",
                              --  Only needed for their ali files
                               "Oak.Memory.Call_Stack.Ops",
                               "Oak.Core_Support_Package.Processor",
@@ -35,7 +35,7 @@ abstract project Acton_Common is
    Documentation_Dir := "../doc/";
 
    package Builder is
-      for Default_Switches ("ada") use ("-s", "-m", "-j4", "-g");
+      for Default_Switches ("ada") use ("-s", "-m", "-j8", "-g");
    end Builder;
 
    --  package Linker is

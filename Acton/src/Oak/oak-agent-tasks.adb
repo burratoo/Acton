@@ -1,4 +1,5 @@
 with Oak.Agent.Schedulers;
+with Oak.Atomic_Actions;
 with Oak.Memory.Call_Stack.Ops; use Oak.Memory.Call_Stack.Ops;
 with System; use System;
 
@@ -78,6 +79,13 @@ package body Oak.Agent.Tasks is
    end Next_Run_Cycle;
 
    procedure Set_Activation_List
+     (T   : in out Task_Agent'Class;
+      Add : access Task_Agent'Class) is
+   begin
+      T.Activation_List := Add;
+   end Set_Activation_List;
+
+   procedure Set_Activation_List
      (T     : in out Task_Agent'Class;
       Chain : in Activation_Chain_Access)
    is
@@ -96,6 +104,13 @@ package body Oak.Agent.Tasks is
 
       T.Activation_List := Chain.Head;
    end Set_Activation_List;
+
+   procedure Set_Current_Atomic_Action
+     (T : in out Task_Agent'Class;
+      Atomic_Action : access Atomic_Actions.Atomic_Object) is
+   begin
+      T.Atomic_Action := Atomic_Action;
+   end Set_Current_Atomic_Action;
 
    procedure Set_Cycle_Period
      (T  : in out Task_Agent'Class;

@@ -1,5 +1,6 @@
 with Oak.Agent.Tasks.Activation;
 with Oak.Agent.Tasks.Protected_Objects; use Oak.Agent.Tasks.Protected_Objects;
+with Oak.Atomic_Actions;
 with Oak.Oak_Time;                                 use Oak.Oak_Time;
 with Oak.Memory.Call_Stack.Ops;
 with Oak.Core_Support_Package.Task_Support;
@@ -176,12 +177,39 @@ package body Oak.Core is
                         T                 => Current_Task,
                         PO                => Task_Message.PO_Exit,
                         Chosen_Task       => Next_Task);
+
                   when Attach_Interrupt_Handlers =>
                      Interrupts.Attach_Handlers
                        (Handlers    => Task_Message.Attach_Handlers,
                         Handler_PO  => Task_Message.Attach_Handler_PO,
                         T           => Current_Task,
                         Chosen_Task => Next_Task);
+
+                  when Entering_Atomic_Action =>
+                     Atomic_Actions.Process_Enter_Request
+                       (Atomic_Action  => Task_Message.AA_Enter,
+                        T              => Current_Task,
+                        Scheduler_Info => Oak_Instance.Scheduler,
+                        Action_Id      => Task_Message.Action_Id_Enter,
+                        Chosen_Task    => Next_Task);
+
+                  when Entering_Exit_Barrier =>
+                     Atomic_Actions.Exit_Barrier
+                       (Atomic_Action    => Task_Message.AA_EB,
+                        T                => Current_Task,
+                        Action_Id        => Task_Message.Action_Id_EB,
+                        Exception_Raised => Task_Message.Exception_Raised,
+                        Chosen_Task      => Next_Task);
+
+                  when Exiting_Atomic_Action =>
+                     Atomic_Actions.Process_Exit_Request
+                       (Atomic_Action    => Task_Message.AA_Exit,
+                        T                => Current_Task,
+                        Scheduler_Info   => Oak_Instance.Scheduler,
+                        Action_Id        => Task_Message.Action_Id_Exit,
+                        Exception_Raised => Task_Message.Atomic_Exception,
+                        Chosen_Task      => Next_Task);
+
                   when others =>
                      null;
                end case;

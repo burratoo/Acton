@@ -1,4 +1,4 @@
-with Oak.Entries;
+with Oak.Indices;
 with Oak.Protected_Objects;
 with System;
 with System.Storage_Elements;
@@ -7,6 +7,7 @@ with Oak.Oak_Time; use Oak.Oak_Time;
 
 limited with Oak.Agent.Schedulers;
 limited with Oak.Agent.Tasks.Protected_Objects;
+limited with Oak.Atomic_Actions;
 limited with Oak.Interrupts;
 
 package Oak.Agent.Tasks with Preelaborate is
@@ -37,7 +38,13 @@ package Oak.Agent.Tasks with Preelaborate is
                        Exit_PO_Error,               -- 18
                        Waiting_On_Protected_Object, -- 19
                        Attach_Interrupt_Handlers,   -- 20
-                       No_State);                   -- 21
+                       Entering_Atomic_Action,      -- 21
+                       Enter_Atomic_Action_Refused, -- 22
+                       Exiting_Atomic_Action,       -- 23
+                       Exit_Atomic_Action_Error,    -- 24
+                       Entering_Exit_Barrier,       -- 25
+                       Atomic_Action_Error,         -- 26
+                       No_State);                   -- 27
 
    type Oak_Task_Message (Message_Type : Task_State := No_State) is record
       case Message_Type is
@@ -52,7 +59,7 @@ package Oak.Agent.Tasks with Preelaborate is
             PO_Enter          : not null access
               Protected_Objects.Protected_Agent'Class;
             Subprogram_Kind  : Oak.Protected_Objects.Protected_Subprogram_Type;
-            Entry_Id_Enter   : Entries.Entry_Index;
+            Entry_Id_Enter   : Indices.Entry_Index;
          when Exiting_PO =>
             PO_Exit           : not null access
               Protected_Objects.Protected_Agent'Class;
@@ -60,6 +67,20 @@ package Oak.Agent.Tasks with Preelaborate is
             Attach_Handlers   : access Oak.Interrupts.Interrupt_Handler_Array;
             Attach_Handler_PO : not null access
               Protected_Objects.Protected_Agent'Class;
+         when Entering_Atomic_Action =>
+            AA_Enter          : not null access
+              Atomic_Actions.Atomic_Object;
+            Action_Id_Enter   : Indices.Action_Index;
+         when Entering_Exit_Barrier =>
+            AA_EB             : not null access
+              Atomic_Actions.Atomic_Object;
+            Action_Id_EB      : Indices.Action_Index;
+            Exception_Raised  : Boolean;
+         when Exiting_Atomic_Action =>
+            AA_Exit           : not null access
+              Atomic_Actions.Atomic_Object;
+            Action_Id_Exit    : Indices.Action_Index;
+            Atomic_Exception  : Boolean;
          when others =>
             null;
       end case;
@@ -103,6 +124,10 @@ package Oak.Agent.Tasks with Preelaborate is
      (T    : in Task_Agent'Class)
       return access Task_Agent'Class;
 
+   function Current_Atomic_Action
+     (T : in Task_Agent'Class)
+      return access Atomic_Actions.Atomic_Object;
+
    function Cycle_Period
      (T : in Task_Agent'Class)
       return Oak_Time.Time_Span;
@@ -142,8 +167,16 @@ package Oak.Agent.Tasks with Preelaborate is
    procedure Next_Run_Cycle (T : in out Task_Agent'Class);
 
    procedure Set_Activation_List
+     (T   : in out Task_Agent'Class;
+      Add : access Task_Agent'Class);
+
+   procedure Set_Activation_List
      (T     : in out Task_Agent'Class;
       Chain : in Activation_Chain_Access);
+
+   procedure Set_Current_Atomic_Action
+     (T : in out Task_Agent'Class;
+      Atomic_Action : access Atomic_Actions.Atomic_Object);
 
    procedure Set_Cycle_Period
      (T  : in out Task_Agent'Class;
@@ -207,6 +240,8 @@ private
 
       Activation_List : access Task_Agent'Class := null;
       Elaborated      : Boolean_Access   := null;
+
+      Atomic_Action : access Atomic_Actions.Atomic_Object := null;
    end record;
 
    type Activation_Chain is limited record
@@ -216,6 +251,10 @@ private
    function Activation_List
      (T    : in Task_Agent'Class)
       return access Task_Agent'Class is (T.Activation_List);
+
+   function Current_Atomic_Action
+     (T : in Task_Agent'Class)
+      return access Atomic_Actions.Atomic_Object is (T.Atomic_Action);
 
    function Cycle_Period
      (T : in Task_Agent'Class)

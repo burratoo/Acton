@@ -72,9 +72,9 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
       raise Program_Error with "Unimplemented procedure Change_Task_Priority";
    end Change_Task_Priority;
 
-   --------------------------
-   -- Run_Loop            --
-   --------------------------
+   --------------
+   -- Run_Loop --
+   --------------
 
    procedure Run_Loop is
       Self            : constant access Scheduler_Agent'Class :=
@@ -84,7 +84,7 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
         (Self.Lowest_Priority .. Self.Highest_Priority);
       Sleeping_Queue  : access Task_Agent'Class;
 
-      Scheduler_Error1, Scheduler_Error2 : exception;
+      Scheduler_Error1 : exception;
 
       procedure Select_Next_Task;
       procedure Task_Yielded;
@@ -152,39 +152,38 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
          end if;
       end Select_Next_Task;
 
-      --------------------------
-      -- Task_Yielded         --
-      --------------------------
+      ------------------
+      -- Task_Yielded --
+      ------------------
+
       procedure Task_Yielded is
          Yielded_Task : constant access Task_Agent'Class := Self.Task_To_Run;
          T_Priority   : constant Any_Priority := Yielded_Task.Normal_Priority;
       begin
-         if Runnable_Queues (T_Priority) = Yielded_Task then --  Sanity check.
-            case Yielded_Task.State is
-               when Cycle_Completed =>
-                  Yielded_Task.Set_State (Sleeping);
-                  --  Remove task from Runnable Queues
-                  Task_Queues.Remove_Agent_From_Head
-                    (Queue => Runnable_Queues (T_Priority));
-                  Insert_Into_Sleeping_Queue
-                    (T     => Yielded_Task);
-               when Sleeping =>
-                  Task_Queues.Remove_Agent_From_Head
-                    (Queue => Runnable_Queues (T_Priority));
-                  Insert_Into_Sleeping_Queue
-                    (T     => Yielded_Task);
-               when Activation_Pending    |
-                    Activation_Complete   |
-                    Activation_Successful =>
-                  null;
-               when Change_Cycle_Period | Change_Relative_Deadline =>
-                  null;
-               when others =>
-                  raise Scheduler_Error1;
-            end case;
-         else
-            raise Scheduler_Error2;
-         end if;
+         case Yielded_Task.State is
+            when Cycle_Completed =>
+               Yielded_Task.Set_State (Sleeping);
+               --  Remove task from Runnable Queues
+               Task_Queues.Remove_Agent
+                 (Queue => Runnable_Queues (T_Priority),
+                  Agent => Yielded_Task);
+               Insert_Into_Sleeping_Queue
+                 (T     => Yielded_Task);
+            when Sleeping =>
+               Task_Queues.Remove_Agent
+                 (Queue => Runnable_Queues (T_Priority),
+                  Agent => Yielded_Task);
+               Insert_Into_Sleeping_Queue
+                 (T     => Yielded_Task);
+            when Activation_Pending    |
+                 Activation_Complete   |
+                 Activation_Successful =>
+               null;
+            when Change_Cycle_Period | Change_Relative_Deadline =>
+               null;
+            when others =>
+               raise Scheduler_Error1;
+         end case;
          Select_Next_Task;
       end Task_Yielded;
 
@@ -210,7 +209,7 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
                              Self.Task_To_Manage;
       begin
          case Task_To_Remove.State is
-            when Runnable | Entering_PO =>
+            when Runnable | Entering_PO | Entering_Atomic_Action =>
                declare
                   Task_Priority : constant Any_Priority :=
                            Task_To_Remove.Normal_Priority;
@@ -241,9 +240,8 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
               (Queue => Task_Queues.Agent_Handler (Sleeping_Queue),
                Agent => T);
          else
-            while Task_Wake_Time > Current.Wake_Time
-            loop
-               Current  := Next_Task (T => Current);
+            while Task_Wake_Time > Current.Wake_Time loop
+               Current := Next_Task (T => Current);
                if Current = Sleeping_Queue then
                   Queue_End := Task_Queues.Tail;
                   exit;
