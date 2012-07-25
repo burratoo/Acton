@@ -138,10 +138,11 @@ package body Oak.Atomic_Actions is
       Participating : in Participating_Actions)
    is
    begin
-      AO.Parent := Parent;
-      AO.Barrier_Start := Start_Barrier;
-      AO.Barrier_End   := End_Barrier;
-      AO.Participating := Participating;
+      AO.Parent           := Parent;
+      AO.Barrier_Start    := Start_Barrier;
+      AO.Barrier_End      := End_Barrier;
+      AO.Participating    := Participating;
+      AO.Exception_Raised := False;
    end Initialise_Atomic_Object;
 
    procedure Process_Enter_Request
