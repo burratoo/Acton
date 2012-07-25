@@ -187,7 +187,7 @@ package body Oak.Core is
 
                   when Entering_Atomic_Action =>
                      Atomic_Actions.Process_Enter_Request
-                       (Atomic_Action  => Task_Message.AA_Enter,
+                       (AO             => Task_Message.AA_Enter,
                         T              => Current_Task,
                         Scheduler_Info => Oak_Instance.Scheduler,
                         Action_Id      => Task_Message.Action_Id_Enter,
@@ -195,7 +195,7 @@ package body Oak.Core is
 
                   when Entering_Exit_Barrier =>
                      Atomic_Actions.Exit_Barrier
-                       (Atomic_Action    => Task_Message.AA_EB,
+                       (AO               => Task_Message.AA_EB,
                         T                => Current_Task,
                         Action_Id        => Task_Message.Action_Id_EB,
                         Exception_Raised => Task_Message.Exception_Raised,
@@ -203,7 +203,7 @@ package body Oak.Core is
 
                   when Exiting_Atomic_Action =>
                      Atomic_Actions.Process_Exit_Request
-                       (Atomic_Action    => Task_Message.AA_Exit,
+                       (AO               => Task_Message.AA_Exit,
                         T                => Current_Task,
                         Scheduler_Info   => Oak_Instance.Scheduler,
                         Action_Id        => Task_Message.Action_Id_Exit,
