@@ -1,9 +1,9 @@
 with Oak.Core;
-with ARPART.Tasks;
+with Oakland.Tasks;
 
 with Oak.Agent.Tasks; use Oak.Agent.Tasks;
 
-package body ARPART.Protected_Objects is
+package body Oakland.Protected_Objects is
 
    procedure Enter_Protected_Object
      (PO              : not null access Protected_Agent'Class;
@@ -44,4 +44,4 @@ package body ARPART.Protected_Objects is
       return PO.Entry_Queue_Length (Entry_Id => Entry_Id);
    end Entry_Count;
 
-end ARPART.Protected_Objects;
+end Oakland.Protected_Objects;

@@ -1,4 +1,4 @@
-with ARPART.Tasks;
+with Oakland.Tasks;
 with Oak.Oak_Time.Conversion; use Oak.Oak_Time.Conversion;
 
 with Oak.Agent.Tasks; use Oak.Agent.Tasks;
@@ -13,7 +13,7 @@ package body Ada.Real_Time.Delays is
         (Message_Type => Sleeping,
          Wake_Up_At   => To_Oak_Time (T));
    begin
-      ARPART.Tasks.Yield_Processor_To_Kernel (Task_Message => Message);
+      Oakland.Tasks.Yield_Processor_To_Kernel (Task_Message => Message);
    end Delay_Until;
 
 end Ada.Real_Time.Delays;

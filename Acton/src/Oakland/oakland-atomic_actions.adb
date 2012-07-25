@@ -1,9 +1,9 @@
 with Oak.Core;
-with ARPART.Tasks;
+with Oakland.Tasks;
 
 with Oak.Agent.Tasks; use Oak.Agent.Tasks;
 
-package body ARPART.Atomic_Actions is
+package body Oakland.Atomic_Actions is
    procedure Enter_Action
      (AO        : not null access Atomic_Object;
       Action_Id : in Action_Index)
@@ -60,4 +60,4 @@ package body ARPART.Atomic_Actions is
       end if;
    end Exit_Action;
 
-end ARPART.Atomic_Actions;
+end Oakland.Atomic_Actions;

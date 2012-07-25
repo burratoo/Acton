@@ -1,7 +1,7 @@
 with Oak.Agent.Tasks; use Oak.Agent.Tasks;
 with Oak.Oak_Time;   use Oak.Oak_Time;
 
-package ARPART.Tasks with Preelaborate is
+package Oakland.Tasks with Preelaborate is
 
    procedure Activate_Tasks (Chain : Activation_Chain_Access);
    procedure Complete_Activation;
@@ -14,4 +14,4 @@ package ARPART.Tasks with Preelaborate is
    procedure Cycle_Completed;
 
    procedure Yield_Processor_To_Kernel (Task_Message : in Oak_Task_Message);
-end ARPART.Tasks;
+end Oakland.Tasks;

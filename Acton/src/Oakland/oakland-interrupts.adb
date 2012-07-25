@@ -1,7 +1,7 @@
-with ARPART.Tasks;
+with Oakland.Tasks;
 with Oak.Agent.Tasks; use Oak.Agent.Tasks;
 
-package body ARPART.Interrupts is
+package body Oakland.Interrupts is
    procedure Attach_Handlers
      (PO        : not null access Protected_Agent'Class;
       Handlers  : in Interrupt_Handler_Array)
@@ -15,4 +15,4 @@ package body ARPART.Interrupts is
       Tasks.Yield_Processor_To_Kernel (Task_Message => Message);
    end Attach_Handlers;
 
-end ARPART.Interrupts;
+end Oakland.Interrupts;
