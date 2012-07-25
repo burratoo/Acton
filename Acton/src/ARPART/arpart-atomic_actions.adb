@@ -6,7 +6,7 @@ with Oak.Agent.Tasks; use Oak.Agent.Tasks;
 package body ARPART.Atomic_Actions is
    procedure Enter_Action
      (AO        : not null access Atomic_Object;
-      Action_Id : Action_Index)
+      Action_Id : in Action_Index)
    is
       Self : constant access Task_Agent'Class := Oak.Core.Current_Task;
       Message : constant Oak_Task_Message :=
@@ -22,8 +22,8 @@ package body ARPART.Atomic_Actions is
 
    procedure Action_End_Barrier
      (AO               : not null access Atomic_Object;
-      Action_Id        : Action_Index;
-      Exception_Raised : Boolean)
+      Action_Id        : in Action_Index;
+      Exception_Raised : in out Boolean)
    is
       Self : constant access Task_Agent'Class := Oak.Core.Current_Task;
       Message : constant Oak_Task_Message :=
@@ -35,13 +35,15 @@ package body ARPART.Atomic_Actions is
       Tasks.Yield_Processor_To_Kernel (Task_Message => Message);
       if Self.State = Exit_Atomic_Action_Error then
          raise Program_Error;
+      elsif Self.State = Atomic_Action_Error then
+         Exception_Raised := True;
       end if;
    end Action_End_Barrier;
 
    procedure Exit_Action
      (AO               : not null access Atomic_Object;
-      Action_Id        : Action_Index;
-      Exception_Raised : Boolean)
+      Action_Id        : in Action_Index;
+      Exception_Raised : in Boolean)
    is
       Self : constant access Task_Agent'Class := Oak.Core.Current_Task;
       Message : constant Oak_Task_Message :=

@@ -18,7 +18,7 @@ package Oak.Atomic_Actions with Preelaborate is
      (AO : not null access Atomic_Object;
       T  : not null access Task_Agent'Class;
       Action_Id        : in Action_Index;
-      Exception_Raised : in out Boolean;
+      Exception_Raised : in Boolean;
       Chosen_Task      : out Task_Handler);
 
    procedure Initialise_Atomic_Object

@@ -58,6 +58,13 @@ package body Oak.Atomic_Actions is
                for A of AO.Actions loop
                   A.Current_Task.Set_State (Runnable);
                end loop;
+
+               --  Ensure that the atomic object's Exception_Raised field
+               --  is false when leaving the barrier as no action has started
+               --  running at this point.
+
+               AO.Exception_Raised := False;
+
             end if;
 
             --  Set Chosen_Task to null as it is not our responsibility to
@@ -75,7 +82,7 @@ package body Oak.Atomic_Actions is
      (AO               : not null access Atomic_Object;
       T                : not null access Task_Agent'Class;
       Action_Id        : in Action_Index;
-      Exception_Raised : in out Boolean;
+      Exception_Raised : in Boolean;
       Chosen_Task      : out Task_Handler)
    is
       Not_All_Present : Boolean := False;
@@ -102,8 +109,6 @@ package body Oak.Atomic_Actions is
          AO.Exception_Raised := True;
       end if;
 
-      Exception_Raised := AO.Exception_Raised;
-
       --  While we use the task agent's shared state to act as the
       --  barrier here, we could have used the activation chain link
       --  as well.
@@ -123,6 +128,13 @@ package body Oak.Atomic_Actions is
                A.Current_Task.Set_State (New_State);
                A.End_Barrier := null;
             end loop;
+
+            --  On leaving the exit barrier we negate the atomic object's
+            --  Exception_Raised field as the atomic exception will have
+            --  propagated to all participating tasks by now.
+
+            AO.Exception_Raised := False;
+
          end;
       end if;
 
@@ -202,8 +214,17 @@ package body Oak.Atomic_Actions is
       Chosen_Task := null;
 
       if Exception_Raised or AO.Exception_Raised then
-         AO.Exception_Raised := True;
          T.Set_State (Atomic_Action_Error);
+
+         --  If we have a start barrier then set atomic action's
+         --  Exception_Raised field. This will allow an exception to propagate
+         --  to tailing tasks if there is no end barrier.  We can only do this
+         --  if a start barrier is present as we would not no when a new
+         --  action starts otherwise.
+
+         if AO.Barrier_Start then
+            AO.Exception_Raised := True;
+         end if;
       else
          T.Set_State (Runnable);
       end if;
