@@ -106,10 +106,10 @@ package body Oak.Agent.Tasks is
    end Set_Activation_List;
 
    procedure Set_Current_Atomic_Action
-     (T : in out Task_Agent'Class;
-      Atomic_Action : access Atomic_Actions.Atomic_Object) is
+     (T  : in out Task_Agent'Class;
+      AA : access Atomic_Actions.Atomic_Object) is
    begin
-      T.Atomic_Action := Atomic_Action;
+      T.In_Atomic_Action := AA;
    end Set_Current_Atomic_Action;
 
    procedure Set_Cycle_Period

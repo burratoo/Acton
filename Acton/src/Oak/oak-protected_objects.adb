@@ -49,8 +49,8 @@ package body Oak.Protected_Objects is
          if T.Current_Atomic_Action /= PO.Current_Atomic_Action then
             PO.Set_Current_Atomic_Action (T.Current_Atomic_Action);
             Atomic_Actions.Add_Protected_Object
-              (Atomic_Action => T.Current_Atomic_Action,
-               PO            => PO);
+              (AO => T.Current_Atomic_Action,
+               PO => PO);
          end if;
 
          if PO.State = Inactive then

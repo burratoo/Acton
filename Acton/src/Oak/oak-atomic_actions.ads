@@ -10,13 +10,13 @@ package Oak.Atomic_Actions with Preelaborate is
    type Atomic_Object (Num_Actions : Action_Index) is private;
 
    procedure Add_Protected_Object
-     (Atomic_Action : not null access Atomic_Object;
-      PO            : not null access
+     (AO : not null access Atomic_Object;
+      PO : not null access
         Agent.Tasks.Protected_Objects.Protected_Agent'Class);
 
    procedure Exit_Barrier
-     (Atomic_Action    : not null access Atomic_Object;
-      T                : not null access Task_Agent'Class;
+     (AO : not null access Atomic_Object;
+      T  : not null access Task_Agent'Class;
       Action_Id        : in Action_Index;
       Exception_Raised : in out Boolean;
       Chosen_Task      : out Task_Handler);
@@ -29,18 +29,18 @@ package Oak.Atomic_Actions with Preelaborate is
       Participating : in Participating_Actions);
 
    function Parent
-     (Atomic_Action : not null access Atomic_Object)
+     (AO : not null access Atomic_Object)
       return access Atomic_Object;
 
    procedure Process_Enter_Request
-     (Atomic_Action  : not null access Atomic_Object;
+     (AO             : not null access Atomic_Object;
       T              : not null access Task_Agent'Class;
       Scheduler_Info : in out Scheduler.Oak_Scheduler_Info;
       Action_Id      : in Action_Index;
       Chosen_Task    : out Task_Handler);
 
    procedure Process_Exit_Request
-     (Atomic_Action    : not null access Atomic_Object;
+     (AO               : not null access Atomic_Object;
       T                : not null access Task_Agent'Class;
       Scheduler_Info   : in out Scheduler.Oak_Scheduler_Info;
       Action_Id        : in Action_Index;
@@ -72,7 +72,7 @@ private
    end record;
 
    function Parent
-     (Atomic_Action : not null access Atomic_Object)
-     return access Atomic_Object is (Atomic_Action.Parent);
+     (AO : not null access Atomic_Object)
+     return access Atomic_Object is (AO.Parent);
 
 end Oak.Atomic_Actions;

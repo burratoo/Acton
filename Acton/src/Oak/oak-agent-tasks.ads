@@ -175,8 +175,8 @@ package Oak.Agent.Tasks with Preelaborate is
       Chain : in Activation_Chain_Access);
 
    procedure Set_Current_Atomic_Action
-     (T : in out Task_Agent'Class;
-      Atomic_Action : access Atomic_Actions.Atomic_Object);
+     (T  : in out Task_Agent'Class;
+      AA : access Atomic_Actions.Atomic_Object);
 
    procedure Set_Cycle_Period
      (T  : in out Task_Agent'Class;
@@ -225,23 +225,23 @@ private
       Shared_State     : Shared_Task_State         := No_Shared_State;
       Message_Location : Oak_Task_Message_Location := null;
 
-      Normal_Priority : System.Any_Priority := System.Default_Priority;
-      Deadline        : Oak_Time.Time_Span := Oak_Time.Time_Span_Zero;
-      Cycle_Period    : Oak_Time.Time_Span := Oak_Time.Time_Span_Zero;
-      Phase           : Oak_Time.Time_Span := Oak_Time.Time_Span_Zero;
+      Normal_Priority  : System.Any_Priority := System.Default_Priority;
+      Deadline         : Oak_Time.Time_Span := Oak_Time.Time_Span_Zero;
+      Cycle_Period     : Oak_Time.Time_Span := Oak_Time.Time_Span_Zero;
+      Phase            : Oak_Time.Time_Span := Oak_Time.Time_Span_Zero;
 
-      Next_Deadline  : Oak_Time.Time := Oak_Time.Time_Last;
-      Next_Run_Cycle : Oak_Time.Time := Oak_Time.Time_Last;
-      Wake_Time      : Oak_Time.Time := Oak_Time.Time_Last;
+      Next_Deadline    : Oak_Time.Time := Oak_Time.Time_Last;
+      Next_Run_Cycle   : Oak_Time.Time := Oak_Time.Time_Last;
+      Wake_Time        : Oak_Time.Time := Oak_Time.Time_Last;
 
-      Scheduler_Agent : access Schedulers.Scheduler_Agent'Class := null;
-      Queue_Link      : Task_Agent_Link_Element;
-      Deadline_List   : Task_Agent_Link_Element;
+      Scheduler_Agent  : access Schedulers.Scheduler_Agent'Class := null;
+      Queue_Link       : Task_Agent_Link_Element;
+      Deadline_List    : Task_Agent_Link_Element;
 
-      Activation_List : access Task_Agent'Class := null;
-      Elaborated      : Boolean_Access   := null;
+      Activation_List  : access Task_Agent'Class := null;
+      Elaborated       : Boolean_Access   := null;
 
-      Atomic_Action : access Atomic_Actions.Atomic_Object := null;
+      In_Atomic_Action : access Atomic_Actions.Atomic_Object := null;
    end record;
 
    type Activation_Chain is limited record
@@ -254,7 +254,7 @@ private
 
    function Current_Atomic_Action
      (T : in Task_Agent'Class)
-      return access Atomic_Actions.Atomic_Object is (T.Atomic_Action);
+      return access Atomic_Actions.Atomic_Object is (T.In_Atomic_Action);
 
    function Cycle_Period
      (T : in Task_Agent'Class)
