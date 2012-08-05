@@ -72,6 +72,10 @@ private
 
    Processor_Kernels : Oak_List;
 
+   --  Sleep task
+
+   Sleep_Task : aliased Oak_Agent;
+
    function Current_Agent return access Oak_Agent'Class is
      (Processor_Kernels (Processor.Proccessor_Id).Current_Agent);
 

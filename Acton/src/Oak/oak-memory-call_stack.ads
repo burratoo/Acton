@@ -19,6 +19,8 @@ package Oak.Memory.Call_Stack with Pure is
       Top, Bottom, Pointer : System.Address := Null_Address;
    end record;
 
+   function No_Call_Stack return Call_Stack_Handler;
+
    Default_Stack_Size : constant :=
      Oak.Core_Support_Package.Call_Stack.Default_Call_Stack_Size;
 
@@ -35,4 +37,7 @@ private
    --  only a memory address is attached.
    Stack_Pointer_Init : constant Storage_Elements.Storage_Element;
    pragma Import (Assembler, Stack_Pointer_Init, "__SP_INIT");
+
+   function No_Call_Stack return Call_Stack_Handler is
+     ((Null_Address, Null_Address, Null_Address));
 end Oak.Memory.Call_Stack;

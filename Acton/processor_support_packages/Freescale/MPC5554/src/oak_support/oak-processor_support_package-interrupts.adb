@@ -126,7 +126,7 @@ package body Oak.Processor_Support_Package.Interrupts is
            "evldd    r4,  0x28(r1)"   & ASCII.LF & ASCII.HT &
            "evldd    r9,  0x50(r1)"   & ASCII.LF & ASCII.HT &
            "evldd    r10, 0x58(r1)"   & ASCII.LF & ASCII.HT &
-           "stwu     r1,  0x70(r1)"   & ASCII.LF & ASCII.HT &
+           "addi     r1, r1, 0x70"    & ASCII.LF & ASCII.HT &
            --  Return
            "rfi",
         Volatile => True);

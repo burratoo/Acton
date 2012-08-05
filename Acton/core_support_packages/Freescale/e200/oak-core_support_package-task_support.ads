@@ -38,12 +38,17 @@ package Oak.Core_Support_Package.Task_Support with Pure is
    procedure Enable_Oak_Wake_Up_Interrupt with Inline_Always;
 
    procedure Sleep_Kernel;
+   procedure Sleep_Task;
 
-   DI, SI : constant System.Storage_Elements.Storage_Element;
+   DI, SI, CSTT, CSTS : constant System.Storage_Elements.Storage_Element;
    pragma Import (Assembler, DI, "__OTS_DI");
    pragma Import (Assembler, SI, "__OTS_SI");
+   pragma Import (Assembler, CSTT, "__OTS_CSTT");
+   pragma Import (Assembler, CSTS, "__OTS_CSTS");
 
    IVOR10_Decrementer_Intr : constant System.Address := DI'Address;
    IVOR10_Sleep_Intr       : constant System.Address := SI'Address;
+   IVOR8_CS_To_Task        : constant System.Address := CSTT'Address;
+   IVOR8_CS_To_Sleep       : constant System.Address := CSTS'Address;
 
 end Oak.Core_Support_Package.Task_Support;
