@@ -11,24 +11,24 @@ package Oak.Core_Support_Package.Task_Interrupts with Preelaborate is
    procedure Enable_External_Interrupts  with Inline_Always;
    procedure Disable_External_Interrupts with Inline_Always;
 
-   procedure E200_Context_Switch_To_Task;
-   procedure E200_Context_Switch_To_Kernel;
-   procedure E200_Context_Switch_To_Sleep;
+   procedure Context_Switch_To_Task;
+   procedure Context_Switch_To_Kernel;
+   procedure Context_Switch_To_Sleep;
    procedure Decrementer_Interrupt;
    procedure Sleep_Interrupt;
 
    pragma Export
      (Asm,
-      E200_Context_Switch_To_Task,
-      "__OTS_E200_Context_Switch_To_Task");
+      Context_Switch_To_Task,
+      "__OTS_Context_Switch_To_Task");
    pragma Export
      (Asm,
-      E200_Context_Switch_To_Kernel,
-      "__OTS_E200_Context_Switch_To_Kernel");
+      Context_Switch_To_Kernel,
+      "__OTS_Context_Switch_To_Kernel");
    pragma Export
      (Asm,
-      E200_Context_Switch_To_Sleep,
-      "__OTS_E200_Context_Switch_To_Sleep");
+      Context_Switch_To_Sleep,
+      "__OTS_Context_Switch_To_Sleep");
 
    pragma Export (Asm, Decrementer_Interrupt, "__OTS_Decrementer_Interrupt");
    pragma Export (Asm, Sleep_Interrupt, "__OTS_Sleep_Interrupt");

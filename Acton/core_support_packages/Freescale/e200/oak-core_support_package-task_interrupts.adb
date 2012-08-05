@@ -102,10 +102,11 @@ package body Oak.Core_Support_Package.Task_Interrupts is
       Asm ("wrteei 0", Volatile => True);
    end Disable_External_Interrupts;
 
-   ---------------------------------
-   -- E200_Context_Switch_To_Task --
-   ---------------------------------
-   procedure E200_Context_Switch_To_Task is
+   ----------------------------
+   -- Context_Switch_To_Task --
+   -----------------------------
+
+   procedure Context_Switch_To_Task is
       use Oak.Core_Support_Package;
 
       Task_Stack_Pointer : Address;
@@ -232,13 +233,13 @@ package body Oak.Core_Support_Package.Task_Interrupts is
          Inputs   => Address'Asm_Input ("r", Task_Stack_Pointer),
          Volatile => True);
 
-   end E200_Context_Switch_To_Task;
+   end Context_Switch_To_Task;
 
-   -----------------------------------
-   -- E200_Context_Switch_To_Kernel --
-   -----------------------------------
+   ------------------------------
+   -- Context_Switch_To_Kernel --
+   ------------------------------
 
-   procedure E200_Context_Switch_To_Kernel is
+   procedure Context_Switch_To_Kernel is
       Task_Stack_Pointer : Address;
    begin
 
@@ -364,13 +365,13 @@ package body Oak.Core_Support_Package.Task_Interrupts is
          "rfi",                     --   switch to task routine.
          Volatile => True);
 
-   end E200_Context_Switch_To_Kernel;
+   end Context_Switch_To_Kernel;
 
-   ----------------------------------
-   -- E200_Context_Switch_To_Sleep --
-   ----------------------------------
+   -----------------------------
+   -- Context_Switch_To_Sleep --
+   -----------------------------
 
-   procedure E200_Context_Switch_To_Sleep is
+   procedure Context_Switch_To_Sleep is
    begin
 
       --  Store working register and kernel instruction address,
@@ -391,7 +392,7 @@ package body Oak.Core_Support_Package.Task_Interrupts is
       Task_Support.Enable_Oak_Wake_Up_Interrupt;
 
       Asm ("rfi", Volatile => True);
-   end E200_Context_Switch_To_Sleep;
+   end Context_Switch_To_Sleep;
 
    --  Check that the assembly code for Store_Task_Yielded_Status always uses
    --  r0 and r9.
@@ -411,7 +412,7 @@ package body Oak.Core_Support_Package.Task_Interrupts is
          "evldd  r10,  0(r1)" & ASCII.LF & ASCII.HT &
          "stu    r1,  16(r1)",
          Volatile => True);
-      E200_Context_Switch_To_Kernel;
+      Context_Switch_To_Kernel;
    end Decrementer_Interrupt;
 
    procedure Sleep_Interrupt is

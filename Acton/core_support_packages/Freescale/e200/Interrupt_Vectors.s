@@ -5,10 +5,10 @@
  * Created by Patrick Bernardi on 15/04/11.
  * Copyright 2011 Patrick Bernardi All rights reserved.
  */
-		.extern __OTS_E200_Context_Switch_To_Task
-		.extern __OTS_E200_Context_Switch_To_Kernel
+		.extern __OTS_Context_Switch_To_Kernel
+		.extern __OTS_Context_Switch_To_Sleep_Task
+		.extern __OTS_Context_Switch_To_Task
 		.extern __OTS_Decrementer_Interrupt
-		.extern __OTS_E200_Context_Switch_To_Sleep_Task
                 .extern __OTS_Sleep_Interrupt
 		.extern __OI_External_Interrupt
 
@@ -25,11 +25,11 @@
 ActonInterruptBranchTable:
 __IVPR:
 		.align ALIGN_OFFSET
-__OTS_CSTT:	b	__OTS_E200_Context_Switch_To_Task
+__OTS_CSTK:	b	__OTS_Context_Switch_To_Kernel
 		.align ALIGN_OFFSET
-__OTS_CSTK:	b	__OTS_E200_Context_Switch_To_Kernel
+__OTS_CSTS:	b	__OTS_Context_Switch_To_Sleep
 		.align ALIGN_OFFSET
-__OTS_CSTS:	b	__OTS_E200_Context_Switch_To_Sleep
+__OTS_CSTT:	b	__OTS_Context_Switch_To_Task
 		.align ALIGN_OFFSET
 __OTS_DI:	b	__OTS_Decrementer_Interrupt
 		.align ALIGN_OFFSET
