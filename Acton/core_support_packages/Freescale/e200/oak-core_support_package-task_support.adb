@@ -12,9 +12,9 @@ package body Oak.Core_Support_Package.Task_Support is
    procedure Context_Switch_To_Task
    is
    begin
-      Asm
-        ("sc",     --  Switch to Task
-         Volatile => True);
+      --  Switch to Task
+
+      Asm ("sc", Volatile => True);
    end Context_Switch_To_Task;
 
    ------------------------------
@@ -32,8 +32,9 @@ package body Oak.Core_Support_Package.Task_Support is
 
    procedure Context_Switch_To_Scheduler_Agent is
    begin
-      Asm ("sc",                                --  Switch to Task
-           Volatile => True);
+      --  Switch to Scheduler Agent
+
+      Asm ("sc", Volatile => True);
    end Context_Switch_To_Scheduler_Agent;
 
    -------------------------------
@@ -42,8 +43,9 @@ package body Oak.Core_Support_Package.Task_Support is
 
    procedure Yield_Processor_To_Kernel is
    begin
-      Asm ("sc",               -- Context switch to kernel.
-          Volatile => True);
+      --  Context switch to kernel.
+
+      Asm ("sc", Volatile => True);
    end Yield_Processor_To_Kernel;
 
    ---------------------------
@@ -117,32 +119,49 @@ package body Oak.Core_Support_Package.Task_Support is
    ------------------
 
    procedure Sleep_Kernel is
-      Exit_Condition : Integer := 0;   --  Should change this into a
-                                       --  Boolean-like type.
    begin
-      --  Set Decremeter Interrupt to jump to the other side of the infinite
-      --  loop
+      --  Set System Call and Decremeter interrupts to Context_Switch_To_Sleep
+      --  and Sleep_Interrupt respectively.
+
       Asm
         ("lwz   r14, %0" & ASCII.LF & ASCII.HT &
-         "mtivor10  r14" & ASCII.LF & ASCII.HT &
-         "li    r14, 0",
-         Inputs   => Address'Asm_Input ("m", IVOR10_Sleep_Intr),
-         Clobber  => "r14",
+         "lwz   r15, %1" & ASCII.LF & ASCII.HT &
+         "mtivor8   r14" & ASCII.LF & ASCII.HT &
+         "mtivor10  r15",
+         Inputs   => (Address'Asm_Input ("m", IVOR8_CS_To_Sleep),
+                      Address'Asm_Input ("m", IVOR10_Sleep_Intr)),
+         Clobber  => "r14, r15",
          Volatile => True);
-      Enable_Oak_Wake_Up_Interrupt;
-      while Exit_Condition /= 1 loop
-         Asm
-           ("mr    %0, r14",
-            Outputs  => Integer'Asm_Output ("=r", Exit_Condition),
-            Volatile => True);
-      end loop;
-      Disable_Oak_Wake_Up_Interrupt;
+
+      --  Switch to Sleep Task.
+
+      Asm ("sc", Volatile => True);
+
+      --  Restore interrupt handlers.
+
       Asm
         ("lwz   r14, %0" & ASCII.LF & ASCII.HT &
-         "mtivor10  r14",
-         Inputs   => Address'Asm_Input ("m", IVOR10_Decrementer_Intr),
-         Clobber  => "r14",
+         "lwz   r15, %1" & ASCII.LF & ASCII.HT &
+         "mtivor8   r14" & ASCII.LF & ASCII.HT &
+         "mtivor10  r15",
+         Inputs   => (Address'Asm_Input ("m", IVOR8_CS_To_Task),
+                      Address'Asm_Input ("m", IVOR10_Decrementer_Intr)),
+         Clobber  => "r14, r15",
          Volatile => True);
    end Sleep_Kernel;
+
+   -----------------
+   --  Sleep_Task --
+   -----------------
+
+   procedure Sleep_Task is
+   begin
+
+      --  On the e200 we do not have a sleep instruction so we just burn
+      --  processor cycles looping
+      loop
+         null;
+      end loop;
+   end Sleep_Task;
 
 end Oak.Core_Support_Package.Task_Support;

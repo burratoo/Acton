@@ -19,13 +19,18 @@ package Oak.Agent with Preelaborate is
 --        Previous : Memory_Region_Link;
 --     end record;
 
-   type Oak_Agent is abstract tagged private;
+   type Oak_Agent is tagged private;
 
    function Agent_Id (Agent : in Oak_Agent'Class) return Task_Id;
    function Name (Agent : in Oak_Agent'Class) return Task_Name;
    function Stack_Pointer
      (Agent : in Oak_Agent'Class)
       return System.Address with Inline_Always;
+
+   procedure Initialise_Agent
+     (Agent      : access Oak_Agent'Class;
+      Name       : in String;
+      Call_Stack : in Call_Stack_Handler);
 
    procedure Set_Stack_Pointer
      (Agent         : in out Oak_Agent'Class;
@@ -34,7 +39,7 @@ package Oak.Agent with Preelaborate is
 
 private
 
-   type Oak_Agent is abstract tagged record
+   type Oak_Agent is tagged record
       Id          : Task_Id := Task_Id'Last;
       Name        : Task_Name;
       Name_Length : Natural := 0;
@@ -50,11 +55,6 @@ private
 
       --  Memory_List : Memory_Region_Link := null;
    end record;
-
-   procedure Initialise_Agent
-     (Agent      : access Oak_Agent'Class;
-      Name       : in String;
-      Call_Stack : in Call_Stack_Handler);
 
    function Agent_Id (Agent : in Oak_Agent'Class) return Task_Id is
      (Agent.Id);

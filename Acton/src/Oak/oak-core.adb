@@ -26,6 +26,10 @@ package body Oak.Core is
               Oak.Core_Support_Package.Call_Stack.Oak_Call_Stack_Size);
       end loop;
       Oak.Core_Support_Package.Task_Interrupts.Initialise_Task_Enviroment;
+
+      --  Initialise sleep task
+
+      Initialise_Agent (Sleep_Task'Access, "Sleep Task",  No_Call_Stack);
    end Initialise;
 
    -----------------------------

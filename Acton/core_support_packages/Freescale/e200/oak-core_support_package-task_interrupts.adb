@@ -69,7 +69,7 @@ package body Oak.Core_Support_Package.Task_Interrupts is
          "mtmsr   r13"            & ASCII.LF & ASCII.HT &
          "lwz     r2,  4(r1)"     & ASCII.LF & ASCII.HT &
          "lwz     r13, 0(r1)"     & ASCII.LF & ASCII.HT &
-         "stwu    r1,  8(r1)",
+         "addi    r1, r1, 8",
          Volatile => True);
    end Enable_SPE_Instructions;
 
@@ -88,7 +88,7 @@ package body Oak.Core_Support_Package.Task_Interrupts is
          "lis     r2,  0x800"    & ASCII.LF & ASCII.HT &
          "mttsr   r2"            & ASCII.LF & ASCII.HT &
          "lwz     r2,  0(r1)"    & ASCII.LF & ASCII.HT &
-         "stwu    r1,  8(r1)",
+         "addi    r1, r1, 8",
          Volatile => True);
    end Clear_Decrementer_Interrupt;
 
@@ -102,10 +102,11 @@ package body Oak.Core_Support_Package.Task_Interrupts is
       Asm ("wrteei 0", Volatile => True);
    end Disable_External_Interrupts;
 
-   ---------------------------------
-   -- E200_Context_Switch_To_Task --
-   ---------------------------------
-   procedure E200_Context_Switch_To_Task is
+   ----------------------------
+   -- Context_Switch_To_Task --
+   -----------------------------
+
+   procedure Context_Switch_To_Task is
       use Oak.Core_Support_Package;
 
       Task_Stack_Pointer : Address;
@@ -195,7 +196,7 @@ package body Oak.Core_Support_Package.Task_Interrupts is
          "mtsrr0          r30" & ASCII.LF & ASCII.HT & -- Next instruction addr
          "evldd  r9,   32(r1)" & ASCII.LF & ASCII.HT & -- Restore accumulator
          "evmra  r10,      r9" & ASCII.LF & ASCII.HT &
-         "stwu   r1,   40(r1)" & ASCII.LF & ASCII.HT & -- Drop stack frame (?)
+         "addi   r1, r1, 40"   & ASCII.LF & ASCII.HT & -- Drop stack frame (?)
          "evldd  r0,  240(r1)" & ASCII.LF & ASCII.HT & -- and restore GPRs
          "evldd  r2,  232(r1)" & ASCII.LF & ASCII.HT &
          "evldd  r3,  224(r1)" & ASCII.LF & ASCII.HT &
@@ -227,17 +228,18 @@ package body Oak.Core_Support_Package.Task_Interrupts is
          "evldd  r29, 16(r1)"  & ASCII.LF & ASCII.HT &
          "evldd  r30,  8(r1)"  & ASCII.LF & ASCII.HT &
          "evldd  r31,  0(r1)"  & ASCII.LF & ASCII.HT &
-         "stwu   r1, 248(r1)"  & ASCII.LF & ASCII.HT &  --  Restore stack
+         "addi   r1, r1, 248"  & ASCII.LF & ASCII.HT &  --  Restore stack
          "rfi",                   --   switch to kernel routine.
          Inputs   => Address'Asm_Input ("r", Task_Stack_Pointer),
          Volatile => True);
 
-   end E200_Context_Switch_To_Task;
+   end Context_Switch_To_Task;
 
-   -----------------------------------
-   -- E200_Context_Switch_To_Kernel --
-   -----------------------------------
-   procedure E200_Context_Switch_To_Kernel is
+   ------------------------------
+   -- Context_Switch_To_Kernel --
+   ------------------------------
+
+   procedure Context_Switch_To_Kernel is
       Task_Stack_Pointer : Address;
    begin
 
@@ -359,14 +361,42 @@ package body Oak.Core_Support_Package.Task_Interrupts is
          "lwz   r29,  32(r1)" & ASCII.LF & ASCII.HT &
          "lwz   r30,  28(r1)" & ASCII.LF & ASCII.HT &
          "lwz   r31,  24(r1)" & ASCII.LF & ASCII.HT &
-         "stwu  r1,  148(r1)" & ASCII.LF & ASCII.HT &  --  Restore stack
+         "addi  r1, r1, 148"  & ASCII.LF & ASCII.HT &  --  Restore stack
          "rfi",                     --   switch to task routine.
          Volatile => True);
 
-   end E200_Context_Switch_To_Kernel;
+   end Context_Switch_To_Kernel;
+
+   -----------------------------
+   -- Context_Switch_To_Sleep --
+   -----------------------------
+
+   procedure Context_Switch_To_Sleep is
+   begin
+
+      --  Store working register and kernel instruction address,
+      --  and load sleep task instruction address
+
+      Asm
+        ("stwu  r1, -16(r1)"     & ASCII.LF & ASCII.HT &
+         "stw   r9,   8(r1)"     & ASCII.LF & ASCII.HT &
+         "stw   r10,  4(r1)"     & ASCII.LF & ASCII.HT &
+         "mfsrr0   r9"           & ASCII.LF & ASCII.HT &
+         "stw   r9,   0(r1)"     & ASCII.LF & ASCII.HT &
+         "lis   r9,  %0@ha"      & ASCII.LF & ASCII.HT &
+         "addi r9, r9, %0@l"   & ASCII.LF & ASCII.HT &
+         "mtsrr0     r9",
+         Inputs   => Address'Asm_Input ("i", Sleep_Task'Address),
+         Volatile => True);
+
+      Task_Support.Enable_Oak_Wake_Up_Interrupt;
+
+      Asm ("rfi", Volatile => True);
+   end Context_Switch_To_Sleep;
 
    --  Check that the assembly code for Store_Task_Yielded_Status always uses
    --  r0 and r9.
+
    procedure Decrementer_Interrupt is
    begin
       Clear_Decrementer_Interrupt;
@@ -382,14 +412,21 @@ package body Oak.Core_Support_Package.Task_Interrupts is
          "evldd  r10,  0(r1)" & ASCII.LF & ASCII.HT &
          "stu    r1,  16(r1)",
          Volatile => True);
-      E200_Context_Switch_To_Kernel;
+      Context_Switch_To_Kernel;
    end Decrementer_Interrupt;
 
    procedure Sleep_Interrupt is
    begin
       Clear_Decrementer_Interrupt;
+      Task_Support.Disable_Oak_Wake_Up_Interrupt;
+
+      --  Restore kernel instruction address and working registers
       Asm
-        ("li    r14, 1" & ASCII.LF & ASCII.HT &
+        ("lwz  r9,  0(r1)" & ASCII.LF & ASCII.HT &
+         "mtsrr0       r9" & ASCII.LF & ASCII.HT &
+         "lwz  r10, 4(r1)" & ASCII.LF & ASCII.HT &
+         "lwz  r9,  8(r1)" & ASCII.LF & ASCII.HT &
+         "addi r1, r1, 16" & ASCII.LF & ASCII.HT &
          "rfi",
          Volatile => True);
    end Sleep_Interrupt;
