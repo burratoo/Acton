@@ -37,11 +37,12 @@ package Oak.Core with Preelaborate is
    --  implementing delay until for tasks running on top the the kernel.
    --  Hmmm...
 
-   function Current_Agent return access Oak_Agent'Class with Inline_Always;
+   function Current_Agent    return access Oak_Agent'Class with Inline_Always;
    function Current_Agent_Stack_Pointer return Address with Inline_Always;
-   function Current_Task return access Task_Agent'Class with Inline_Always;
-   function Main_Task return access Task_Agent;
-   function Oak_Instance return access Oak_Data with Inline_Always;
+   function Current_Task     return access Task_Agent'Class with Inline_Always;
+   function Main_Task        return access Task_Agent;
+   function Oak_Instance     return access Oak_Data with Inline_Always;
+   function Oak_Stack_Pointer return Address with Inline_Always;
    function Scheduler_Info
      (Oak_Instance : access Oak_Data)
       return access Oak_Scheduler_Info with Inline_Always;
@@ -51,6 +52,10 @@ package Oak.Core with Preelaborate is
       with Inline_Always;
    procedure Set_Current_Agent
      (Agent : access Oak_Agent'Class)
+      with Inline_Always;
+
+   procedure Set_Oak_Stack_Pointer
+     (SP : Address)
       with Inline_Always;
 
 private
@@ -66,15 +71,12 @@ private
       --  Probably need to fix this up so that it gets set somewhere. (In case
       --  it doesn't already when the task context switches.
       Call_Stack    : Call_Stack_Handler;
+      Sleep_Agent   : aliased Oak_Agent;
    end record;
 
    type Oak_List is array (Oak_Instance_Id) of aliased Oak_Data;
 
    Processor_Kernels : Oak_List;
-
-   --  Sleep task
-
-   Sleep_Task : aliased Oak_Agent;
 
    function Current_Agent return access Oak_Agent'Class is
      (Processor_Kernels (Processor.Proccessor_Id).Current_Agent);
@@ -90,6 +92,9 @@ private
 
    function Oak_Instance return access Oak_Data is
      (Processor_Kernels (Processor_Kernels'First)'Access);
+
+   function Oak_Stack_Pointer return Address is
+     (Processor_Kernels (Processor.Proccessor_Id).Call_Stack.Pointer);
 
    function Scheduler_Info
      (Oak_Instance : access Oak_Data)

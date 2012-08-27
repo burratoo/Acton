@@ -1,13 +1,20 @@
-with Oak.Agent.Tasks;
-with Oak.Core_Support_Package.Call_Stack;
-use Oak.Core_Support_Package.Call_Stack;
+with Oak.Memory.Call_Stack;
+with System;
+with System.Storage_Elements;
 
-package Oak.Memory.Call_Stack.Ops with Preelaborate is
+limited with Oak.Agent.Tasks;
 
-   procedure Allocate_Call_Stack
-     (Stack            : out Call_Stack_Handler;
-      Size_In_Elements : in Storage_Elements.Storage_Count :=
-     CSP_Stack.Call_Stack_Size);
+package Oak.Core_Support_Package.Call_Stack.Ops with Preelaborate is
+
+   procedure Set_Task_Instruction_Pointer
+     (Stack               : in Oak.Memory.Call_Stack.Call_Stack_Handler;
+      Instruction_Address : in System.Address)
+     with Inline;
+
+   procedure Set_Task_Body_Procedure
+     (Stack             : in Oak.Memory.Call_Stack.Call_Stack_Handler;
+      Procedure_Address : in System.Address;
+      Task_Value_Record : in System.Address);
 
    procedure Initialise_Call_Stack
      (Stack             : in out Oak.Memory.Call_Stack.Call_Stack_Handler;
@@ -16,18 +23,15 @@ package Oak.Memory.Call_Stack.Ops with Preelaborate is
    procedure Initialise_Call_Stack
      (Stack             : in out Oak.Memory.Call_Stack.Call_Stack_Handler;
       Start_Instruction : in System.Address;
-      Task_Value_Record : in System.Address := Null_Address;
+      Task_Value_Record : in System.Address;
       Message_Location  : out Oak.Agent.Tasks.Oak_Task_Message_Location);
 
    procedure Initialise_Call_Stack
      (Stack             : in out Oak.Memory.Call_Stack.Call_Stack_Handler;
       Start_Instruction : in System.Address;
-      Task_Value_Record : in System.Address := Null_Address;
+      Task_Value_Record : in System.Address;
       Stack_Address     : in System.Address;
       Stack_Size        : in System.Storage_Elements.Storage_Count;
       Message_Location  : out Oak.Agent.Tasks.Oak_Task_Message_Location);
 
-private
-   Stack_Pool_Bottom : System.Address := Stack_Pointer_Init'Address;
-
-end Oak.Memory.Call_Stack.Ops;
+end Oak.Core_Support_Package.Call_Stack.Ops;

@@ -16,6 +16,12 @@ package Oak.Core_Support_Package.Call_Stack with Pure is
    Task_Registers_Save_Size   : constant := 296;
    Kernel_Registers_Save_Size : constant := 152;
 
+   --  Warning! This is not a real variable. It is defined in the linker script
+   --  and as such does not have any data storage allocated for it. Instead
+   --  only a memory address is attached.
+   Stack_Pointer_Init : constant Storage_Elements.Storage_Element;
+   pragma Import (Assembler, Stack_Pointer_Init, "__SP_INIT");
+
    --
    --  SPRG0 -> Kernel stack pointer
    --  SPRG4 -> Task stack pointer.

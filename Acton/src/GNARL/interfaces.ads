@@ -156,8 +156,8 @@ package Interfaces is
    type IEEE_Float_32 is digits 6;
    pragma Float_Representation (IEEE_Float, IEEE_Float_32);
 
-   type IEEE_Float_64 is digits 15;
-   pragma Float_Representation (IEEE_Float, IEEE_Float_64);
+   --  type IEEE_Float_64 is digits 15;
+   --  pragma Float_Representation (IEEE_Float, IEEE_Float_64);
 
    --  If there is an IEEE extended float available on the machine, we assume
    --  that it is available as Long_Long_Float.
@@ -166,6 +166,6 @@ package Interfaces is
    --  types in interfaces, so it is not wrong to have IEEE_Extended_Float
    --  defined even if the extended format is not available.
 
-   type IEEE_Extended_Float is new Long_Long_Float;
+   --  type IEEE_Extended_Float is new Long_Long_Float;
 
 end Interfaces;
