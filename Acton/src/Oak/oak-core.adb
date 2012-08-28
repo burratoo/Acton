@@ -25,7 +25,7 @@ package body Oak.Core is
             Size_In_Elements =>
               Oak.Core_Support_Package.Call_Stack.Oak_Call_Stack_Size);
 
-         Initialise_Sleep_Agent (K.Sleep_Agent'Access);
+         Initialise_Sleep_Agent (K.Sleep_Agent'Access, Sleep_Agent'Address);
       end loop;
 
       Oak.Core_Support_Package.Interrupts.Set_Up_Interrupts;

@@ -13,4 +13,9 @@ package body Oak.Core_Support_Package.Interrupts is
       Asm ("cli", Volatile => True);
    end Disable_Interrupts;
 
+   procedure Set_Up_Interrupts is
+   begin
+      null;
+   end Set_Up_Interrupts;
+
 end Oak.Core_Support_Package.Interrupts;

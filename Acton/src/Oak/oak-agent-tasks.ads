@@ -120,8 +120,9 @@ package Oak.Agent.Tasks with Preelaborate is
       Chain             : in out Activation_Chain;
       Elaborated        : in Boolean_Access);
 
-   procedure Initialise_Sleep_Agent (Agent : access Task_Agent'Class);
-
+   procedure Initialise_Sleep_Agent
+     (Agent    : access Task_Agent'Class;
+      Run_Loop : in System.Address);
    function Activation_List
      (T    : in Task_Agent'Class)
       return access Task_Agent'Class;

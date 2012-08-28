@@ -5,7 +5,6 @@ with Oak.Memory.Call_Stack.Ops; use Oak.Memory.Call_Stack.Ops;
 with System; use System;
 
 with System.Storage_Elements; use System.Storage_Elements;
-with Oak.Core_Support_Package.Task_Support;
 
 package body Oak.Agent.Tasks is
 
@@ -74,7 +73,10 @@ package body Oak.Agent.Tasks is
 
    end Initialise_Task_Agent;
 
-   procedure Initialise_Sleep_Agent (Agent : access Task_Agent'Class) is
+   procedure Initialise_Sleep_Agent
+     (Agent    : access Task_Agent'Class;
+      Run_Loop : in System.Address)
+   is
       C : Activation_Chain;
    begin
       Initialise_Task_Agent
@@ -86,8 +88,7 @@ package body Oak.Agent.Tasks is
          Relative_Deadline => Oak_Time.Time_Span_Last,
          Cycle_Period      => Oak_Time.Time_Span_Last,
          Phase             => Oak_Time.Time_Span_Zero,
-         Run_Loop          =>
-           Core_Support_Package.Task_Support.Sleep_Agent'Address,
+         Run_Loop          => Run_Loop,
          Task_Value_Record => Null_Address,
          Chain             => C,
          Elaborated        => null);

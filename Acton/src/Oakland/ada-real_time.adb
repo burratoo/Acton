@@ -1,7 +1,5 @@
 package body Ada.Real_Time is
 
-   Billion : constant := 1E9;
-
    -----------
    -- Clock --
    -----------
@@ -59,7 +57,7 @@ package body Ada.Real_Time is
       DS      := Duration (Seconds);
       DF      := Duration (Seconds *
                              Integer (Oak_CSP_Time.Ticks_Per_Second) - TS);
-      return DS + DF / Billion;
+      return DS + DF / 1_000_000_000;
    end To_Duration;
 
    ------------------
@@ -70,7 +68,7 @@ package body Ada.Real_Time is
       TS_Seconds, TS_Nano : Time_Span;
    begin
       TS_Seconds := Time_Span (D) * Integer (Oak_CSP_Time.Ticks_Per_Second);
-      TS_Nano    := Time_Span ((D - Duration (TS_Seconds)) * Billion);
+      TS_Nano    := Time_Span ((D - Duration (TS_Seconds)) * 1_000_000_000);
       return TS_Seconds + TS_Nano;
    end To_Time_Span;
 
@@ -80,7 +78,7 @@ package body Ada.Real_Time is
 
    function Nanoseconds (NS : Integer) return Time_Span is
    begin
-      return Time_Span (NS) / Time_Span (Time_Unit *  Billion);
+      return Time_Span (NS * Integer (Ticks_Per_Second / 1_000_000_000));
    end Nanoseconds;
 
    ------------------
@@ -89,8 +87,7 @@ package body Ada.Real_Time is
 
    function Microseconds (US : Integer) return Time_Span is
    begin
-      return Time_Span (US) * Integer (1000) /
-       Time_Span (Time_Unit * Billion);
+      return Time_Span (US * Integer (Ticks_Per_Second / 1_000_000));
    end Microseconds;
 
    ------------------
@@ -99,8 +96,7 @@ package body Ada.Real_Time is
 
    function Milliseconds (MS : Integer) return Time_Span is
    begin
-      return Time_Span (MS) * Integer (1_000_000) /
-       Time_Span (Time_Unit * Billion);
+      return Time_Span (MS * Integer (Ticks_Per_Second / 1_000));
    end Milliseconds;
 
    -------------
@@ -109,8 +105,7 @@ package body Ada.Real_Time is
 
    function Seconds (S : Integer) return Time_Span is
    begin
-      return Time_Span (S) * Integer (1_000_000_000) /
-        Time_Span (Time_Unit * Billion);
+      return Time_Span (S * Integer (Ticks_Per_Second));
    end Seconds;
 
    -------------
@@ -119,8 +114,7 @@ package body Ada.Real_Time is
 
    function Minutes (M : Integer) return Time_Span is
    begin
-      return Time_Span (M) * Time_Span (60_000_000_000)  /
-             Time_Span (Time_Unit * Billion);
+      return Time_Span (M * Integer (Ticks_Per_Second) * Integer (60));
    end Minutes;
 
    -----------

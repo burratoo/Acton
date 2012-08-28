@@ -19,7 +19,7 @@ project Acton_AVR is
    Target_Debugger_Command := Target & "gdb";
 
    --  Builder Switches
-   Target_Ada_Switches := Acton_Common.Ada_Switches & ("-mmcu=avr51", "-ffunction-sections", "-fdata-sections");
+   Target_Ada_Switches := Acton_Common.Ada_Switches & ("-mmcu=avr51");
    Target_Asm_Switches := Acton_Common.Asm_Switches & "-mmcu=avr51";
 
 
