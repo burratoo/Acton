@@ -1,3 +1,5 @@
+with System.Storage_Elements;
+
 package Oak.Core_Support_Package.Call_Stack with Pure is
 
    --  Call_Stack_Size could be defined in the linker script (Enviroment
@@ -16,10 +18,12 @@ package Oak.Core_Support_Package.Call_Stack with Pure is
    Task_Registers_Save_Size   : constant := 296;
    Kernel_Registers_Save_Size : constant := 152;
 
+   Sleep_Stack_Size           : constant := 2 * Task_Registers_Save_Size;
+
    --  Warning! This is not a real variable. It is defined in the linker script
    --  and as such does not have any data storage allocated for it. Instead
    --  only a memory address is attached.
-   Stack_Pointer_Init : constant Storage_Elements.Storage_Element;
+   Stack_Pointer_Init : constant System.Storage_Elements.Storage_Element;
    pragma Import (Assembler, Stack_Pointer_Init, "__SP_INIT");
 
    --

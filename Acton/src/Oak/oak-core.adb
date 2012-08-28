@@ -1,6 +1,5 @@
 with Oak.Agent.Tasks.Activation;
 with Oak.Agent.Tasks.Protected_Objects; use Oak.Agent.Tasks.Protected_Objects;
-with Oak.Agent.Sleep;
 with Oak.Atomic_Actions;
 with Oak.Oak_Time;                                 use Oak.Oak_Time;
 with Oak.Memory.Call_Stack.Ops;
@@ -10,6 +9,7 @@ with Oak.Core_Support_Package.Call_Stack;
 with Oak.Interrupts;
 with Oak.Protected_Objects;
 with Oak.Processor_Support_Package.Interrupts;
+with Oak.Core_Support_Package.Interrupts;
 
 package body Oak.Core is
 
@@ -25,8 +25,10 @@ package body Oak.Core is
             Size_In_Elements =>
               Oak.Core_Support_Package.Call_Stack.Oak_Call_Stack_Size);
 
-         Agent.Sleep.Initialise_Sleep_Agent (K.Sleep_Agent'Access);
+         Initialise_Sleep_Agent (K.Sleep_Agent'Access);
       end loop;
+
+      Oak.Core_Support_Package.Interrupts.Set_Up_Interrupts;
       Oak.Core_Support_Package.Task_Support.Initialise_Task_Enviroment;
 
    end Initialise;

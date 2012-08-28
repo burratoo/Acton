@@ -71,7 +71,7 @@ private
       --  Probably need to fix this up so that it gets set somewhere. (In case
       --  it doesn't already when the task context switches.
       Call_Stack    : Call_Stack_Handler;
-      Sleep_Agent   : aliased Oak_Agent;
+      Sleep_Agent   : aliased Task_Agent;
    end record;
 
    type Oak_List is array (Oak_Instance_Id) of aliased Oak_Data;

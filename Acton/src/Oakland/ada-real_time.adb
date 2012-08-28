@@ -88,9 +88,9 @@ package body Ada.Real_Time is
    ------------------
 
    function Microseconds (US : Integer) return Time_Span is
-      Scale : constant := (1_000 / Billion) * Time_Unit;
    begin
-      return Time_Span (US) * Integer (Scale);
+      return Time_Span (US) * Integer (1000) /
+       Time_Span (Time_Unit * Billion);
    end Microseconds;
 
    ------------------
@@ -98,9 +98,9 @@ package body Ada.Real_Time is
    ------------------
 
    function Milliseconds (MS : Integer) return Time_Span is
-      Scale : constant := (1_000_000 / Billion) * Time_Unit;
    begin
-      return Time_Span (MS) * Integer (Scale);
+      return Time_Span (MS) * Integer (1_000_000) /
+       Time_Span (Time_Unit * Billion);
    end Milliseconds;
 
    -------------
@@ -108,9 +108,9 @@ package body Ada.Real_Time is
    -------------
 
    function Seconds (S : Integer) return Time_Span is
-      Scale : constant := (1_000_000_000 / Billion) * Time_Unit;
    begin
-      return Time_Span (S) * Integer (Scale);
+      return Time_Span (S) * Integer (1_000_000_000) /
+        Time_Span (Time_Unit * Billion);
    end Seconds;
 
    -------------
@@ -118,9 +118,9 @@ package body Ada.Real_Time is
    -------------
 
    function Minutes (M : Integer) return Time_Span is
-      Scale : constant := (60_000_000_000 / Billion) * Time_Unit;
    begin
-      return Time_Span (M) *  Integer (Scale);
+      return Time_Span (M) * Time_Span (60_000_000_000)  /
+             Time_Span (Time_Unit * Billion);
    end Minutes;
 
    -----------

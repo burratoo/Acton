@@ -2,6 +2,7 @@ with Oak.Core;
 with Oakland.Tasks;
 
 with Oak.Agent.Tasks; use Oak.Agent.Tasks;
+with Oak.Atomic_Actions; use Oak.Atomic_Actions;
 
 package body Oakland.Atomic_Actions is
    procedure Enter_Action

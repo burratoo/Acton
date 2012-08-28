@@ -1,3 +1,4 @@
+with Oak.Agent.Tasks; use Oak.Agent.Tasks;
 with Oak.Core;
 with Oak.Core_Support_Package.Task_Support;
 
