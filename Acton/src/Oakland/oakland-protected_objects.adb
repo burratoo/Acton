@@ -2,7 +2,7 @@ with Oak.Core;
 with Oakland.Tasks;
 
 with Oak.Agent.Tasks; use Oak.Agent.Tasks;
-
+with Oak.Agent.Tasks.Protected_Objects; use Oak.Agent.Tasks.Protected_Objects;
 package body Oakland.Protected_Objects is
 
    procedure Enter_Protected_Object

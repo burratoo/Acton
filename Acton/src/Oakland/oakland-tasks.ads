@@ -1,9 +1,10 @@
-with Oak.Agent.Tasks; use Oak.Agent.Tasks;
 with Oak.Oak_Time;   use Oak.Oak_Time;
+with Oak.Agent.Tasks;
 
 package Oakland.Tasks with Preelaborate is
 
-   procedure Activate_Tasks (Chain : Activation_Chain_Access);
+   procedure Activate_Tasks
+     (Chain : Oak.Agent.Tasks.Activation_Chain_Access);
    procedure Complete_Activation;
    procedure Complete_Task;
 
@@ -13,5 +14,6 @@ package Oakland.Tasks with Preelaborate is
 
    procedure Cycle_Completed;
 
-   procedure Yield_Processor_To_Kernel (Task_Message : in Oak_Task_Message);
+   procedure Yield_Processor_To_Kernel
+     (Task_Message : in Oak.Agent.Tasks.Oak_Task_Message);
 end Oakland.Tasks;

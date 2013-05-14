@@ -21,15 +21,15 @@ abstract project Acton_Common is
                               "Oak.Processor_Support_Package", "Oak.Processor_Support_Package.Interrupts",
                               "System", "System.Assertions", "System.Exceptions_Debug", "System.Machine_Code", "System.Standard_Library", "System.Storage_Elements", "System.Unsigned_Types",
                              --  Only needed for their ali files
-                              "Oak.Memory.Call_Stack.Ops",
+                         "Oak.Memory.Call_Stack.Ops",
                               "Oak.Core_Support_Package.Processor",
-                              "Oak.Core_Support_Package.Task_Interrupts",
+                              "Oak.Core_Support_Package.Interrupts",
                               "Oak.Core_Support_Package.Task_Support",
                               "Oak.Protected_Objects", "Oak.Agent.Tasks.Queues",
                          "Oak.Scheduler", "Oak.Scheduler.Agent_List"
                              );
 
-   Ada_Switches := ("-gnatwa.Xl", "-g", "-gnatn", "-gnatg", "-O2");
+   Ada_Switches := ("-gnatwa.Xl", "-g", "-gnatn", "-gnatg", "-O2",  "-ffunction-sections", "-fdata-sections");
    Asm_Switches := ();
 
    Documentation_Dir := "../doc/";

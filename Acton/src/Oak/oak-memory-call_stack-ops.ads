@@ -1,4 +1,6 @@
 with Oak.Agent.Tasks;
+with Oak.Core_Support_Package.Call_Stack;
+use Oak.Core_Support_Package.Call_Stack;
 
 package Oak.Memory.Call_Stack.Ops with Preelaborate is
 

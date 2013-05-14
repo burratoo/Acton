@@ -1,6 +1,6 @@
 with Interfaces;
 
-package Oak.Maths.Arithmetic_64 with Pure is
+package Oakland.Maths.Arithmetic_64 with Pure is
 
    function Integer_64_Divide
      (A, B : Interfaces.Integer_64)
@@ -14,4 +14,4 @@ package Oak.Maths.Arithmetic_64 with Pure is
    --  R returns the remainder of X / Y.
 
    pragma Export (C, Integer_64_Divide, "__divdi3");
-end Oak.Maths.Arithmetic_64;
+end Oakland.Maths.Arithmetic_64;

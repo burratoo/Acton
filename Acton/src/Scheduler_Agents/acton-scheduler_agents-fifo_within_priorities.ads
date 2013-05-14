@@ -12,7 +12,7 @@ package Acton.Scheduler_Agents.FIFO_Within_Priorities with Preelaborate is
       Create_Agent,
       "__acton_scheduler_agents_fifo_within_priorities");
 
-   procedure Run_Loop;
+   procedure Run_Loop with No_Return;
    procedure Remove_Task;
    procedure Change_Task_Priority;
 

@@ -32,12 +32,6 @@ package Oak.Memory.Call_Stack with Pure is
      CSP_Stack.Minimum_Call_Stack_Size ..
       Storage_Elements.Storage_Count'Last;
 private
-   --  Warning! This is not a real variable. It is defined in the linker script
-   --  and as such does not have any data storage allocated for it. Instead
-   --  only a memory address is attached.
-   Stack_Pointer_Init : constant Storage_Elements.Storage_Element;
-   pragma Import (Assembler, Stack_Pointer_Init, "__SP_INIT");
-
    function No_Call_Stack return Call_Stack_Handler is
      ((Null_Address, Null_Address, Null_Address));
 end Oak.Memory.Call_Stack;

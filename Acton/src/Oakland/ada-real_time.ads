@@ -72,6 +72,7 @@ private
    Time_Span_Unit  : constant Time_Span := Oak_CSP_Time.Oak_Time_Span_Unit;
 
    Tick : constant Time_Span := Oak_CSP_Time.Oak_Tick;
+   Ticks_Per_Second : constant := Oak_CSP_Time.Ticks_Per_Second;
 
    pragma Import (Intrinsic, "+");
    pragma Import (Intrinsic, "-");

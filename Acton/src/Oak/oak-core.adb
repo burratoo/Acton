@@ -5,11 +5,11 @@ with Oak.Oak_Time;                                 use Oak.Oak_Time;
 with Oak.Memory.Call_Stack.Ops;
 with Oak.Core_Support_Package.Task_Support;
 use  Oak.Core_Support_Package.Task_Support;
-with Oak.Core_Support_Package.Task_Interrupts;
 with Oak.Core_Support_Package.Call_Stack;
 with Oak.Interrupts;
 with Oak.Protected_Objects;
 with Oak.Processor_Support_Package.Interrupts;
+with Oak.Core_Support_Package.Interrupts;
 
 package body Oak.Core is
 
@@ -24,12 +24,13 @@ package body Oak.Core is
            (Stack            => K.Call_Stack,
             Size_In_Elements =>
               Oak.Core_Support_Package.Call_Stack.Oak_Call_Stack_Size);
+
+         Initialise_Sleep_Agent (K.Sleep_Agent'Access, Sleep_Agent'Address);
       end loop;
-      Oak.Core_Support_Package.Task_Interrupts.Initialise_Task_Enviroment;
 
-      --  Initialise sleep task
+      Oak.Core_Support_Package.Interrupts.Set_Up_Interrupts;
+      Oak.Core_Support_Package.Task_Support.Initialise_Task_Enviroment;
 
-      Initialise_Agent (Sleep_Task'Access, "Sleep Task",  No_Call_Stack);
    end Initialise;
 
    -----------------------------
@@ -287,7 +288,9 @@ package body Oak.Core is
          Set_Oak_Wake_Up_Timer (Wake_Up_At => Wake_Up_Time);
 
          if Next_Task = null then
-            Sleep_Kernel;
+            Oak_Instance.Current_Agent :=
+              Oak_Instance.Sleep_Agent'Unchecked_Access;
+            Context_Switch_To_Task;
          else
             --   Set MMU is applicable.
 
@@ -319,4 +322,10 @@ package body Oak.Core is
    begin
       Processor_Kernels (Processor.Proccessor_Id).Current_Agent := Agent;
    end Set_Current_Agent;
+
+   procedure Set_Oak_Stack_Pointer (SP : Address) is
+   begin
+      Processor_Kernels (Processor.Proccessor_Id).Call_Stack.Pointer := SP;
+   end Set_Oak_Stack_Pointer;
+
 end Oak.Core;

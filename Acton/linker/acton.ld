@@ -149,7 +149,7 @@ SECTIONS
 
   .rcw :
   {
-    *(.rcw)
+    KEEP(*(.rcw))
   } > flash_rcw
 
   .acton_intr_branch_table :
@@ -382,6 +382,7 @@ SECTIONS
     __SDATA_START__ = .;
     _SDA_BASE_ = .;
     *(.sdata)
+    *(.sdata*)
   } > int_sram
 
   NEXT_LOAD_ADDR = NEXT_LOAD_ADDR + SIZEOF(.sdata);

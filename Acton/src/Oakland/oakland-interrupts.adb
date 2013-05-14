@@ -1,5 +1,7 @@
 with Oakland.Tasks;
 with Oak.Agent.Tasks; use Oak.Agent.Tasks;
+with Oak.Agent.Tasks.Protected_Objects; use Oak.Agent.Tasks.Protected_Objects;
+with Oak.Interrupts; use Oak.Interrupts;
 
 package body Oakland.Interrupts is
    procedure Attach_Handlers

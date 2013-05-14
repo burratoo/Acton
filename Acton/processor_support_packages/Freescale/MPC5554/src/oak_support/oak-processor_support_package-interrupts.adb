@@ -2,8 +2,7 @@ with ISA.Power;
 with MPC5554.Flash;
 with Oak.Agent.Tasks;
 with Oak.Agent.Tasks.Protected_Objects;
-with Oak.Core_Support_Package.Task_Interrupts;
-with Oak.Core_Support_Package.Task_Support;
+with Oak.Core_Support_Package.Interrupts;
 
 with System.Machine_Code;     use System.Machine_Code;
 
@@ -34,7 +33,7 @@ package body Oak.Processor_Support_Package.Interrupts is
 
    procedure External_Interrupt_Handler is
    begin
-      Oak.Core_Support_Package.Task_Interrupts.Enable_SPE_Instructions;
+      Oak.Core_Support_Package.Interrupts.Enable_SPE_Instructions;
       --  Create Stack frame, save working registers and save srr0 and SRR1
       Asm (
            "stwu     r1,  -0x70(r1)"  & ASCII.LF & ASCII.HT &
@@ -57,7 +56,7 @@ package body Oak.Processor_Support_Package.Interrupts is
           MPC5554.INTC.Interrupt_Acknowledge_Register'Address),
         Volatile => True);
 
-      Oak.Core_Support_Package.Task_Support.Disable_Oak_Wake_Up_Interrupt;
+      Oak.Core_Support_Package.Interrupts.Disable_Oak_Wake_Up_Interrupt;
 
       Asm (
            --  Enable processor recongition of interrupts
@@ -113,7 +112,7 @@ package body Oak.Processor_Support_Package.Interrupts is
           MPC5554.INTC.End_Of_Interrupt_Register'Address),
         Volatile => True);
 
-      Oak.Core_Support_Package.Task_Support.Enable_Oak_Wake_Up_Interrupt;
+      Oak.Core_Support_Package.Interrupts.Enable_Oak_Wake_Up_Interrupt;
 
       --  Restore SRR0 and SRR1, restore working registers and delete
       --  stack frame
@@ -136,7 +135,7 @@ package body Oak.Processor_Support_Package.Interrupts is
    procedure Initialise_Interrupts is
       use MPC5554.Flash;
    begin
-      Oak.Core_Support_Package.Task_Interrupts.Disable_External_Interrupts;
+      Oak.Core_Support_Package.Interrupts.Disable_External_Interrupts;
 
       Module_Config_Register :=
         (Vector_Table_Entry_Size => Eight_Bytes,
@@ -159,15 +158,11 @@ package body Oak.Processor_Support_Package.Interrupts is
          Shadow_Lock => Locked,
          Mid_Address_Locks => (others => Locked),
          Low_Address_Locks => (B3 => Unlocked, others => Locked));
-
-      Oak.Core_Support_Package.Task_Interrupts.Enable_External_Interrupts;
    end Initialise_Interrupts;
 
    procedure Complete_Interrupt_Initialisation is
       use MPC5554.Flash;
    begin
-      Oak.Core_Support_Package.Task_Interrupts.Disable_External_Interrupts;
-
       Low_Mid_Address_Space_Block_Locking_Register :=
         (Locks => Editable,
          Shadow_Lock => Locked,
@@ -176,7 +171,7 @@ package body Oak.Processor_Support_Package.Interrupts is
 
       Completed_Flash_Programming;
 
-      Oak.Core_Support_Package.Task_Interrupts.Enable_External_Interrupts;
+      Oak.Core_Support_Package.Interrupts.Enable_External_Interrupts;
    end Complete_Interrupt_Initialisation;
 
    procedure Attach_Handler (Interrupt : Oak_Interrupt_Id;
@@ -184,10 +179,7 @@ package body Oak.Processor_Support_Package.Interrupts is
                              Priority  : Interrupt_Priority)
    is
       use MPC5554.Flash;
-      use Oak.Core_Support_Package.Task_Interrupts;
    begin
-      Oak.Core_Support_Package.Task_Interrupts.Disable_External_Interrupts;
-
       if INTC_Vector_Table (Interrupt) /= Handler then
          if Programmed_Vector_Table (Interrupt) /= Default_Handler then
             raise Program_Error;
@@ -200,8 +192,6 @@ package body Oak.Processor_Support_Package.Interrupts is
 
       Priority_Select_Register_Array (Interrupt)
         := MPC5554_Interrupt_Priority (Priority - Interrupt_Priority'First);
-
-      Oak.Core_Support_Package.Task_Interrupts.Enable_External_Interrupts;
    end Attach_Handler;
 
    procedure Get_Resource

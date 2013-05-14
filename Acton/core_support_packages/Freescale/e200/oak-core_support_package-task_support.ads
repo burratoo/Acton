@@ -1,9 +1,8 @@
 --
 --  Processor Support Package for the e200z6 PowerPC Core.
 --
-with System;
+
 with Oak.Oak_Time;
-with System.Storage_Elements;
 
 package Oak.Core_Support_Package.Task_Support with Pure is
 
@@ -27,6 +26,8 @@ package Oak.Core_Support_Package.Task_Support with Pure is
    --  registers to store is the Stack Pointer. Even then, this could just be
    --  set up by the kernel before the context switch... mmmm........
 
+   procedure Initialise_Task_Enviroment;
+
    procedure Context_Switch_To_Task with Inline_Always;
    procedure Context_Switch_To_Kernel with Inline_Always;
    procedure Context_Switch_To_Scheduler_Agent with Inline_Always;
@@ -34,21 +35,7 @@ package Oak.Core_Support_Package.Task_Support with Pure is
    procedure Yield_Processor_To_Kernel with Inline_Always;
 
    procedure Set_Oak_Wake_Up_Timer (Wake_Up_At : Oak.Oak_Time.Time);
-   procedure Disable_Oak_Wake_Up_Interrupt with Inline_Always;
-   procedure Enable_Oak_Wake_Up_Interrupt with Inline_Always;
 
-   procedure Sleep_Kernel;
-   procedure Sleep_Task;
-
-   DI, SI, CSTT, CSTS : constant System.Storage_Elements.Storage_Element;
-   pragma Import (Assembler, DI, "__OTS_DI");
-   pragma Import (Assembler, SI, "__OTS_SI");
-   pragma Import (Assembler, CSTT, "__OTS_CSTT");
-   pragma Import (Assembler, CSTS, "__OTS_CSTS");
-
-   IVOR10_Decrementer_Intr : constant System.Address := DI'Address;
-   IVOR10_Sleep_Intr       : constant System.Address := SI'Address;
-   IVOR8_CS_To_Task        : constant System.Address := CSTT'Address;
-   IVOR8_CS_To_Sleep       : constant System.Address := CSTS'Address;
+   procedure Sleep_Agent;
 
 end Oak.Core_Support_Package.Task_Support;

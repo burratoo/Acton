@@ -1,3 +1,6 @@
+with Oak.Agent.Tasks;
+with Oak.Agent.Tasks.Protected_Objects;
+
 with System; use System;
 
 package body Oak.Interrupts is

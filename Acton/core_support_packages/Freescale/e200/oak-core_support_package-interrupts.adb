@@ -1,23 +1,28 @@
 with ISA;
+with ISA.Power.e200.Timer_Registers;
 with ISA.Power.e200.z6.HID;
+
 with Oak.Agent.Tasks;
 with Oak.Core;
 with Oak.Processor_Support_Package.Interrupts;
 
-with Oak.Core_Support_Package.Task_Support;
-use  Oak.Core_Support_Package.Task_Support;
 with System;                                     use System;
 with System.Machine_Code;                        use System.Machine_Code;
 
-package body Oak.Core_Support_Package.Task_Interrupts is
+package body Oak.Core_Support_Package.Interrupts is
 
-   pragma Suppress (All_Checks);
    --  Suppress all checks since they get in the way and cause unpredictable
    --  problems.
 
+   pragma Suppress (All_Checks);
+
    procedure Clear_Decrementer_Interrupt with Inline_Always;
 
-   procedure Initialise_Task_Enviroment is
+   -----------------------
+   -- Set_Up_Interrupts --
+   -----------------------
+
+   procedure Set_Up_Interrupts is
       subtype HID0_Type is
         ISA.Power.e200.z6.HID.
           Hardware_Implementation_Dependent_Register_0_Type;
@@ -51,46 +56,7 @@ package body Oak.Core_Support_Package.Task_Interrupts is
          Inputs   => (HID0_Type'Asm_Input ("r", HID0)),
          Volatile => True);
       Oak.Processor_Support_Package.Interrupts.Initialise_Interrupts;
-   end Initialise_Task_Enviroment;
-
-   --  We use r2 and r13 as they are the only registers guaranteed not to
-   --  be using the whole 64 bits of the register.
-   procedure Enable_SPE_Instructions is
-   begin
-      --  The machine state register is modified as follows:
-      --       MSR.Signal_Processing := ISA.Enable;
-      Asm
-        ("stwu    r1, -8(r1)"     & ASCII.LF & ASCII.HT &
-         "stw     r2,  4(r1)"     & ASCII.LF & ASCII.HT &
-         "stw     r13, 0(r1)"     & ASCII.LF & ASCII.HT &
-         "li      r2,  1"         & ASCII.LF & ASCII.HT &
-         "mfmsr   r13"            & ASCII.LF & ASCII.HT &
-         "rlwimi  r13,r2,25,6,6"  & ASCII.LF & ASCII.HT &
-         "mtmsr   r13"            & ASCII.LF & ASCII.HT &
-         "lwz     r2,  4(r1)"     & ASCII.LF & ASCII.HT &
-         "lwz     r13, 0(r1)"     & ASCII.LF & ASCII.HT &
-         "addi    r1, r1, 8",
-         Volatile => True);
-   end Enable_SPE_Instructions;
-
-   procedure Clear_Decrementer_Interrupt is
-   begin
-      --  The following is written to the time status register:
-      --  TSR : constant Timer_Status_Register_Type :=
-      --    (Next_Watchdog_Time       => Disable,
-      --     Watchdog_Timer_Interrupt => Not_Occurred,
-      --     Watchdog_Timer_Reset     => 0,
-      --     Decrement_Interrupt      => Occurred,
-      --     Fixed_Interval_Interrupt => Not_Occurred);
-      Asm
-        ("stwu    r1, -8(r1)"    & ASCII.LF & ASCII.HT &
-         "stw     r2,  0(r1)"    & ASCII.LF & ASCII.HT &
-         "lis     r2,  0x800"    & ASCII.LF & ASCII.HT &
-         "mttsr   r2"            & ASCII.LF & ASCII.HT &
-         "lwz     r2,  0(r1)"    & ASCII.LF & ASCII.HT &
-         "addi    r1, r1, 8",
-         Volatile => True);
-   end Clear_Decrementer_Interrupt;
+   end Set_Up_Interrupts;
 
    procedure Enable_External_Interrupts is
    begin
@@ -102,12 +68,11 @@ package body Oak.Core_Support_Package.Task_Interrupts is
       Asm ("wrteei 0", Volatile => True);
    end Disable_External_Interrupts;
 
-   ----------------------------
-   -- Context_Switch_To_Task --
-   -----------------------------
+   --------------------------------------
+   -- Context_Switch_To_Task_Interrupt --
+   --------------------------------------
 
-   procedure Context_Switch_To_Task is
-      use Oak.Core_Support_Package;
+   procedure Context_Switch_To_Task_Interrupt is
 
       Task_Stack_Pointer : Address;
    begin
@@ -174,7 +139,7 @@ package body Oak.Core_Support_Package.Task_Interrupts is
 
       Task_Stack_Pointer := Core.Current_Agent_Stack_Pointer;
       if Core.Current_Agent.all in Agent.Tasks.Task_Agent'Class then
-         Task_Support.Enable_Oak_Wake_Up_Interrupt;
+         Enable_Oak_Wake_Up_Interrupt;
       end if;
 
       --  Load task's registers
@@ -233,13 +198,13 @@ package body Oak.Core_Support_Package.Task_Interrupts is
          Inputs   => Address'Asm_Input ("r", Task_Stack_Pointer),
          Volatile => True);
 
-   end Context_Switch_To_Task;
+   end Context_Switch_To_Task_Interrupt;
 
-   ------------------------------
-   -- Context_Switch_To_Kernel --
-   ------------------------------
+   ----------------------------------------
+   -- Context_Switch_To_Kernel_Interrupt --
+   ----------------------------------------
 
-   procedure Context_Switch_To_Kernel is
+   procedure Context_Switch_To_Kernel_Interrupt is
       Task_Stack_Pointer : Address;
    begin
 
@@ -312,7 +277,7 @@ package body Oak.Core_Support_Package.Task_Interrupts is
            Volatile => True);
 
       Core.Set_Current_Agent_Stack_Pointer (SP => Task_Stack_Pointer);
-      Core_Support_Package.Task_Support.Disable_Oak_Wake_Up_Interrupt;
+      Disable_Oak_Wake_Up_Interrupt;
 
       Asm
         ("mfsprg0         r1" & ASCII.LF & ASCII.HT & -- load kernel stack ptr
@@ -365,70 +330,114 @@ package body Oak.Core_Support_Package.Task_Interrupts is
          "rfi",                     --   switch to task routine.
          Volatile => True);
 
-   end Context_Switch_To_Kernel;
-
-   -----------------------------
-   -- Context_Switch_To_Sleep --
-   -----------------------------
-
-   procedure Context_Switch_To_Sleep is
-   begin
-
-      --  Store working register and kernel instruction address,
-      --  and load sleep task instruction address
-
-      Asm
-        ("stwu  r1, -16(r1)"     & ASCII.LF & ASCII.HT &
-         "stw   r9,   8(r1)"     & ASCII.LF & ASCII.HT &
-         "stw   r10,  4(r1)"     & ASCII.LF & ASCII.HT &
-         "mfsrr0   r9"           & ASCII.LF & ASCII.HT &
-         "stw   r9,   0(r1)"     & ASCII.LF & ASCII.HT &
-         "lis   r9,  %0@ha"      & ASCII.LF & ASCII.HT &
-         "addi r9, r9, %0@l"   & ASCII.LF & ASCII.HT &
-         "mtsrr0     r9",
-         Inputs   => Address'Asm_Input ("i", Sleep_Task'Address),
-         Volatile => True);
-
-      Task_Support.Enable_Oak_Wake_Up_Interrupt;
-
-      Asm ("rfi", Volatile => True);
-   end Context_Switch_To_Sleep;
+   end Context_Switch_To_Kernel_Interrupt;
 
    --  Check that the assembly code for Store_Task_Yielded_Status always uses
-   --  r0 and r9.
+   --  r6 to r10.
 
    procedure Decrementer_Interrupt is
    begin
       Clear_Decrementer_Interrupt;
       Enable_SPE_Instructions;
       Asm
-        ("stu    r1, -16(r1)" & ASCII.LF & ASCII.HT &
+        ("stu    r1, -8(r1)" & ASCII.LF & ASCII.HT &
          "evstdd r10,  0(r1)" & ASCII.LF & ASCII.HT &
          "evstdd r9,   8(r1)",
          Volatile => True);
+
       Oak.Core.Current_Task.Store_Task_Yield_Status (Agent.Tasks.Forced);
+
       Asm
         ("evldd  r9,   8(r1)" & ASCII.LF & ASCII.HT &
          "evldd  r10,  0(r1)" & ASCII.LF & ASCII.HT &
-         "stu    r1,  16(r1)",
+         "addi   r1, r1, 8",
          Volatile => True);
-      Context_Switch_To_Kernel;
+      Context_Switch_To_Kernel_Interrupt;
    end Decrementer_Interrupt;
 
-   procedure Sleep_Interrupt is
+   --  We use r2 and r13 as they are the only registers guaranteed not to
+   --  be using the whole 64 bits of the register.
+   procedure Enable_SPE_Instructions is
    begin
-      Clear_Decrementer_Interrupt;
-      Task_Support.Disable_Oak_Wake_Up_Interrupt;
-
-      --  Restore kernel instruction address and working registers
+      --  The machine state register is modified as follows:
+      --       MSR.Signal_Processing := ISA.Enable;
       Asm
-        ("lwz  r9,  0(r1)" & ASCII.LF & ASCII.HT &
-         "mtsrr0       r9" & ASCII.LF & ASCII.HT &
-         "lwz  r10, 4(r1)" & ASCII.LF & ASCII.HT &
-         "lwz  r9,  8(r1)" & ASCII.LF & ASCII.HT &
-         "addi r1, r1, 16" & ASCII.LF & ASCII.HT &
-         "rfi",
+        ("stwu    r1, -8(r1)"     & ASCII.LF & ASCII.HT &
+         "stw     r2,  4(r1)"     & ASCII.LF & ASCII.HT &
+         "stw     r13, 0(r1)"     & ASCII.LF & ASCII.HT &
+         "li      r2,  1"         & ASCII.LF & ASCII.HT &
+         "mfmsr   r13"            & ASCII.LF & ASCII.HT &
+         "rlwimi  r13,r2,25,6,6"  & ASCII.LF & ASCII.HT &
+         "mtmsr   r13"            & ASCII.LF & ASCII.HT &
+         "lwz     r2,  4(r1)"     & ASCII.LF & ASCII.HT &
+         "lwz     r13, 0(r1)"     & ASCII.LF & ASCII.HT &
+         "addi    r1, r1, 8",
          Volatile => True);
-   end Sleep_Interrupt;
+   end Enable_SPE_Instructions;
 
-end Oak.Core_Support_Package.Task_Interrupts;
+   procedure Clear_Decrementer_Interrupt is
+   begin
+      --  The following is written to the time status register:
+      --  TSR : constant Timer_Status_Register_Type :=
+      --    (Next_Watchdog_Time       => Disable,
+      --     Watchdog_Timer_Interrupt => Not_Occurred,
+      --     Watchdog_Timer_Reset     => 0,
+      --     Decrement_Interrupt      => Occurred,
+      --     Fixed_Interval_Interrupt => Not_Occurred);
+      Asm
+        ("stwu    r1, -8(r1)"    & ASCII.LF & ASCII.HT &
+         "stw     r2,  0(r1)"    & ASCII.LF & ASCII.HT &
+         "lis     r2,  0x800"    & ASCII.LF & ASCII.HT &
+         "mttsr   r2"            & ASCII.LF & ASCII.HT &
+         "lwz     r2,  0(r1)"    & ASCII.LF & ASCII.HT &
+         "addi    r1, r1, 8",
+         Volatile => True);
+   end Clear_Decrementer_Interrupt;
+
+   -----------------------------------
+   -- Disable_Oak_Wake_Up_Interrupt --
+   -----------------------------------
+
+   procedure Disable_Oak_Wake_Up_Interrupt is
+      use ISA;
+      use ISA.Power.e200.Timer_Registers;
+
+      TCR : Timer_Control_Register_Type;
+   begin
+      --  Read the Time Control Register
+      Asm
+        ("mftcr  %0",
+         Outputs  => (Timer_Control_Register_Type'Asm_Output ("=r", TCR)),
+         Volatile => True);
+      TCR.Decrementer_Interrupt := Disable;
+      --  Write the Time Control Register
+      Asm
+        ("mttcr  %0",
+         Inputs   => (Timer_Control_Register_Type'Asm_Input ("r", TCR)),
+         Volatile => True);
+   end Disable_Oak_Wake_Up_Interrupt;
+
+   ----------------------------------
+   -- Enable_Oak_Wake_Up_Interrupt --
+   ----------------------------------
+
+   procedure Enable_Oak_Wake_Up_Interrupt is
+      use ISA;
+      use ISA.Power.e200.Timer_Registers;
+
+      TCR : Timer_Control_Register_Type;
+   begin
+      --  Read the Time Control Register
+      Asm
+        ("mftcr  %0",
+         Outputs  => (Timer_Control_Register_Type'Asm_Output ("=r", TCR)),
+         Volatile => True);
+      TCR.Decrementer_Interrupt := Enable;
+      --  Write the Time Control Register
+      Asm
+        ("mttcr  %0",
+         Inputs   => (Timer_Control_Register_Type'Asm_Input ("r", TCR)),
+         Volatile => True);
+   end Enable_Oak_Wake_Up_Interrupt;
+
+end Oak.Core_Support_Package.Interrupts;

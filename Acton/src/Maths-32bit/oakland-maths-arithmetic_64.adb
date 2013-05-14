@@ -1,7 +1,7 @@
 with Interfaces; use Interfaces;
 with Ada.Unchecked_Conversion;
 
-package body Oak.Maths.Arithmetic_64 is
+package body Oakland.Maths.Arithmetic_64 is
    pragma Suppress (Overflow_Check);
    pragma Suppress (Range_Check);
 
@@ -225,4 +225,4 @@ package body Oak.Maths.Arithmetic_64 is
       return Q;
    end Unsigned_64_Divide;
 
-end Oak.Maths.Arithmetic_64;
+end Oakland.Maths.Arithmetic_64;

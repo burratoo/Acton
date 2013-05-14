@@ -1,5 +1,6 @@
 with Oak.Agent.Schedulers;
 with Oak.Atomic_Actions;
+with Oak.Core_Support_Package.Call_Stack;
 with Oak.Memory.Call_Stack.Ops; use Oak.Memory.Call_Stack.Ops;
 with System; use System;
 
@@ -71,6 +72,28 @@ package body Oak.Agent.Tasks is
       Chain.Head            := Agent;
 
    end Initialise_Task_Agent;
+
+   procedure Initialise_Sleep_Agent
+     (Agent    : access Task_Agent'Class;
+      Run_Loop : in System.Address)
+   is
+      C : Activation_Chain;
+   begin
+      Initialise_Task_Agent
+        (Agent             => Agent,
+         Stack_Address     => Null_Address,
+         Stack_Size        => Core_Support_Package.Call_Stack.Sleep_Stack_Size,
+         Name              => "Sleep",
+         Normal_Priority   => Priority'First,
+         Relative_Deadline => Oak_Time.Time_Span_Last,
+         Cycle_Period      => Oak_Time.Time_Span_Last,
+         Phase             => Oak_Time.Time_Span_Zero,
+         Run_Loop          => Run_Loop,
+         Task_Value_Record => Null_Address,
+         Chain             => C,
+         Elaborated        => null);
+      Agent.State := Runnable;
+   end Initialise_Sleep_Agent;
 
    procedure Next_Run_Cycle (T : in out Task_Agent'Class) is
    begin
