@@ -37,9 +37,9 @@ package Oak.Core_Support_Package.Task_Support with Preelaborate is
    procedure Set_Oak_Wake_Up_Timer (Wake_Up_At : Oak_Time.Time);
    procedure Sleep_Agent;
 
-   procedure Task_Interruptible;
-   procedure Task_Not_Interruptible;
+   procedure Task_Interruptible with Inline_Always;
+   procedure Task_Not_Interruptible with Inline_Always;
 private
-   Interrupts_Disabled : Boolean;
+   Interrupts_Disabled : Boolean := False;
 
 end Oak.Core_Support_Package.Task_Support;

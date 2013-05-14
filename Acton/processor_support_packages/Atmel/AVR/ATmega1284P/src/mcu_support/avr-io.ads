@@ -6,15 +6,15 @@ package AVR.IO with Preelaborate is
    --  Memory Address
    ----------------------------------------------------------------------------
 
-   PINA_Address  : constant Integer_Address := 16#00#;
-   DDRA_Address  : constant Integer_Address := 16#01#;
-   PORTA_Address : constant Integer_Address := 16#02#;
-   PINB_Address  : constant Integer_Address := 16#03#;
-   DDRB_Address  : constant Integer_Address := 16#04#;
-   PORTB_Address : constant Integer_Address := 16#05#;
-   PINC_Address  : constant Integer_Address := 16#06#;
-   DDRC_Address  : constant Integer_Address := 16#07#;
-   PORTC_Address : constant Integer_Address := 16#08#;
+   PINA_Address  : constant Integer_Address := 16#20#;
+   DDRA_Address  : constant Integer_Address := 16#21#;
+   PORTA_Address : constant Integer_Address := 16#22#;
+   PINB_Address  : constant Integer_Address := 16#23#;
+   DDRB_Address  : constant Integer_Address := 16#24#;
+   PORTB_Address : constant Integer_Address := 16#25#;
+   PINC_Address  : constant Integer_Address := 16#26#;
+   DDRC_Address  : constant Integer_Address := 16#27#;
+   PORTC_Address : constant Integer_Address := 16#28#;
 
    ----------------------------------------------------------------------------
    --  IO Types

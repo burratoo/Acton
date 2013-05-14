@@ -1,5 +1,3 @@
-with System;
-
 package Oak.Core_Support_Package.Time.Clock with Preelaborate is
 
    function Get_Clock return Oak_Time;
@@ -13,8 +11,6 @@ package Oak.Core_Support_Package.Time.Clock with Preelaborate is
 private
    Avr_Clock         : Oak_Time := 0;
    Interrupt_Time    : Oak_Time;
-   Interrupt_Enabled : Boolean := False;
-   System_Call_Address : constant System.Address := System'To_Address (16#2#);
 
    function Get_Clock return Oak_Time is (Avr_Clock);
 

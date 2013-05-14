@@ -33,7 +33,7 @@ package Oak.Core_Support_Package.Time with Pure is
 
    MHz         : constant := 1E6;
    KHz         : constant := 1E3;
-   Clock_Speed : constant := 1000;
+   Clock_Speed : constant := 1024;
 
    type Oak_Time is range -(2 ** 31) .. +(2 ** 31 - 1) with Size => 32;
 

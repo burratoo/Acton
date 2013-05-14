@@ -53,8 +53,8 @@ package AVR.Timers with Preelaborate is
    type Timer_Counter_Control_A_Type is record
       Compare_Match_Output_A_Mode : COM_Type;
       Compare_Match_Output_B_Mode : COM_Type;
-      Waveform_Generation_Mode_0  : Boolean;
       Waveform_Generation_Mode_1  : Boolean;
+      Waveform_Generation_Mode_0  : Boolean;
    end record;
 
    type Clock_Select_Bits is
@@ -111,8 +111,8 @@ package AVR.Timers with Preelaborate is
    for Timer_Counter_Control_A_Type use record
       Compare_Match_Output_A_Mode at 0 range 6 .. 7;
       Compare_Match_Output_B_Mode at 0 range 4 .. 5;
-      Waveform_Generation_Mode_0  at 0 range 1 .. 1;
-      Waveform_Generation_Mode_1  at 0 range 0 .. 0;
+      Waveform_Generation_Mode_1  at 0 range 1 .. 1;
+      Waveform_Generation_Mode_0  at 0 range 0 .. 0;
    end record;
 
    for Clock_Select_Bits use

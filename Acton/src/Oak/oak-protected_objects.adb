@@ -162,7 +162,7 @@ package body Oak.Protected_Objects is
             Chosen_Task    => Chosen_Task);
       else
          --  Protected action continues.
-         T.Set_State (Runnable);
+         Chosen_Task.Set_State (Runnable);
          PO.Add_Task_To_Protected_Object (Chosen_Task);
       end if;
    end Process_Exit_Request;

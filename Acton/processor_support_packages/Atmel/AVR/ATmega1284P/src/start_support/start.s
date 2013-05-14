@@ -51,9 +51,9 @@ __reset:
       jmp  __PSP_Vector_7
       jmp  __PSP_Vector_8
       jmp  __PSP_Vector_9
-      jmp  __PSP_Vector_10
-      jmp  __PSP_Vector_11
       jmp  __Clock_Interrupt
+      jmp  __PSP_Vector_11
+      jmp  __PSP_Vector_12
       jmp  __PSP_Vector_13
       jmp  __PSP_Vector_14
       jmp  __PSP_Vector_15
@@ -127,6 +127,9 @@ __do_copy_data:
 	.set	__stack, RAMEND
 
 	.section .init9,"ax",@progbits
+/* Reset the MCU status register - Crude, but works, should really
+   set latter on */
+        out     0x24, r1
 	call	main
 	jmp	exit
 

@@ -25,14 +25,27 @@ package body Oak.Core_Support_Package.Call_Stack.Ops is
       Instruction_Address : in System.Address)
    is
       use System;
+
    begin
       Asm
-        ("st   %a0+, %A1" & ASCII.LF & ASCII.HT &
-         "st   %a0,  %B1",
+        ("std  %a0+32,  r1" & ASCII.LF & ASCII.HT &  -- r1
+         "std  %a0+35, %A1" & ASCII.LF & ASCII.HT &
+         "std  %a0+34, %B1" & ASCII.LF & ASCII.HT &
+         "std  %a0+1,   r1", -- Disables interrupts for the task
          Inputs   => (Address'Asm_Input ("b", Stack.Pointer),
                       Address'Asm_Input ("r", Instruction_Address)),
          Volatile => True);
    end Set_Task_Instruction_Pointer;
+
+   -------------------------------
+   --  Set_Task_Body_Procedure  --
+   -------------------------------
+
+   --  On the AVR we place the task's procedure address before the registers.
+   --  The Task_Value_Record goes in registers r24 and r25. The zero register,
+   --  r1, is also zeroed. Note that on the AVR the stack preincrements, so
+   --  that data we place on the stack is one position behind were we think it
+   --  should be. We also zero the status register.
 
    procedure Set_Task_Body_Procedure
      (Stack             : in Oak.Memory.Call_Stack.Call_Stack_Handler;
@@ -40,19 +53,24 @@ package body Oak.Core_Support_Package.Call_Stack.Ops is
       Task_Value_Record : in System.Address)
    is
       use System;
+
    begin
       --  Set r24 and r25 to the memory address of the task value record,
       --  which corresponds to the first parameter of the task body procedure.
 
       Asm
-        ("st  %a0,    %A1" & ASCII.LF & ASCII.HT &
-         "std %a0+1,  %B1" & ASCII.LF & ASCII.HT &
+        ("std %a0+32,  r1" & ASCII.LF & ASCII.HT &
+         "std %a0+35, %A1" & ASCII.LF & ASCII.HT &
+         "std %a0+34, %B1" & ASCII.LF & ASCII.HT &
          "std %a0+9,  %A2" & ASCII.LF & ASCII.HT &
-         "std %a0+10, %B2",
+         "std %a0+8,  %B2" & ASCII.LF & ASCII.HT &
+         "ldi r16,   0x80" & ASCII.LF & ASCII.HT &
+         "std %a0+1,  r16", -- Enables interrupts for the task
          Inputs   => (Address'Asm_Input ("b", Stack.Pointer),
                       Address'Asm_Input ("r", Procedure_Address),
                       Address'Asm_Input ("r", Task_Value_Record)),
-         Volatile => True);
+         Volatile => True,
+         Clobber  => "r16");
    end Set_Task_Body_Procedure;
 
    procedure Initialise_Call_Stack
@@ -63,10 +81,9 @@ package body Oak.Core_Support_Package.Call_Stack.Ops is
       Stack.Pointer := Stack.Pointer -
         Task_Agents.Oak_Task_Message_Store'Size / System.Storage_Unit;
       Stack.Pointer := Stack.Pointer - Task_Registers_Save_Size;
-      Set_Task_Body_Procedure
+      Set_Task_Instruction_Pointer
         (Stack             => Stack,
-         Procedure_Address => Start_Instruction,
-         Task_Value_Record => System.Null_Address);
+         Instruction_Address => Start_Instruction);
    end Initialise_Call_Stack;
 
    procedure Initialise_Call_Stack

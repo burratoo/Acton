@@ -18,40 +18,51 @@ package body Oak.Core_Support_Package.Time.Clock is
    procedure Increment_Clock is
    begin
 
-      --  Save working registers r20 -> r27
+      --  Save working registers r18 -> r27
+      --  Store SREG in the zero register
 
-      Asm ("push r20" & ASCII.LF & ASCII.HT &
-           "push r21" & ASCII.LF & ASCII.HT &
-           "push r22" & ASCII.LF & ASCII.HT &
-           "push r23" & ASCII.LF & ASCII.HT &
-           "push r24" & ASCII.LF & ASCII.HT &
-           "push r25" & ASCII.LF & ASCII.HT &
-           "push r26" & ASCII.LF & ASCII.HT &
-           "push r27",
+      Asm ("push r17"          & ASCII.LF & ASCII.HT &
+           "push r18"          & ASCII.LF & ASCII.HT &
+           "push r19"          & ASCII.LF & ASCII.HT &
+           "push r20"          & ASCII.LF & ASCII.HT &
+           "push r21"          & ASCII.LF & ASCII.HT &
+           "push r22"          & ASCII.LF & ASCII.HT &
+           "push r23"          & ASCII.LF & ASCII.HT &
+           "push r24"          & ASCII.LF & ASCII.HT &
+           "push r25"          & ASCII.LF & ASCII.HT &
+           "push r26"          & ASCII.LF & ASCII.HT &
+           "push r27"          & ASCII.LF & ASCII.HT &
+           "in   r17, __SREG__",
            Volatile => True);
 
-      Interrupt_Time := Interrupt_Time + 1;
+      Avr_Clock := Avr_Clock + 1;
       Timer_Counter2_Interrupt_Flag_Register.Overflow := Raised;
 
       if Avr_Clock > Interrupt_Time then
 
+         Asm ("ldi r18, 0x80" & ASCII.LF & ASCII.HT &
+              "mov r1, r18", Volatile => True);
          Task_Support.Context_Switch_To_Kernel;
 
       end if;
 
-      --  Restore working registers
+      --  Restore working registers.
 
-      Asm ("pop r20" & ASCII.LF & ASCII.HT &
-           "pop r21" & ASCII.LF & ASCII.HT &
-           "pop r22" & ASCII.LF & ASCII.HT &
-           "pop r23" & ASCII.LF & ASCII.HT &
-           "pop r24" & ASCII.LF & ASCII.HT &
-           "pop r25" & ASCII.LF & ASCII.HT &
-           "pop r26" & ASCII.LF & ASCII.HT &
-           "pop r27",
+      Asm ("out __SREG__, r17" & ASCII.LF & ASCII.HT &
+           "pop r27"           & ASCII.LF & ASCII.HT &
+           "pop r26"           & ASCII.LF & ASCII.HT &
+           "pop r25"           & ASCII.LF & ASCII.HT &
+           "pop r24"           & ASCII.LF & ASCII.HT &
+           "pop r23"           & ASCII.LF & ASCII.HT &
+           "pop r22"           & ASCII.LF & ASCII.HT &
+           "pop r21"           & ASCII.LF & ASCII.HT &
+           "pop r20"           & ASCII.LF & ASCII.HT &
+           "pop r19"           & ASCII.LF & ASCII.HT &
+           "pop r18"           & ASCII.LF & ASCII.HT &
+           "pop r17",
            Volatile => True);
 
-      --  Return from interrupt
+      --  Return from interrupt.
 
       Asm ("reti", Volatile => True);
    end Increment_Clock;
