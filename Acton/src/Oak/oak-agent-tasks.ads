@@ -1,3 +1,4 @@
+with Ada.Cyclic_Tasks;
 with Oak.Indices;
 with Oak.Protected_Objects;
 with System;
@@ -5,6 +6,7 @@ with System.Storage_Elements;
 
 with Oak.Oak_Time; use Oak.Oak_Time;
 
+limited with Ada.Execution_Server;
 limited with Oak.Agent.Schedulers;
 limited with Oak.Agent.Tasks.Protected_Objects;
 limited with Oak.Atomic_Actions;
@@ -111,12 +113,19 @@ package Oak.Agent.Tasks with Preelaborate is
       Stack_Address     : in System.Address;
       Stack_Size        : in System.Storage_Elements.Storage_Count;
       Name              : in String;
-      Normal_Priority   : in Integer;
-      Relative_Deadline : in Oak_Time.Time_Span;
-      Cycle_Period      : in Oak_Time.Time_Span;
-      Phase             : in Oak_Time.Time_Span;
       Run_Loop          : in System.Address;
       Task_Value_Record : in System.Address;
+      Normal_Priority   : in Integer;
+      Cycle_Behaviour   : in Ada.Cyclic_Tasks.Behaviour;
+      Cycle_Period      : in Oak_Time.Time_Span;
+      Phase             : in Oak_Time.Time_Span;
+      Execution_Budget  : in Oak_Time.Time_Span;
+      Budget_Action     : in Ada.Cyclic_Tasks.Event_Action;
+      Budget_Handler    : in Ada.Cyclic_Tasks.Action_Handler;
+      Relative_Deadline : in Oak_Time.Time_Span;
+      Deadline_Action   : in Ada.Cyclic_Tasks.Event_Action;
+      Deadline_Handler  : in Ada.Cyclic_Tasks.Action_Handler;
+      Execution_Server  : access Ada.Execution_Server.Execution_Server;
       Chain             : in out Activation_Chain;
       Elaborated        : in Boolean_Access);
 
@@ -224,27 +233,37 @@ private
    end record;
 
    type Task_Agent is new Oak_Agent with record
-      State            : Task_State                := Sleeping;
-      Shared_State     : Shared_Task_State         := No_Shared_State;
-      Message_Location : Oak_Task_Message_Location := null;
+      State             : Task_State                := Sleeping;
+      Shared_State      : Shared_Task_State         := No_Shared_State;
+      Message_Location  : Oak_Task_Message_Location := null;
 
-      Normal_Priority  : System.Any_Priority := System.Default_Priority;
-      Deadline         : Oak_Time.Time_Span := Oak_Time.Time_Span_Zero;
-      Cycle_Period     : Oak_Time.Time_Span := Oak_Time.Time_Span_Zero;
-      Phase            : Oak_Time.Time_Span := Oak_Time.Time_Span_Zero;
+      Normal_Priority   : System.Any_Priority;
+      Cycle_Behaviour   : Ada.Cyclic_Tasks.Behaviour;
+      Cycle_Period      : Oak_Time.Time_Span;
+      Phase             : Oak_Time.Time_Span;
 
-      Next_Deadline    : Oak_Time.Time := Oak_Time.Time_Last;
-      Next_Run_Cycle   : Oak_Time.Time := Oak_Time.Time_Last;
-      Wake_Time        : Oak_Time.Time := Oak_Time.Time_Last;
+      Execution_Budget  : Oak_Time.Time_Span;
+      Budget_Action     : Ada.Cyclic_Tasks.Event_Action;
+      Budget_Handler    : Ada.Cyclic_Tasks.Action_Handler;
 
-      Scheduler_Agent  : access Schedulers.Scheduler_Agent'Class := null;
-      Queue_Link       : Task_Agent_Link_Element;
-      Deadline_List    : Task_Agent_Link_Element;
+      Relative_Deadline : Oak_Time.Time_Span;
+      Deadline_Action   : Ada.Cyclic_Tasks.Event_Action;
+      Deadline_Handler  : Ada.Cyclic_Tasks.Action_Handler;
 
-      Activation_List  : access Task_Agent'Class := null;
-      Elaborated       : Boolean_Access   := null;
+      Execution_Server  : access Ada.Execution_Server.Execution_Server;
 
-      In_Atomic_Action : access Atomic_Actions.Atomic_Object := null;
+      Next_Deadline     : Oak_Time.Time := Oak_Time.Time_Last;
+      Next_Run_Cycle    : Oak_Time.Time := Oak_Time.Time_Last;
+      Wake_Time         : Oak_Time.Time := Oak_Time.Time_Last;
+
+      Scheduler_Agent   : access Schedulers.Scheduler_Agent'Class := null;
+      Queue_Link        : Task_Agent_Link_Element;
+      Deadline_List     : Task_Agent_Link_Element;
+
+      Activation_List   : access Task_Agent'Class := null;
+      Elaborated        : Boolean_Access   := null;
+
+      In_Atomic_Action  : access Atomic_Actions.Atomic_Object := null;
    end record;
 
    type Activation_Chain is limited record
@@ -265,7 +284,7 @@ private
 
    function Deadline
      (T : in Task_Agent'Class)
-      return Oak_Time.Time_Span is (T.Deadline);
+      return Oak_Time.Time_Span is (T.Relative_Deadline);
 
    function Is_Elaborated
      (T : in Task_Agent'Class)

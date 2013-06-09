@@ -17,12 +17,19 @@ package body Oak.Agent.Tasks is
       Stack_Address     : in System.Address;
       Stack_Size        : in System.Storage_Elements.Storage_Count;
       Name              : in String;
-      Normal_Priority   : in Integer;
-      Relative_Deadline : in Oak_Time.Time_Span;
-      Cycle_Period      : in Oak_Time.Time_Span;
-      Phase             : in Oak_Time.Time_Span;
       Run_Loop          : in System.Address;
       Task_Value_Record : in System.Address;
+      Normal_Priority   : in Integer;
+      Cycle_Behaviour   : in Ada.Cyclic_Tasks.Behaviour;
+      Cycle_Period      : in Oak_Time.Time_Span;
+      Phase             : in Oak_Time.Time_Span;
+      Execution_Budget  : in Oak_Time.Time_Span;
+      Budget_Action     : in Ada.Cyclic_Tasks.Event_Action;
+      Budget_Handler    : in Ada.Cyclic_Tasks.Action_Handler;
+      Relative_Deadline : in Oak_Time.Time_Span;
+      Deadline_Action   : in Ada.Cyclic_Tasks.Event_Action;
+      Deadline_Handler  : in Ada.Cyclic_Tasks.Action_Handler;
+      Execution_Server  : access Ada.Execution_Server.Execution_Server;
       Chain             : in out Activation_Chain;
       Elaborated        : in Boolean_Access)
    is
@@ -33,11 +40,23 @@ package body Oak.Agent.Tasks is
          Name       => Name,
          Call_Stack => Call_Stack);
 
-      Agent.State        := Activation_Pending;
-      Agent.Shared_State := No_Shared_State;
-      Agent.Deadline     := Relative_Deadline;
-      Agent.Cycle_Period := Cycle_Period;
-      Agent.Phase        := Phase;
+      Agent.State             := Activation_Pending;
+      Agent.Shared_State      := No_Shared_State;
+
+      Agent.Cycle_Behaviour   := Cycle_Behaviour;
+      Agent.Cycle_Period      := Cycle_Period;
+      Agent.Phase             := Phase;
+
+      Agent.Execution_Budget  := Execution_Budget;
+      Agent.Budget_Action     := Budget_Action;
+      Agent.Budget_Handler    := Budget_Handler;
+
+      Agent.Relative_Deadline := Relative_Deadline;
+      Agent.Deadline_Action   := Deadline_Action;
+      Agent.Deadline_Handler  := Deadline_Handler;
+
+      Agent.Execution_Server  := Execution_Server;
+
       Agent.Elaborated   := Elaborated;
 
       if Stack_Address = Null_Address and Stack_Size > 0 then
@@ -84,14 +103,22 @@ package body Oak.Agent.Tasks is
          Stack_Address     => Null_Address,
          Stack_Size        => Core_Support_Package.Call_Stack.Sleep_Stack_Size,
          Name              => "Sleep",
-         Normal_Priority   => Priority'First,
-         Relative_Deadline => Oak_Time.Time_Span_Last,
-         Cycle_Period      => Oak_Time.Time_Span_Last,
-         Phase             => Oak_Time.Time_Span_Zero,
          Run_Loop          => Run_Loop,
          Task_Value_Record => Null_Address,
+         Normal_Priority   => Priority'First,
+         Cycle_Behaviour   => Ada.Cyclic_Tasks.Normal,
+         Cycle_Period      => Oak_Time.Time_Span_Last,
+         Phase             => Oak_Time.Time_Span_Zero,
+         Execution_Budget  => Oak_Time.Time_Span_Last,
+         Budget_Action     => Ada.Cyclic_Tasks.No_Action,
+         Budget_Handler    => null,
+         Relative_Deadline => Oak_Time.Time_Span_Last,
+         Deadline_Action   => Ada.Cyclic_Tasks.No_Action,
+         Deadline_Handler  => null,
+         Execution_Server  => null,
          Chain             => C,
          Elaborated        => null);
+
       Agent.State := Runnable;
    end Initialise_Sleep_Agent;
 
@@ -146,7 +173,7 @@ package body Oak.Agent.Tasks is
      (T  : in out Task_Agent'Class;
       RD : in Oak_Time.Time_Span) is
    begin
-      T.Deadline := RD;
+      T.Relative_Deadline := RD;
    end Set_Relative_Deadline;
 
    procedure Set_Scheduler_Agent

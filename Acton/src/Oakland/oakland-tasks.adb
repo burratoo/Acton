@@ -7,8 +7,8 @@ package body Oakland.Tasks is
    -----------------------------
    -- Engage_Activation       --
    -----------------------------
-   -- Called by the Activator --
-   -----------------------------
+
+   --  Called by the Activator
 
    procedure Activate_Tasks (Chain : Activation_Chain_Access) is
       Self     : constant access Task_Agent'Class       :=
@@ -34,8 +34,8 @@ package body Oakland.Tasks is
    -----------------------------
    -- Complete_Activation     --
    -----------------------------
-   -- Called by the Activatee --
-   -----------------------------
+
+   --  Called by the Activatee
 
    procedure Complete_Activation is
       Self     : constant access Task_Agent'Class := Oak.Core.Current_Task;
@@ -95,4 +95,11 @@ package body Oakland.Tasks is
       Oak.Core.Current_Task.Store_Oak_Task_Message (Task_Message);
       Oak.Core_Support_Package.Task_Support.Yield_Processor_To_Kernel;
    end Yield_Processor_To_Kernel;
+
+   procedure New_Cycle is
+      Message : constant Oak_Task_Message :=
+        (Message_Type => Cycle_Completed);
+   begin
+      Yield_Processor_To_Kernel (Task_Message => Message);
+   end New_Cycle;
 end Oakland.Tasks;

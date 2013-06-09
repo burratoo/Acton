@@ -1,3 +1,4 @@
+with Ada.Cyclic_Tasks;
 with Oak.Agent.Tasks.Queues;
 with Oak.Core;
 with Oak.Scheduler;
@@ -22,12 +23,19 @@ package body Oak.Agent.Tasks.Protected_Objects is
          Stack_Address     => Null_Address,
          Stack_Size        => 0,
          Name              => Name,
-         Normal_Priority   => Ceiling_Priority,
-         Relative_Deadline => Time_Span_Last,
-         Cycle_Period      => Time_Span_Zero,
-         Phase             => Time_Span_Zero,
          Run_Loop          => Null_Address,
          Task_Value_Record => Null_Address,
+         Normal_Priority   => Ceiling_Priority,
+         Cycle_Behaviour   => Ada.Cyclic_Tasks.Normal,
+         Cycle_Period      => Oak_Time.Time_Span_Last,
+         Phase             => Oak_Time.Time_Span_Zero,
+         Execution_Budget  => Oak_Time.Time_Span_Last,
+         Budget_Action     => Ada.Cyclic_Tasks.No_Action,
+         Budget_Handler    => null,
+         Relative_Deadline => Oak_Time.Time_Span_Last,
+         Deadline_Action   => Ada.Cyclic_Tasks.No_Action,
+         Deadline_Handler  => null,
+         Execution_Server  => null,
          Chain             => No_Chain,
          Elaborated        => null);
 
