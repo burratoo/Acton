@@ -4,10 +4,13 @@ with Oak.Agent; use Oak.Agent;
 with Oak.Agent.Tasks; use Oak.Agent.Tasks;
 with Oak.Core_Support_Package;      use Oak.Core_Support_Package;
 with Oak.Memory.Call_Stack;         use Oak.Memory.Call_Stack;
+with Oak.Oak_Time;                  use Oak.Oak_Time;
 with Oak.Scheduler;                 use Oak.Scheduler;
 with System;                        use System;
 
 package Oak.Core with Preelaborate is
+
+   Global_Start_Time : Time;
 
    type Activation_Reason is (
       First_Run,
@@ -17,15 +20,16 @@ package Oak.Core with Preelaborate is
 
    type Oak_Data is limited private;
 
-   procedure Initialise;
-   pragma Export (Ada, Initialise, "__oak_initialise");
+   procedure Initialise
+     with Export, Convention => Ada, External_Name => "__oak_initialise";
 
-   procedure Complete_Initialisation;
-   pragma Export (Ada, Complete_Initialisation,
-                  "__oak_complete_initialisation");
+   procedure Complete_Initialisation
+     with Export, Convention => Ada,
+          External_Name =>  "__oak_complete_initialisation";
 
-   procedure Start; --  System initialisation routine.
-   pragma Export (Ada, Start, "__oak_start");
+   procedure Start
+     with Export, Convention => Ada, External_Name => "__oak_start";
+   --  System initialisation routine.
 
    procedure Start_Oak_Instance (Oak_Instance : in out Oak_Data);
 
@@ -78,6 +82,10 @@ private
 
    Processor_Kernels : Oak_List;
 
+   Global_Start_Time_Offset : Time_Span
+     with Import, Convention => Ada,
+          External_Name => "_global_start_offset";
+
    function Current_Agent return access Oak_Agent'Class is
      (Processor_Kernels (Processor.Proccessor_Id).Current_Agent);
 
@@ -86,7 +94,7 @@ private
         Processor_Kernels (Processor.Proccessor_Id).Current_Agent.all));
 
    function Current_Task return access Task_Agent'Class is
-      (Task_Handler (Current_Agent));
+     (Task_Handler (Current_Agent));
 
    function Main_Task return access Task_Agent is (Main_Task_OTCR'Access);
 

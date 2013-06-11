@@ -30,23 +30,24 @@ package Oak.Agent.Tasks with Preelaborate is
                        Waiting,                     -- 8
                        Inactive,                    -- 9
                        Shared_State,                -- 10
-                       Cycle_Completed,             -- 11
-                       Change_Cycle_Period,         -- 12
-                       Change_Relative_Deadline,    -- 13
-                       Terminated,                  -- 14
-                       Entering_PO,                 -- 15
-                       Enter_PO_Refused,            -- 16
-                       Exiting_PO,                  -- 17
-                       Exit_PO_Error,               -- 18
-                       Waiting_On_Protected_Object, -- 19
-                       Attach_Interrupt_Handlers,   -- 20
-                       Entering_Atomic_Action,      -- 21
-                       Enter_Atomic_Action_Refused, -- 22
-                       Exiting_Atomic_Action,       -- 23
-                       Exit_Atomic_Action_Error,    -- 24
-                       Entering_Exit_Barrier,       -- 25
-                       Atomic_Action_Error,         -- 26
-                       No_State);                   -- 27
+                       Setup_Cycles,                -- 11
+                       New_Cycle,                   -- 12
+                       Change_Cycle_Period,         -- 13
+                       Change_Relative_Deadline,    -- 14
+                       Terminated,                  -- 15
+                       Entering_PO,                 -- 16
+                       Enter_PO_Refused,            -- 17
+                       Exiting_PO,                  -- 18
+                       Exit_PO_Error,               -- 19
+                       Waiting_On_Protected_Object, -- 20
+                       Attach_Interrupt_Handlers,   -- 21
+                       Entering_Atomic_Action,      -- 22
+                       Enter_Atomic_Action_Refused, -- 23
+                       Exiting_Atomic_Action,       -- 24
+                       Exit_Atomic_Action_Error,    -- 25
+                       Entering_Exit_Barrier,       -- 26
+                       Atomic_Action_Error,         -- 27
+                       No_State);                   -- 28
 
    type Oak_Task_Message (Message_Type : Task_State := No_State) is record
       case Message_Type is
@@ -175,8 +176,6 @@ package Oak.Agent.Tasks with Preelaborate is
    function State (T : in Task_Agent'Class) return Task_State;
 
    function Wake_Time (T : in Task_Agent'Class) return Oak_Time.Time;
-
-   procedure Next_Run_Cycle (T : in out Task_Agent'Class);
 
    procedure Set_Activation_List
      (T   : in out Task_Agent'Class;

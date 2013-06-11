@@ -122,12 +122,6 @@ package body Oak.Agent.Tasks is
       Agent.State := Runnable;
    end Initialise_Sleep_Agent;
 
-   procedure Next_Run_Cycle (T : in out Task_Agent'Class) is
-   begin
-      T.Wake_Time      := T.Next_Run_Cycle;
-      T.Next_Run_Cycle := T.Next_Run_Cycle + T.Cycle_Period;
-   end Next_Run_Cycle;
-
    procedure Set_Activation_List
      (T   : in out Task_Agent'Class;
       Add : access Task_Agent'Class) is

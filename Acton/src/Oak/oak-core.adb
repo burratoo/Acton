@@ -1,7 +1,7 @@
 with Oak.Agent.Tasks.Activation;
+with Oak.Agent.Tasks.Cycle; use Oak.Agent.Tasks.Cycle;
 with Oak.Agent.Tasks.Protected_Objects; use Oak.Agent.Tasks.Protected_Objects;
 with Oak.Atomic_Actions;
-with Oak.Oak_Time;                                 use Oak.Oak_Time;
 with Oak.Memory.Call_Stack.Ops;
 with Oak.Core_Support_Package.Task_Support;
 use  Oak.Core_Support_Package.Task_Support;
@@ -31,6 +31,7 @@ package body Oak.Core is
       Oak.Core_Support_Package.Interrupts.Set_Up_Interrupts;
       Oak.Core_Support_Package.Task_Support.Initialise_Task_Enviroment;
 
+      Global_Start_Time := Clock + Global_Start_Time_Offset;
    end Initialise;
 
    -----------------------------
@@ -150,10 +151,11 @@ package body Oak.Core is
                      Inform_Scheduler_Agent_Task_Has_Yielded
                        (Chosen_Task => Next_Task);
 
-                  when Cycle_Completed =>
-                     Current_Task.Next_Run_Cycle;
-                     Inform_Scheduler_Agent_Task_Has_Yielded
-                       (Chosen_Task => Next_Task);
+                  when Setup_Cycles =>
+                     Setup_Cyclic_Section (Next_Task);
+
+                  when New_Cycle =>
+                     New_Cycle (Next_Task);
 
                   when Change_Cycle_Period =>
                      Current_Task.Set_Cycle_Period

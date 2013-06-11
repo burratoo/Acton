@@ -31,6 +31,13 @@ package body Oakland.Tasks is
 
    end Activate_Tasks;
 
+   procedure Begin_Cycles_Stage is
+      Message : constant Oak_Task_Message :=
+        (Message_Type => Setup_Cycles);
+   begin
+      Yield_Processor_To_Kernel (Task_Message => Message);
+   end Begin_Cycles_Stage;
+
    -----------------------------
    -- Complete_Activation     --
    -----------------------------
@@ -82,12 +89,12 @@ package body Oakland.Tasks is
       Yield_Processor_To_Kernel (Task_Message => Message);
    end Change_Relative_Deadline;
 
-   procedure Cycle_Completed is
+   procedure New_Cycle is
       Message : constant Oak_Task_Message :=
-        (Message_Type => Cycle_Completed);
+        (Message_Type => New_Cycle);
    begin
       Yield_Processor_To_Kernel (Task_Message => Message);
-   end Cycle_Completed;
+   end New_Cycle;
 
    procedure Yield_Processor_To_Kernel
      (Task_Message : in Oak_Task_Message) is
@@ -96,10 +103,4 @@ package body Oakland.Tasks is
       Oak.Core_Support_Package.Task_Support.Yield_Processor_To_Kernel;
    end Yield_Processor_To_Kernel;
 
-   procedure New_Cycle is
-      Message : constant Oak_Task_Message :=
-        (Message_Type => Cycle_Completed);
-   begin
-      Yield_Processor_To_Kernel (Task_Message => Message);
-   end New_Cycle;
 end Oakland.Tasks;

@@ -161,20 +161,13 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
          T_Priority   : constant Any_Priority := Yielded_Task.Normal_Priority;
       begin
          case Yielded_Task.State is
-            when Cycle_Completed =>
-               Yielded_Task.Set_State (Sleeping);
-               --  Remove task from Runnable Queues
-               Task_Queues.Remove_Agent
-                 (Queue => Runnable_Queues (T_Priority),
-                  Agent => Yielded_Task);
-               Insert_Into_Sleeping_Queue
-                 (T     => Yielded_Task);
             when Sleeping =>
                Task_Queues.Remove_Agent
                  (Queue => Runnable_Queues (T_Priority),
                   Agent => Yielded_Task);
                Insert_Into_Sleeping_Queue
                  (T     => Yielded_Task);
+
             when Activation_Pending    |
                  Activation_Complete   |
                  Activation_Successful =>
