@@ -49,7 +49,7 @@ package body Oak.Atomic_Actions is
             --  as well.
 
             if Not_All_Present then
-               AO.Controlling_State := Waiting;
+               AO.Controlling_State := Waiting_For_Protected_Object;
                T.Set_State (Shared_State);
                T.Set_Shared_State (AO.Controlling_State'Access);
             else
@@ -114,7 +114,7 @@ package body Oak.Atomic_Actions is
       --  as well.
 
       if Not_All_Present then
-         AO.Controlling_State := Waiting;
+         AO.Controlling_State := Waiting_For_Protected_Object;
          T.Set_State (Shared_State);
          T.Set_Shared_State (AO.Controlling_State'Access);
       else
@@ -177,7 +177,7 @@ package body Oak.Atomic_Actions is
       if AO.Actions (Action_Id).Current_Task /= null then
 
          Scheduler.Remove_Task_From_Scheduler (T);
-         T.Set_State (Waiting);
+         T.Set_State (Waiting_For_Protected_Object);
          Queue.Add_Agent_To_Tail
            (Queue =>
               Queue.Agent_Handler (AO.Actions (Action_Id).Queue),

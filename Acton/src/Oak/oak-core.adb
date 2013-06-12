@@ -128,6 +128,7 @@ package body Oak.Core is
       --  They should also set the time that they wish to be activated next.
       --  On return, Oak's scheduler should have recorded which task should
       --  run now, if there are any eligible tasks to run at all.
+
          case Oak_Instance.Woken_By is
             when First_Run =>
                Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
@@ -136,7 +137,7 @@ package body Oak.Core is
             when Task_Yield =>
                case Task_Message.Message_Type is
                   when Activation_Pending =>
-                     Inform_Scheduler_Agent_Task_Has_Yielded
+                     Inform_Scheduler_Agent_Task_Has_Changed_State
                        (Chosen_Task => Next_Task);
 
                   when Activation_Complete =>
@@ -148,7 +149,7 @@ package body Oak.Core is
 
                   when Sleeping =>
                      Next_Task.Set_Wake_Time (WT => Task_Message.Wake_Up_At);
-                     Inform_Scheduler_Agent_Task_Has_Yielded
+                     Inform_Scheduler_Agent_Task_Has_Changed_State
                        (Chosen_Task => Next_Task);
 
                   when Setup_Cycles =>
@@ -157,16 +158,22 @@ package body Oak.Core is
                   when New_Cycle =>
                      New_Cycle (Next_Task);
 
+                  when Release_Task =>
+                     Release_Task
+                       (Task_To_Release => Task_Message.Task_To_Release,
+                        Releasing_Task  => Current_Task,
+                        Next_Task       => Next_Task);
+
                   when Change_Cycle_Period =>
                      Current_Task.Set_Cycle_Period
                         (Task_Message.New_Cycle_Period);
-                     Inform_Scheduler_Agent_Task_Has_Yielded
+                     Inform_Scheduler_Agent_Task_Has_Changed_State
                        (Chosen_Task => Next_Task);
 
                   when Change_Relative_Deadline =>
                      Current_Task.Set_Relative_Deadline
                         (Task_Message.New_Deadline_Span);
-                     Inform_Scheduler_Agent_Task_Has_Yielded
+                     Inform_Scheduler_Agent_Task_Has_Changed_State
                        (Chosen_Task => Next_Task);
 
                   when Entering_PO =>

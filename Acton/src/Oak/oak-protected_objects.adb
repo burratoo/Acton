@@ -61,7 +61,7 @@ package body Oak.Protected_Objects is
             begin
                if Subprogram_Kind = Protected_Entry and then
                  not PO.Is_Barrier_Open (Entry_Id => Entry_Id) then
-                  T.Set_State (Waiting);
+                  T.Set_State (Waiting_For_Protected_Object);
                   PO.Add_Task_To_Entry_Queue
                     (T        => T,
                      Entry_Id => Entry_Id);
@@ -95,7 +95,7 @@ package body Oak.Protected_Objects is
             if Chosen_Task /= null then
                PO.Add_Task_To_Protected_Object (Chosen_Task);
                T.Set_State (State => Runnable);
-               PO.Set_Acquiring_Tasks_State (Waiting);
+               PO.Set_Acquiring_Tasks_State (Waiting_For_Protected_Object);
                Scheduler.Activate_Task
                  (Scheduler_Info => Scheduler_Info,
                   T              => PO);

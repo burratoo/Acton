@@ -9,7 +9,7 @@ package Oak.Agent.Schedulers with Preelaborate is
 
    type Scheduler_Handler is access all Scheduler_Agent;
 
-   type Reason_For_Run is (Task_Yield,
+   type Reason_For_Run is (Task_State_Change,
                            Select_Next_Task,
                            Add_Task,
                            Remove_Task);

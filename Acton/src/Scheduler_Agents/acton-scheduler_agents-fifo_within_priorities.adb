@@ -113,7 +113,7 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
             if Head_Task /= null then
                Selected_Task := Head_Task;
                while Selected_Task.State = Shared_State
-                 and then Selected_Task.Shared_State = Waiting
+                 and then Selected_Task.Shared_State in Waiting
                loop
                   Selected_Task := Next_Task (Selected_Task);
 
@@ -157,7 +157,8 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
       ------------------
 
       procedure Task_Yielded is
-         Yielded_Task : constant access Task_Agent'Class := Self.Task_To_Run;
+         Yielded_Task : constant access Task_Agent'Class :=
+                          Self.Task_To_Manage;
          T_Priority   : constant Any_Priority := Yielded_Task.Normal_Priority;
       begin
          case Yielded_Task.State is
@@ -196,6 +197,10 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
             Self.Set_Desired_Run_Time (Sleeping_Queue.Wake_Time);
          end if;
       end Add_Task;
+
+      -----------------
+      -- Remove_Task --
+      -----------------
 
       procedure Remove_Task is
          Task_To_Remove  : constant access Task_Agent'Class :=
@@ -279,7 +284,7 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
       loop
          Run_Reason := Self.Run_Reason;
          case Run_Reason is
-            when Task_Yield =>
+            when Task_State_Change =>
                Task_Yielded;
             when Select_Next_Task =>
                Select_Next_Task;

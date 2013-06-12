@@ -108,9 +108,10 @@ private
       Entry_Queues   : Entry_Queue_Array (1 .. Num_Entries) :=
                          (others => null);
 
-      Controlling_Shared_State : aliased Task_State :=  Waiting;
-      Active_Subprogram_Kind   : Protected_Subprogram_Type
-        := Protected_Function;
+      Controlling_Shared_State : aliased Task_State :=
+                                   Waiting_For_Protected_Object;
+      Active_Subprogram_Kind   : Protected_Subprogram_Type :=
+                                   Protected_Function;
       Tasks_Within             : access Task_Agent'Class := null;
    end record;
 

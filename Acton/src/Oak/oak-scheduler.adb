@@ -134,14 +134,15 @@ package body Oak.Scheduler is
       null;
    end Handle_Missed_Deadline;
 
-   procedure Inform_Scheduler_Agent_Task_Has_Yielded
+   procedure Inform_Scheduler_Agent_Task_Has_Changed_State
      (Chosen_Task : in out Task_Handler)
    is
       Agent : constant access Scheduler_Agent'Class :=
          Chosen_Task.Scheduler_Agent_For_Task;
    begin
+      Agent.Set_Task_To_Manage (Chosen_Task);
       Chosen_Task :=
-         Run_Scheduler_Agent (Agent => Agent, Reason => Task_Yield);
+         Run_Scheduler_Agent (Agent => Agent, Reason => Task_State_Change);
 
       if Chosen_Task = null then
          if Agent.Next_Agent /= null then
@@ -152,7 +153,7 @@ package body Oak.Scheduler is
             Chosen_Task := null;
          end if;
       end if;
-   end Inform_Scheduler_Agent_Task_Has_Yielded;
+   end Inform_Scheduler_Agent_Task_Has_Changed_State;
 
    procedure Insert_Task_Into_Dealine_List
      (Scheduler_Info : in out Oak_Scheduler_Info;

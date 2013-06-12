@@ -50,7 +50,7 @@ package Oak.Scheduler with Preelaborate is
      (Scheduler_Info : in out Oak_Scheduler_Info;
       Chosen_Task    : out Task_Handler);
 
-   procedure Inform_Scheduler_Agent_Task_Has_Yielded
+   procedure Inform_Scheduler_Agent_Task_Has_Changed_State
      (Chosen_Task : in out Task_Handler);
 
    procedure Insert_Task_Into_Dealine_List

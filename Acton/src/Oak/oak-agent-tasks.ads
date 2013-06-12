@@ -19,35 +19,39 @@ package Oak.Agent.Tasks with Preelaborate is
    type Task_Handler is access all Task_Agent'Class;
 
    type Task_State is (
-                       Bad_State,                   -- 0
-                       Activation_Pending,          -- 1
-                       Activation_Failed,           -- 2
-                       Activation_Successful,       -- 3
-                       Activation_Complete,         -- 4
-                       Running,                     -- 5
-                       Runnable,                    -- 6
-                       Sleeping,                    -- 7
-                       Waiting,                     -- 8
-                       Inactive,                    -- 9
-                       Shared_State,                -- 10
-                       Setup_Cycles,                -- 11
-                       New_Cycle,                   -- 12
-                       Change_Cycle_Period,         -- 13
-                       Change_Relative_Deadline,    -- 14
-                       Terminated,                  -- 15
-                       Entering_PO,                 -- 16
-                       Enter_PO_Refused,            -- 17
-                       Exiting_PO,                  -- 18
-                       Exit_PO_Error,               -- 19
-                       Waiting_On_Protected_Object, -- 20
-                       Attach_Interrupt_Handlers,   -- 21
-                       Entering_Atomic_Action,      -- 22
-                       Enter_Atomic_Action_Refused, -- 23
-                       Exiting_Atomic_Action,       -- 24
-                       Exit_Atomic_Action_Error,    -- 25
-                       Entering_Exit_Barrier,       -- 26
-                       Atomic_Action_Error,         -- 27
-                       No_State);                   -- 28
+                       Bad_State,                    -- 0
+                       Activation_Pending,           -- 1
+                       Activation_Failed,            -- 2
+                       Activation_Successful,        -- 3
+                       Activation_Complete,          -- 4
+                       Running,                      -- 5
+                       Runnable,                     -- 6
+                       Sleeping,                     -- 7
+                       Waiting_For_Event,            -- 9
+                       Waiting_For_Protected_Object, -- 10
+                       Inactive,                     -- 11
+                       Shared_State,                 -- 12
+                       Setup_Cycles,                 -- 13
+                       New_Cycle,                    -- 14
+                       Release_Task,                 -- 15
+                       Change_Cycle_Period,          -- 16
+                       Change_Relative_Deadline,     -- 17
+                       Terminated,                   -- 18
+                       Entering_PO,                  -- 19
+                       Enter_PO_Refused,             -- 20
+                       Exiting_PO,                   -- 21
+                       Exit_PO_Error,                -- 22
+                       Attach_Interrupt_Handlers,    -- 23
+                       Entering_Atomic_Action,       -- 24
+                       Enter_Atomic_Action_Refused,  -- 25
+                       Exiting_Atomic_Action,        -- 26
+                       Exit_Atomic_Action_Error,     -- 27
+                       Entering_Exit_Barrier,        -- 28
+                       Atomic_Action_Error,          -- 29
+                       No_State);                    -- 30
+
+   subtype Waiting is Task_State range
+     Waiting_For_Event .. Waiting_For_Protected_Object;
 
    type Oak_Task_Message (Message_Type : Task_State := No_State) is record
       case Message_Type is
@@ -58,6 +62,9 @@ package Oak.Agent.Tasks with Preelaborate is
          when Change_Relative_Deadline =>
             New_Deadline_Span : Oak_Time.Time_Span :=
                                   Oak_Time.Time_Span_Zero;
+         when Release_Task =>
+            Task_To_Release   : Task_Handler;
+
          when Entering_PO =>
             PO_Enter          : not null access
               Protected_Objects.Protected_Agent'Class;
@@ -254,6 +261,7 @@ private
       Next_Deadline     : Oak_Time.Time := Oak_Time.Time_Last;
       Next_Run_Cycle    : Oak_Time.Time := Oak_Time.Time_Last;
       Wake_Time         : Oak_Time.Time := Oak_Time.Time_Last;
+      Event_Raised      : Boolean       := False;
 
       Scheduler_Agent   : access Schedulers.Scheduler_Agent'Class := null;
       Queue_Link        : Task_Agent_Link_Element;

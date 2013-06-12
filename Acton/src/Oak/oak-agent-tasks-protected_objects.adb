@@ -41,7 +41,7 @@ package body Oak.Agent.Tasks.Protected_Objects is
 
       Agent.Entry_Barriers           := Barriers_Function;
       Agent.Object_Record            := Object_Record_Address;
-      Agent.Controlling_Shared_State := Waiting;
+      Agent.Controlling_Shared_State := Waiting_For_Protected_Object;
 
       Agent.Wake_Time      := Time_First;
       Agent.Next_Run_Cycle := Time_First;

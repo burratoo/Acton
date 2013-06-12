@@ -65,17 +65,22 @@ package Oak.Core with Preelaborate is
 private
    package Processor renames Oak.Core_Support_Package.Processor;
 
+   type Interrupt_Priority_Slots is array (Interrupt_Priority) of Task_Handler;
+
    Main_Task_OTCR : aliased Task_Agent;
 
    type Oak_Data is record
-      Id            : Oak_Instance_Id   := 1;
-      Scheduler     : aliased Oak_Scheduler_Info;
-      Woken_By      : Activation_Reason := First_Run;
-      Current_Agent : access Oak_Agent'Class := null;
+      Id                 : Oak_Instance_Id   := 1;
+      Scheduler          : aliased Oak_Scheduler_Info;
+      Woken_By           : Activation_Reason := First_Run;
+      Current_Agent      : access Oak_Agent'Class := null;
       --  Probably need to fix this up so that it gets set somewhere. (In case
       --  it doesn't already when the task context switches.
-      Call_Stack    : Call_Stack_Handler;
-      Sleep_Agent   : aliased Task_Agent;
+      Call_Stack         : Call_Stack_Handler;
+      Sleep_Agent        : aliased Task_Agent;
+
+      Interrupt_Slots    : Interrupt_Priority_Slots;
+      Handling_Interrupt : Boolean := False;
    end record;
 
    type Oak_List is array (Oak_Instance_Id) of aliased Oak_Data;
