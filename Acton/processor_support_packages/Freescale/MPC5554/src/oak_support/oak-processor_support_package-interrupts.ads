@@ -7,36 +7,38 @@ limited with Oak.Agent.Tasks.Protected_Objects;
 
 package Oak.Processor_Support_Package.Interrupts with Preelaborate is
 
+   Interrupt_Stack_Size : constant  := 512;
+
    subtype Oak_Interrupt_Id is MPC5554.INTC.INTC_ID_Type;
    Default_Interrupt_Priority : constant Interrupt_Priority :=
                                   Interrupt_Priority'Last;
 
    type Parameterless_Handler is access protected procedure;
 
-   procedure External_Interrupt_Handler;
+   procedure Interrupt_Run_Loop;
    procedure Initialise_Interrupts;
    procedure Complete_Interrupt_Initialisation;
 
    procedure Attach_Handler (Interrupt : Oak_Interrupt_Id;
                              Handler   : Parameterless_Handler;
                              Priority  : Interrupt_Priority);
+
+   function Current_Interrupt_Priority return Any_Priority;
+   function External_Interrupt_Id return Oak_Interrupt_Id;
+
    procedure Get_Resource
      (PO : access Agent.Tasks.Protected_Objects.Protected_Agent'Class);
    procedure Release_Resource
         (PO : access Agent.Tasks.Protected_Objects.Protected_Agent'Class);
 
-   pragma Export (Asm,
-                  External_Interrupt_Handler,
-                  "__OI_External_Interrupt");
-
 private
    type FIFO_Array is array
-     (Oak_Interrupt_Id'First + 1 .. Oak_Interrupt_Id'Last)
+     (MPC5554_Interrupt_Priority'First + 1 .. MPC5554_Interrupt_Priority'Last)
        of MPC5554_Interrupt_Priority;
 
    type Interrupt_FIFO is record
       Stack : FIFO_Array;
-      Top  : Oak_Interrupt_Id := 0;
+      Top   : MPC5554_Interrupt_Priority := MPC5554_Interrupt_Priority'First;
    end record;
 
    Interrupt_Priority_FIFO : Interrupt_FIFO;

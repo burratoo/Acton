@@ -4,6 +4,7 @@ with Oak.Core_Support_Package.Task_Support;
 
 with Oak.Core_Support_Package; use Oak.Core_Support_Package;
 with System;                   use System;
+with Oak.Agent.Tasks.Interrupts; use Oak.Agent.Tasks.Interrupts;
 
 package body Oak.Scheduler is
 
@@ -140,6 +141,10 @@ package body Oak.Scheduler is
       Agent : constant access Scheduler_Agent'Class :=
          Chosen_Task.Scheduler_Agent_For_Task;
    begin
+      if Chosen_Task.all in Interrupt_Agent then
+         return;
+      end if;
+
       Agent.Set_Task_To_Manage (Chosen_Task);
       Chosen_Task :=
          Run_Scheduler_Agent (Agent => Agent, Reason => Task_State_Change);

@@ -3,8 +3,13 @@
 --
 
 with Oak.Oak_Time;
+with ISA.Power.e200.Processor_Control_Registers;
+with ISA;
 
-package Oak.Core_Support_Package.Task_Support with Pure is
+package Oak.Core_Support_Package.Task_Support with Preelaborate is
+
+   use ISA.Power.e200.Processor_Control_Registers;
+   use ISA;
 
    --  This procedure saves the Kernel's registers to its respective store,
    --  loads in the task's registers, enables Oak's wakeup call and then
@@ -38,4 +43,39 @@ package Oak.Core_Support_Package.Task_Support with Pure is
 
    procedure Sleep_Agent;
 
+   Agent_MSR : constant Machine_State_Register_Type :=
+                 (Computation_Mode           => Mode_32,
+                  Interrupt_Computation_Mode => Mode_32,
+                  User_Mode_Cache_Lock       => Disable,
+                  Signal_Processing          => Enable,
+                  Wait_State                 => Disable,
+                  Critical_Interrupts        => Disable,
+                  External_Interrupts        => Enable,
+                  Processor_Mode             => Supervisor,
+                  Floating_Point             => Not_Available,
+                  Machine_Check              => Disable,
+                  FP_Exception_Mode_0        => False,
+                  Debug_Interrupt            => Disable,
+                  FP_Exception_Mode_1        => False,
+                  Instruction_Address_Space  => 0,
+                  Data_Address_Space         => 0,
+                  Performance_Monitor        => Disable);
+
+   Oak_MSR : constant Machine_State_Register_Type :=
+                 (Computation_Mode           => Mode_32,
+                  Interrupt_Computation_Mode => Mode_32,
+                  User_Mode_Cache_Lock       => Disable,
+                  Signal_Processing          => Enable,
+                  Wait_State                 => Disable,
+                  Critical_Interrupts        => Disable,
+                  External_Interrupts        => Disable,
+                  Processor_Mode             => Supervisor,
+                  Floating_Point             => Not_Available,
+                  Machine_Check              => Disable,
+                  FP_Exception_Mode_0        => False,
+                  Debug_Interrupt            => Disable,
+                  FP_Exception_Mode_1        => False,
+                  Instruction_Address_Space  => 0,
+                  Data_Address_Space         => 0,
+                  Performance_Monitor        => Disable);
 end Oak.Core_Support_Package.Task_Support;
