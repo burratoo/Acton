@@ -6,10 +6,10 @@ with Oak.Memory.Call_Stack.Ops;
 with Oak.Core_Support_Package.Task_Support;
 use  Oak.Core_Support_Package.Task_Support;
 with Oak.Core_Support_Package.Call_Stack;
-with Oak.Interrupts;
+with Oak.Interrupts; use Oak.Interrupts;
 with Oak.Protected_Objects;
-with Oak.Processor_Support_Package.Interrupts;
 with Oak.Core_Support_Package.Interrupts;
+with Ada.Cyclic_Tasks;
 
 package body Oak.Core is
 
@@ -18,12 +18,41 @@ package body Oak.Core is
    ----------------
 
    procedure Initialise is
+      C : Activation_Chain;
    begin
       for K of Processor_Kernels loop
          Oak.Memory.Call_Stack.Ops.Allocate_Call_Stack
            (Stack            => K.Call_Stack,
             Size_In_Elements =>
               Oak.Core_Support_Package.Call_Stack.Oak_Call_Stack_Size);
+
+         for P in Interrupt_Priority'Range loop
+            Initialise_Task_Agent
+              (Agent             => K.Interrupt_Agents (P)'Access,
+               Stack_Address     => Null_Address,
+               Stack_Size        => Interrupt_Stack_Size,
+               Name              => "Interrupt Agent",
+               Run_Loop          => Interrupt_Run_Loop'Address,
+               Task_Value_Record => Null_Address,
+               Normal_Priority   => P,
+               Cycle_Behaviour   => Ada.Cyclic_Tasks.Normal,
+               Cycle_Period      => Oak_Time.Time_Span_Last,
+               Phase             => Oak_Time.Time_Span_Zero,
+               Execution_Budget  => Oak_Time.Time_Span_Last,
+               Budget_Action     => Ada.Cyclic_Tasks.No_Action,
+               Budget_Handler    => null,
+               Relative_Deadline => Oak_Time.Time_Span_Last,
+               Deadline_Action   => Ada.Cyclic_Tasks.No_Action,
+               Deadline_Handler  => null,
+               Execution_Server  => null,
+               Chain             => C,
+               Elaborated        => null);
+            K.Interrupt_Agents (P).Set_State (Interrupt_Done);
+         end loop;
+
+         for State of K.Interrupt_States loop
+            State := Inactive;
+         end loop;
 
          Initialise_Sleep_Agent (K.Sleep_Agent'Access, Sleep_Agent'Address);
       end loop;
@@ -75,8 +104,9 @@ package body Oak.Core is
 
    procedure Run_Loop (Oak_Instance : in out Oak_Data) is
       Wake_Up_Time, Earliest_Deadline : Time;
-      Earliest_Scheduler_Time   : Time;
+      Earliest_Scheduler_Time         : Time;
       Next_Task                       : Task_Handler := null;
+      P                               : Any_Priority;
 
       Task_Message : Oak_Task_Message := (Message_Type => No_State);
    begin
@@ -224,9 +254,24 @@ package body Oak.Core is
                         Exception_Raised => Task_Message.Atomic_Exception,
                         Chosen_Task      => Next_Task);
 
+                  when Interrupt_Done =>
+                     Next_Task.Set_State (Interrupt_Done);
+                     Oak_Instance.Interrupt_States
+                       (Next_Task.Normal_Priority) := Inactive;
+                     Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
+                       (Scheduler_Info => Oak_Instance.Scheduler,
+                        Chosen_Task    => Next_Task);
+
                   when others =>
                      null;
                end case;
+
+            when External_Interrupt =>
+               Oak_Instance.Interrupt_Id := External_Interrupt_Id;
+               P := Current_Interrupt_Priority;
+               Next_Task := Oak_Instance.Interrupt_Agents (P)'Unchecked_Access;
+               Next_Task.Set_State (Interrupt_Start);
+               Oak_Instance.Interrupt_States (P) := Active;
 
             when Scheduler_Agent | Missed_Deadline =>
                Run_The_Bloody_Scheduler_Agent_That_Wanted_To_Be_Woken
@@ -239,12 +284,31 @@ package body Oak.Core is
                --   null;
          end case;
 
-         if Next_Task /= null and then
-           Next_Task.all in Protected_Agent'Class then
-            Next_Task := Protected_Agent (Next_Task.all).Task_Within;
-         end if;
+         --  Find any active interrupts
+
+         P := Interrupt_Priority'Last;
+         for Interrupt_State of reverse Oak_Instance.Interrupt_States loop
+            if Interrupt_State = Active then
+               if (Next_Task /= null and then
+                     P >= Next_Task.Normal_Priority) or Next_Task = null
+               then
+                  Next_Task :=
+                    Oak_Instance.Interrupt_Agents (P)'Unchecked_Access;
+               end if;
+
+               exit;
+            end if;
+
+            P := P - 1;
+         end loop;
 
          if Next_Task /= null then
+            Oak_Instance.Current_Priority := Next_Task.Normal_Priority;
+
+            if Next_Task.all in Protected_Agent'Class then
+               Next_Task := Protected_Agent (Next_Task.all).Task_Within;
+            end if;
+
             case Next_Task.State is
                when Shared_State =>
                   if Next_Task.Shared_State = Entering_PO then
@@ -265,6 +329,8 @@ package body Oak.Core is
                when others =>
                   null;
             end case;
+         else
+            Oak_Instance.Current_Priority := Any_Priority'First;
          end if;
 
          ---------------
@@ -306,13 +372,25 @@ package body Oak.Core is
             --  Switch registers and enable Wake Up Interrupt.
             Oak_Instance.Current_Agent := Next_Task;
             Context_Switch_To_Task;
+
+            --  Clean up after task has return via a context switch and
+            --  determine the reason why the task did.
+
             Task_Message := Next_Task.Task_Message;
             case Next_Task.Task_Yield_Status is
                when Voluntary =>
+                  --  If the task yielded voluntary update the task state
+                  --  with the state provided by the message the task sent as
+                  --  part of its yield.
+
                   Oak_Instance.Woken_By := Task_Yield;
                   Next_Task.Set_State (State => Task_Message.Message_Type);
-               when Forced =>
+
+               when Timer =>
                   Next_Task.Store_Task_Yield_Status (Yielded  => Voluntary);
+               when Interrupt =>
+                  Next_Task.Store_Task_Yield_Status (Yielded  => Voluntary);
+                  Oak_Instance.Woken_By := External_Interrupt;
             end case;
          end if;
 

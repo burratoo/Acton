@@ -24,12 +24,16 @@ private
      with Export, Convention => Assembler,
           External_Name => "__OTS_Decrementer_Interrupt";
 
+   procedure External_Interrupt_Handler
+     with Export, Convention => Assembler,
+          External_Name => "__OTS_General_Interrupt_Handler";
+
    CSTT, CSTK, DI, EI : constant System.Storage_Elements.Storage_Element;
 
    pragma Import (Assembler, CSTT, "__OTS_CSTT");
    pragma Import (Assembler, CSTK, "__OTS_CSTK");
    pragma Import (Assembler, DI, "__OTS_DI");
-   pragma Import (Assembler, EI, "__OI_EI");
+   pragma Import (Assembler, EI, "__OTS_EI");
 
    IVOR4_Ex_Interrupt      : constant System.Address := EI'Address;
    IVOR8_CS_To_Kernel      : constant System.Address := CSTK'Address;

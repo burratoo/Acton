@@ -90,8 +90,7 @@ package body Oakland.Tasks is
    end Change_Relative_Deadline;
 
    procedure New_Cycle is
-      Message : constant Oak_Task_Message :=
-        (Message_Type => New_Cycle);
+      Message : constant Oak_Task_Message := (Message_Type => New_Cycle);
    begin
       Yield_Processor_To_Kernel (Task_Message => Message);
    end New_Cycle;

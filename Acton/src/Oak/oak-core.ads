@@ -2,11 +2,14 @@ with Oak.Core_Support_Package.Processor;
 
 with Oak.Agent; use Oak.Agent;
 with Oak.Agent.Tasks; use Oak.Agent.Tasks;
+with Oak.Agent.Tasks.Interrupts; use Oak.Agent.Tasks.Interrupts;
 with Oak.Core_Support_Package;      use Oak.Core_Support_Package;
 with Oak.Memory.Call_Stack;         use Oak.Memory.Call_Stack;
 with Oak.Oak_Time;                  use Oak.Oak_Time;
 with Oak.Scheduler;                 use Oak.Scheduler;
 with System;                        use System;
+with Oak.Processor_Support_Package.Interrupts;
+use Oak.Processor_Support_Package.Interrupts;
 
 package Oak.Core with Preelaborate is
 
@@ -16,7 +19,10 @@ package Oak.Core with Preelaborate is
       First_Run,
       Task_Yield,
       Scheduler_Agent,
-      Missed_Deadline);
+      Missed_Deadline,
+       External_Interrupt);
+
+   type Active_State is (Inactive, Active);
 
    type Oak_Data is limited private;
 
@@ -44,6 +50,7 @@ package Oak.Core with Preelaborate is
    function Current_Agent    return access Oak_Agent'Class with Inline_Always;
    function Current_Agent_Stack_Pointer return Address with Inline_Always;
    function Current_Task     return access Task_Agent'Class with Inline_Always;
+   function Current_Interrupt_Id return Oak_Interrupt_Id with Inline_Always;
    function Main_Task        return access Task_Agent;
    function Oak_Instance     return access Oak_Data with Inline_Always;
    function Oak_Stack_Pointer return Address with Inline_Always;
@@ -65,7 +72,9 @@ package Oak.Core with Preelaborate is
 private
    package Processor renames Oak.Core_Support_Package.Processor;
 
-   type Interrupt_Priority_Slots is array (Interrupt_Priority) of Task_Handler;
+   type IA_Store is array (Interrupt_Priority) of aliased Interrupt_Agent;
+   type Interrupt_Active_Set is array (Interrupt_Priority) of Active_State
+     with Pack;
 
    Main_Task_OTCR : aliased Task_Agent;
 
@@ -73,14 +82,15 @@ private
       Id                 : Oak_Instance_Id   := 1;
       Scheduler          : aliased Oak_Scheduler_Info;
       Woken_By           : Activation_Reason := First_Run;
+      Current_Priority   : System.Any_Priority := System.Any_Priority'First;
       Current_Agent      : access Oak_Agent'Class := null;
       --  Probably need to fix this up so that it gets set somewhere. (In case
       --  it doesn't already when the task context switches.
       Call_Stack         : Call_Stack_Handler;
       Sleep_Agent        : aliased Task_Agent;
-
-      Interrupt_Slots    : Interrupt_Priority_Slots;
-      Handling_Interrupt : Boolean := False;
+      Interrupt_Agents   : IA_Store;
+      Interrupt_States   : Interrupt_Active_Set;
+      Interrupt_Id       : Oak_Interrupt_Id;
    end record;
 
    type Oak_List is array (Oak_Instance_Id) of aliased Oak_Data;
@@ -100,6 +110,9 @@ private
 
    function Current_Task return access Task_Agent'Class is
      (Task_Handler (Current_Agent));
+
+   function Current_Interrupt_Id return Oak_Interrupt_Id is
+     (Processor_Kernels (Processor.Proccessor_Id).Interrupt_Id);
 
    function Main_Task return access Task_Agent is (Main_Task_OTCR'Access);
 

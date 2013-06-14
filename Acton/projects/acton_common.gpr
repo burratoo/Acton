@@ -22,6 +22,7 @@ abstract project Acton_Common is
                               "System", "System.Assertions", "System.Finalization_Root", "System.Exceptions_Debug", "System.Machine_Code", "System.Multiprocessors", "System.Standard_Library", "System.Storage_Elements", "System.Unsigned_Types",
                              --  Only needed for their ali files
                          "Oak.Agent.Tasks.Cycle",
+                         "Oak.Agent.Tasks.Interrupts",
                          "Oak.Memory.Call_Stack.Ops",
                               "Oak.Core_Support_Package.Processor",
                               "Oak.Core_Support_Package.Interrupts",

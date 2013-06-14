@@ -48,7 +48,9 @@ package Oak.Agent.Tasks with Preelaborate is
                        Exit_Atomic_Action_Error,     -- 27
                        Entering_Exit_Barrier,        -- 28
                        Atomic_Action_Error,          -- 29
-                       No_State);                    -- 30
+                       Interrupt_Start,              -- 30
+                       Interrupt_Done,               -- 31
+                       No_State);                    -- 32
 
    subtype Waiting is Task_State range
      Waiting_For_Event .. Waiting_For_Protected_Object;
@@ -99,7 +101,7 @@ package Oak.Agent.Tasks with Preelaborate is
    type Shared_Task_State is access all Task_State;
    No_Shared_State : constant Shared_Task_State := null;
 
-   type Yielded_State is (Forced, Voluntary);
+   type Yielded_State is (Timer, Interrupt, Voluntary);
 
    type Oak_Task_Message_Store is record
       Yield_Status : Yielded_State;
