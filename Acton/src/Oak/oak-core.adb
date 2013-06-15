@@ -4,7 +4,6 @@ with Oak.Agent.Tasks.Protected_Objects; use Oak.Agent.Tasks.Protected_Objects;
 with Oak.Atomic_Actions;
 with Oak.Memory.Call_Stack.Ops;
 with Oak.Core_Support_Package.Task_Support;
-use  Oak.Core_Support_Package.Task_Support;
 with Oak.Core_Support_Package.Call_Stack;
 with Oak.Interrupts; use Oak.Interrupts;
 with Oak.Protected_Objects;
@@ -54,7 +53,9 @@ package body Oak.Core is
             State := Inactive;
          end loop;
 
-         Initialise_Sleep_Agent (K.Sleep_Agent'Access, Sleep_Agent'Address);
+         Initialise_Sleep_Agent
+           (K.Sleep_Agent'Access,
+            Core_Support_Package.Task_Support.Sleep_Agent'Address);
       end loop;
 
       Oak.Core_Support_Package.Interrupts.Set_Up_Interrupts;
@@ -360,18 +361,17 @@ package body Oak.Core is
 
          --  These called functions are responsible for enabling the sleep
          --  timer.
-         Set_Oak_Wake_Up_Timer (Wake_Up_At => Wake_Up_Time);
+         Core_Support_Package.Task_Support.Set_Oak_Wake_Up_Timer
+           (Wake_Up_At => Wake_Up_Time);
 
          if Next_Task = null then
-            Oak_Instance.Current_Agent :=
-              Oak_Instance.Sleep_Agent'Unchecked_Access;
-            Context_Switch_To_Task;
+            Context_Switch_To_Agent
+              (Oak_Instance.Sleep_Agent'Unchecked_Access);
          else
             --   Set MMU is applicable.
 
             --  Switch registers and enable Wake Up Interrupt.
-            Oak_Instance.Current_Agent := Next_Task;
-            Context_Switch_To_Task;
+            Context_Switch_To_Agent (Next_Task);
 
             --  Clean up after task has return via a context switch and
             --  determine the reason why the task did.
@@ -396,6 +396,12 @@ package body Oak.Core is
 
       end loop;
    end Run_Loop;
+
+   procedure Context_Switch_To_Agent (Agent : access Oak_Agent'Class) is
+   begin
+      Oak_Instance.Current_Agent := Agent;
+      Core_Support_Package.Task_Support.Context_Switch_To_Agent;
+   end Context_Switch_To_Agent;
 
    procedure Set_Current_Agent_Stack_Pointer (SP : Address) is
    begin

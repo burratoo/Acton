@@ -1,6 +1,6 @@
 with Oak.Core_Support_Package;
+with Oak.Oak_Time;
 with System;
-
 with Oak.Memory.Call_Stack;         use Oak.Memory.Call_Stack;
 
 package Oak.Agent with Preelaborate is
@@ -35,7 +35,12 @@ package Oak.Agent with Preelaborate is
    procedure Set_Stack_Pointer
      (Agent         : in out Oak_Agent'Class;
       Stack_Pointer : in System.Address)
-      with Inline_Always;
+     with Inline_Always;
+
+   procedure New_Execution_Cycle (Agent : in out Oak_Agent'Class);
+   procedure Charge_Execution_Time
+     (To_Agent  : in out Oak_Agent'Class;
+      Exec_Time : in Oak_Time.Time_Span);
 
 private
 
@@ -52,6 +57,11 @@ private
       --  usually it is stored in a register anyway.
       -----
       Call_Stack : Call_Stack_Handler;
+
+      Total_Execution_Time   : Oak_Time.Time_Span := Oak_Time.Time_Span_Zero;
+      Max_Execution_Time     : Oak_Time.Time_Span := Oak_Time.Time_Span_Zero;
+      Current_Execution_Time : Oak_Time.Time_Span := Oak_Time.Time_Span_Zero;
+      Execution_Cycles       : Natural   := 0;
 
       --  Memory_List : Memory_Region_Link := null;
    end record;

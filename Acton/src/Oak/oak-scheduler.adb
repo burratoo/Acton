@@ -1,8 +1,6 @@
 with Oak.Agent.Tasks.Queues;
 with Oak.Core;
-with Oak.Core_Support_Package.Task_Support;
 
-with Oak.Core_Support_Package; use Oak.Core_Support_Package;
 with System;                   use System;
 with Oak.Agent.Tasks.Interrupts; use Oak.Agent.Tasks.Interrupts;
 
@@ -201,8 +199,7 @@ package body Oak.Scheduler is
       Reason : in Reason_For_Run) is
    begin
       Agent.Set_Run_Reason (Reason);
-      Core.Set_Current_Agent (Agent => Agent);
-      Core_Support_Package.Task_Support.Context_Switch_To_Scheduler_Agent;
+      Core.Context_Switch_To_Agent (Agent);
    end Run_Scheduler_Agent;
 
    ------------------------------------------------------------

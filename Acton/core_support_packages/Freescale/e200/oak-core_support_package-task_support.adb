@@ -16,13 +16,13 @@ package body Oak.Core_Support_Package.Task_Support is
    -- Context_Switch_To_Task --
    ----------------------------
 
-   procedure Context_Switch_To_Task
+   procedure Context_Switch_To_Agent
    is
    begin
       --  Switch to Task
 
       Asm ("sc", Volatile => True);
-   end Context_Switch_To_Task;
+   end Context_Switch_To_Agent;
 
    ------------------------------
    -- Context_Switch_To_Kernel --
@@ -32,17 +32,6 @@ package body Oak.Core_Support_Package.Task_Support is
    begin
       null;
    end Context_Switch_To_Kernel;
-
-   ---------------------------------------
-   -- Context_Switch_To_Scheduler_Agent --
-   ---------------------------------------
-
-   procedure Context_Switch_To_Scheduler_Agent is
-   begin
-      --  Switch to Scheduler Agent
-
-      Asm ("sc", Volatile => True);
-   end Context_Switch_To_Scheduler_Agent;
 
    -------------------------------
    -- Yield_Processor_To_Kernel --

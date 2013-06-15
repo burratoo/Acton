@@ -1,3 +1,5 @@
+with Oak.Oak_Time; use Oak.Oak_Time;
+
 package body Oak.Agent is
 
    Global_Task_Id : Task_Id := 1;
@@ -17,6 +19,25 @@ package body Oak.Agent is
       Agent.Id         := New_Task_Id;
       Agent.Call_Stack := Call_Stack;
    end Initialise_Agent;
+
+   procedure Charge_Execution_Time
+     (To_Agent  : in out Oak_Agent'Class;
+      Exec_Time : in Oak_Time.Time_Span) is
+   begin
+      To_Agent.Current_Execution_Time :=
+        To_Agent.Current_Execution_Time + Exec_Time;
+      To_Agent.Total_Execution_Time :=
+        To_Agent.Total_Execution_Time + Exec_Time;
+   end Charge_Execution_Time;
+
+   procedure New_Execution_Cycle (Agent : in out Oak_Agent'Class) is
+   begin
+      Agent.Execution_Cycles := Agent.Execution_Cycles + 1;
+      if Agent.Current_Execution_Time > Agent.Max_Execution_Time then
+         Agent.Max_Execution_Time := Agent.Current_Execution_Time;
+      end if;
+      Agent.Current_Execution_Time := Oak_Time.Time_Span_Zero;
+   end New_Execution_Cycle;
 
    function New_Task_Id return Task_Id is
       Chosen_Id : constant Task_Id := Global_Task_Id;

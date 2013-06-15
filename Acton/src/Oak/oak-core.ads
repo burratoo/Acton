@@ -58,6 +58,8 @@ package Oak.Core with Preelaborate is
      (Oak_Instance : access Oak_Data)
       return access Oak_Scheduler_Info with Inline_Always;
 
+   procedure Context_Switch_To_Agent (Agent : access Oak_Agent'Class);
+
    procedure Set_Current_Agent_Stack_Pointer
      (SP : Address)
       with Inline_Always;

@@ -33,9 +33,8 @@ package Oak.Core_Support_Package.Task_Support with Preelaborate is
 
    procedure Initialise_Task_Enviroment;
 
-   procedure Context_Switch_To_Task with Inline_Always;
+   procedure Context_Switch_To_Agent with Inline_Always;
    procedure Context_Switch_To_Kernel with Inline_Always;
-   procedure Context_Switch_To_Scheduler_Agent with Inline_Always;
 
    procedure Yield_Processor_To_Kernel with Inline_Always;
 
