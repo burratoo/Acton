@@ -2,13 +2,12 @@ with Oak.Agent.Tasks.Activation;
 with Oak.Agent.Tasks.Cycle; use Oak.Agent.Tasks.Cycle;
 with Oak.Agent.Tasks.Protected_Objects; use Oak.Agent.Tasks.Protected_Objects;
 with Oak.Atomic_Actions;
-with Oak.Memory.Call_Stack.Ops;
 with Oak.Core_Support_Package.Task_Support;
-with Oak.Core_Support_Package.Call_Stack;
 with Oak.Interrupts; use Oak.Interrupts;
 with Oak.Protected_Objects;
 with Oak.Core_Support_Package.Interrupts;
 with Ada.Cyclic_Tasks;
+with Oak.Core_Support_Package.Call_Stack;
 
 package body Oak.Core is
 
@@ -19,15 +18,16 @@ package body Oak.Core is
    procedure Initialise is
       C : Activation_Chain;
    begin
-      for K of Processor_Kernels loop
-         Oak.Memory.Call_Stack.Ops.Allocate_Call_Stack
-           (Stack            => K.Call_Stack,
-            Size_In_Elements =>
-              Oak.Core_Support_Package.Call_Stack.Oak_Call_Stack_Size);
+      for Kernel_Agent of Processor_Kernels loop
+         Initialise_Agent
+           (Agent => Kernel_Agent'Access,
+            Name  => "Kernel",
+            Call_Stack_Size =>
+              Core_Support_Package.Call_Stack.Oak_Call_Stack_Size);
 
          for P in Interrupt_Priority'Range loop
             Initialise_Task_Agent
-              (Agent             => K.Interrupt_Agents (P)'Access,
+              (Agent             => Kernel_Agent.Interrupt_Agents (P)'Access,
                Stack_Address     => Null_Address,
                Stack_Size        => Interrupt_Stack_Size,
                Name              => "Interrupt Agent",
@@ -46,15 +46,15 @@ package body Oak.Core is
                Execution_Server  => null,
                Chain             => C,
                Elaborated        => null);
-            K.Interrupt_Agents (P).Set_State (Interrupt_Done);
+            Kernel_Agent.Interrupt_Agents (P).Set_State (Interrupt_Done);
          end loop;
 
-         for State of K.Interrupt_States loop
+         for State of Kernel_Agent.Interrupt_States loop
             State := Inactive;
          end loop;
 
          Initialise_Sleep_Agent
-           (K.Sleep_Agent'Access,
+           (Kernel_Agent.Sleep_Agent'Access,
             Core_Support_Package.Task_Support.Sleep_Agent'Address);
       end loop;
 
@@ -418,7 +418,10 @@ package body Oak.Core is
 
    procedure Set_Oak_Stack_Pointer (SP : Address) is
    begin
-      Processor_Kernels (Processor.Proccessor_Id).Call_Stack.Pointer := SP;
+      Set_Stack_Pointer
+        (Agent => Processor_Kernels (Processor.Proccessor_Id)
+         ,
+         Stack_Pointer => SP);
    end Set_Oak_Stack_Pointer;
 
 end Oak.Core;

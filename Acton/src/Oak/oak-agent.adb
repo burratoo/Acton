@@ -1,4 +1,5 @@
 with Oak.Oak_Time; use Oak.Oak_Time;
+with Oak.Memory.Call_Stack.Ops;
 
 package body Oak.Agent is
 
@@ -18,6 +19,22 @@ package body Oak.Agent is
 
       Agent.Id         := New_Task_Id;
       Agent.Call_Stack := Call_Stack;
+   end Initialise_Agent;
+
+   procedure Initialise_Agent
+     (Agent           : access Oak_Agent'Class;
+      Name            : in String;
+      Call_Stack_Size : in System.Storage_Elements.Storage_Count) is
+   begin
+      Agent.Name_Length                   :=
+         Natural'Min (Task_Name'Length, Name'Length);
+      Agent.Name (1 .. Agent.Name_Length) :=
+        Name (Name'First .. Name'First + Agent.Name_Length - 1);
+
+      Agent.Id         := New_Task_Id;
+      Oak.Memory.Call_Stack.Ops.Allocate_Call_Stack
+        (Stack            => Agent.Call_Stack,
+         Size_In_Elements => Call_Stack_Size);
    end Initialise_Agent;
 
    procedure Charge_Execution_Time

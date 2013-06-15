@@ -2,6 +2,7 @@ with Oak.Core_Support_Package;
 with Oak.Oak_Time;
 with System;
 with Oak.Memory.Call_Stack;         use Oak.Memory.Call_Stack;
+with System.Storage_Elements;
 
 package Oak.Agent with Preelaborate is
 
@@ -31,6 +32,11 @@ package Oak.Agent with Preelaborate is
      (Agent      : access Oak_Agent'Class;
       Name       : in String;
       Call_Stack : in Call_Stack_Handler);
+
+   procedure Initialise_Agent
+     (Agent           : access Oak_Agent'Class;
+      Name            : in String;
+      Call_Stack_Size : in System.Storage_Elements.Storage_Count);
 
    procedure Set_Stack_Pointer
      (Agent         : in out Oak_Agent'Class;

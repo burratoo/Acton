@@ -4,7 +4,6 @@ with Oak.Agent; use Oak.Agent;
 with Oak.Agent.Tasks; use Oak.Agent.Tasks;
 with Oak.Agent.Tasks.Interrupts; use Oak.Agent.Tasks.Interrupts;
 with Oak.Core_Support_Package;      use Oak.Core_Support_Package;
-with Oak.Memory.Call_Stack;         use Oak.Memory.Call_Stack;
 with Oak.Oak_Time;                  use Oak.Oak_Time;
 with Oak.Scheduler;                 use Oak.Scheduler;
 with System;                        use System;
@@ -24,7 +23,7 @@ package Oak.Core with Preelaborate is
 
    type Active_State is (Inactive, Active);
 
-   type Oak_Data is limited private;
+   type Oak_Data is new Oak_Agent with private;
 
    procedure Initialise
      with Export, Convention => Ada, External_Name => "__oak_initialise";
@@ -52,10 +51,10 @@ package Oak.Core with Preelaborate is
    function Current_Task     return access Task_Agent'Class with Inline_Always;
    function Current_Interrupt_Id return Oak_Interrupt_Id with Inline_Always;
    function Main_Task        return access Task_Agent;
-   function Oak_Instance     return access Oak_Data with Inline_Always;
+   function Oak_Instance     return access Oak_Data'Class with Inline_Always;
    function Oak_Stack_Pointer return Address with Inline_Always;
    function Scheduler_Info
-     (Oak_Instance : access Oak_Data)
+     (Oak_Instance : access Oak_Data'Class)
       return access Oak_Scheduler_Info with Inline_Always;
 
    procedure Context_Switch_To_Agent (Agent : access Oak_Agent'Class);
@@ -80,15 +79,13 @@ private
 
    Main_Task_OTCR : aliased Task_Agent;
 
-   type Oak_Data is record
-      Id                 : Oak_Instance_Id   := 1;
+   type Oak_Data is new Oak_Agent with record
       Scheduler          : aliased Oak_Scheduler_Info;
       Woken_By           : Activation_Reason := First_Run;
       Current_Priority   : System.Any_Priority := System.Any_Priority'First;
       Current_Agent      : access Oak_Agent'Class := null;
       --  Probably need to fix this up so that it gets set somewhere. (In case
       --  it doesn't already when the task context switches.
-      Call_Stack         : Call_Stack_Handler;
       Sleep_Agent        : aliased Task_Agent;
       Interrupt_Agents   : IA_Store;
       Interrupt_States   : Interrupt_Active_Set;
@@ -118,14 +115,14 @@ private
 
    function Main_Task return access Task_Agent is (Main_Task_OTCR'Access);
 
-   function Oak_Instance return access Oak_Data is
+   function Oak_Instance return access Oak_Data'Class is
      (Processor_Kernels (Processor_Kernels'First)'Access);
 
    function Oak_Stack_Pointer return Address is
-     (Processor_Kernels (Processor.Proccessor_Id).Call_Stack.Pointer);
+     (Processor_Kernels (Processor.Proccessor_Id).Stack_Pointer);
 
    function Scheduler_Info
-     (Oak_Instance : access Oak_Data)
+     (Oak_Instance : access Oak_Data'Class)
       return access Oak_Scheduler_Info is (Oak_Instance.Scheduler'Access);
 
 end Oak.Core;
