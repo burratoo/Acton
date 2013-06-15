@@ -8,7 +8,7 @@ package body Oak.Agent.Tasks.Cycle is
    subtype Event_Based is Behaviour range Aperiodic .. Sporadic;
    subtype Time_Based is Behaviour range Sporadic .. Periodic;
 
-   function Next_Sporadic_Release_Time (Sporadic_Task : in Task_Handler)
+   function Next_Release_Time (Sporadic_Task : in Task_Handler)
      return Time;
 
    --------------------------
@@ -31,11 +31,13 @@ package body Oak.Agent.Tasks.Cycle is
 
    procedure New_Cycle (T : in out Task_Handler) is
    begin
+
       T.Execution_Cycles := T.Execution_Cycles + 1;
       if T.Current_Execution_Time > T.Max_Execution_Time then
          T.Max_Execution_Time := T.Current_Execution_Time;
       end if;
       T.Current_Execution_Time := Time_Span_Zero;
+      T.Remaining_Budget       := T.Execution_Budget;
 
       --  This exit state only applies for tasks' whose timing behaviour is
       --  normal. It's not covered by a conditional statement since the
@@ -74,6 +76,13 @@ package body Oak.Agent.Tasks.Cycle is
          end if;
       end if;
 
+      --  Update Deadline
+      if T.Cycle_Behaviour in Time_Based then
+         T.Next_Deadline := T.Wake_Time + T.Relative_Deadline;
+      else
+         T.Next_Deadline := Clock + T.Relative_Deadline;
+      end if;
+
       Scheduler.Inform_Scheduler_Agent_Task_Has_Changed_State (T);
 
    end New_Cycle;
@@ -82,7 +91,7 @@ package body Oak.Agent.Tasks.Cycle is
    -- Next_Sporadic_Release_Time --
    --------------------------------
 
-   function Next_Sporadic_Release_Time (Sporadic_Task : in Task_Handler)
+   function Next_Release_Time (Sporadic_Task : in Task_Handler)
      return Time is
       Current_Time : constant Time := Clock;
    begin
@@ -91,7 +100,7 @@ package body Oak.Agent.Tasks.Cycle is
       else
          return Sporadic_Task.Wake_Time + Sporadic_Task.Cycle_Period;
       end if;
-   end Next_Sporadic_Release_Time;
+   end Next_Release_Time;
 
    ------------------
    -- Release_Task --
@@ -101,14 +110,17 @@ package body Oak.Agent.Tasks.Cycle is
      (Task_To_Release, Releasing_Task : in Task_Handler;
       Next_Task                       : out Task_Handler)
    is
+      Release_Time : Time;
    begin
       Releasing_Task.State := Runnable;
 
       if Task_To_Release.State = Waiting_For_Event then
-         Task_To_Release.State          := Sleeping;
+         Task_To_Release.State := Sleeping;
 
-         Task_To_Release.Next_Run_Cycle :=
-           Next_Sporadic_Release_Time (Task_To_Release);
+         Release_Time                   := Next_Release_Time (Task_To_Release);
+         Task_To_Release.Next_Run_Cycle := Release_Time;
+         Task_To_Release.Next_Deadline  :=
+           Release_Time + Task_To_Release.Relative_Deadline;
 
          Next_Task := Task_To_Release;
          Scheduler.Add_Task_To_Scheduler

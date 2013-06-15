@@ -274,7 +274,7 @@ package body Oak.Core is
                Next_Task.Set_State (Interrupt_Start);
                Oak_Instance.Interrupt_States (P) := Active;
 
-            when Scheduler_Agent | Missed_Deadline =>
+            when Scheduler_Agent | Missed_Deadline | Budget_Expired =>
                Run_The_Bloody_Scheduler_Agent_That_Wanted_To_Be_Woken
                  (Scheduler_Info => Oak_Instance.Scheduler,
                   Chosen_Task    => Next_Task);
@@ -359,6 +359,17 @@ package body Oak.Core is
             Wake_Up_Time          := Earliest_Scheduler_Time;
          end if;
 
+         if Next_Task /= null then
+            declare
+               T : constant Time := Clock + Next_Task.Remaining_Budget;
+            begin
+               if T < Wake_Up_Time then
+                  Oak_Instance.Woken_By := Budget_Expired;
+                  Wake_Up_Time          := T;
+               end if;
+            end;
+         end if;
+
          --  These called functions are responsible for enabling the sleep
          --  timer.
          Core_Support_Package.Task_Support.Set_Oak_Wake_Up_Timer
@@ -405,7 +416,7 @@ package body Oak.Core is
          Current_Time : constant Time := Clock;
       begin
          Charge_Execution_Time
-           (To_Agent  => To_Agent,
+           (To_Agent  => To_Agent.all,
             Exec_Time => Current_Time - Oak_Instance.Entry_Exit_Stamp);
          Oak_Instance.Entry_Exit_Stamp := Current_Time;
       end Charge_Exec_Time;

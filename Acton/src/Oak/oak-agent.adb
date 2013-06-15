@@ -38,7 +38,7 @@ package body Oak.Agent is
    end Initialise_Agent;
 
    procedure Charge_Execution_Time
-     (To_Agent  : access Oak_Agent;
+     (To_Agent  : in out Oak_Agent;
       Exec_Time : in Oak_Time.Time_Span) is
    begin
       To_Agent.Current_Execution_Time :=

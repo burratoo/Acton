@@ -147,7 +147,7 @@ package Oak.Agent.Tasks with Preelaborate is
       return access Task_Agent'Class;
 
    overriding procedure Charge_Execution_Time
-     (To_Agent  : access Task_Agent;
+     (To_Agent  : in out Task_Agent;
       Exec_Time : in Oak_Time.Time_Span);
 
    function Current_Atomic_Action
@@ -169,6 +169,9 @@ package Oak.Agent.Tasks with Preelaborate is
       return System.Any_Priority;
 
    function Phase (T : in Task_Agent'Class) return Oak_Time.Time_Span;
+
+   function Remaining_Budget
+     (T : in Task_Agent'Class) return Oak_Time.Time_Span;
 
    function Scheduler_Agent_For_Task
      (T    : in Task_Agent'Class)
@@ -264,11 +267,11 @@ private
 
       Execution_Server  : access Ada.Execution_Server.Execution_Server;
 
-      Next_Deadline     : Oak_Time.Time := Oak_Time.Time_Last;
-      Next_Run_Cycle    : Oak_Time.Time := Oak_Time.Time_Last;
-      Wake_Time         : Oak_Time.Time := Oak_Time.Time_Last;
-      Current_Budget    : Oak_Time.Time := Oak_Time.Time_Last;
-      Event_Raised      : Boolean       := False;
+      Next_Deadline     : Oak_Time.Time      := Oak_Time.Time_Last;
+      Next_Run_Cycle    : Oak_Time.Time      := Oak_Time.Time_Last;
+      Wake_Time         : Oak_Time.Time      := Oak_Time.Time_Last;
+      Remaining_Budget  : Oak_Time.Time_Span := Oak_Time.Time_Span_Last;
+      Event_Raised      : Boolean            := False;
 
       Scheduler_Agent   : access Schedulers.Scheduler_Agent'Class := null;
       Queue_Link        : Task_Agent_Link_Element;
@@ -319,6 +322,9 @@ private
    function Phase
      (T : in Task_Agent'Class)
       return Oak_Time.Time_Span is (T.Phase);
+
+   function Remaining_Budget (T : in Task_Agent'Class)
+     return Oak_Time.Time_Span is (T.Remaining_Budget);
 
    function Scheduler_Agent_For_Task
      (T : in Task_Agent'Class)
