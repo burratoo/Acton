@@ -8,6 +8,9 @@ package body Oak.Agent.Tasks.Cycle is
    subtype Event_Based is Behaviour range Aperiodic .. Sporadic;
    subtype Time_Based is Behaviour range Sporadic .. Periodic;
 
+   function Next_Sporadic_Release_Time (Sporadic_Task : in Task_Handler)
+     return Time;
+
    --------------------------
    -- Setup_Cyclic_Section --
    --------------------------
@@ -70,6 +73,21 @@ package body Oak.Agent.Tasks.Cycle is
 
    end New_Cycle;
 
+   --------------------------------
+   -- Next_Sporadic_Release_Time --
+   --------------------------------
+
+   function Next_Sporadic_Release_Time (Sporadic_Task : in Task_Handler)
+     return Time is
+      Current_Time : constant Time := Clock;
+   begin
+      if Current_Time > Sporadic_Task.Wake_Time then
+         return Current_Time + Sporadic_Task.Cycle_Period;
+      else
+         return Sporadic_Task.Wake_Time + Sporadic_Task.Cycle_Period;
+      end if;
+   end Next_Sporadic_Release_Time;
+
    ------------------
    -- Release_Task --
    ------------------
@@ -83,8 +101,9 @@ package body Oak.Agent.Tasks.Cycle is
 
       if Task_To_Release.State = Waiting_For_Event then
          Task_To_Release.State          := Sleeping;
+
          Task_To_Release.Next_Run_Cycle :=
-           Clock + Task_To_Release.Cycle_Period;
+           Next_Sporadic_Release_Time (Task_To_Release);
 
          Next_Task := Task_To_Release;
          Scheduler.Add_Task_To_Scheduler
