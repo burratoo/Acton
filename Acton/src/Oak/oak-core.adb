@@ -392,15 +392,28 @@ package body Oak.Core is
                   Next_Task.Store_Task_Yield_Status (Yielded  => Voluntary);
                   Oak_Instance.Woken_By := External_Interrupt;
             end case;
+
          end if;
 
       end loop;
    end Run_Loop;
 
    procedure Context_Switch_To_Agent (Agent : access Oak_Agent'Class) is
+      procedure Charge_Exec_Time (To_Agent : access Oak_Agent'Class);
+
+      procedure Charge_Exec_Time (To_Agent : access Oak_Agent'Class) is
+         Current_Time : constant Time := Clock;
+      begin
+         Charge_Execution_Time
+           (To_Agent  => To_Agent,
+            Exec_Time => Current_Time - Oak_Instance.Entry_Exit_Stamp);
+         Oak_Instance.Entry_Exit_Stamp := Current_Time;
+      end Charge_Exec_Time;
    begin
+      Charge_Exec_Time (Oak_Instance);
       Oak_Instance.Current_Agent := Agent;
       Core_Support_Package.Task_Support.Context_Switch_To_Agent;
+      Charge_Exec_Time (Agent);
    end Context_Switch_To_Agent;
 
    procedure Set_Current_Agent_Stack_Pointer (SP : Address) is
@@ -419,8 +432,7 @@ package body Oak.Core is
    procedure Set_Oak_Stack_Pointer (SP : Address) is
    begin
       Set_Stack_Pointer
-        (Agent => Processor_Kernels (Processor.Proccessor_Id)
-         ,
+        (Agent         => Processor_Kernels (Processor.Proccessor_Id),
          Stack_Pointer => SP);
    end Set_Oak_Stack_Pointer;
 

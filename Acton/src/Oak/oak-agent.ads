@@ -45,7 +45,7 @@ package Oak.Agent with Preelaborate is
 
    procedure New_Execution_Cycle (Agent : in out Oak_Agent'Class);
    procedure Charge_Execution_Time
-     (To_Agent  : in out Oak_Agent'Class;
+     (To_Agent  : access Oak_Agent;
       Exec_Time : in Oak_Time.Time_Span);
 
 private

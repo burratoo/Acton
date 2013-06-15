@@ -31,6 +31,11 @@ package body Oak.Agent.Tasks.Cycle is
 
    procedure New_Cycle (T : in out Task_Handler) is
    begin
+      T.Execution_Cycles := T.Execution_Cycles + 1;
+      if T.Current_Execution_Time > T.Max_Execution_Time then
+         T.Max_Execution_Time := T.Current_Execution_Time;
+      end if;
+      T.Current_Execution_Time := Time_Span_Zero;
 
       --  This exit state only applies for tasks' whose timing behaviour is
       --  normal. It's not covered by a conditional statement since the

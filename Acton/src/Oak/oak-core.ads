@@ -19,7 +19,8 @@ package Oak.Core with Preelaborate is
       Task_Yield,
       Scheduler_Agent,
       Missed_Deadline,
-       External_Interrupt);
+      Budget_Expired,
+      External_Interrupt);
 
    type Active_State is (Inactive, Active);
 
@@ -84,6 +85,7 @@ private
       Woken_By           : Activation_Reason := First_Run;
       Current_Priority   : System.Any_Priority := System.Any_Priority'First;
       Current_Agent      : access Oak_Agent'Class := null;
+      Entry_Exit_Stamp   : Time;
       --  Probably need to fix this up so that it gets set somewhere. (In case
       --  it doesn't already when the task context switches.
       Sleep_Agent        : aliased Task_Agent;

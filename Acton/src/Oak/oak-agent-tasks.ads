@@ -146,6 +146,10 @@ package Oak.Agent.Tasks with Preelaborate is
      (T    : in Task_Agent'Class)
       return access Task_Agent'Class;
 
+   overriding procedure Charge_Execution_Time
+     (To_Agent  : access Task_Agent;
+      Exec_Time : in Oak_Time.Time_Span);
+
    function Current_Atomic_Action
      (T : in Task_Agent'Class)
       return access Atomic_Actions.Atomic_Object;
@@ -263,6 +267,7 @@ private
       Next_Deadline     : Oak_Time.Time := Oak_Time.Time_Last;
       Next_Run_Cycle    : Oak_Time.Time := Oak_Time.Time_Last;
       Wake_Time         : Oak_Time.Time := Oak_Time.Time_Last;
+      Current_Budget    : Oak_Time.Time := Oak_Time.Time_Last;
       Event_Raised      : Boolean       := False;
 
       Scheduler_Agent   : access Schedulers.Scheduler_Agent'Class := null;

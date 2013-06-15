@@ -122,6 +122,14 @@ package body Oak.Agent.Tasks is
       Agent.State := Runnable;
    end Initialise_Sleep_Agent;
 
+   overriding procedure Charge_Execution_Time
+     (To_Agent  : access Task_Agent;
+      Exec_Time : in Oak_Time.Time_Span) is
+   begin
+      To_Agent.Current_Budget := To_Agent.Current_Budget - Exec_Time;
+      Charge_Execution_Time (To_Agent, Exec_Time);
+   end Charge_Execution_Time;
+
    procedure Set_Activation_List
      (T   : in out Task_Agent'Class;
       Add : access Task_Agent'Class) is
