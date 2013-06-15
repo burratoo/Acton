@@ -51,10 +51,18 @@ package body Oak.Agent.Tasks.Cycle is
 
       if T.Cycle_Behaviour in Event_Based then
          if T.Event_Raised then
-            T.State       := Runnable;
-            T.Event_Raised := False;
+            T.Event_Raised   := False;
+            T.Next_Run_Cycle := Clock + T.Cycle_Period;
          else
             T.State := Waiting_For_Event;
+
+            --  Temp arrangement
+
+            Scheduler.Remove_Task_From_Scheduler (T);
+            Scheduler.Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
+              (Scheduler_Info => Core.Scheduler_Info  (Core.Oak_Instance).all,
+               Chosen_Task    => T);
+            return;
          end if;
       end if;
 
@@ -74,11 +82,17 @@ package body Oak.Agent.Tasks.Cycle is
       Releasing_Task.State := Runnable;
 
       if Task_To_Release.State = Waiting_For_Event then
-         Task_To_Release.State := Sleeping;
+         Task_To_Release.State          := Sleeping;
+         Task_To_Release.Next_Run_Cycle :=
+           Clock + Task_To_Release.Cycle_Period;
 
          Next_Task := Task_To_Release;
-         Scheduler.Inform_Scheduler_Agent_Task_Has_Changed_State
-           (Next_Task);
+         Scheduler.Add_Task_To_Scheduler
+           (Scheduler_Info => Core.Scheduler_Info  (Core.Oak_Instance).all,
+            T => Task_To_Release);
+         Scheduler.Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
+           (Scheduler_Info => Core.Scheduler_Info  (Core.Oak_Instance).all,
+            Chosen_Task    => Next_Task);
       else
          Task_To_Release.Event_Raised := True;
          Next_Task := Releasing_Task;

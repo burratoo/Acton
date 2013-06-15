@@ -207,7 +207,10 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
                              Self.Task_To_Manage;
       begin
          case Task_To_Remove.State is
-            when Runnable | Entering_PO | Entering_Atomic_Action =>
+         --  Probably best to move this case to the others.
+
+            when Runnable | Entering_PO | Entering_Atomic_Action |
+                 Waiting_For_Event =>
                declare
                   Task_Priority : constant Any_Priority :=
                            Task_To_Remove.Normal_Priority;
