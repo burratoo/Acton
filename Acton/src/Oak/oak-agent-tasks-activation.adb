@@ -84,13 +84,7 @@ package body Oak.Agent.Tasks.Activation is
          T.State          := Runnable;
          T.Wake_Time      := Oak_Time.Clock;
 
-         --  If the deadline is set to zero, disable the deadline by setting
-         --  Next_Deadline to last possible time.
-         if T.Deadline = Time_Span_Zero then
-            T.Next_Deadline := Oak.Oak_Time.Time_Last;
-         else
-            T.Next_Deadline := T.Wake_Time + T.Deadline;
-         end if;
+         Set_Next_Deadline_For_Task (T.all, Using => Wake_Up_Time);
 
          Oak.Scheduler.Add_Task_To_Scheduler
            (Scheduler_Info => Scheduler.all,

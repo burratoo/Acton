@@ -171,6 +171,22 @@ package body Oak.Agent.Tasks is
       T.Cycle_Period := CP;
    end Set_Cycle_Period;
 
+   procedure Set_Next_Deadline_For_Task
+     (T     : in out Task_Agent'Class;
+      Using : in Deadline_Base) is
+   begin
+      if T.Relative_Deadline = Oak_Time.Time_Span_Last then
+         T.Next_Deadline := Oak_Time.Time_Last;
+      else
+         case Using is
+            when Wake_Up_Time =>
+               T.Next_Deadline := T.Wake_Time + T.Relative_Deadline;
+            when Clock_Time =>
+               T.Next_Deadline := Clock + T.Relative_Deadline;
+         end case;
+      end if;
+   end Set_Next_Deadline_For_Task;
+
    procedure Set_Relative_Deadline
      (T  : in out Task_Agent'Class;
       RD : in Oak_Time.Time_Span) is

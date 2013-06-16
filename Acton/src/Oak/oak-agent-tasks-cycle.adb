@@ -78,9 +78,9 @@ package body Oak.Agent.Tasks.Cycle is
 
       --  Update Deadline
       if T.Cycle_Behaviour in Time_Based then
-         T.Next_Deadline := T.Wake_Time + T.Relative_Deadline;
+         Set_Next_Deadline_For_Task (T.all, Using => Wake_Up_Time);
       else
-         T.Next_Deadline := Clock + T.Relative_Deadline;
+         Set_Next_Deadline_For_Task (T.all, Using => Clock_Time);
       end if;
 
       Scheduler.Inform_Scheduler_Agent_Task_Has_Changed_State (T);
@@ -92,13 +92,14 @@ package body Oak.Agent.Tasks.Cycle is
    --------------------------------
 
    function Next_Release_Time (Sporadic_Task : in Task_Handler)
-     return Time is
+     return Time
+   is
       Current_Time : constant Time := Clock;
    begin
       if Current_Time > Sporadic_Task.Wake_Time then
-         return Current_Time + Sporadic_Task.Cycle_Period;
+         return Current_Time;
       else
-         return Sporadic_Task.Wake_Time + Sporadic_Task.Cycle_Period;
+         return Sporadic_Task.Wake_Time;
       end if;
    end Next_Release_Time;
 
@@ -110,17 +111,17 @@ package body Oak.Agent.Tasks.Cycle is
      (Task_To_Release, Releasing_Task : in Task_Handler;
       Next_Task                       : out Task_Handler)
    is
-      Release_Time : Time;
    begin
       Releasing_Task.State := Runnable;
 
       if Task_To_Release.State = Waiting_For_Event then
          Task_To_Release.State := Sleeping;
 
-         Release_Time                   := Next_Release_Time (Task_To_Release);
-         Task_To_Release.Next_Run_Cycle := Release_Time;
-         Task_To_Release.Next_Deadline  :=
-           Release_Time + Task_To_Release.Relative_Deadline;
+         Task_To_Release.Wake_Time      := Next_Release_Time (Task_To_Release);
+         Task_To_Release.Next_Run_Cycle := Task_To_Release.Wake_Time  +
+           Task_To_Release.Cycle_Period;
+         Set_Next_Deadline_For_Task
+           (Task_To_Release.all, Using => Wake_Up_Time);
 
          Next_Task := Task_To_Release;
          Scheduler.Add_Task_To_Scheduler

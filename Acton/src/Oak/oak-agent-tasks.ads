@@ -116,6 +116,8 @@ package Oak.Agent.Tasks with Preelaborate is
 
    type Activation_Chain_Access is access all Activation_Chain;
 
+   type Deadline_Base is (Wake_Up_Time, Clock_Time);
+
    Unspecified_Priority : constant Integer := -1;
 
    procedure Initialise_Task_Agent
@@ -212,6 +214,10 @@ package Oak.Agent.Tasks with Preelaborate is
    procedure Store_Oak_Task_Message
      (For_Task : in out Task_Agent'Class;
       Message  : in Oak_Task_Message) with Inline_Always;
+
+   procedure Set_Next_Deadline_For_Task
+     (T     : in out Task_Agent'Class;
+      Using : in Deadline_Base);
 
    procedure Set_Relative_Deadline
      (T  : in out Task_Agent'Class;
