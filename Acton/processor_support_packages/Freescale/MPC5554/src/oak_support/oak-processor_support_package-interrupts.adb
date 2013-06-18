@@ -3,23 +3,14 @@ with MPC5554.Flash;
 with Oak.Agent.Tasks;
 with Oak.Agent.Tasks.Protected_Objects;
 with Oak.Core_Support_Package.Interrupts;
-with Oak.Core;
-with Oak.Core_Support_Package.Task_Support;
 
 package body Oak.Processor_Support_Package.Interrupts is
 
-   procedure Interrupt_Run_Loop is
-      Message : constant Oak.Agent.Tasks.Oak_Task_Message :=
-                  (Message_Type => Oak.Agent.Tasks.Interrupt_Done);
+   procedure External_Interrupt_Handler (Interrupt_Id : Oak_Interrupt_Id) is
    begin
-      loop
-         INTC_Vector_Table
-           (Core.Current_Interrupt_Id).all;
-         End_Of_Interrupt_Register := End_Interrupt;
-         Core.Current_Task.Store_Oak_Task_Message (Message);
-         Core_Support_Package.Task_Support.Yield_Processor_To_Kernel;
-      end loop;
-   end Interrupt_Run_Loop;
+      INTC_Vector_Table (Interrupt_Id).all;
+      End_Of_Interrupt_Register := End_Interrupt;
+   end External_Interrupt_Handler;
 
    function External_Interrupt_Id return Oak_Interrupt_Id is
    begin

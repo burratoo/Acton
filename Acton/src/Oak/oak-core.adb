@@ -8,6 +8,8 @@ with Oak.Protected_Objects;
 with Oak.Core_Support_Package.Interrupts;
 with Ada.Cyclic_Tasks;
 with Oak.Core_Support_Package.Call_Stack;
+with Oak.Processor_Support_Package.Interrupts;
+use Oak.Processor_Support_Package.Interrupts;
 
 package body Oak.Core is
 
@@ -108,6 +110,7 @@ package body Oak.Core is
       Earliest_Scheduler_Time         : Time;
       Next_Task                       : Task_Handler := null;
       P                               : Any_Priority;
+      Interrupt_Id                    : Oak_Interrupt_Id;
 
       Task_Message : Oak_Task_Message := (Message_Type => No_State);
    begin
@@ -268,21 +271,28 @@ package body Oak.Core is
                end case;
 
             when External_Interrupt =>
-               Oak_Instance.Interrupt_Id := External_Interrupt_Id;
+               Interrupt_Id := External_Interrupt_Id;
                P := Current_Interrupt_Priority;
                Next_Task := Oak_Instance.Interrupt_Agents (P)'Unchecked_Access;
-               Next_Task.Set_State (Interrupt_Start);
+               Next_Task.Set_State (Handling_Interrupt);
+               Set_Interrupt_Kind
+                 (Interrupt_Agent (Next_Task.all), Kind => External);
+               Set_External_Id
+                 (Interrupt_Agent (Next_Task.all), Interrupt_Id);
                Oak_Instance.Interrupt_States (P) := Active;
 
-            when Scheduler_Agent | Missed_Deadline | Budget_Expired =>
+            when Scheduler_Agent =>
                Run_The_Bloody_Scheduler_Agent_That_Wanted_To_Be_Woken
                  (Scheduler_Info => Oak_Instance.Scheduler,
                   Chosen_Task    => Next_Task);
-               --  when Missed_Deadline =>
-               --                 Handle_Missed_Deadline
-               --                   (Scheduler_Info => Oak_Instance.Scheduler,
-               --                    Chosen_Task    => Next_Task);
-               --   null;
+
+            when Missed_Deadline  =>
+                  --  Conveniently, P hold the current interrupt priority level
+               null;
+
+            when Budget_Expired =>
+               null;
+
          end case;
 
          --  Find any active interrupts
@@ -345,11 +355,11 @@ package body Oak.Core is
          --  than call a procedure.
          -------------------
          Earliest_Scheduler_Time :=
-            Earliest_Scheduler_Agent_Time
-              (Scheduler_Info => Oak_Instance.Scheduler);
-         Earliest_Deadline             := Time_Last;
-         --              Get_Earliest_Deadline (Scheduler_Info =>
-         --  Oak_Instance.Scheduler);
+           Earliest_Scheduler_Agent_Time
+             (Scheduler_Info => Oak_Instance.Scheduler);
+         Earliest_Deadline       :=
+           Scheduler.Earliest_Deadline
+             (Scheduler_Info => Oak_Instance.Scheduler);
 
          if Earliest_Deadline <= Earliest_Scheduler_Time then
             Oak_Instance.Woken_By := Missed_Deadline;
@@ -423,7 +433,9 @@ package body Oak.Core is
    begin
       Charge_Exec_Time (Oak_Instance);
       Oak_Instance.Current_Agent := Agent;
+      Oak_Instance.In_Oak := False;
       Core_Support_Package.Task_Support.Context_Switch_To_Agent;
+      Oak_Instance.In_Oak := True;
       Charge_Exec_Time (Agent);
    end Context_Switch_To_Agent;
 

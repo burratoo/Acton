@@ -155,7 +155,7 @@ package body Oak.Protected_Objects is
          Scheduler.Deactivate_Task
            (Scheduler_Info => Scheduler_Info,
             T              => PO);
-         --  Object release pont 3.
+         --  Object release point 3.
          Release_Resource (PO);
          Scheduler.Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
            (Scheduler_Info => Scheduler_Info,

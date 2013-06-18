@@ -48,7 +48,7 @@ package Oak.Agent.Tasks with Preelaborate is
                        Exit_Atomic_Action_Error,     -- 27
                        Entering_Exit_Barrier,        -- 28
                        Atomic_Action_Error,          -- 29
-                       Interrupt_Start,              -- 30
+                       Handling_Interrupt,           -- 30
                        Interrupt_Done,               -- 31
                        No_State);                    -- 32
 
@@ -160,7 +160,7 @@ package Oak.Agent.Tasks with Preelaborate is
      (T : in Task_Agent'Class)
       return Oak_Time.Time_Span;
 
-   function Deadline (T : in Task_Agent'Class) return Oak_Time.Time_Span;
+   function Deadline (T : in Task_Agent'Class) return Oak_Time.Time;
 
    function Is_Elaborated (T : in Task_Agent'Class) return Boolean;
 
@@ -307,7 +307,7 @@ private
 
    function Deadline
      (T : in Task_Agent'Class)
-      return Oak_Time.Time_Span is (T.Relative_Deadline);
+      return Oak_Time.Time is (T.Next_Deadline);
 
    function Is_Elaborated
      (T : in Task_Agent'Class)

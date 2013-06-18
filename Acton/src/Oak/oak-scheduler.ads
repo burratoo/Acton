@@ -34,9 +34,13 @@ package Oak.Scheduler with Preelaborate is
      (Scheduler_Info : in out Oak_Scheduler_Info;
       T              : access Task_Agent'Class);
 
+   function Earliest_Deadline
+     (Scheduler_Info : Oak_Scheduler_Info)
+      return Oak_Time.Time;
+
    function Earliest_Scheduler_Agent_Time
      (Scheduler_Info : Oak_Scheduler_Info)
-      return Time;
+      return Oak_Time.Time;
 
    procedure Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
      (Scheduler_Info : in out Oak_Scheduler_Info;
@@ -58,8 +62,7 @@ package Oak.Scheduler with Preelaborate is
       Task_To_Add    : access Task_Agent'Class);
 
    procedure Remove_Task_From_Deadline_List
-     (Scheduler_Info : in out Oak_Scheduler_Info;
-      Task_To_Remove : access Task_Agent'Class);
+     (Task_To_Remove : access Task_Agent'Class);
 
    procedure Remove_Task_From_Scheduler
      (T              : access Task_Agent'Class);
@@ -78,8 +81,7 @@ package Oak.Scheduler with Preelaborate is
       Chosen_Task    : in out Task_Handler);
 
    procedure Task_Deadline_Updated
-     (Scheduler_Info : in out Oak_Scheduler_Info;
-      Updated_Task   : access Task_Agent'Class);
+     (Updated_Task   : access Task_Agent'Class);
 
 private
 
@@ -105,6 +107,14 @@ private
 --       (Scheduler_Info : Oak_Scheduler_Info)
 --        return Time is (Deadline_List.Get_Earliest_Deadline
 --                         (List_Head => Scheduler_Info.Task_Deadline_List));
+
+   function Earliest_Deadline
+     (Scheduler_Info : Oak_Scheduler_Info)
+      return Oak_Time.Time is
+     (if Scheduler_Info.Task_Deadline_List /= null then
+      Scheduler_Info.Task_Deadline_List.Deadline
+      else
+      Oak_Time.Time_Last);
 
    function Next_Task
      (Scheduler_Info : Oak_Scheduler_Info)

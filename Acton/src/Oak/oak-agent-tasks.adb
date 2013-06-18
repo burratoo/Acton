@@ -3,8 +3,8 @@ with Oak.Atomic_Actions;
 with Oak.Core_Support_Package.Call_Stack;
 with Oak.Memory.Call_Stack.Ops; use Oak.Memory.Call_Stack.Ops;
 with System; use System;
-
 with System.Storage_Elements; use System.Storage_Elements;
+with Oak.Scheduler;
 
 package body Oak.Agent.Tasks is
 
@@ -185,6 +185,7 @@ package body Oak.Agent.Tasks is
                T.Next_Deadline := Clock + T.Relative_Deadline;
          end case;
       end if;
+      Scheduler.Task_Deadline_Updated  (Updated_Task => T'Access);
    end Set_Next_Deadline_For_Task;
 
    procedure Set_Relative_Deadline

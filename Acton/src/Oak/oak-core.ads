@@ -7,8 +7,6 @@ with Oak.Core_Support_Package;      use Oak.Core_Support_Package;
 with Oak.Oak_Time;                  use Oak.Oak_Time;
 with Oak.Scheduler;                 use Oak.Scheduler;
 with System;                        use System;
-with Oak.Processor_Support_Package.Interrupts;
-use Oak.Processor_Support_Package.Interrupts;
 
 package Oak.Core with Preelaborate is
 
@@ -50,7 +48,7 @@ package Oak.Core with Preelaborate is
    function Current_Agent    return access Oak_Agent'Class with Inline_Always;
    function Current_Agent_Stack_Pointer return Address with Inline_Always;
    function Current_Task     return access Task_Agent'Class with Inline_Always;
-   function Current_Interrupt_Id return Oak_Interrupt_Id with Inline_Always;
+   function In_Oak           return Boolean;
    function Main_Task        return access Task_Agent;
    function Oak_Instance     return access Oak_Data'Class with Inline_Always;
    function Oak_Stack_Pointer return Address with Inline_Always;
@@ -71,6 +69,7 @@ package Oak.Core with Preelaborate is
      (SP : Address)
       with Inline_Always;
 
+   procedure
 private
    package Processor renames Oak.Core_Support_Package.Processor;
 
@@ -83,6 +82,7 @@ private
    type Oak_Data is new Oak_Agent with record
       Scheduler          : aliased Oak_Scheduler_Info;
       Woken_By           : Activation_Reason := First_Run;
+      In_Oak             : Boolean := True;
       Current_Priority   : System.Any_Priority := System.Any_Priority'First;
       Current_Agent      : access Oak_Agent'Class := null;
       Entry_Exit_Stamp   : Time;
@@ -91,7 +91,6 @@ private
       Sleep_Agent        : aliased Task_Agent;
       Interrupt_Agents   : IA_Store;
       Interrupt_States   : Interrupt_Active_Set;
-      Interrupt_Id       : Oak_Interrupt_Id;
    end record;
 
    type Oak_List is array (Oak_Instance_Id) of aliased Oak_Data;
@@ -112,8 +111,8 @@ private
    function Current_Task return access Task_Agent'Class is
      (Task_Handler (Current_Agent));
 
-   function Current_Interrupt_Id return Oak_Interrupt_Id is
-     (Processor_Kernels (Processor.Proccessor_Id).Interrupt_Id);
+   function In_Oak return Boolean is
+      (Processor_Kernels (Processor.Proccessor_Id).In_Oak);
 
    function Main_Task return access Task_Agent is (Main_Task_OTCR'Access);
 

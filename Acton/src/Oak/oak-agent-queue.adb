@@ -16,7 +16,8 @@ package body Oak.Agent.Queue is
          end if;
          declare
             Next  : constant access Agent_Type'Class := Before;
-            Prior : constant access Agent_Type'Class := Prev_Agent (Before);
+            Prior : constant access Agent_Type'Class :=
+                      Get_Prev_Agent (Before);
          begin
             Set_Queue_Link (Agent => Agent,
                             Next  => Next,
@@ -42,7 +43,7 @@ package body Oak.Agent.Queue is
                          Next  => Agent);
       else
          declare
-            Next  : constant access Agent_Type'Class := Next_Agent (After);
+            Next  : constant access Agent_Type'Class := Get_Next_Agent (After);
             Prior : constant access Agent_Type'Class := After;
          begin
             Set_Queue_Link (Agent => Agent,
@@ -76,7 +77,7 @@ package body Oak.Agent.Queue is
       else
          Add_Agent_After (Queue => Queue,
                          Agent => Agent,
-                         After => Prev_Agent (Queue));
+                         After => Get_Prev_Agent (Queue));
       end if;
    end Add_Agent_To_Tail;
 
@@ -84,15 +85,15 @@ package body Oak.Agent.Queue is
      (Queue : in out Agent_Handler;
       Agent : access Agent_Type'Class) is
    begin
-      if Agent = Next_Agent (Agent) then
+      if Agent = Get_Next_Agent (Agent) then
          Queue := null;
       else
          if Queue = Agent then
-            Queue := Next_Agent (Agent);
+            Queue := Get_Next_Agent (Agent);
          end if;
          declare
-            Next  : constant Agent_Handler := Next_Agent (Agent);
-            Prior : constant Agent_Handler := Prev_Agent (Agent);
+            Next  : constant Agent_Handler := Get_Next_Agent (Agent);
+            Prior : constant Agent_Handler := Get_Prev_Agent (Agent);
          begin
             Set_Prev_Agent (Agent => Next, Prev => Prior);
             Set_Next_Agent (Agent => Prior, Next => Next);
@@ -108,6 +109,7 @@ package body Oak.Agent.Queue is
 
    procedure Remove_Agent_From_Tail (Queue : in out Agent_Handler) is
    begin
-      Remove_Agent (Queue => Queue, Agent => Prev_Agent (Queue));
+      Remove_Agent (Queue => Queue, Agent => Get_Prev_Agent (Queue));
    end Remove_Agent_From_Tail;
+
 end Oak.Agent.Queue;

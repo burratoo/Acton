@@ -15,7 +15,7 @@ package Oak.Processor_Support_Package.Interrupts with Preelaborate is
 
    type Parameterless_Handler is access protected procedure;
 
-   procedure Interrupt_Run_Loop;
+   procedure External_Interrupt_Handler (Interrupt_Id : Oak_Interrupt_Id);
    procedure Initialise_Interrupts;
    procedure Complete_Interrupt_Initialisation;
 

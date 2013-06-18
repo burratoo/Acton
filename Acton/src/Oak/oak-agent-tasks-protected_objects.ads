@@ -2,6 +2,7 @@ with System;
 
 with Oak.Indices;           use Oak.Indices;
 with Oak.Protected_Objects; use Oak.Protected_Objects;
+with Ada.Unchecked_Conversion;
 
 package Oak.Agent.Tasks.Protected_Objects with Preelaborate is
 

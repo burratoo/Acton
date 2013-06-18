@@ -69,6 +69,7 @@ package body Oak.Agent.Tasks.Cycle is
             --  Temp arrangement
 
             Scheduler.Remove_Task_From_Scheduler (T);
+            Scheduler.Remove_Task_From_Deadline_List (T);
             Scheduler.Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
               (Scheduler_Info => Core.Scheduler_Info  (Core.Oak_Instance).all,
                Chosen_Task    => T);

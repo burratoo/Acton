@@ -121,7 +121,7 @@ package System is
    Max_Priority           : constant Positive := 25;
    Max_Interrupt_Priority : constant Positive := 30;
 
-   subtype Any_Priority       is Integer      range   0 .. 30;
+   subtype Any_Priority       is Integer      range   0 .. 31;
    subtype Priority           is Any_Priority range   0 .. 25;
    subtype Interrupt_Priority is Any_Priority range  26 .. 30;
 

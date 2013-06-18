@@ -4,7 +4,7 @@ with Oak.Scheduler;          use Oak.Scheduler;
 
 package body Oak.Atomic_Actions is
 
-   package Queue renames Oak.Agent.Tasks.Queues.General;
+   package Queue renames Oak.Agent.Tasks.Queues.Task_Queues;
 
    procedure Add_Protected_Object
      (AO : not null access Atomic_Object;
@@ -180,7 +180,7 @@ package body Oak.Atomic_Actions is
          T.Set_State (Waiting_For_Protected_Object);
          Queue.Add_Agent_To_Tail
            (Queue =>
-              Queue.Agent_Handler (AO.Actions (Action_Id).Queue),
+              Task_Handler (AO.Actions (Action_Id).Queue),
             Agent => T);
 
       else
@@ -252,8 +252,7 @@ package body Oak.Atomic_Actions is
                   if AO.Actions (Id).Queue /= null then
                      QT := AO.Actions (Id).Queue;
                      Queue.Remove_Agent_From_Head
-                       (Queue.Agent_Handler
-                          (AO.Actions (Id).Queue));
+                       (Task_Handler (AO.Actions (Id).Queue));
                      QT.Set_State (Runnable);
                      Scheduler.Add_Task_To_Scheduler
                        (Scheduler_Info => Scheduler_Info,
