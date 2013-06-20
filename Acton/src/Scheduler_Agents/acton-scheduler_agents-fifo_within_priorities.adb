@@ -96,7 +96,7 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
 
       procedure Add_Task_To_End_Of_Runnable_Queue
         (Task_To_Add : access Task_Agent'Class);
-      procedure Move_Woken_Tasks_To_Runnable_Queue;
+      procedure Move_Woken_Tasks;
 
       --------------------------
       -- Select_Next_Task     --
@@ -106,7 +106,7 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
          Selected_Task : access Task_Agent'Class := null;
          Head_Task     : access Task_Agent'Class := null;
       begin
-         Move_Woken_Tasks_To_Runnable_Queue;
+         Move_Woken_Tasks;
 
          for Queue_Head of reverse Runnable_Queues loop
             Head_Task := Queue_Head;
@@ -162,7 +162,7 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
          T_Priority   : constant Any_Priority := Yielded_Task.Normal_Priority;
       begin
          case Yielded_Task.State is
-            when Sleeping =>
+            when Sleep =>
                Task_Queue.Remove_Agent
                  (Queue => Runnable_Queues (T_Priority),
                   Agent => Yielded_Task);
@@ -280,7 +280,7 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
             Agent => Task_To_Add);
       end Add_Task_To_End_Of_Runnable_Queue;
 
-      procedure Move_Woken_Tasks_To_Runnable_Queue is
+      procedure Move_Woken_Tasks is
          Current_Time : constant Time    := Clock;
          T            : access Task_Agent'Class := Sleeping_Queue;
       begin
@@ -291,9 +291,14 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
             Task_Queue.Remove_Agent
               (Queue => Task_Handler (Sleeping_Queue),
                Agent => T);
-            Add_Task_To_End_Of_Runnable_Queue (Task_To_Add => T);
+            case T.Destination_On_Wake_Up is
+               when Run_Queue =>
+                  Add_Task_To_End_Of_Runnable_Queue (Task_To_Add => T);
+               when Remove =>
+                  null;
+            end case;
          end loop;
-      end Move_Woken_Tasks_To_Runnable_Queue;
+      end Move_Woken_Tasks;
 
    begin
       loop

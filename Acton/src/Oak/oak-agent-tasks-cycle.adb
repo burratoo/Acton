@@ -6,10 +6,8 @@ with Ada.Cyclic_Tasks; use Ada.Cyclic_Tasks;
 package body Oak.Agent.Tasks.Cycle is
 
    subtype Event_Based is Behaviour range Aperiodic .. Sporadic;
+   pragma Unreferenced (Event_Based);
    subtype Time_Based is Behaviour range Sporadic .. Periodic;
-
-   function Next_Release_Time (Sporadic_Task : in Task_Handler)
-     return Time;
 
    --------------------------
    -- Setup_Cyclic_Section --
@@ -54,15 +52,16 @@ package body Oak.Agent.Tasks.Cycle is
       --  so its modification to the task's state is the one that is applied.
 
       if T.Cycle_Behaviour in Time_Based then
-         T.State          := Sleeping;
+         T.State :=
+           (if T.Cycle_Behaviour = Periodic then Sleeping
+                else Sleeping_And_Waiting);
          T.Wake_Time      := T.Next_Run_Cycle;
          T.Next_Run_Cycle := T.Next_Run_Cycle + T.Cycle_Period;
       end if;
 
-      if T.Cycle_Behaviour in Event_Based then
+      if T.Cycle_Behaviour in Aperiodic then
          if T.Event_Raised then
             T.Event_Raised   := False;
-            T.Next_Run_Cycle := Clock + T.Cycle_Period;
          else
             T.State := Waiting_For_Event;
 
@@ -78,31 +77,19 @@ package body Oak.Agent.Tasks.Cycle is
       end if;
 
       --  Update Deadline
-      if T.Cycle_Behaviour in Time_Based then
-         T.Set_Next_Deadline_For_Task (Using => Wake_Up_Time);
-      else
-         T.Set_Next_Deadline_For_Task (Using => Clock_Time);
-      end if;
+
+      case T.Cycle_Behaviour is
+         when Periodic =>
+            T.Set_Next_Deadline_For_Task (Using => Wake_Up_Time);
+         when Sporadic =>
+            T.Deadline_Timer.Remove_Timer;
+         when Normal | Aperiodic =>
+            T.Set_Next_Deadline_For_Task (Using => Clock_Time);
+      end case;
 
       Scheduler.Inform_Scheduler_Agent_Task_Has_Changed_State (T);
 
    end New_Cycle;
-
-   --------------------------------
-   -- Next_Sporadic_Release_Time --
-   --------------------------------
-
-   function Next_Release_Time (Sporadic_Task : in Task_Handler)
-     return Time
-   is
-      Current_Time : constant Time := Clock;
-   begin
-      if Current_Time > Sporadic_Task.Wake_Time then
-         return Current_Time;
-      else
-         return Sporadic_Task.Wake_Time;
-      end if;
-   end Next_Release_Time;
 
    ------------------
    -- Release_Task --
@@ -116,12 +103,7 @@ package body Oak.Agent.Tasks.Cycle is
       Releasing_Task.State := Runnable;
 
       if Task_To_Release.State = Waiting_For_Event then
-         Task_To_Release.State := Sleeping;
-
-         Task_To_Release.Wake_Time      := Next_Release_Time (Task_To_Release);
-         Task_To_Release.Next_Run_Cycle := Task_To_Release.Wake_Time  +
-           Task_To_Release.Cycle_Period;
-         Task_To_Release.Set_Next_Deadline_For_Task (Using => Wake_Up_Time);
+         Task_Released (Task_To_Release);
 
          Scheduler.Add_Task_To_Scheduler
            (Scheduler_Info => Core.Scheduler_Info  (Core.Oak_Instance).all,
@@ -136,5 +118,15 @@ package body Oak.Agent.Tasks.Cycle is
       end if;
 
    end Release_Task;
+
+   procedure Task_Released
+     (Released_Task : access Task_Agent'Class) is
+   begin
+      Released_Task.State := Running;
+      Released_Task.Wake_Time := Clock;
+      Released_Task.Next_Run_Cycle := Released_Task.Wake_Time +
+        Released_Task.Cycle_Period;
+      Released_Task.Set_Next_Deadline_For_Task (Using => Wake_Up_Time);
+   end Task_Released;
 
 end Oak.Agent.Tasks.Cycle;

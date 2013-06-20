@@ -28,33 +28,37 @@ package Oak.Agent.Tasks with Preelaborate is
                        Running,                      -- 5
                        Runnable,                     -- 6
                        Sleeping,                     -- 7
-                       Waiting_For_Event,            -- 8
-                       Waiting_For_Protected_Object, -- 9
-                       Inactive,                     -- 10
-                       Shared_State,                 -- 11
-                       Setup_Cycles,                 -- 12
-                       New_Cycle,                    -- 13
-                       Release_Task,                 -- 14
-                       Change_Cycle_Period,          -- 15
-                       Change_Relative_Deadline,     -- 16
-                       Terminated,                   -- 17
-                       Entering_PO,                  -- 18
-                       Enter_PO_Refused,             -- 19
-                       Exiting_PO,                   -- 20
-                       Exit_PO_Error,                -- 21
-                       Attach_Interrupt_Handlers,    -- 22
-                       Entering_Atomic_Action,       -- 23
-                       Enter_Atomic_Action_Refused,  -- 24
-                       Exiting_Atomic_Action,        -- 25
-                       Exit_Atomic_Action_Error,     -- 26
-                       Entering_Exit_Barrier,        -- 27
-                       Atomic_Action_Error,          -- 28
-                       Handling_Interrupt,           -- 29
-                       Interrupt_Done,               -- 30
-                       No_State);                    -- 31
+                       Sleeping_And_Waiting,         -- 8
+                       Waiting_For_Event,            -- 9
+                       Waiting_For_Protected_Object, -- 10
+                       Inactive,                     -- 11
+                       Shared_State,                 -- 12
+                       Setup_Cycles,                 -- 13
+                       New_Cycle,                    -- 14
+                       Release_Task,                 -- 15
+                       Change_Cycle_Period,          -- 16
+                       Change_Relative_Deadline,     -- 17
+                       Terminated,                   -- 18
+                       Entering_PO,                  -- 19
+                       Enter_PO_Refused,             -- 20
+                       Exiting_PO,                   -- 21
+                       Exit_PO_Error,                -- 22
+                       Attach_Interrupt_Handlers,    -- 23
+                       Entering_Atomic_Action,       -- 24
+                       Enter_Atomic_Action_Refused,  -- 25
+                       Exiting_Atomic_Action,        -- 26
+                       Exit_Atomic_Action_Error,     -- 27
+                       Entering_Exit_Barrier,        -- 28
+                       Atomic_Action_Error,          -- 29
+                       Handling_Interrupt,           -- 30
+                       Interrupt_Done,               -- 31
+                       No_State);                    -- 32
 
    subtype Waiting is Task_State range
      Waiting_For_Event .. Waiting_For_Protected_Object;
+
+   subtype Sleep is Task_State range
+     Sleeping .. Sleeping_And_Waiting;
 
    type Oak_Task_Message (Message_Type : Task_State := No_State) is record
       case Message_Type is
@@ -119,6 +123,8 @@ package Oak.Agent.Tasks with Preelaborate is
 
    type Deadline_Base is (Wake_Up_Time, Clock_Time);
 
+   type Destination is (Run_Queue, Remove);
+
    Unspecified_Priority : constant Integer := -1;
 
    procedure Initialise_Task_Agent
@@ -149,6 +155,9 @@ package Oak.Agent.Tasks with Preelaborate is
      (T    : in Task_Agent'Class)
       return access Task_Agent'Class;
 
+   function Budget_Timer (T : not null access Task_Agent'Class)
+                          return access Timers.Action_Timer'Class;
+
    overriding procedure Charge_Execution_Time
      (To_Agent  : in out Task_Agent;
       Exec_Time : in Oak_Time.Time_Span);
@@ -161,8 +170,11 @@ package Oak.Agent.Tasks with Preelaborate is
      (T : in Task_Agent'Class)
       return Oak_Time.Time_Span;
 
-   function Budget_Timer (T : not null access Task_Agent'Class)
-                          return access Timers.Action_Timer'Class;
+   function Destination_On_Wake_Up (T : in out Task_Agent'Class)
+     return Destination;
+   --  Returns whether the tasks that has woken up is sent to its run queue
+   --  or is removed from the scheduler. Function updates the current
+   --  state of the state.
 
    function Is_Elaborated (T : in Task_Agent'Class) return Boolean;
 

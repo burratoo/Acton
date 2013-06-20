@@ -1,4 +1,5 @@
 with Oak.Agent.Schedulers;
+with Oak.Agent.Tasks.Cycle;
 with Oak.Atomic_Actions;
 with Oak.Core_Support_Package.Call_Stack;
 with Oak.Memory.Call_Stack.Ops; use Oak.Memory.Call_Stack.Ops;
@@ -133,6 +134,30 @@ package body Oak.Agent.Tasks is
       To_Agent.Remaining_Budget := To_Agent.Remaining_Budget - Exec_Time;
       Oak.Agent.Charge_Execution_Time (Oak_Agent (To_Agent), Exec_Time);
    end Charge_Execution_Time;
+
+   function Destination_On_Wake_Up (T : in out Task_Agent'Class)
+     return Destination is
+   begin
+      case T.State is
+         when Sleeping =>
+            T.State := Runnable;
+            return Run_Queue;
+
+         when Sleeping_And_Waiting =>
+            if T.Event_Raised then
+               T.Event_Raised := False;
+               Oak.Agent.Tasks.Cycle.Task_Released (T'Access);
+               return Run_Queue;
+            else
+               T.State := Waiting_For_Event;
+               return Remove;
+            end if;
+
+         when others =>
+            --  Should raise an exception here
+            return Run_Queue;
+      end case;
+   end Destination_On_Wake_Up;
 
    procedure Set_Activation_List
      (T   : in out Task_Agent'Class;
