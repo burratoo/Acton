@@ -1,5 +1,6 @@
 with Oak.Oak_Time; use Oak.Oak_Time;
 with Oak.Agent.Schedulers;
+with Oak.Agent.Tasks;
 with Oak.Core;
 
 package body Oak.Timers is
@@ -111,15 +112,17 @@ package body Oak.Timers is
    end Set_Timer;
 
    procedure Set_Timer
-     (Timer        : in out Action_Timer;
-      Fire_Time    : in Oak_Time.Time := Oak_Time.Time_Last;
-      Priority     : in Oak_Interrupt_Priority;
-      Timer_Action : in Ada.Cyclic_Tasks.Event_Action;
-      Handler      : in Ada.Cyclic_Tasks.Action_Handler) is
+     (Timer           : in out Action_Timer;
+      Fire_Time       : in Oak_Time.Time := Oak_Time.Time_Last;
+      Priority        : in Oak_Interrupt_Priority;
+      Timer_Action    : in Ada.Cyclic_Tasks.Event_Action;
+      Handler         : in Ada.Cyclic_Tasks.Action_Handler;
+      Agent_To_Handle : access Oak.Agent.Tasks.Task_Agent'Class) is
    begin
       Timer.Set_Timer (Fire_Time, Priority);
-      Timer.Timer_Action := Timer_Action;
-      Timer.Handler      := Handler;
+      Timer.Timer_Action      := Timer_Action;
+      Timer.Handler           := Handler;
+      Timer.Agent_To_Handle   := Agent_To_Handle;
    end Set_Timer;
 
    procedure Set_Timer
@@ -207,6 +210,9 @@ package body Oak.Timers is
       Timer.Fire_Time := Timer.Fire_Time + Delay_To;
       Timer.Timer_Updated;
    end Delay_Timer;
+
+   function Agent_To_Handle (Timer : in out Action_Timer'Class)
+     return Oak.Agent.Tasks.Task_Handler is (Timer.Agent_To_Handle);
 
    function Scheduler_Agent (Timer : in out Scheduler_Timer'Class) return
      access Oak.Agent.Schedulers.Scheduler_Agent is (Timer.Scheduler);

@@ -26,4 +26,12 @@ package Oak.Protected_Objects with Preelaborate is
         Agent.Tasks.Protected_Objects.Protected_Agent'Class;
       Chosen_Task    : out Agent.Tasks.Task_Handler);
 
+   procedure Acquire_Protected_Object_For_Interrupt
+     (PO : not null access
+        Agent.Tasks.Protected_Objects.Protected_Agent'Class);
+
+   procedure Release_Protected_Object_For_Interrupt
+     (PO : not null access
+        Agent.Tasks.Protected_Objects.Protected_Agent'Class);
+
 end Oak.Protected_Objects;

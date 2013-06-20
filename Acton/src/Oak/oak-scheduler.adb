@@ -186,7 +186,10 @@ package body Oak.Scheduler is
            and then Current_Task.Normal_Priority > Agent.Highest_Priority;
       end loop;
 
-      if Chosen_Task = null then
+      if Chosen_Task = null
+        and then Current_Task.State not in Waiting
+        and then Current_Task.State = Interrupt_Done
+      then
          Chosen_Task := Current_Task;
       end if;
    end Run_The_Bloody_Scheduler_Agent_That_Wanted_To_Be_Woken;

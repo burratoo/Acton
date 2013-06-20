@@ -167,4 +167,20 @@ package body Oak.Protected_Objects is
       end if;
    end Process_Exit_Request;
 
+   procedure Acquire_Protected_Object_For_Interrupt
+     (PO : not null access
+        Agent.Tasks.Protected_Objects.Protected_Agent'Class) is
+   begin
+      PO.Set_State (Handling_Interrupt);
+      Get_Resource (PO);
+   end Acquire_Protected_Object_For_Interrupt;
+
+   procedure Release_Protected_Object_For_Interrupt
+     (PO : not null access
+        Agent.Tasks.Protected_Objects.Protected_Agent'Class) is
+   begin
+      PO.Set_State (Inactive);
+      Release_Resource (PO);
+   end Release_Protected_Object_For_Interrupt;
+
 end Oak.Protected_Objects;

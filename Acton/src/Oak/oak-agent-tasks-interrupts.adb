@@ -1,7 +1,14 @@
+with Ada.Unchecked_Conversion;
+with Ada.Task_Identification;
 with Oak.Core;
 with Oak.Core_Support_Package.Task_Support;
 
 package body Oak.Agent.Tasks.Interrupts is
+
+   function To_Task_Id is
+     new Ada.Unchecked_Conversion
+       (Task_Handler, Ada.Task_Identification.Task_Id);
+
    procedure Interrupt_Run_Loop is
       Exit_Message : constant Oak.Agent.Tasks.Oak_Task_Message :=
                   (Message_Type => Oak.Agent.Tasks.Interrupt_Done);
@@ -12,10 +19,9 @@ package body Oak.Agent.Tasks.Interrupts is
          case T.Interrupt_Kind is
             when External =>
                External_Interrupt_Handler (T.External_Id);
-            when Missed_Deadline =>
-               null;
-            when Budget_Exhausted =>
-               null;
+            when Timer_Action =>
+               T.Timer_To_Handle.Handler.all
+                 (To_Task_Id (T.Timer_To_Handle.Agent_To_Handle));
          end case;
 
          Core.Current_Task.Store_Oak_Task_Message (Exit_Message);
@@ -36,5 +42,12 @@ package body Oak.Agent.Tasks.Interrupts is
    begin
       Agent.Interrupt_Kind := Kind;
    end Set_Interrupt_Kind;
+
+   procedure Set_Timer_To_Handle
+     (Agent : in out Interrupt_Agent'Class;
+      Timer : access Action_Timer) is
+   begin
+      Agent.Timer_To_Handle := Timer;
+   end Set_Timer_To_Handle;
 
 end Oak.Agent.Tasks.Interrupts;

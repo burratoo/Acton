@@ -60,6 +60,9 @@ package Oak.Agent.Tasks with Preelaborate is
    subtype Sleep is Task_State range
      Sleeping .. Sleeping_And_Waiting;
 
+   subtype Interrupt_States is Task_State range
+     Handling_Interrupt .. Interrupt_Done;
+
    type Oak_Task_Message (Message_Type : Task_State := No_State) is record
       case Message_Type is
          when Sleeping =>

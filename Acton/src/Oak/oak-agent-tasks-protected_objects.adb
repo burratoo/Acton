@@ -1,4 +1,5 @@
 with Ada.Cyclic_Tasks;
+with Ada.Unchecked_Conversion;
 with Oak.Agent.Tasks.Queues;
 with Oak.Core;
 with Oak.Scheduler;
@@ -190,5 +191,36 @@ package body Oak.Agent.Tasks.Protected_Objects is
    begin
       For_Protected_Object.Controlling_Shared_State := To_State;
    end Set_Acquiring_Tasks_State;
+
+   type Protected_Record is record
+      Agent : access Protected_Agent'Class;
+   end record;
+
+   type Protected_Subprogram_Components is record
+      Object : access Protected_Record;
+      Handler_Address : System.Address;
+   end record;
+
+   function Protected_Object_From_Access
+     (Handler : Parameterless_Access)
+      return access Protected_Agent'Class
+   is
+      function To_Protected_Subprogram_Components is
+        new Ada.Unchecked_Conversion
+          (Parameterless_Access, Protected_Subprogram_Components);
+   begin
+      return To_Protected_Subprogram_Components (Handler).Object.Agent;
+   end Protected_Object_From_Access;
+
+   function Protected_Object_From_Access
+     (Handler : Ada.Cyclic_Tasks.Action_Handler)
+      return access Protected_Agent'Class
+   is
+      function To_Protected_Subprogram_Components is
+        new Ada.Unchecked_Conversion
+          (Ada.Cyclic_Tasks.Action_Handler, Protected_Subprogram_Components);
+   begin
+      return To_Protected_Subprogram_Components (Handler).Object.Agent;
+   end Protected_Object_From_Access;
 
 end Oak.Agent.Tasks.Protected_Objects;

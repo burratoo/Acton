@@ -95,6 +95,16 @@ package Oak.Agent.Tasks.Protected_Objects with Preelaborate is
      (For_Protected_Object : in out Protected_Agent'Class;
       To_State             : in Task_State);
 
+   type Parameterless_Access is access protected procedure;
+
+   function Protected_Object_From_Access
+     (Handler : Parameterless_Access)
+      return access Protected_Agent'Class;
+
+   function Protected_Object_From_Access
+     (Handler : Ada.Cyclic_Tasks.Action_Handler)
+      return access Protected_Agent'Class;
+
 private
 
    type Entry_Queue_Array is array (Entry_Index range <>)

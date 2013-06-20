@@ -5,6 +5,7 @@ with Oak.Core_Support_Package.Call_Stack;
 with Oak.Memory.Call_Stack.Ops; use Oak.Memory.Call_Stack.Ops;
 with System; use System;
 with System.Storage_Elements; use System.Storage_Elements;
+with Oak.Agent.Tasks.Protected_Objects; use Oak.Agent.Tasks.Protected_Objects;
 
 package body Oak.Agent.Tasks is
 
@@ -50,15 +51,35 @@ package body Oak.Agent.Tasks is
       Agent.Execution_Budget  := Execution_Budget;
       Agent.Relative_Deadline := Relative_Deadline;
 
-      Agent.Deadline_Timer.Set_Timer
-        (Priority     => Interrupt_Priority'Last,
-         Timer_Action => Deadline_Action,
-         Handler      => Deadline_Handler);
+      if Deadline_Action in Ada.Cyclic_Tasks.Handler then
+         Agent.Deadline_Timer.Set_Timer
+           (Priority        =>
+              Protected_Object_From_Access (Deadline_Handler).Normal_Priority,
+            Timer_Action    => Deadline_Action,
+            Handler         => Deadline_Handler,
+            Agent_To_Handle => Agent);
+      else
+         Agent.Deadline_Timer.Set_Timer
+           (Priority        => Oak_Priority'Last,
+            Timer_Action    => Deadline_Action,
+            Handler         => Deadline_Handler,
+            Agent_To_Handle => Agent);
+      end if;
 
-      Agent.Execution_Timer.Set_Timer
-        (Priority     => Interrupt_Priority'Last,
-         Timer_Action => Budget_Action,
-         Handler      => Budget_Handler);
+      if Budget_Action in Ada.Cyclic_Tasks.Handler then
+         Agent.Execution_Timer.Set_Timer
+           (Priority        =>
+              Protected_Object_From_Access (Budget_Handler).Normal_Priority,
+            Timer_Action    => Budget_Action,
+            Handler         => Budget_Handler,
+            Agent_To_Handle => Agent);
+      else
+         Agent.Execution_Timer.Set_Timer
+           (Priority        => Oak_Priority'Last,
+            Timer_Action    => Budget_Action,
+            Handler         => Budget_Handler,
+            Agent_To_Handle => Agent);
+      end if;
 
       Agent.Execution_Server  := Execution_Server;
 

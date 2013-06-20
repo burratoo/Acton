@@ -261,6 +261,17 @@ package body Oak.Core is
                      Next_Task.Set_State (Interrupt_Done);
                      Oak_Instance.Interrupt_States
                        (Next_Task.Normal_Priority) := Inactive;
+                     if Interrupt_Agent (Next_Task.all).Interrupt_Kind =
+                       Timer_Action
+                     then
+                        Oak.Protected_Objects.
+                          Release_Protected_Object_For_Interrupt
+                            (Protected_Object_From_Access
+                                 (Interrupt_Agent
+                                      (Next_Task.all).Timer_To_Handle.Handler)
+                            );
+                     end if;
+
                      Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
                        (Scheduler_Info => Oak_Instance.Scheduler,
                         Chosen_Task    => Next_Task);
@@ -281,10 +292,41 @@ package body Oak.Core is
                Oak_Instance.Interrupt_States (P) := Active;
 
             when Timer =>
-               Run_The_Bloody_Scheduler_Agent_That_Wanted_To_Be_Woken
-                 (Scheduler_Info => Oak_Instance.Scheduler,
-                  Chosen_Task    => Next_Task);
+               if Active_Timer = null then
+                  raise Program_Error;
+               elsif Active_Timer.Firing_Time > Clock then
+                  null;
+               elsif Active_Timer.all in Timers.Scheduler_Timer then
+                  Run_The_Bloody_Scheduler_Agent_That_Wanted_To_Be_Woken
+                    (Scheduler_Info => Oak_Instance.Scheduler,
+                     Chosen_Task    => Next_Task);
+               elsif Active_Timer.all in Timers.Action_Timer then
+                  case Timers.Action_Timer'Class
+                    (Active_Timer.all).Timer_Action is
+                     when Ada.Cyclic_Tasks.Handler =>
+                        P := Active_Timer.Priority;
+                        Next_Task :=
+                          Oak_Instance.Interrupt_Agents (P)'Unchecked_Access;
+                        Next_Task.Set_State (Handling_Interrupt);
+                        Set_Interrupt_Kind
+                          (Interrupt_Agent (Next_Task.all),
+                           Kind => Timer_Action);
+                        Set_Timer_To_Handle
+                          (Interrupt_Agent (Next_Task.all),
+                           Timers.Action_Timer (Active_Timer.all)'Access);
+                        Oak_Instance.Interrupt_States (P) := Active;
+                        Oak.Protected_Objects.
+                          Acquire_Protected_Object_For_Interrupt
+                            (Protected_Object_From_Access
+                              (Oak.Timers.Handler
+                                 (Timers.Action_Timer (Active_Timer.all))));
+                     when others =>
+                        Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
+                          (Scheduler_Info => Oak_Instance.Scheduler,
+                           Chosen_Task    => Next_Task);
+                  end case;
 
+               end if;
          end case;
 
          --  Find any active interrupts
