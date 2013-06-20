@@ -24,30 +24,4 @@ package body Oak.Agent.Tasks.Queues is
       T.Queue_Link.Next := Next;
       T.Queue_Link.Previous := Prev;
    end Set_Task_Queue_Link;
-
-   procedure Set_Blank_Deadline_Link
-     (T : access Task_Agent'Class) is
-   begin
-      T.Deadline_List.Next := null;
-      T.Deadline_List.Previous := null;
-   end Set_Blank_Deadline_Link;
-
-   procedure Set_Next_Deadline
-     (T, Next : access Task_Agent'Class) is
-   begin
-      T.Deadline_List.Next := Next;
-   end Set_Next_Deadline;
-
-   procedure Set_Prev_Deadline
-     (T, Prev : access Task_Agent'Class) is
-   begin
-      T.Deadline_List.Previous := Prev;
-   end Set_Prev_Deadline;
-
-   procedure Set_Deadline_Queue_Link
-     (T, Prev, Next : access Task_Agent'Class) is
-   begin
-      T.Deadline_List.Next := Next;
-      T.Deadline_List.Previous := Prev;
-   end Set_Deadline_Queue_Link;
 end Oak.Agent.Tasks.Queues;

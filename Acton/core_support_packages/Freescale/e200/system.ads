@@ -121,9 +121,18 @@ package System is
    Max_Priority           : constant Positive := 25;
    Max_Interrupt_Priority : constant Positive := 30;
 
-   subtype Any_Priority       is Integer      range   0 .. 31;
+   --  Need to provide the range in numbers to make the binder happy.
+   --  Don't change the spacing of Any_Priority subtype definition!
+
+   subtype Any_Priority       is Integer      range   0 .. 30;
    subtype Priority           is Any_Priority range   0 .. 25;
-   subtype Interrupt_Priority is Any_Priority range  26 .. 30;
+   subtype Interrupt_Priority is Any_Priority range
+     Priority'Last + 1 .. Any_Priority'Last;
+
+   subtype Oak_Priority           is Integer      range
+     Any_Priority'First .. Any_Priority'Last + 1;
+   subtype Oak_Interrupt_Priority is Oak_Priority range
+     Interrupt_Priority'First .. Oak_Priority'Last;
 
    Default_Priority : constant Priority := 14;
 

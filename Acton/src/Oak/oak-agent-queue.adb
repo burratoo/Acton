@@ -81,6 +81,11 @@ package body Oak.Agent.Queue is
       end if;
    end Add_Agent_To_Tail;
 
+   procedure Move_Head_To_Tail (Queue : in out Agent_Handler) is
+   begin
+      Queue := Get_Next_Agent (Queue);
+   end Move_Head_To_Tail;
+
    procedure Remove_Agent
      (Queue : in out Agent_Handler;
       Agent : access Agent_Type'Class) is

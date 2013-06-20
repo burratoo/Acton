@@ -1,13 +1,12 @@
 with Oak.Agent.Tasks.Queues;
 with Oak.Core;
-
+with Oak.Oak_Time; use Oak.Oak_Time;
 with System;                   use System;
 with Oak.Agent.Tasks.Interrupts; use Oak.Agent.Tasks.Interrupts;
 
 package body Oak.Scheduler is
 
    package Inactive_Queue renames Oak.Agent.Tasks.Queues.Task_Queues;
-   package Deadline_Queue renames Oak.Agent.Tasks.Queues.Deadline_Queues;
 
    procedure Activate_Task
      (Scheduler_Info : in out Oak_Scheduler_Info;
@@ -77,24 +76,6 @@ package body Oak.Scheduler is
          Agent => T);
    end Deactivate_Task;
 
-   function Earliest_Scheduler_Agent_Time
-     (Scheduler_Info : Oak_Scheduler_Info)
-      return           Time
-   is
-      Earliest_Time : Time := Time_Last;
-
-      Agent : access Scheduler_Agent'Class :=
-                Scheduler_Info.Scheduler_Agent_Table;
-   begin
-      while Agent /= null loop
-         if Earliest_Time > Agent.Desired_Run_Time then
-            Earliest_Time := Agent.Desired_Run_Time;
-         end if;
-         Agent := Agent.Next_Agent;
-      end loop;
-      return Earliest_Time;
-   end Earliest_Scheduler_Agent_Time;
-
    procedure Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
      (Scheduler_Info : in out Oak_Scheduler_Info;
       Chosen_Task    : out Task_Handler)
@@ -121,19 +102,6 @@ package body Oak.Scheduler is
       end loop;
    end Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next;
 
-   procedure Handle_Missed_Deadline
-     (Scheduler_Info : in out Oak_Scheduler_Info;
-      Chosen_Task    : out Task_Handler)
-   is
-      pragma Unreferenced (Scheduler_Info, Chosen_Task);
-   begin
-      --  Generated stub: replace with real body!
-      --  pragma Compile_Time_Warning
-      --  (True,
-      --   "Handle_Missed_Deadline unimplemented");
-      null;
-   end Handle_Missed_Deadline;
-
    procedure Inform_Scheduler_Agent_Task_Has_Changed_State
      (Chosen_Task : in out Task_Handler)
    is
@@ -158,27 +126,6 @@ package body Oak.Scheduler is
          end if;
       end if;
    end Inform_Scheduler_Agent_Task_Has_Changed_State;
-
-   procedure Insert_Task_Into_Dealine_List
-     (Scheduler_Info : in out Oak_Scheduler_Info;
-      Task_To_Add    : access Task_Agent'Class)
-   is
-   begin
-      null;
-   end Insert_Task_Into_Dealine_List;
-
-   procedure Remove_Task_From_Deadline_List
-     (Task_To_Remove : access Task_Agent'Class)
-   is
-      Scheduler_Info : constant access Oak_Scheduler_Info :=
-                         Core.Scheduler_Info (Core.Oak_Instance);
-   begin
-      if Deadline_Queue.Is_In_Queue (Task_To_Remove) then
-         Deadline_Queue.Remove_Agent
-           (Queue => Task_Handler (Scheduler_Info.Task_Deadline_List),
-            Agent => Task_To_Remove);
-      end if;
-   end Remove_Task_From_Deadline_List;
 
    procedure Remove_Task_From_Scheduler
      (T : access Task_Agent'Class)
@@ -206,6 +153,7 @@ package body Oak.Scheduler is
    begin
       Agent.Set_Run_Reason (Reason);
       Core.Context_Switch_To_Agent (Agent);
+      Agent.Scheduler_Timer.Update_Timer (New_Time => Agent.Desired_Run_Time);
    end Run_Scheduler_Agent;
 
    ------------------------------------------------------------
@@ -242,45 +190,5 @@ package body Oak.Scheduler is
          Chosen_Task := Current_Task;
       end if;
    end Run_The_Bloody_Scheduler_Agent_That_Wanted_To_Be_Woken;
-
-   procedure Task_Deadline_Updated
-     (Updated_Task   : access Task_Agent'Class)
-   is
-      Queue_Head : Task_Handler :=
-        Task_Handler
-          (Core.Scheduler_Info (Core.Oak_Instance).Task_Deadline_List);
-      T : access Task_Agent'Class;
-   begin
-      if Deadline_Queue.Is_In_Queue (Updated_Task) then
-         Deadline_Queue.Remove_Agent
-           (Queue => Queue_Head, Agent => Updated_Task);
-      end if;
-
-      if Updated_Task.Deadline < Oak_Time.Time_Last then
-         T := Queue_Head;
-         if T = null or else Updated_Task.Deadline < T.Deadline then
-            Deadline_Queue.Add_Agent_To_Head
-              (Queue => Queue_Head,
-               Agent => Updated_Task);
-         else
-            loop
-               T := Deadline_Queue.Next_Agent (T);
-               if T = Queue_Head then
-                  Deadline_Queue.Add_Agent_To_Tail
-                    (Queue => Queue_Head,
-                     Agent => Updated_Task);
-                  exit;
-               elsif Updated_Task.Deadline < T.Deadline then
-                  Deadline_Queue.Add_Agent_Before
-                    (Queue     => Queue_Head,
-                     Agent     => Updated_Task,
-                     Before    => T);
-                  exit;
-               end if;
-            end loop;
-         end if;
-      end if;
-      Core.Scheduler_Info (Core.Oak_Instance).Task_Deadline_List := Queue_Head;
-   end Task_Deadline_Updated;
 
 end Oak.Scheduler;

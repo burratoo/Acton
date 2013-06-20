@@ -5,6 +5,7 @@ with Oak.Agent.Tasks; use Oak.Agent.Tasks;
 with Oak.Agent.Tasks.Interrupts; use Oak.Agent.Tasks.Interrupts;
 with Oak.Core_Support_Package;      use Oak.Core_Support_Package;
 with Oak.Oak_Time;                  use Oak.Oak_Time;
+with Oak.Timers;
 with Oak.Scheduler;                 use Oak.Scheduler;
 with System;                        use System;
 
@@ -15,9 +16,7 @@ package Oak.Core with Preelaborate is
    type Activation_Reason is (
       First_Run,
       Task_Yield,
-      Scheduler_Agent,
-      Missed_Deadline,
-      Budget_Expired,
+      Timer,
       External_Interrupt);
 
    type Active_State is (Inactive, Active);
@@ -48,10 +47,11 @@ package Oak.Core with Preelaborate is
    function Current_Agent    return access Oak_Agent'Class with Inline_Always;
    function Current_Agent_Stack_Pointer return Address with Inline_Always;
    function Current_Task     return access Task_Agent'Class with Inline_Always;
-   function In_Oak           return Boolean;
    function Main_Task        return access Task_Agent;
    function Oak_Instance     return access Oak_Data'Class with Inline_Always;
    function Oak_Stack_Pointer return Address with Inline_Always;
+   function Oak_Timer_Store   return access Oak.Timers.Oak_Timer_Info
+     with Inline_Always;
    function Scheduler_Info
      (Oak_Instance : access Oak_Data'Class)
       return access Oak_Scheduler_Info with Inline_Always;
@@ -69,7 +69,6 @@ package Oak.Core with Preelaborate is
      (SP : Address)
       with Inline_Always;
 
-   procedure
 private
    package Processor renames Oak.Core_Support_Package.Processor;
 
@@ -82,7 +81,6 @@ private
    type Oak_Data is new Oak_Agent with record
       Scheduler          : aliased Oak_Scheduler_Info;
       Woken_By           : Activation_Reason := First_Run;
-      In_Oak             : Boolean := True;
       Current_Priority   : System.Any_Priority := System.Any_Priority'First;
       Current_Agent      : access Oak_Agent'Class := null;
       Entry_Exit_Stamp   : Time;
@@ -91,6 +89,7 @@ private
       Sleep_Agent        : aliased Task_Agent;
       Interrupt_Agents   : IA_Store;
       Interrupt_States   : Interrupt_Active_Set;
+      Oak_Timers         : aliased Oak.Timers.Oak_Timer_Info;
    end record;
 
    type Oak_List is array (Oak_Instance_Id) of aliased Oak_Data;
@@ -111,9 +110,6 @@ private
    function Current_Task return access Task_Agent'Class is
      (Task_Handler (Current_Agent));
 
-   function In_Oak return Boolean is
-      (Processor_Kernels (Processor.Proccessor_Id).In_Oak);
-
    function Main_Task return access Task_Agent is (Main_Task_OTCR'Access);
 
    function Oak_Instance return access Oak_Data'Class is
@@ -121,6 +117,9 @@ private
 
    function Oak_Stack_Pointer return Address is
      (Processor_Kernels (Processor.Proccessor_Id).Stack_Pointer);
+
+   function Oak_Timer_Store return access Oak.Timers.Oak_Timer_Info  is
+      (Processor_Kernels (Processor.Proccessor_Id).Oak_Timers'Access);
 
    function Scheduler_Info
      (Oak_Instance : access Oak_Data'Class)

@@ -4,7 +4,6 @@ with Oak.Core_Support_Package.Call_Stack;
 with Oak.Memory.Call_Stack.Ops; use Oak.Memory.Call_Stack.Ops;
 with System; use System;
 with System.Storage_Elements; use System.Storage_Elements;
-with Oak.Scheduler;
 
 package body Oak.Agent.Tasks is
 
@@ -48,12 +47,17 @@ package body Oak.Agent.Tasks is
       Agent.Phase             := Phase;
 
       Agent.Execution_Budget  := Execution_Budget;
-      Agent.Budget_Action     := Budget_Action;
-      Agent.Budget_Handler    := Budget_Handler;
-
       Agent.Relative_Deadline := Relative_Deadline;
-      Agent.Deadline_Action   := Deadline_Action;
-      Agent.Deadline_Handler  := Deadline_Handler;
+
+      Agent.Deadline_Timer.Set_Timer
+        (Priority     => Interrupt_Priority'Last,
+         Timer_Action => Deadline_Action,
+         Handler      => Deadline_Handler);
+
+      Agent.Execution_Timer.Set_Timer
+        (Priority     => Interrupt_Priority'Last,
+         Timer_Action => Budget_Action,
+         Handler      => Budget_Handler);
 
       Agent.Execution_Server  := Execution_Server;
 
@@ -174,18 +178,25 @@ package body Oak.Agent.Tasks is
    procedure Set_Next_Deadline_For_Task
      (T     : in out Task_Agent'Class;
       Using : in Deadline_Base) is
+
    begin
       if T.Relative_Deadline = Oak_Time.Time_Span_Last then
-         T.Next_Deadline := Oak_Time.Time_Last;
+         T.Deadline_Timer.Remove_Timer;
+
       else
          case Using is
             when Wake_Up_Time =>
-               T.Next_Deadline := T.Wake_Time + T.Relative_Deadline;
+               T.Deadline_Timer.Update_Timer
+                 (New_Time => T.Wake_Time + T.Relative_Deadline);
             when Clock_Time =>
-               T.Next_Deadline := Clock + T.Relative_Deadline;
+               T.Deadline_Timer.Update_Timer
+                 (New_Time =>  Clock + T.Relative_Deadline);
          end case;
+
+         if not T.Deadline_Timer.Is_Armed then
+            T.Deadline_Timer.Add_Timer_To_Current_Processor;
+         end if;
       end if;
-      Scheduler.Task_Deadline_Updated  (Updated_Task => T'Access);
    end Set_Next_Deadline_For_Task;
 
    procedure Set_Relative_Deadline

@@ -38,7 +38,6 @@ package body Oak.Agent.Tasks.Main_Task is
          Elaborated        => null);
 
       Agent.State           := Sleeping;
-      Agent.Next_Deadline   := Time_Last;
       Agent.Next_Run_Cycle  := Current_Time;
       Agent.Wake_Time       := Current_Time;
 

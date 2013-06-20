@@ -74,7 +74,7 @@ package body Oak.Processor_Support_Package.Interrupts is
       end if;
 
       Priority_Select_Register_Array (Interrupt)
-        := MPC5554_Interrupt_Priority (Priority - Interrupt_Priority'First);
+        := MPC5554_Interrupt_Priority (Priority - System.Priority'Last);
    end Attach_Handler;
 
    function Current_Interrupt_Priority return Any_Priority is

@@ -53,6 +53,8 @@ package Oak.Agent.Queue is
    procedure Remove_Agent_From_Head (Queue : in out Agent_Handler);
    procedure Remove_Agent_From_Tail (Queue : in out Agent_Handler);
 
+   procedure Move_Head_To_Tail (Queue : in out Agent_Handler);
+
    function Is_In_Queue (Agent : access Agent_Type'Class) return Boolean;
 
 private

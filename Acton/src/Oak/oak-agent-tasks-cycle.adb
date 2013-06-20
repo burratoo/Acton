@@ -69,7 +69,7 @@ package body Oak.Agent.Tasks.Cycle is
             --  Temp arrangement
 
             Scheduler.Remove_Task_From_Scheduler (T);
-            Scheduler.Remove_Task_From_Deadline_List (T);
+            T.Deadline_Timer.Remove_Timer;
             Scheduler.Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
               (Scheduler_Info => Core.Scheduler_Info  (Core.Oak_Instance).all,
                Chosen_Task    => T);
@@ -79,9 +79,9 @@ package body Oak.Agent.Tasks.Cycle is
 
       --  Update Deadline
       if T.Cycle_Behaviour in Time_Based then
-         Set_Next_Deadline_For_Task (T.all, Using => Wake_Up_Time);
+         T.Set_Next_Deadline_For_Task (Using => Wake_Up_Time);
       else
-         Set_Next_Deadline_For_Task (T.all, Using => Clock_Time);
+         T.Set_Next_Deadline_For_Task (Using => Clock_Time);
       end if;
 
       Scheduler.Inform_Scheduler_Agent_Task_Has_Changed_State (T);
@@ -121,16 +121,15 @@ package body Oak.Agent.Tasks.Cycle is
          Task_To_Release.Wake_Time      := Next_Release_Time (Task_To_Release);
          Task_To_Release.Next_Run_Cycle := Task_To_Release.Wake_Time  +
            Task_To_Release.Cycle_Period;
-         Set_Next_Deadline_For_Task
-           (Task_To_Release.all, Using => Wake_Up_Time);
+         Task_To_Release.Set_Next_Deadline_For_Task (Using => Wake_Up_Time);
 
-         Next_Task := Task_To_Release;
          Scheduler.Add_Task_To_Scheduler
            (Scheduler_Info => Core.Scheduler_Info  (Core.Oak_Instance).all,
-            T => Task_To_Release);
+            T              => Task_To_Release);
          Scheduler.Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
            (Scheduler_Info => Core.Scheduler_Info  (Core.Oak_Instance).all,
             Chosen_Task    => Next_Task);
+
       else
          Task_To_Release.Event_Raised := True;
          Next_Task := Releasing_Task;

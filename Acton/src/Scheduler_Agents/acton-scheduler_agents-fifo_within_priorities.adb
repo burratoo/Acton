@@ -175,6 +175,18 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
                null;
             when Change_Cycle_Period | Change_Relative_Deadline =>
                null;
+            when Runnable =>
+               if Runnable_Queues (T_Priority) = Yielded_Task then
+                  Task_Queue.Move_Head_To_Tail (Runnable_Queues (T_Priority));
+               else
+                  Task_Queue.Remove_Agent
+                    (Queue => Runnable_Queues (T_Priority),
+                     Agent => Yielded_Task);
+                  Task_Queue.Add_Agent_To_Tail
+                    (Queue => Runnable_Queues (T_Priority),
+                     Agent => Yielded_Task);
+               end if;
+
             when others =>
                raise Scheduler_Error1;
          end case;

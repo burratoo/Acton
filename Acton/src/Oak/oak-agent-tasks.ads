@@ -1,6 +1,7 @@
 with Ada.Cyclic_Tasks;
 with Oak.Indices;
 with Oak.Protected_Objects;
+with Oak.Timers;
 with System;
 with System.Storage_Elements;
 
@@ -27,30 +28,30 @@ package Oak.Agent.Tasks with Preelaborate is
                        Running,                      -- 5
                        Runnable,                     -- 6
                        Sleeping,                     -- 7
-                       Waiting_For_Event,            -- 9
-                       Waiting_For_Protected_Object, -- 10
-                       Inactive,                     -- 11
-                       Shared_State,                 -- 12
-                       Setup_Cycles,                 -- 13
-                       New_Cycle,                    -- 14
-                       Release_Task,                 -- 15
-                       Change_Cycle_Period,          -- 16
-                       Change_Relative_Deadline,     -- 17
-                       Terminated,                   -- 18
-                       Entering_PO,                  -- 19
-                       Enter_PO_Refused,             -- 20
-                       Exiting_PO,                   -- 21
-                       Exit_PO_Error,                -- 22
-                       Attach_Interrupt_Handlers,    -- 23
-                       Entering_Atomic_Action,       -- 24
-                       Enter_Atomic_Action_Refused,  -- 25
-                       Exiting_Atomic_Action,        -- 26
-                       Exit_Atomic_Action_Error,     -- 27
-                       Entering_Exit_Barrier,        -- 28
-                       Atomic_Action_Error,          -- 29
-                       Handling_Interrupt,           -- 30
-                       Interrupt_Done,               -- 31
-                       No_State);                    -- 32
+                       Waiting_For_Event,            -- 8
+                       Waiting_For_Protected_Object, -- 9
+                       Inactive,                     -- 10
+                       Shared_State,                 -- 11
+                       Setup_Cycles,                 -- 12
+                       New_Cycle,                    -- 13
+                       Release_Task,                 -- 14
+                       Change_Cycle_Period,          -- 15
+                       Change_Relative_Deadline,     -- 16
+                       Terminated,                   -- 17
+                       Entering_PO,                  -- 18
+                       Enter_PO_Refused,             -- 19
+                       Exiting_PO,                   -- 20
+                       Exit_PO_Error,                -- 21
+                       Attach_Interrupt_Handlers,    -- 22
+                       Entering_Atomic_Action,       -- 23
+                       Enter_Atomic_Action_Refused,  -- 24
+                       Exiting_Atomic_Action,        -- 25
+                       Exit_Atomic_Action_Error,     -- 26
+                       Entering_Exit_Barrier,        -- 27
+                       Atomic_Action_Error,          -- 28
+                       Handling_Interrupt,           -- 29
+                       Interrupt_Done,               -- 30
+                       No_State);                    -- 31
 
    subtype Waiting is Task_State range
      Waiting_For_Event .. Waiting_For_Protected_Object;
@@ -160,7 +161,8 @@ package Oak.Agent.Tasks with Preelaborate is
      (T : in Task_Agent'Class)
       return Oak_Time.Time_Span;
 
-   function Deadline (T : in Task_Agent'Class) return Oak_Time.Time;
+   function Budget_Timer (T : not null access Task_Agent'Class)
+                          return access Timers.Action_Timer'Class;
 
    function Is_Elaborated (T : in Task_Agent'Class) return Boolean;
 
@@ -264,16 +266,13 @@ private
       Phase             : Oak_Time.Time_Span;
 
       Execution_Budget  : Oak_Time.Time_Span;
-      Budget_Action     : Ada.Cyclic_Tasks.Event_Action;
-      Budget_Handler    : Ada.Cyclic_Tasks.Action_Handler;
-
       Relative_Deadline : Oak_Time.Time_Span;
-      Deadline_Action   : Ada.Cyclic_Tasks.Event_Action;
-      Deadline_Handler  : Ada.Cyclic_Tasks.Action_Handler;
+
+      Deadline_Timer    : aliased Oak.Timers.Action_Timer;
+      Execution_Timer   : aliased Oak.Timers.Action_Timer;
 
       Execution_Server  : access Ada.Execution_Server.Execution_Server;
 
-      Next_Deadline     : Oak_Time.Time      := Oak_Time.Time_Last;
       Next_Run_Cycle    : Oak_Time.Time      := Oak_Time.Time_Last;
       Wake_Time         : Oak_Time.Time      := Oak_Time.Time_Last;
       Remaining_Budget  : Oak_Time.Time_Span := Oak_Time.Time_Span_Last;
@@ -281,7 +280,6 @@ private
 
       Scheduler_Agent   : access Schedulers.Scheduler_Agent'Class := null;
       Queue_Link        : Task_Agent_Link_Element;
-      Deadline_List     : Task_Agent_Link_Element;
 
       Activation_List   : access Task_Agent'Class := null;
       Elaborated        : Boolean_Access   := null;
@@ -305,13 +303,13 @@ private
      (T : in Task_Agent'Class)
       return Oak_Time.Time_Span is (T.Cycle_Period);
 
-   function Deadline
-     (T : in Task_Agent'Class)
-      return Oak_Time.Time is (T.Next_Deadline);
-
    function Is_Elaborated
      (T : in Task_Agent'Class)
       return Boolean is (T.Elaborated.all);
+
+   function Budget_Timer (T : not null access Task_Agent'Class)
+                          return access Timers.Action_Timer'Class
+     is (T.Execution_Timer'Access);
 
    function Next_Run_Time
      (T : in Task_Agent'Class)

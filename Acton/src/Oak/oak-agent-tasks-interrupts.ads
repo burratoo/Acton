@@ -15,9 +15,9 @@ package Oak.Agent.Tasks.Interrupts with Preelaborate is
      (Agent : in out Interrupt_Agent'Class;
       Kind  : in Interrupt_Type);
 
-   procedure Set_Interrupt_Task
-     (Agent : in out Interrupt_Agent'Class;
-      T     : access Task_Agent'Class);
+--     procedure Set_Interrupt_Task
+--       (Agent : in out Interrupt_Agent'Class;
+--        T     : access Task_Agent'Class);
 
 private
    type Interrupt_Agent is new Task_Agent with record

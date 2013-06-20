@@ -1,4 +1,5 @@
 with Oak.Memory.Call_Stack.Ops; use Oak.Memory.Call_Stack.Ops;
+with System; use System;
 
 package body Oak.Agent.Schedulers is
 
@@ -19,6 +20,10 @@ package body Oak.Agent.Schedulers is
       Agent.Lowest_Prioirty        := Min_Prioirty;
       Agent.Highest_Prioirty       := Max_Priority;
       Agent.Desired_Agent_Run_Time := Oak_Time.Time_Zero;
+      Agent.Run_Timer.Set_Timer
+        (Priority  => Oak_Interrupt_Priority'Last,
+         Scheduler => Agent);
+      Agent.Run_Timer.Add_Timer_To_Current_Processor;
 
       Initialise_Call_Stack
         (Stack             => Agent.Call_Stack,

@@ -45,7 +45,6 @@ package body Oak.Agent.Tasks.Protected_Objects is
 
       Agent.Wake_Time      := Time_First;
       Agent.Next_Run_Cycle := Time_First;
-      Agent.Next_Deadline  := Time_First;
 
       Oak.Scheduler.Add_New_Task_To_Inactive_List
         (Scheduler_Info => Core.Scheduler_Info (Core.Oak_Instance).all,

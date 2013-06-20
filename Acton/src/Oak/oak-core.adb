@@ -106,13 +106,12 @@ package body Oak.Core is
    --------------
 
    procedure Run_Loop (Oak_Instance : in out Oak_Data) is
-      Wake_Up_Time, Earliest_Deadline : Time;
-      Earliest_Scheduler_Time         : Time;
-      Next_Task                       : Task_Handler := null;
-      P                               : Any_Priority;
-      Interrupt_Id                    : Oak_Interrupt_Id;
+      Active_Timer : access Oak.Timers.Oak_Timer'Class;
+      Next_Task    : Task_Handler := null;
+      P            : Any_Priority;
+      Interrupt_Id : Oak_Interrupt_Id;
 
-      Task_Message : Oak_Task_Message := (Message_Type => No_State);
+      Task_Message   : Oak_Task_Message := (Message_Type => No_State);
    begin
       loop
       --  Actually the first step should be to mask the timer interrupt we use
@@ -281,17 +280,10 @@ package body Oak.Core is
                  (Interrupt_Agent (Next_Task.all), Interrupt_Id);
                Oak_Instance.Interrupt_States (P) := Active;
 
-            when Scheduler_Agent =>
+            when Timer =>
                Run_The_Bloody_Scheduler_Agent_That_Wanted_To_Be_Woken
                  (Scheduler_Info => Oak_Instance.Scheduler,
                   Chosen_Task    => Next_Task);
-
-            when Missed_Deadline  =>
-                  --  Conveniently, P hold the current interrupt priority level
-               null;
-
-            when Budget_Expired =>
-               null;
 
          end case;
 
@@ -354,28 +346,26 @@ package body Oak.Core is
          --  loop). Note that the kernel jumps to the task in question, rather
          --  than call a procedure.
          -------------------
-         Earliest_Scheduler_Time :=
-           Earliest_Scheduler_Agent_Time
-             (Scheduler_Info => Oak_Instance.Scheduler);
-         Earliest_Deadline       :=
-           Scheduler.Earliest_Deadline
-             (Scheduler_Info => Oak_Instance.Scheduler);
 
-         if Earliest_Deadline <= Earliest_Scheduler_Time then
-            Oak_Instance.Woken_By := Missed_Deadline;
-            Wake_Up_Time          := Earliest_Deadline;
-         else
-            Oak_Instance.Woken_By := Scheduler_Agent;
-            Wake_Up_Time          := Earliest_Scheduler_Time;
-         end if;
+         Active_Timer :=
+           Oak_Timer_Store.Earliest_Timer_To_Fire (Above_Priority => P);
 
-         if Next_Task /= null then
+         --  Execution timers are not placed under the control of the Timer
+         --  Manager since they are only relevant for the currently executing
+         --  task and only apply if the timer will fire before any timer
+         --  that is currently managed.
+
+         if Next_Task /= null
+           and then Next_Task.Remaining_Budget /= Oak_Time.Time_Span_Last
+         then
             declare
                T : constant Time := Clock + Next_Task.Remaining_Budget;
             begin
-               if T < Wake_Up_Time then
-                  Oak_Instance.Woken_By := Budget_Expired;
-                  Wake_Up_Time          := T;
+               if Active_Timer = null
+                 or else T < Active_Timer.Firing_Time
+               then
+                     Active_Timer := Next_Task.Budget_Timer;
+                     Active_Timer.Update_Timer (New_Time => T);
                end if;
             end;
          end if;
@@ -383,38 +373,39 @@ package body Oak.Core is
          --  These called functions are responsible for enabling the sleep
          --  timer.
          Core_Support_Package.Task_Support.Set_Oak_Wake_Up_Timer
-           (Wake_Up_At => Wake_Up_Time);
+           (Wake_Up_At => Active_Timer.Firing_Time);
 
          if Next_Task = null then
-            Context_Switch_To_Agent
-              (Oak_Instance.Sleep_Agent'Unchecked_Access);
-         else
-            --   Set MMU is applicable.
-
-            --  Switch registers and enable Wake Up Interrupt.
-            Context_Switch_To_Agent (Next_Task);
-
-            --  Clean up after task has return via a context switch and
-            --  determine the reason why the task did.
-
-            Task_Message := Next_Task.Task_Message;
-            case Next_Task.Task_Yield_Status is
-               when Voluntary =>
-                  --  If the task yielded voluntary update the task state
-                  --  with the state provided by the message the task sent as
-                  --  part of its yield.
-
-                  Oak_Instance.Woken_By := Task_Yield;
-                  Next_Task.Set_State (State => Task_Message.Message_Type);
-
-               when Timer =>
-                  Next_Task.Store_Task_Yield_Status (Yielded  => Voluntary);
-               when Interrupt =>
-                  Next_Task.Store_Task_Yield_Status (Yielded  => Voluntary);
-                  Oak_Instance.Woken_By := External_Interrupt;
-            end case;
-
+            Next_Task := Oak_Instance.Sleep_Agent'Unchecked_Access;
          end if;
+
+         --   Set MMU is applicable.
+
+         --  Switch registers and enable Wake Up Interrupt.
+         Context_Switch_To_Agent (Next_Task);
+
+         --  Clean up after task has return via a context switch and
+         --  determine the reason why the task did.
+         Task_Message := Next_Task.Task_Message;
+
+         case Next_Task.Task_Yield_Status is
+            when Voluntary =>
+               --  If the task yielded voluntary update the task state
+               --  with the state provided by the message the task sent as
+               --  part of its yield.
+
+               Oak_Instance.Woken_By := Task_Yield;
+               Next_Task.Set_State (State => Task_Message.Message_Type);
+
+            when Timer =>
+               Next_Task.Store_Task_Yield_Status (Yielded  => Voluntary);
+               Oak_Instance.Woken_By := Timer;
+
+            when Interrupt =>
+               Next_Task.Store_Task_Yield_Status (Yielded  => Voluntary);
+               Oak_Instance.Woken_By := External_Interrupt;
+
+         end case;
 
       end loop;
    end Run_Loop;
@@ -433,9 +424,7 @@ package body Oak.Core is
    begin
       Charge_Exec_Time (Oak_Instance);
       Oak_Instance.Current_Agent := Agent;
-      Oak_Instance.In_Oak := False;
       Core_Support_Package.Task_Support.Context_Switch_To_Agent;
-      Oak_Instance.In_Oak := True;
       Charge_Exec_Time (Agent);
    end Context_Switch_To_Agent;
 
