@@ -24,7 +24,7 @@ package Oak.Timers with Preelaborate is
 
    function Earliest_Timer_To_Fire
      (Timer_Info     : Oak_Timer_Info;
-      Above_Priority : Any_Priority := Interrupt_Priority'First)
+      Above_Priority : Any_Priority := Interrupt_Priority'First - 1)
       return access Oak_Timer'Class;
 
    function Priority (Timer : in out Oak_Timer'Class) return Oak_Priority;

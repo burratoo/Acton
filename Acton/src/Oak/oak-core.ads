@@ -119,7 +119,8 @@ private
      (Processor_Kernels (Processor.Proccessor_Id).Stack_Pointer);
 
    function Oak_Timer_Store return access Oak.Timers.Oak_Timer_Info  is
-      (Processor_Kernels (Processor.Proccessor_Id).Oak_Timers'Access);
+     (Processor_Kernels
+        (Processor.Proccessor_Id).Oak_Timers'Unchecked_Access);
 
    function Scheduler_Info
      (Oak_Instance : access Oak_Data'Class)

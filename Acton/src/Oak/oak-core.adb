@@ -258,7 +258,6 @@ package body Oak.Core is
                         Chosen_Task      => Next_Task);
 
                   when Interrupt_Done =>
-                     Next_Task.Set_State (Interrupt_Done);
                      Oak_Instance.Interrupt_States
                        (Next_Task.Normal_Priority) := Inactive;
                      if Interrupt_Agent (Next_Task.all).Interrupt_Kind =
@@ -304,6 +303,7 @@ package body Oak.Core is
                   case Timers.Action_Timer'Class
                     (Active_Timer.all).Timer_Action is
                      when Ada.Cyclic_Tasks.Handler =>
+                        Active_Timer.Remove_Timer;
                         P := Active_Timer.Priority;
                         Next_Task :=
                           Oak_Instance.Interrupt_Agents (P)'Unchecked_Access;
@@ -319,7 +319,7 @@ package body Oak.Core is
                           Acquire_Protected_Object_For_Interrupt
                             (Protected_Object_From_Access
                               (Oak.Timers.Handler
-                                 (Timers.Action_Timer (Active_Timer.all))));
+                                (Timers.Action_Timer (Active_Timer.all))));
                      when others =>
                         Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
                           (Scheduler_Info => Oak_Instance.Scheduler,
@@ -398,7 +398,7 @@ package body Oak.Core is
          --  that is currently managed.
 
          if Next_Task /= null
-           and then Next_Task.Remaining_Budget /= Oak_Time.Time_Span_Last
+           and then Next_Task.Execution_Budget /= Oak_Time.Time_Span_Last
          then
             declare
                T : constant Time := Clock + Next_Task.Remaining_Budget;

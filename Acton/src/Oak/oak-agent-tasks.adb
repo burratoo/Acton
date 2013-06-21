@@ -240,7 +240,8 @@ package body Oak.Agent.Tasks is
          end case;
 
          if not T.Deadline_Timer.Is_Armed then
-            T.Deadline_Timer.Add_Timer_To_Current_Processor;
+            Oak.Timers.Add_Timer_To_Current_Processor
+              (T.Deadline_Timer'Unchecked_Access);
          end if;
       end if;
    end Set_Next_Deadline_For_Task;

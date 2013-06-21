@@ -21,6 +21,7 @@ package body Oak.Agent.Tasks.Cycle is
       T.State          := Runnable;
       T.Next_Run_Cycle := Core.Global_Start_Time + T.Phase;
       T.Event_Raised   := False;
+      T.Deadline_Timer.Remove_Timer;
    end Setup_Cyclic_Section;
 
    ---------------

@@ -15,6 +15,8 @@ package body Oak.Timers is
       Start_Of_List : constant access Oak_Timer'Class
         := Timer_Info.Timers (Timer.Priority);
    begin
+      Timer.Timer_Manager := Timer_Info;
+
       if Start_Of_List = null then
          Timer_Info.Timers (Timer.Priority) := Timer;
          Timer.Next_Timer                   := Timer;
@@ -22,8 +24,9 @@ package body Oak.Timers is
       else
          T := Start_Of_List;
 
-         while Timer.Fire_Time > T.Fire_Time and then T /= Start_Of_List loop
+         while Timer.Fire_Time > T.Fire_Time loop
             T := T.Next_Timer;
+            exit when T = Start_Of_List;
          end loop;
 
          Timer.Previous_Timer             := T.Previous_Timer;
@@ -45,7 +48,7 @@ package body Oak.Timers is
 
    function Earliest_Timer_To_Fire
      (Timer_Info     : Oak_Timer_Info;
-      Above_Priority : Any_Priority := Interrupt_Priority'First)
+      Above_Priority : Any_Priority := Interrupt_Priority'First - 1)
       return access Oak_Timer'Class
    is
       P     : Oak_Priority := Oak_Interrupt_Priority'Last;
@@ -57,7 +60,7 @@ package body Oak.Timers is
                T := Timer;
             elsif Timer.Fire_Time < T.Fire_Time then
                T := Timer;
-            end  if;
+            end if;
          end if;
 
          P := P - 1;
@@ -67,21 +70,20 @@ package body Oak.Timers is
    end Earliest_Timer_To_Fire;
 
    procedure Remove_Timer (Timer : not null access Oak_Timer'Class) is
-      Manager : constant access Oak_Timer_Info := Timer.Timer_Manager;
    begin
       if Timer.Timer_Manager = null then
          return;
       end if;
 
-      Timer.Timer_Manager := null;
-      if Manager.Timers (Timer.Priority) = Timer then
+      if Timer.Timer_Manager.Timers (Timer.Priority) = Timer then
          if Timer = Timer.Next_Timer then
-            Manager.Timers (Timer.Priority) := null;
+            Timer.Timer_Manager.Timers (Timer.Priority) := null;
          else
-            Manager.Timers (Timer.Priority) := Timer.Next_Timer;
+            Timer.Timer_Manager.Timers (Timer.Priority) := Timer.Next_Timer;
          end if;
       end if;
 
+      Timer.Timer_Manager := null;
       Timer.Previous_Timer.Next_Timer := Timer.Next_Timer;
       Timer.Next_Timer.Previous_Timer := Timer.Previous_Timer;
    end Remove_Timer;
@@ -146,8 +148,6 @@ package body Oak.Timers is
       Start_Of_List := Timer.Timer_Manager.Timers (Timer.Priority);
 
       if Timer.Fire_Time > Timer.Next_Timer.Fire_Time then
-         T := Timer.Next_Timer;
-
          --  Remove timer from current position
 
          Timer.Previous_Timer.Next_Timer := Timer.Next_Timer;
@@ -157,12 +157,13 @@ package body Oak.Timers is
             Timer.Timer_Manager.Timers (Timer.Priority) := Timer.Next_Timer;
          end if;
 
+         T := Timer.Next_Timer;
+
          --  Find new position for the timer
 
-         while Timer.Fire_Time > T.Fire_Time and then
-           T /= Start_Of_List
-         loop
+         while Timer.Fire_Time > T.Fire_Time loop
             T := T.Next_Timer;
+            exit when T = Start_Of_List;
          end loop;
 
          Timer.Previous_Timer             := T.Previous_Timer;
@@ -171,27 +172,28 @@ package body Oak.Timers is
          Timer.Next_Timer.Previous_Timer  := Timer;
 
       elsif Timer.Fire_Time < Timer.Previous_Timer.Fire_Time then
-         T := Timer.Previous_Timer;
-
          --  Remove timer from current position
 
          Timer.Previous_Timer.Next_Timer := Timer.Next_Timer;
          Timer.Next_Timer.Previous_Timer := Timer.Previous_Timer;
 
          --  Find new position for the timer
+         T := Timer.Previous_Timer;
 
          while Timer.Fire_Time < T.Fire_Time loop
             T := T.Previous_Timer;
-            if T /= Start_Of_List.Previous_Timer then
-               Timer.Timer_Manager.Timers (Timer.Priority) := Timer;
-               exit;
-            end if;
+            exit when T = Start_Of_List.Previous_Timer;
          end loop;
 
          Timer.Previous_Timer             := T;
          Timer.Next_Timer                 := T.Next_Timer;
          Timer.Previous_Timer.Next_Timer  := Timer;
          Timer.Next_Timer.Previous_Timer  := Timer;
+
+         if Timer.Fire_Time < Start_Of_List.Fire_Time then
+            Timer.Timer_Manager.Timers (Timer.Priority) :=  Timer;
+         end if;
+
       end if;
    end Timer_Updated;
 

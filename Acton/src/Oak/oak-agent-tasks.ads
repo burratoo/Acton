@@ -179,6 +179,9 @@ package Oak.Agent.Tasks with Preelaborate is
    --  or is removed from the scheduler. Function updates the current
    --  state of the state.
 
+   function Execution_Budget
+     (T : in Task_Agent'Class) return Oak_Time.Time_Span;
+
    function Is_Elaborated (T : in Task_Agent'Class) return Boolean;
 
    function Next_Run_Time (T : in Task_Agent'Class) return Oak_Time.Time;
@@ -317,6 +320,10 @@ private
    function Cycle_Period
      (T : in Task_Agent'Class)
       return Oak_Time.Time_Span is (T.Cycle_Period);
+
+   function Execution_Budget
+     (T : in Task_Agent'Class)
+      return Oak_Time.Time_Span is (T.Execution_Budget);
 
    function Is_Elaborated
      (T : in Task_Agent'Class)

@@ -121,7 +121,7 @@ private
       Controlling_Shared_State : aliased Task_State :=
                                    Waiting_For_Protected_Object;
       Active_Subprogram_Kind   : Protected_Subprogram_Type :=
-                                   Protected_Function;
+                                   Protected_Procedure;
       Tasks_Within             : access Task_Agent'Class := null;
    end record;
 
