@@ -3,7 +3,8 @@ with Oak.Agent.Tasks;      use Oak.Agent.Tasks;
 
 package Oak.Scheduler with Preelaborate is
 
-   type Oak_Scheduler_Info is private;
+   type Oak_Scheduler_Info is limited private
+     with Preelaborable_Initialization;
 
    function Next_Task
      (Scheduler_Info : Oak_Scheduler_Info)
@@ -58,7 +59,7 @@ package Oak.Scheduler with Preelaborate is
 
 private
 
-   type Oak_Scheduler_Info is record
+   type Oak_Scheduler_Info is limited record
       Running_Task          : access Task_Agent'Class := null;
       Next_Task             : access Task_Agent'Class := null;
       Scheduler_Agent_Table : access Scheduler_Agent'Class := null;

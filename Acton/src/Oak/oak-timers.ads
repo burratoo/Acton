@@ -7,11 +7,15 @@ limited with Oak.Agent.Tasks;
 
 package Oak.Timers with Preelaborate is
 
-   type Oak_Timer       is tagged private;
-   type Action_Timer    is new Oak_Timer with private;
-   type Scheduler_Timer is new Oak_Timer with private;
+   type Oak_Timer       is tagged private
+     with Preelaborable_Initialization;
+   type Action_Timer    is new Oak_Timer with private
+     with Preelaborable_Initialization;
+   type Scheduler_Timer is new Oak_Timer with private
+     with Preelaborable_Initialization;
 
-   type Oak_Timer_Info is tagged private;
+   type Oak_Timer_Info is tagged limited private
+     with Preelaborable_Initialization;
 
    procedure Add_Timer
      (Timer      : not null access Oak_Timer'Class;
@@ -77,16 +81,16 @@ private
    type Interrupt_Timers is array (Oak_Interrupt_Priority) of
      access Oak_Timer'Class;
 
-   type Oak_Timer_Info is tagged record
+   type Oak_Timer_Info is tagged limited record
       Timers : Interrupt_Timers;
    end record;
 
    type Oak_Timer is tagged record
-      Timer_Manager  : access Oak_Timer_Info  := null;
-      Fire_Time      : Oak_Time.Time          := Oak_Time.Time_Last;
-      Priority       : Oak_Interrupt_Priority := Oak_Interrupt_Priority'First;
-      Next_Timer     : access Oak_Timer'Class := null;
-      Previous_Timer : access Oak_Timer'Class := null;
+      Timer_Manager  : access Oak_Timer_Info;
+      Fire_Time      : Oak_Time.Time;
+      Priority       : Oak_Interrupt_Priority;
+      Next_Timer     : access Oak_Timer'Class;
+      Previous_Timer : access Oak_Timer'Class;
    end record;
 
    type Action_Timer is new Oak_Timer with record

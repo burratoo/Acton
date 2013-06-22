@@ -3,7 +3,8 @@ use Oak.Processor_Support_Package.Interrupts;
 with Oak.Timers; use Oak.Timers;
 
 package Oak.Agent.Tasks.Interrupts with Preelaborate is
-   type Interrupt_Agent is new Task_Agent with private;
+   type Interrupt_Agent is new Task_Agent with private
+     with Preelaborable_Initialization;
 
    type Interrupt_Type is (External, Timer_Action);
    procedure Interrupt_Run_Loop;

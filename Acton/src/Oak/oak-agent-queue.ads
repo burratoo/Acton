@@ -1,5 +1,5 @@
 generic
-   type Agent_Type is tagged private;
+   type Agent_Type is tagged limited private;
    type Agent_Handler is access all Agent_Type'Class;
 
    with function Get_Next_Agent

@@ -19,7 +19,12 @@ package body Oak.Agent.Schedulers is
 
       Agent.Lowest_Prioirty        := Min_Prioirty;
       Agent.Highest_Prioirty       := Max_Priority;
+      Agent.Task_To_Run            := null;
       Agent.Desired_Agent_Run_Time := Oak_Time.Time_Zero;
+      Agent.Manage_Task            := null;
+      Agent.Run_Reason             := Select_Next_Task;
+      Agent.Next_Agent             := null;
+
       Agent.Run_Timer.Set_Timer
         (Priority  => Oak_Interrupt_Priority'Last,
          Scheduler => Agent);

@@ -48,6 +48,11 @@ pragma Restrictions (No_Implicit_Dynamic_Code);
 --  Pointers to nested subprograms are not allowed in this run time, in order
 --  to prevent the compiler from building "trampolines".
 
+pragma Restrictions (No_Abort_Statements);
+--  No abort statments can be used in Acton at the moment.
+
+pragma Restrictions (Max_Asynchronous_Select_Nesting => 0);
+
 pragma Restrictions (No_Finalization);
 --  Controlled types are not supported in this run time
 

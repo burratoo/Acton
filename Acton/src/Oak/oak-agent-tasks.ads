@@ -15,7 +15,8 @@ limited with Oak.Interrupts;
 
 package Oak.Agent.Tasks with Preelaborate is
 
-   type Task_Agent is new Oak_Agent with private;
+   type Task_Agent is new Oak_Agent with private
+     with Preelaborable_Initialization;
 
    type Task_Handler is access all Task_Agent'Class;
 
@@ -269,14 +270,14 @@ package Oak.Agent.Tasks with Preelaborate is
 
 private
    type Task_Agent_Link_Element is record
-      Next     : access Task_Agent'Class := null;
-      Previous : access Task_Agent'Class := null;
+      Next     : access Task_Agent'Class;
+      Previous : access Task_Agent'Class;
    end record;
 
    type Task_Agent is new Oak_Agent with record
-      State             : Task_State                := Sleeping;
-      Shared_State      : Shared_Task_State         := No_Shared_State;
-      Message_Location  : Oak_Task_Message_Location := null;
+      State             : Task_State;
+      Shared_State      : Shared_Task_State;
+      Message_Location  : Oak_Task_Message_Location;
 
       Normal_Priority   : System.Any_Priority;
       Cycle_Behaviour   : Ada.Cyclic_Tasks.Behaviour;
@@ -291,18 +292,18 @@ private
 
       Execution_Server  : access Ada.Execution_Server.Execution_Server;
 
-      Next_Run_Cycle    : Oak_Time.Time      := Oak_Time.Time_Last;
-      Wake_Time         : Oak_Time.Time      := Oak_Time.Time_Last;
-      Remaining_Budget  : Oak_Time.Time_Span := Oak_Time.Time_Span_Last;
-      Event_Raised      : Boolean            := False;
+      Next_Run_Cycle    : Oak_Time.Time;
+      Wake_Time         : Oak_Time.Time;
+      Remaining_Budget  : Oak_Time.Time_Span;
+      Event_Raised      : Boolean;
 
-      Scheduler_Agent   : access Schedulers.Scheduler_Agent'Class := null;
+      Scheduler_Agent   : access Schedulers.Scheduler_Agent'Class;
       Queue_Link        : Task_Agent_Link_Element;
 
-      Activation_List   : access Task_Agent'Class := null;
-      Elaborated        : Boolean_Access   := null;
+      Activation_List   : access Task_Agent'Class;
+      Elaborated        : Boolean_Access;
 
-      In_Atomic_Action  : access Atomic_Actions.Atomic_Object := null;
+      In_Atomic_Action  : access Atomic_Actions.Atomic_Object;
    end record;
 
    type Activation_Chain is limited record

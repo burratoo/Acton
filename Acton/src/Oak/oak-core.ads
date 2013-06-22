@@ -21,7 +21,8 @@ package Oak.Core with Preelaborate is
 
    type Active_State is (Inactive, Active);
 
-   type Oak_Data is new Oak_Agent with private;
+   type Oak_Data is new Oak_Agent with private
+     with Preelaborable_Initialization;
 
    procedure Initialise
      with Export, Convention => Ada, External_Name => "__oak_initialise";
@@ -80,14 +81,15 @@ private
 
    type Oak_Data is new Oak_Agent with record
       Scheduler          : aliased Oak_Scheduler_Info;
-      Woken_By           : Activation_Reason := First_Run;
-      Current_Priority   : System.Any_Priority := System.Any_Priority'First;
-      Current_Agent      : access Oak_Agent'Class := null;
-      Entry_Exit_Stamp   : Time;
+      Woken_By           : Activation_Reason;
+      Current_Priority   : System.Any_Priority;
+      Current_Agent      : access Oak_Agent'Class;
+      Entry_Exit_Stamp   : Oak_Time.Time;
       --  Probably need to fix this up so that it gets set somewhere. (In case
       --  it doesn't already when the task context switches.
       Sleep_Agent        : aliased Task_Agent;
       Interrupt_Agents   : IA_Store;
+
       Interrupt_States   : Interrupt_Active_Set;
       Oak_Timers         : aliased Oak.Timers.Oak_Timer_Info;
    end record;

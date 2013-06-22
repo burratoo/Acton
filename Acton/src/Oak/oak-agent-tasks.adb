@@ -34,12 +34,10 @@ package body Oak.Agent.Tasks is
       Chain             : in out Activation_Chain;
       Elaborated        : in Boolean_Access)
    is
-      Call_Stack : Call_Stack_Handler;
    begin
       Oak.Agent.Initialise_Agent
         (Agent      => Agent,
-         Name       => Name,
-         Call_Stack => Call_Stack);
+         Name       => Name);
 
       Agent.State             := Activation_Pending;
       Agent.Shared_State      := No_Shared_State;
@@ -103,6 +101,8 @@ package body Oak.Agent.Tasks is
             Stack_Address     => Stack_Address,
             Stack_Size        => Stack_Size,
             Message_Location  => Agent.Message_Location);
+      else
+         Agent.Message_Location := null;
       end if;
 
       if Normal_Priority in Any_Priority then
@@ -112,6 +112,14 @@ package body Oak.Agent.Tasks is
       else
          raise Program_Error with "Priority out of range";
       end if;
+
+      Agent.Next_Run_Cycle   := Oak_Time.Time_Last;
+      Agent.Wake_Time        := Oak_Time.Time_Last;
+      Agent.Remaining_Budget := Oak_Time.Time_Span_Last;
+      Agent.Event_Raised     := False;
+
+      Agent.Queue_Link.Next     := null;
+      Agent.Queue_Link.Previous := null;
 
       Agent.Activation_List := Chain.Head;
       Chain.Head            := Agent;

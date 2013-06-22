@@ -6,7 +6,8 @@ limited with Oak.Agent.Tasks;
 
 package Oak.Agent.Schedulers with Preelaborate is
 
-   type Scheduler_Agent is new Oak_Agent with private;
+   type Scheduler_Agent is new Oak_Agent with private
+     with Preelaborable_Initialization;
 
    type Scheduler_Handler is access all Scheduler_Agent;
 
@@ -82,13 +83,13 @@ private
       Highest_Prioirty       : System.Any_Priority;
       Run_Timer              : aliased Timers.Scheduler_Timer;
 
-      Task_To_Run            : access Tasks.Task_Agent'Class := null;
-      Desired_Agent_Run_Time : Oak.Oak_Time.Time   := Oak.Oak_Time.Time_Last;
+      Task_To_Run            : access Tasks.Task_Agent'Class;
+      Desired_Agent_Run_Time : Oak.Oak_Time.Time;
 
-      Manage_Task            : access Tasks.Task_Agent'Class := null;
-      Run_Reason             : Reason_For_Run := Select_Next_Task;
+      Manage_Task            : access Tasks.Task_Agent'Class;
+      Run_Reason             : Reason_For_Run;
 
-      Next_Agent             : access Scheduler_Agent := null;
+      Next_Agent             : access Scheduler_Agent;
    end record;
 
    function Desired_Run_Time

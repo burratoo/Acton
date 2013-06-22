@@ -16,7 +16,7 @@ package Oak.Memory.Call_Stack with Pure is
    for Call_Stack'Component_Size use Storage_Unit;
 
    type Call_Stack_Handler is record
-      Top, Bottom, Pointer : System.Address := Null_Address;
+      Top, Bottom, Pointer : System.Address;
    end record;
 
    function No_Call_Stack return Call_Stack_Handler;

@@ -50,6 +50,11 @@ package body Oak.Agent.Tasks.Protected_Objects is
       Oak.Scheduler.Add_New_Task_To_Inactive_List
         (Scheduler_Info => Core.Scheduler_Info (Core.Oak_Instance).all,
          T              => Agent);
+
+      Agent.Entry_Queues             := (others => null);
+      Agent.Controlling_Shared_State := Waiting_For_Protected_Object;
+      Agent.Active_Subprogram_Kind   := Protected_Procedure;
+      Agent.Tasks_Within             := null;
    end Initialise_Protected_Agent;
 
    procedure Add_Task_To_Entry_Queue

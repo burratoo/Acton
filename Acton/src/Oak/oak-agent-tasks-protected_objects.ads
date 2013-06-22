@@ -6,7 +6,8 @@ with Oak.Protected_Objects; use Oak.Protected_Objects;
 package Oak.Agent.Tasks.Protected_Objects with Preelaborate is
 
    type Protected_Agent (Num_Entries : Entry_Index)
-     is new Task_Agent with private;
+     is new Task_Agent with private
+     with Preelaborable_Initialization;
 
    type Entry_Barrier_Function_Handler is
      access function (PO : System.Address;
@@ -115,14 +116,11 @@ private
       Object_Record  : System.Address;
 
       Entry_Barriers : Entry_Barrier_Function_Handler;
-      Entry_Queues   : Entry_Queue_Array (1 .. Num_Entries) :=
-                         (others => null);
+      Entry_Queues   : Entry_Queue_Array (1 .. Num_Entries);
 
-      Controlling_Shared_State : aliased Task_State :=
-                                   Waiting_For_Protected_Object;
-      Active_Subprogram_Kind   : Protected_Subprogram_Type :=
-                                   Protected_Procedure;
-      Tasks_Within             : access Task_Agent'Class := null;
+      Controlling_Shared_State : aliased Task_State;
+      Active_Subprogram_Kind   : Protected_Subprogram_Type;
+      Tasks_Within             : access Task_Agent'Class;
    end record;
 
    function Active_Subprogram_Kind

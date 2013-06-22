@@ -27,6 +27,10 @@ package body Oak.Core is
             Call_Stack_Size =>
               Core_Support_Package.Call_Stack.Oak_Call_Stack_Size);
 
+         Kernel_Agent.Woken_By         := First_Run;
+         Kernel_Agent.Current_Priority := System.Any_Priority'First;
+         Kernel_Agent.Current_Agent    := null;
+
          for P in Interrupt_Priority'Range loop
             Initialise_Task_Agent
               (Agent             => Kernel_Agent.Interrupt_Agents (P)'Access,

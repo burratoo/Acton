@@ -4,13 +4,13 @@ package Oak.Oak_Time with Pure is
 
    package Oak_CSP_Time renames Oak.Core_Support_Package.Time;
 
-   type Time is private;
+   type Time is private with Preelaborable_Initialization;
    Time_First : constant Time;
    Time_Last  : constant Time;
    Time_Zero  : constant Time;
    Time_Unit  : constant := Oak_CSP_Time.Oak_Time_Unit;
 
-   type Time_Span is private;
+   type Time_Span is private with Preelaborable_Initialization;
    Time_Span_First : constant Time_Span;
    Time_Span_Last  : constant Time_Span;
    Time_Span_Zero  : constant Time_Span;

@@ -9,8 +9,7 @@ package body Oak.Agent is
 
    procedure Initialise_Agent
      (Agent      : access Oak_Agent'Class;
-      Name       : in String;
-      Call_Stack : in Call_Stack_Handler) is
+      Name       : in String) is
    begin
       Agent.Name_Length                   :=
          Natural'Min (Task_Name'Length, Name'Length);
@@ -18,6 +17,22 @@ package body Oak.Agent is
         Name (Name'First .. Name'First + Agent.Name_Length - 1);
 
       Agent.Id         := New_Task_Id;
+
+      Agent.Total_Execution_Time   := Oak_Time.Time_Span_Zero;
+      Agent.Max_Execution_Time     := Oak_Time.Time_Span_Zero;
+      Agent.Current_Execution_Time := Oak_Time.Time_Span_Zero;
+      Agent.Execution_Cycles       := 0;
+
+      Agent.Call_Stack := No_Call_Stack;
+
+   end Initialise_Agent;
+
+   procedure Initialise_Agent
+     (Agent      : access Oak_Agent'Class;
+      Name       : in String;
+      Call_Stack : in Call_Stack_Handler) is
+   begin
+      Initialise_Agent (Agent, Name);
       Agent.Call_Stack := Call_Stack;
    end Initialise_Agent;
 
@@ -26,12 +41,7 @@ package body Oak.Agent is
       Name            : in String;
       Call_Stack_Size : in System.Storage_Elements.Storage_Count) is
    begin
-      Agent.Name_Length                   :=
-         Natural'Min (Task_Name'Length, Name'Length);
-      Agent.Name (1 .. Agent.Name_Length) :=
-        Name (Name'First .. Name'First + Agent.Name_Length - 1);
-
-      Agent.Id         := New_Task_Id;
+      Initialise_Agent (Agent, Name);
       Oak.Memory.Call_Stack.Ops.Allocate_Call_Stack
         (Stack            => Agent.Call_Stack,
          Size_In_Elements => Call_Stack_Size);
