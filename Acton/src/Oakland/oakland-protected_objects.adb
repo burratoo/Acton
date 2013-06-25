@@ -17,9 +17,13 @@ package body Oakland.Protected_Objects is
                  Subprogram_Kind => Subprogram_Kind,
                  Entry_Id_Enter  => Entry_Id);
    begin
-      Tasks.Yield_Processor_To_Kernel (Task_Message => Message);
-      if Self.State = Enter_PO_Refused then
-         raise Program_Error;
+      if PO.State = Handling_Interrupt then
+         return;
+      else
+         Tasks.Yield_Processor_To_Kernel (Task_Message => Message);
+         if Self.State = Enter_PO_Refused then
+            raise Program_Error;
+         end if;
       end if;
    end Enter_Protected_Object;
 
@@ -31,9 +35,13 @@ package body Oakland.Protected_Objects is
                 (Message_Type  => Exiting_PO,
                  PO_Exit       => PO);
    begin
-      Tasks.Yield_Processor_To_Kernel (Task_Message => Message);
-      if Self.State = Exit_PO_Error then
-         raise Program_Error;
+      if PO.State = Handling_Interrupt then
+         return;
+      else
+         Tasks.Yield_Processor_To_Kernel (Task_Message => Message);
+         if Self.State = Exit_PO_Error then
+            raise Program_Error;
+         end if;
       end if;
    end Exit_Protected_Object;
 

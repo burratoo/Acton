@@ -1,7 +1,9 @@
 with Oak.Core_Support_Package;
+with Oak.Oak_Time;
 with System;
-
 with Oak.Memory.Call_Stack;         use Oak.Memory.Call_Stack;
+with System.Storage_Elements;
+--  with Ada.Finalization;
 
 package Oak.Agent with Preelaborate is
 
@@ -19,7 +21,7 @@ package Oak.Agent with Preelaborate is
 --        Previous : Memory_Region_Link;
 --     end record;
 
-   type Oak_Agent is tagged private;
+   type Oak_Agent is tagged limited private with Preelaborable_Initialization;
 
    function Agent_Id (Agent : in Oak_Agent'Class) return Task_Id;
    function Name (Agent : in Oak_Agent'Class) return Task_Name;
@@ -29,20 +31,34 @@ package Oak.Agent with Preelaborate is
 
    procedure Initialise_Agent
      (Agent      : access Oak_Agent'Class;
+      Name       : in String);
+
+   procedure Initialise_Agent
+     (Agent      : access Oak_Agent'Class;
       Name       : in String;
       Call_Stack : in Call_Stack_Handler);
+
+   procedure Initialise_Agent
+     (Agent           : access Oak_Agent'Class;
+      Name            : in String;
+      Call_Stack_Size : in System.Storage_Elements.Storage_Count);
 
    procedure Set_Stack_Pointer
      (Agent         : in out Oak_Agent'Class;
       Stack_Pointer : in System.Address)
-      with Inline_Always;
+     with Inline_Always;
+
+   procedure New_Execution_Cycle (Agent : in out Oak_Agent'Class);
+   procedure Charge_Execution_Time
+     (To_Agent  : in out Oak_Agent;
+      Exec_Time : in Oak_Time.Time_Span);
 
 private
 
-   type Oak_Agent is tagged record
-      Id          : Task_Id := Task_Id'Last;
+   type Oak_Agent is tagged limited record
+      Id          : Task_Id;
       Name        : Task_Name;
-      Name_Length : Natural := 0;
+      Name_Length : Natural;
 
       ----
       --  This gives us a pointer to the starting location of the Stack (is
@@ -52,6 +68,11 @@ private
       --  usually it is stored in a register anyway.
       -----
       Call_Stack : Call_Stack_Handler;
+
+      Total_Execution_Time   : Oak_Time.Time_Span;
+      Max_Execution_Time     : Oak_Time.Time_Span;
+      Current_Execution_Time : Oak_Time.Time_Span;
+      Execution_Cycles       : Natural;
 
       --  Memory_List : Memory_Region_Link := null;
    end record;

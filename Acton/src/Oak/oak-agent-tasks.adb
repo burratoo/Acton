@@ -1,10 +1,11 @@
 with Oak.Agent.Schedulers;
+with Oak.Agent.Tasks.Cycle;
 with Oak.Atomic_Actions;
 with Oak.Core_Support_Package.Call_Stack;
 with Oak.Memory.Call_Stack.Ops; use Oak.Memory.Call_Stack.Ops;
 with System; use System;
-
 with System.Storage_Elements; use System.Storage_Elements;
+with Oak.Agent.Tasks.Protected_Objects; use Oak.Agent.Tasks.Protected_Objects;
 
 package body Oak.Agent.Tasks is
 
@@ -17,27 +18,69 @@ package body Oak.Agent.Tasks is
       Stack_Address     : in System.Address;
       Stack_Size        : in System.Storage_Elements.Storage_Count;
       Name              : in String;
-      Normal_Priority   : in Integer;
-      Relative_Deadline : in Oak_Time.Time_Span;
-      Cycle_Period      : in Oak_Time.Time_Span;
-      Phase             : in Oak_Time.Time_Span;
       Run_Loop          : in System.Address;
       Task_Value_Record : in System.Address;
+      Normal_Priority   : in Integer;
+      Cycle_Behaviour   : in Ada.Cyclic_Tasks.Behaviour;
+      Cycle_Period      : in Oak_Time.Time_Span;
+      Phase             : in Oak_Time.Time_Span;
+      Execution_Budget  : in Oak_Time.Time_Span;
+      Budget_Action     : in Ada.Cyclic_Tasks.Event_Action;
+      Budget_Handler    : in Ada.Cyclic_Tasks.Action_Handler;
+      Relative_Deadline : in Oak_Time.Time_Span;
+      Deadline_Action   : in Ada.Cyclic_Tasks.Event_Action;
+      Deadline_Handler  : in Ada.Cyclic_Tasks.Action_Handler;
+      Execution_Server  : access Ada.Execution_Server.Execution_Server;
       Chain             : in out Activation_Chain;
       Elaborated        : in Boolean_Access)
    is
-      Call_Stack : Call_Stack_Handler;
    begin
       Oak.Agent.Initialise_Agent
         (Agent      => Agent,
-         Name       => Name,
-         Call_Stack => Call_Stack);
+         Name       => Name);
 
-      Agent.State        := Activation_Pending;
-      Agent.Shared_State := No_Shared_State;
-      Agent.Deadline     := Relative_Deadline;
-      Agent.Cycle_Period := Cycle_Period;
-      Agent.Phase        := Phase;
+      Agent.State             := Activation_Pending;
+      Agent.Shared_State      := No_Shared_State;
+
+      Agent.Cycle_Behaviour   := Cycle_Behaviour;
+      Agent.Cycle_Period      := Cycle_Period;
+      Agent.Phase             := Phase;
+
+      Agent.Execution_Budget  := Execution_Budget;
+      Agent.Relative_Deadline := Relative_Deadline;
+
+      if Deadline_Action in Ada.Cyclic_Tasks.Handler then
+         Agent.Deadline_Timer.Set_Timer
+           (Priority        =>
+              Protected_Object_From_Access (Deadline_Handler).Normal_Priority,
+            Timer_Action    => Deadline_Action,
+            Handler         => Deadline_Handler,
+            Agent_To_Handle => Agent);
+      else
+         Agent.Deadline_Timer.Set_Timer
+           (Priority        => Oak_Priority'Last,
+            Timer_Action    => Deadline_Action,
+            Handler         => Deadline_Handler,
+            Agent_To_Handle => Agent);
+      end if;
+
+      if Budget_Action in Ada.Cyclic_Tasks.Handler then
+         Agent.Execution_Timer.Set_Timer
+           (Priority        =>
+              Protected_Object_From_Access (Budget_Handler).Normal_Priority,
+            Timer_Action    => Budget_Action,
+            Handler         => Budget_Handler,
+            Agent_To_Handle => Agent);
+      else
+         Agent.Execution_Timer.Set_Timer
+           (Priority        => Oak_Priority'Last,
+            Timer_Action    => Budget_Action,
+            Handler         => Budget_Handler,
+            Agent_To_Handle => Agent);
+      end if;
+
+      Agent.Execution_Server  := Execution_Server;
+
       Agent.Elaborated   := Elaborated;
 
       if Stack_Address = Null_Address and Stack_Size > 0 then
@@ -58,6 +101,8 @@ package body Oak.Agent.Tasks is
             Stack_Address     => Stack_Address,
             Stack_Size        => Stack_Size,
             Message_Location  => Agent.Message_Location);
+      else
+         Agent.Message_Location := null;
       end if;
 
       if Normal_Priority in Any_Priority then
@@ -67,6 +112,14 @@ package body Oak.Agent.Tasks is
       else
          raise Program_Error with "Priority out of range";
       end if;
+
+      Agent.Next_Run_Cycle   := Oak_Time.Time_Last;
+      Agent.Wake_Time        := Oak_Time.Time_Last;
+      Agent.Remaining_Budget := Oak_Time.Time_Span_Last;
+      Agent.Event_Raised     := False;
+
+      Agent.Queue_Link.Next     := null;
+      Agent.Queue_Link.Previous := null;
 
       Agent.Activation_List := Chain.Head;
       Chain.Head            := Agent;
@@ -79,27 +132,60 @@ package body Oak.Agent.Tasks is
    is
       C : Activation_Chain;
    begin
-      Initialise_Task_Agent
-        (Agent             => Agent,
-         Stack_Address     => Null_Address,
+      Agent.Initialise_Task_Agent
+        (Stack_Address     => Null_Address,
          Stack_Size        => Core_Support_Package.Call_Stack.Sleep_Stack_Size,
          Name              => "Sleep",
-         Normal_Priority   => Priority'First,
-         Relative_Deadline => Oak_Time.Time_Span_Last,
-         Cycle_Period      => Oak_Time.Time_Span_Last,
-         Phase             => Oak_Time.Time_Span_Zero,
          Run_Loop          => Run_Loop,
          Task_Value_Record => Null_Address,
+         Normal_Priority   => Priority'First,
+         Cycle_Behaviour   => Ada.Cyclic_Tasks.Normal,
+         Cycle_Period      => Oak_Time.Time_Span_Last,
+         Phase             => Oak_Time.Time_Span_Zero,
+         Execution_Budget  => Oak_Time.Time_Span_Last,
+         Budget_Action     => Ada.Cyclic_Tasks.No_Action,
+         Budget_Handler    => null,
+         Relative_Deadline => Oak_Time.Time_Span_Last,
+         Deadline_Action   => Ada.Cyclic_Tasks.No_Action,
+         Deadline_Handler  => null,
+         Execution_Server  => null,
          Chain             => C,
          Elaborated        => null);
+
       Agent.State := Runnable;
    end Initialise_Sleep_Agent;
 
-   procedure Next_Run_Cycle (T : in out Task_Agent'Class) is
+   overriding procedure Charge_Execution_Time
+     (To_Agent  : in out Task_Agent;
+      Exec_Time : in Oak_Time.Time_Span) is
    begin
-      T.Wake_Time      := T.Next_Run_Cycle;
-      T.Next_Run_Cycle := T.Next_Run_Cycle + T.Cycle_Period;
-   end Next_Run_Cycle;
+      To_Agent.Remaining_Budget := To_Agent.Remaining_Budget - Exec_Time;
+      Oak.Agent.Charge_Execution_Time (Oak_Agent (To_Agent), Exec_Time);
+   end Charge_Execution_Time;
+
+   function Destination_On_Wake_Up (T : in out Task_Agent'Class)
+     return Destination is
+   begin
+      case T.State is
+         when Sleeping =>
+            T.State := Runnable;
+            return Run_Queue;
+
+         when Sleeping_And_Waiting =>
+            if T.Event_Raised then
+               T.Event_Raised := False;
+               Oak.Agent.Tasks.Cycle.Task_Released (T'Access);
+               return Run_Queue;
+            else
+               T.State := Waiting_For_Event;
+               return Remove;
+            end if;
+
+         when others =>
+            --  Should raise an exception here
+            return Run_Queue;
+      end case;
+   end Destination_On_Wake_Up;
 
    procedure Set_Activation_List
      (T   : in out Task_Agent'Class;
@@ -142,11 +228,36 @@ package body Oak.Agent.Tasks is
       T.Cycle_Period := CP;
    end Set_Cycle_Period;
 
+   procedure Set_Next_Deadline_For_Task
+     (T     : in out Task_Agent'Class;
+      Using : in Deadline_Base) is
+
+   begin
+      if T.Relative_Deadline = Oak_Time.Time_Span_Last then
+         T.Deadline_Timer.Remove_Timer;
+
+      else
+         case Using is
+            when Wake_Up_Time =>
+               T.Deadline_Timer.Update_Timer
+                 (New_Time => T.Wake_Time + T.Relative_Deadline);
+            when Clock_Time =>
+               T.Deadline_Timer.Update_Timer
+                 (New_Time =>  Clock + T.Relative_Deadline);
+         end case;
+
+         if not T.Deadline_Timer.Is_Armed then
+            Oak.Timers.Add_Timer_To_Current_Processor
+              (T.Deadline_Timer'Unchecked_Access);
+         end if;
+      end if;
+   end Set_Next_Deadline_For_Task;
+
    procedure Set_Relative_Deadline
      (T  : in out Task_Agent'Class;
       RD : in Oak_Time.Time_Span) is
    begin
-      T.Deadline := RD;
+      T.Relative_Deadline := RD;
    end Set_Relative_Deadline;
 
    procedure Set_Scheduler_Agent

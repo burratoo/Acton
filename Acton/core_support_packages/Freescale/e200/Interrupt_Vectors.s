@@ -8,12 +8,12 @@
 		.extern __OTS_Context_Switch_To_Kernel
 		.extern __OTS_Context_Switch_To_Task
 		.extern __OTS_Decrementer_Interrupt
-		.extern __OI_External_Interrupt
+		.extern __OTS_External_Interrupt
 
 		.global __OTS_CSTT
 		.global __OTS_CSTK
 		.global __OTS_DI
-                .global __OI_EI
+                .global __OTS_EI
 
 		.section ".acton_intr_branch_table", "ax"
 		.equ ALIGN_OFFSET, 4
@@ -27,4 +27,4 @@ __OTS_CSTT:	b	__OTS_Context_Switch_To_Task
 		.align ALIGN_OFFSET
 __OTS_DI:	b	__OTS_Decrementer_Interrupt
 		.align ALIGN_OFFSET
-__OI_EI:        b       __OI_External_Interrupt
+__OTS_EI:       b       __OTS_General_Interrupt_Handler

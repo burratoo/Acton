@@ -1,3 +1,5 @@
+with Ada.Cyclic_Tasks;
+with Ada.Unchecked_Conversion;
 with Oak.Agent.Tasks.Queues;
 with Oak.Core;
 with Oak.Scheduler;
@@ -6,7 +8,7 @@ with System; use System;
 
 package body Oak.Agent.Tasks.Protected_Objects is
 
-   package Queue renames Oak.Agent.Tasks.Queues.General;
+   package Queue renames Oak.Agent.Tasks.Queues.Task_Queues;
 
    procedure Initialise_Protected_Agent
      (Agent                 : access Protected_Agent'Class;
@@ -22,26 +24,37 @@ package body Oak.Agent.Tasks.Protected_Objects is
          Stack_Address     => Null_Address,
          Stack_Size        => 0,
          Name              => Name,
-         Normal_Priority   => Ceiling_Priority,
-         Relative_Deadline => Time_Span_Last,
-         Cycle_Period      => Time_Span_Zero,
-         Phase             => Time_Span_Zero,
          Run_Loop          => Null_Address,
          Task_Value_Record => Null_Address,
+         Normal_Priority   => Ceiling_Priority,
+         Cycle_Behaviour   => Ada.Cyclic_Tasks.Normal,
+         Cycle_Period      => Oak_Time.Time_Span_Last,
+         Phase             => Oak_Time.Time_Span_Zero,
+         Execution_Budget  => Oak_Time.Time_Span_Last,
+         Budget_Action     => Ada.Cyclic_Tasks.No_Action,
+         Budget_Handler    => null,
+         Relative_Deadline => Oak_Time.Time_Span_Last,
+         Deadline_Action   => Ada.Cyclic_Tasks.No_Action,
+         Deadline_Handler  => null,
+         Execution_Server  => null,
          Chain             => No_Chain,
          Elaborated        => null);
 
       Agent.Entry_Barriers           := Barriers_Function;
       Agent.Object_Record            := Object_Record_Address;
-      Agent.Controlling_Shared_State := Waiting;
+      Agent.Controlling_Shared_State := Waiting_For_Protected_Object;
 
       Agent.Wake_Time      := Time_First;
       Agent.Next_Run_Cycle := Time_First;
-      Agent.Next_Deadline  := Time_First;
 
       Oak.Scheduler.Add_New_Task_To_Inactive_List
         (Scheduler_Info => Core.Scheduler_Info (Core.Oak_Instance).all,
          T              => Agent);
+
+      Agent.Entry_Queues             := (others => null);
+      Agent.Controlling_Shared_State := Waiting_For_Protected_Object;
+      Agent.Active_Subprogram_Kind   := Protected_Procedure;
+      Agent.Tasks_Within             := null;
    end Initialise_Protected_Agent;
 
    procedure Add_Task_To_Entry_Queue
@@ -49,8 +62,8 @@ package body Oak.Agent.Tasks.Protected_Objects is
       T        : access Task_Agent'Class;
       Entry_Id : Entry_Index) is
    begin
-      Queues.General.Add_Agent_To_Tail
-        (Queue => Queue.Agent_Handler (PO.Entry_Queues (Entry_Id)),
+      Queue.Add_Agent_To_Tail
+        (Queue => Task_Handler (PO.Entry_Queues (Entry_Id)),
          Agent => T);
    end Add_Task_To_Entry_Queue;
 
@@ -58,8 +71,8 @@ package body Oak.Agent.Tasks.Protected_Objects is
      (PO : in out Protected_Agent'Class;
       T  : access Task_Agent'Class) is
    begin
-      Queues.General.Add_Agent_To_Head
-        (Queue => Queue.Agent_Handler (PO.Tasks_Within),
+      Queue.Add_Agent_To_Head
+        (Queue => Task_Handler (PO.Tasks_Within),
          Agent => T);
    end Add_Task_To_Protected_Object;
 
@@ -91,8 +104,8 @@ package body Oak.Agent.Tasks.Protected_Objects is
          Next_Task := Task_Handler (PO.Entry_Queues (Entry_Id));
          if Next_Task /= null and then
            Is_Barrier_Open (PO, Entry_Id) then
-            Queues.General.Remove_Agent
-              (Queue => Queue.Agent_Handler (PO.Entry_Queues (Entry_Id)),
+            Queue.Remove_Agent
+              (Queue => Task_Handler (PO.Entry_Queues (Entry_Id)),
                Agent => Next_Task);
             exit;
          else
@@ -103,6 +116,10 @@ package body Oak.Agent.Tasks.Protected_Objects is
       when Program_Error =>
          Next_Task := null;
    end Get_And_Remove_Next_Task_From_Entry_Queues;
+
+   --  This function will need to be run in the protected object's virtual
+   --  memory space. This should be enough to protected the kernel from
+   --  any bad things.
 
    function Is_Barrier_Open
      (PO       : in out Protected_Agent'Class;
@@ -144,8 +161,8 @@ package body Oak.Agent.Tasks.Protected_Objects is
       for Queue_Head of PO.Entry_Queues loop
          Current_Task := Queue_Head;
          while Current_Task /= null loop
-            Queues.General.Remove_Agent
-              (Queue => Queue.Agent_Handler (Queue_Head),
+            Queue.Remove_Agent
+              (Queue => Task_Handler (Queue_Head),
                Agent => Current_Task);
             Current_Task.State := New_Task_State;
             Current_Task.Shared_State := No_Shared_State;
@@ -159,8 +176,8 @@ package body Oak.Agent.Tasks.Protected_Objects is
       T        : access Task_Agent'Class;
       Entry_Id : Entry_Index) is
    begin
-      Queues.General.Remove_Agent
-        (Queue => Queue.Agent_Handler (PO.Entry_Queues (Entry_Id)),
+      Queue.Remove_Agent
+        (Queue => Task_Handler (PO.Entry_Queues (Entry_Id)),
          Agent     => T);
    end Remove_Task_From_Entry_Queue;
 
@@ -168,8 +185,8 @@ package body Oak.Agent.Tasks.Protected_Objects is
      (PO : in out Protected_Agent'Class;
       T  : access Task_Agent'Class) is
    begin
-      Queues.General.Remove_Agent
-        (Queue => Queue.Agent_Handler (PO.Tasks_Within),
+      Queue.Remove_Agent
+        (Queue => Task_Handler (PO.Tasks_Within),
          Agent => T);
    end Remove_Task_From_Protected_Object;
 
@@ -179,5 +196,36 @@ package body Oak.Agent.Tasks.Protected_Objects is
    begin
       For_Protected_Object.Controlling_Shared_State := To_State;
    end Set_Acquiring_Tasks_State;
+
+   type Protected_Record is record
+      Agent : access Protected_Agent'Class;
+   end record;
+
+   type Protected_Subprogram_Components is record
+      Object : access Protected_Record;
+      Handler_Address : System.Address;
+   end record;
+
+   function Protected_Object_From_Access
+     (Handler : Parameterless_Access)
+      return access Protected_Agent'Class
+   is
+      function To_Protected_Subprogram_Components is
+        new Ada.Unchecked_Conversion
+          (Parameterless_Access, Protected_Subprogram_Components);
+   begin
+      return To_Protected_Subprogram_Components (Handler).Object.Agent;
+   end Protected_Object_From_Access;
+
+   function Protected_Object_From_Access
+     (Handler : Ada.Cyclic_Tasks.Action_Handler)
+      return access Protected_Agent'Class
+   is
+      function To_Protected_Subprogram_Components is
+        new Ada.Unchecked_Conversion
+          (Ada.Cyclic_Tasks.Action_Handler, Protected_Subprogram_Components);
+   begin
+      return To_Protected_Subprogram_Components (Handler).Object.Agent;
+   end Protected_Object_From_Access;
 
 end Oak.Agent.Tasks.Protected_Objects;

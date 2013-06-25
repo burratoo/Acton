@@ -21,17 +21,23 @@ package body Oak.Agent.Tasks.Main_Task is
          Stack_Address     => Null_Address,
          Stack_Size        => Stack_Size,
          Name              => Name,
-         Normal_Priority   => Normal_Priority,
-         Relative_Deadline => Time_Span_Zero,
-         Cycle_Period      => Time_Span_Zero,
-         Phase             => Time_Span_Zero,
          Run_Loop          => Run_Loop,
          Task_Value_Record => Null_Address,
+         Normal_Priority   => Normal_Priority,
+         Cycle_Behaviour   => Ada.Cyclic_Tasks.Normal,
+         Cycle_Period      => Oak_Time.Time_Span_Last,
+         Phase             => Oak_Time.Time_Span_Zero,
+         Execution_Budget  => Oak_Time.Time_Span_Last,
+         Budget_Action     => Ada.Cyclic_Tasks.No_Action,
+         Budget_Handler    => null,
+         Relative_Deadline => Oak_Time.Time_Span_Last,
+         Deadline_Action   => Ada.Cyclic_Tasks.No_Action,
+         Deadline_Handler  => null,
+         Execution_Server  => null,
          Chain             => No_Chain,
          Elaborated        => null);
 
       Agent.State           := Sleeping;
-      Agent.Next_Deadline   := Time_Last;
       Agent.Next_Run_Cycle  := Current_Time;
       Agent.Wake_Time       := Current_Time;
 

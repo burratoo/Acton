@@ -6,7 +6,8 @@ with Oak.Protected_Objects; use Oak.Protected_Objects;
 package Oak.Agent.Tasks.Protected_Objects with Preelaborate is
 
    type Protected_Agent (Num_Entries : Entry_Index)
-     is new Task_Agent with private;
+     is new Task_Agent with private
+     with Preelaborable_Initialization;
 
    type Entry_Barrier_Function_Handler is
      access function (PO : System.Address;
@@ -95,6 +96,16 @@ package Oak.Agent.Tasks.Protected_Objects with Preelaborate is
      (For_Protected_Object : in out Protected_Agent'Class;
       To_State             : in Task_State);
 
+   type Parameterless_Access is access protected procedure;
+
+   function Protected_Object_From_Access
+     (Handler : Parameterless_Access)
+      return access Protected_Agent'Class;
+
+   function Protected_Object_From_Access
+     (Handler : Ada.Cyclic_Tasks.Action_Handler)
+      return access Protected_Agent'Class;
+
 private
 
    type Entry_Queue_Array is array (Entry_Index range <>)
@@ -105,13 +116,11 @@ private
       Object_Record  : System.Address;
 
       Entry_Barriers : Entry_Barrier_Function_Handler;
-      Entry_Queues   : Entry_Queue_Array (1 .. Num_Entries) :=
-                         (others => null);
+      Entry_Queues   : Entry_Queue_Array (1 .. Num_Entries);
 
-      Controlling_Shared_State : aliased Task_State :=  Waiting;
-      Active_Subprogram_Kind   : Protected_Subprogram_Type
-        := Protected_Function;
-      Tasks_Within             : access Task_Agent'Class := null;
+      Controlling_Shared_State : aliased Task_State;
+      Active_Subprogram_Kind   : Protected_Subprogram_Type;
+      Tasks_Within             : access Task_Agent'Class;
    end record;
 
    function Active_Subprogram_Kind

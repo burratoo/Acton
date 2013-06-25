@@ -1,10 +1,13 @@
 with ISA;
 with ISA.Power.e200.Timer_Registers;
 with ISA.Power.e200.z6.HID;
+with ISA.Power.e200.Processor_Control_Registers;
+use ISA.Power.e200.Processor_Control_Registers;
 
 with Oak.Agent.Tasks;
 with Oak.Core;
 with Oak.Processor_Support_Package.Interrupts;
+with Oak.Core_Support_Package.Task_Support;
 
 with System;                                     use System;
 with System.Machine_Code;                        use System.Machine_Code;
@@ -55,6 +58,8 @@ package body Oak.Core_Support_Package.Interrupts is
         ("mtspr  1008, %0",
          Inputs   => (HID0_Type'Asm_Input ("r", HID0)),
          Volatile => True);
+
+      Enable_Oak_Wake_Up_Interrupt;
       Oak.Processor_Support_Package.Interrupts.Initialise_Interrupts;
    end Set_Up_Interrupts;
 
@@ -139,7 +144,17 @@ package body Oak.Core_Support_Package.Interrupts is
 
       Task_Stack_Pointer := Core.Current_Agent_Stack_Pointer;
       if Core.Current_Agent.all in Agent.Tasks.Task_Agent'Class then
-         Enable_Oak_Wake_Up_Interrupt;
+         Asm
+           ("mtsrr1   %0",
+            Inputs   => Machine_State_Register_Type'Asm_Input
+                          ("r", Core_Support_Package.Task_Support.Agent_MSR),
+            Volatile => True);
+      else
+         Asm
+           ("mtsrr1   %0",
+            Inputs   => Machine_State_Register_Type'Asm_Input
+                          ("r", Core_Support_Package.Task_Support.Oak_MSR),
+            Volatile => True);
       end if;
 
       --  Load task's registers
@@ -277,7 +292,12 @@ package body Oak.Core_Support_Package.Interrupts is
            Volatile => True);
 
       Core.Set_Current_Agent_Stack_Pointer (SP => Task_Stack_Pointer);
-      Disable_Oak_Wake_Up_Interrupt;
+
+      Asm
+        ("mtsrr1   %0",
+         Inputs   => Machine_State_Register_Type'Asm_Input
+                       ("r", Core_Support_Package.Task_Support.Oak_MSR),
+         Volatile => True);
 
       Asm
         ("mfsprg0         r1" & ASCII.LF & ASCII.HT & -- load kernel stack ptr
@@ -345,7 +365,7 @@ package body Oak.Core_Support_Package.Interrupts is
          "evstdd r9,   8(r1)",
          Volatile => True);
 
-      Oak.Core.Current_Task.Store_Task_Yield_Status (Agent.Tasks.Forced);
+      Oak.Core.Current_Task.Store_Task_Yield_Status (Agent.Tasks.Timer);
 
       Asm
         ("evldd  r9,   8(r1)" & ASCII.LF & ASCII.HT &
@@ -354,6 +374,25 @@ package body Oak.Core_Support_Package.Interrupts is
          Volatile => True);
       Context_Switch_To_Kernel_Interrupt;
    end Decrementer_Interrupt;
+
+   procedure External_Interrupt_Handler is
+   begin
+      Enable_SPE_Instructions;
+      Asm
+        ("stu    r1, -8(r1)" & ASCII.LF & ASCII.HT &
+         "evstdd r10,  0(r1)" & ASCII.LF & ASCII.HT &
+         "evstdd r9,   8(r1)",
+         Volatile => True);
+
+      Oak.Core.Current_Task.Store_Task_Yield_Status (Agent.Tasks.Interrupt);
+
+      Asm
+        ("evldd  r9,   8(r1)" & ASCII.LF & ASCII.HT &
+         "evldd  r10,  0(r1)" & ASCII.LF & ASCII.HT &
+         "addi   r1, r1, 8",
+         Volatile => True);
+      Context_Switch_To_Kernel_Interrupt;
+   end External_Interrupt_Handler;
 
    --  We use r2 and r13 as they are the only registers guaranteed not to
    --  be using the whole 64 bits of the register.

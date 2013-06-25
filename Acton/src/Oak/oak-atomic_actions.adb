@@ -4,7 +4,7 @@ with Oak.Scheduler;          use Oak.Scheduler;
 
 package body Oak.Atomic_Actions is
 
-   package Queue renames Oak.Agent.Tasks.Queues.General;
+   package Queue renames Oak.Agent.Tasks.Queues.Task_Queues;
 
    procedure Add_Protected_Object
      (AO : not null access Atomic_Object;
@@ -49,7 +49,7 @@ package body Oak.Atomic_Actions is
             --  as well.
 
             if Not_All_Present then
-               AO.Controlling_State := Waiting;
+               AO.Controlling_State := Waiting_For_Protected_Object;
                T.Set_State (Shared_State);
                T.Set_Shared_State (AO.Controlling_State'Access);
             else
@@ -114,7 +114,7 @@ package body Oak.Atomic_Actions is
       --  as well.
 
       if Not_All_Present then
-         AO.Controlling_State := Waiting;
+         AO.Controlling_State := Waiting_For_Protected_Object;
          T.Set_State (Shared_State);
          T.Set_Shared_State (AO.Controlling_State'Access);
       else
@@ -177,10 +177,10 @@ package body Oak.Atomic_Actions is
       if AO.Actions (Action_Id).Current_Task /= null then
 
          Scheduler.Remove_Task_From_Scheduler (T);
-         T.Set_State (Waiting);
+         T.Set_State (Waiting_For_Protected_Object);
          Queue.Add_Agent_To_Tail
            (Queue =>
-              Queue.Agent_Handler (AO.Actions (Action_Id).Queue),
+              Task_Handler (AO.Actions (Action_Id).Queue),
             Agent => T);
 
       else
@@ -252,8 +252,7 @@ package body Oak.Atomic_Actions is
                   if AO.Actions (Id).Queue /= null then
                      QT := AO.Actions (Id).Queue;
                      Queue.Remove_Agent_From_Head
-                       (Queue.Agent_Handler
-                          (AO.Actions (Id).Queue));
+                       (Task_Handler (AO.Actions (Id).Queue));
                      QT.Set_State (Runnable);
                      Scheduler.Add_Task_To_Scheduler
                        (Scheduler_Info => Scheduler_Info,

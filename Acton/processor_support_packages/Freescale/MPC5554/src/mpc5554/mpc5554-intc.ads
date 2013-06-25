@@ -35,6 +35,11 @@ package MPC5554.INTC with Preelaborate  is
       Hardware_Vector_Enable  : HVEN_Type;
    end record;
 
+   --  INTC Interrupt Acknowledge Register
+   type Interrupt_Acknowledge_Type is record
+      Interrupt_Vector : INTC_ID_Type;
+   end record;
+
    --  INTC End-of-Interrupt Register
    type End_Interrupt_Type is (End_Interrupt);
 
@@ -47,6 +52,10 @@ package MPC5554.INTC with Preelaborate  is
    for Module_Config_Type use record
       Vector_Table_Entry_Size at 0 range 26 .. 26;
       Hardware_Vector_Enable  at 0 range 31 .. 31;
+   end record;
+
+   for Interrupt_Acknowledge_Type use record
+      Interrupt_Vector at 0 range 21 .. 29;
    end record;
 
    for End_Interrupt_Type use (End_Interrupt => 0);
@@ -66,6 +75,11 @@ package MPC5554.INTC with Preelaborate  is
    Interrupt_Acknowledge_Register : System.Address;
    for Interrupt_Acknowledge_Register'Size use 32;
    for Interrupt_Acknowledge_Register'Address use
+     System'To_Address (INTC_Base_Address + Interrupt_Acknowledge_Addresss);
+
+   Interrupt_Acknowledge_Component : Interrupt_Acknowledge_Type;
+   for Interrupt_Acknowledge_Component'Size use 32;
+   for Interrupt_Acknowledge_Component'Address use
      System'To_Address (INTC_Base_Address + Interrupt_Acknowledge_Addresss);
 
    End_Of_Interrupt_Register      : End_Interrupt_Type;

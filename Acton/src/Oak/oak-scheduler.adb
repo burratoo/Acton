@@ -1,13 +1,12 @@
 with Oak.Agent.Tasks.Queues;
 with Oak.Core;
-with Oak.Core_Support_Package.Task_Support;
-
-with Oak.Core_Support_Package; use Oak.Core_Support_Package;
+with Oak.Oak_Time; use Oak.Oak_Time;
 with System;                   use System;
+with Oak.Agent.Tasks.Interrupts; use Oak.Agent.Tasks.Interrupts;
 
 package body Oak.Scheduler is
 
-   package Inactive_Queue renames Oak.Agent.Tasks.Queues.General;
+   package Inactive_Queue renames Oak.Agent.Tasks.Queues.Task_Queues;
 
    procedure Activate_Task
      (Scheduler_Info : in out Oak_Scheduler_Info;
@@ -77,24 +76,6 @@ package body Oak.Scheduler is
          Agent => T);
    end Deactivate_Task;
 
-   function Earliest_Scheduler_Agent_Time
-     (Scheduler_Info : Oak_Scheduler_Info)
-      return           Time
-   is
-      Earliest_Time : Time := Time_Last;
-
-      Agent : access Scheduler_Agent'Class :=
-                Scheduler_Info.Scheduler_Agent_Table;
-   begin
-      while Agent /= null loop
-         if Earliest_Time > Agent.Desired_Run_Time then
-            Earliest_Time := Agent.Desired_Run_Time;
-         end if;
-         Agent := Agent.Next_Agent;
-      end loop;
-      return Earliest_Time;
-   end Earliest_Scheduler_Agent_Time;
-
    procedure Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
      (Scheduler_Info : in out Oak_Scheduler_Info;
       Chosen_Task    : out Task_Handler)
@@ -121,27 +102,19 @@ package body Oak.Scheduler is
       end loop;
    end Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next;
 
-   procedure Handle_Missed_Deadline
-     (Scheduler_Info : in out Oak_Scheduler_Info;
-      Chosen_Task    : out Task_Handler)
-   is
-      pragma Unreferenced (Scheduler_Info, Chosen_Task);
-   begin
-      --  Generated stub: replace with real body!
-      --  pragma Compile_Time_Warning
-      --  (True,
-      --   "Handle_Missed_Deadline unimplemented");
-      null;
-   end Handle_Missed_Deadline;
-
-   procedure Inform_Scheduler_Agent_Task_Has_Yielded
+   procedure Inform_Scheduler_Agent_Task_Has_Changed_State
      (Chosen_Task : in out Task_Handler)
    is
       Agent : constant access Scheduler_Agent'Class :=
          Chosen_Task.Scheduler_Agent_For_Task;
    begin
+      if Chosen_Task.all in Interrupt_Agent then
+         return;
+      end if;
+
+      Agent.Set_Task_To_Manage (Chosen_Task);
       Chosen_Task :=
-         Run_Scheduler_Agent (Agent => Agent, Reason => Task_Yield);
+         Run_Scheduler_Agent (Agent => Agent, Reason => Task_State_Change);
 
       if Chosen_Task = null then
          if Agent.Next_Agent /= null then
@@ -152,23 +125,7 @@ package body Oak.Scheduler is
             Chosen_Task := null;
          end if;
       end if;
-   end Inform_Scheduler_Agent_Task_Has_Yielded;
-
-   procedure Insert_Task_Into_Dealine_List
-     (Scheduler_Info : in out Oak_Scheduler_Info;
-      Task_To_Add    : access Task_Agent'Class)
-   is
-   begin
-      null;
-   end Insert_Task_Into_Dealine_List;
-
-   procedure Remove_Task_From_Deadline_List
-     (Scheduler_Info : in out Oak_Scheduler_Info;
-      Task_To_Remove : access Task_Agent'Class)
-   is
-   begin
-      null;
-   end Remove_Task_From_Deadline_List;
+   end Inform_Scheduler_Agent_Task_Has_Changed_State;
 
    procedure Remove_Task_From_Scheduler
      (T : access Task_Agent'Class)
@@ -195,8 +152,8 @@ package body Oak.Scheduler is
       Reason : in Reason_For_Run) is
    begin
       Agent.Set_Run_Reason (Reason);
-      Core.Set_Current_Agent (Agent => Agent);
-      Core_Support_Package.Task_Support.Context_Switch_To_Scheduler_Agent;
+      Core.Context_Switch_To_Agent (Agent);
+      Agent.Scheduler_Timer.Update_Timer (New_Time => Agent.Desired_Run_Time);
    end Run_Scheduler_Agent;
 
    ------------------------------------------------------------
@@ -229,16 +186,12 @@ package body Oak.Scheduler is
            and then Current_Task.Normal_Priority > Agent.Highest_Priority;
       end loop;
 
-      if Chosen_Task = null then
+      if Chosen_Task = null
+        and then Current_Task.State not in Waiting
+        and then Current_Task.State = Interrupt_Done
+      then
          Chosen_Task := Current_Task;
       end if;
    end Run_The_Bloody_Scheduler_Agent_That_Wanted_To_Be_Woken;
-
-   procedure Task_Deadline_Updated
-     (Scheduler_Info : in out Oak_Scheduler_Info;
-      Updated_Task   : access Task_Agent'Class) is
-   begin
-      null;
-   end Task_Deadline_Updated;
 
 end Oak.Scheduler;

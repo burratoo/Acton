@@ -48,6 +48,11 @@ pragma Restrictions (No_Implicit_Dynamic_Code);
 --  Pointers to nested subprograms are not allowed in this run time, in order
 --  to prevent the compiler from building "trampolines".
 
+pragma Restrictions (No_Abort_Statements);
+--  No abort statments can be used in Acton at the moment.
+
+pragma Restrictions (Max_Asynchronous_Select_Nesting => 0);
+
 pragma Restrictions (No_Finalization);
 --  Controlled types are not supported in this run time
 
@@ -121,9 +126,18 @@ package System is
    Max_Priority           : constant Positive := 25;
    Max_Interrupt_Priority : constant Positive := 30;
 
+   --  Need to provide the range in numbers to make the binder happy.
+   --  Don't change the spacing of Any_Priority subtype definition!
+
    subtype Any_Priority       is Integer      range   0 .. 30;
    subtype Priority           is Any_Priority range   0 .. 25;
-   subtype Interrupt_Priority is Any_Priority range  26 .. 30;
+   subtype Interrupt_Priority is Any_Priority range
+     Priority'Last + 1 .. Any_Priority'Last;
+
+   subtype Oak_Priority           is Integer      range
+     Any_Priority'First .. Any_Priority'Last + 1;
+   subtype Oak_Interrupt_Priority is Oak_Priority range
+     Interrupt_Priority'First .. Oak_Priority'Last;
 
    Default_Priority : constant Priority := 14;
 

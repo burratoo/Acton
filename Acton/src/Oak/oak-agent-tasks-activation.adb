@@ -74,32 +74,22 @@ package body Oak.Agent.Tasks.Activation is
    -----------------------
 
    procedure Finish_Activation (Activator : in out Task_Agent'Class) is
-      OI        : constant access Oak.Core.Oak_Data                :=
-         Core.Oak_Instance;
+      OI        : constant access Core.Oak_Data := Core.Oak_Instance;
       Scheduler : constant access Oak.Scheduler.Oak_Scheduler_Info :=
          Core.Scheduler_Info (OI);
 
-      TP              : access Task_Agent'Class :=
-                          Next_Task (Activator'Access);
-      Activation_Time : constant Time    := Oak_Time.Clock;
+      T : access Task_Agent'Class := Next_Task (Activator'Access);
    begin
-      while TP /= End_Of_List loop
-         TP.State          := Runnable;
-         TP.Wake_Time      := Activation_Time + TP.Phase;
-         TP.Next_Run_Cycle := TP.Wake_Time + TP.Cycle_Period;
+      while T /= End_Of_List loop
+         T.State          := Runnable;
+         T.Wake_Time      := Oak_Time.Clock;
 
-         --  If the deadline is set to zero, disable the deadline by setting
-         --  Next_Deadline to last possible time.
-         if TP.Deadline = Time_Span_Zero then
-            TP.Next_Deadline := Oak.Oak_Time.Time_Last;
-         else
-            TP.Next_Deadline := TP.Wake_Time + TP.Deadline;
-         end if;
+         Set_Next_Deadline_For_Task (T.all, Using => Wake_Up_Time);
 
          Oak.Scheduler.Add_Task_To_Scheduler
            (Scheduler_Info => Scheduler.all,
-            T              => TP);
-         TP := Next_Task (TP);
+            T              => T);
+         T := Next_Task (T);
       end loop;
       Activator.State           := Runnable;
       Activator.Activation_List := End_Of_List;

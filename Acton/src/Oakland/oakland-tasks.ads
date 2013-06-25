@@ -12,8 +12,10 @@ package Oakland.Tasks with Preelaborate is
 
    procedure Change_Relative_Deadline (New_Deadline : in Time_Span);
 
-   procedure Cycle_Completed;
+   procedure Begin_Cycles_Stage;
 
    procedure Yield_Processor_To_Kernel
      (Task_Message : in Oak.Agent.Tasks.Oak_Task_Message);
+
+   procedure New_Cycle;
 end Oakland.Tasks;

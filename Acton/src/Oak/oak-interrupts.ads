@@ -21,4 +21,5 @@ package Oak.Interrupts with Preelaborate is
         Agent.Tasks.Protected_Objects.Protected_Agent'Class;
       T               : access Agent.Tasks.Task_Agent'Class;
       Chosen_Task     : out Agent.Tasks.Task_Handler);
+
 end Oak.Interrupts;
