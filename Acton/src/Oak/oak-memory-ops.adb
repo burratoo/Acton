@@ -1,6 +1,8 @@
 with Ada.Unchecked_Conversion;
 with System.Storage_Elements; use System.Storage_Elements;
 
+--  From AdaCore's website I think.
+
 package body Oak.Memory.Ops is
 
    function Mem_Compare (dest, src : Address;
@@ -77,4 +79,22 @@ package body Oak.Memory.Ops is
       return dest;
    end Mem_Move;
 
+   function Mem_Set (Mem_Loc    : Address;
+                     With_Value : char;
+                     Length     : size_t) return Address is
+      subtype mem is char_array (size_t);
+      type memptr is access mem;
+      function to_memptr is
+        new Ada.Unchecked_Conversion (Address, memptr);
+      Mem_Access : constant memptr := to_memptr (Mem_Loc);
+   begin
+      if Length > 0 then
+         --  need to guard against Length=0 since size_t is a modular type
+         for J in 0 .. Length - 1 loop
+            Mem_Access (J) := With_Value;
+         end loop;
+      end if;
+
+      return Mem_Loc;
+   end Mem_Set;
 end Oak.Memory.Ops;

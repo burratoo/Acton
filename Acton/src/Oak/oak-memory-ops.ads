@@ -13,4 +13,9 @@ package Oak.Memory.Ops with Pure is
    function Mem_Move (dest, src : Address;
                       n         : size_t) return Address;
    pragma Export (C, Mem_Move, "memmove");
+
+   function Mem_Set (Mem_Loc    : Address;
+                     With_Value : char;
+                     Length     : size_t) return Address
+     with Export, Convention => C, External_Name => "memset";
 end Oak.Memory.Ops;

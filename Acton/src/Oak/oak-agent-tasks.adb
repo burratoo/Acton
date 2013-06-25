@@ -132,9 +132,8 @@ package body Oak.Agent.Tasks is
    is
       C : Activation_Chain;
    begin
-      Initialise_Task_Agent
-        (Agent             => Agent,
-         Stack_Address     => Null_Address,
+      Agent.Initialise_Task_Agent
+        (Stack_Address     => Null_Address,
          Stack_Size        => Core_Support_Package.Call_Stack.Sleep_Stack_Size,
          Name              => "Sleep",
          Run_Loop          => Run_Loop,

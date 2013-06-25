@@ -8,7 +8,7 @@ abstract project Acton_Common is
    Library_Src_Dir   := "../adainclude/";
    Library_Interface := ("Oakland", "Oakland.Atomic_Actions", "Oakland.Interrupts", "Oakland.Tasks", "Oakland.Protected_Objects",
                          "Acton", "Acton.Scheduler_Agents", "Acton.Scheduler_Agents.FIFO_Within_Priorities",
-                         "Ada", "Ada.Atomic_Actions", "Ada.Cyclic_Tasks", "Ada.Exceptions", "Ada.Execution_Server", "Ada.Finalization", "Ada.Interrupts", "Ada.Real_Time", "Ada.Real_Time.Delays", "Ada.Tags", "Ada.Task_Identification", "Ada.Unchecked_Conversion",
+                         "Ada", "Ada.Atomic_Actions", "Ada.Cyclic_Tasks", "Ada.Exceptions", "Ada.Execution_Server", "Ada.Interrupts", "Ada.Real_Time", "Ada.Real_Time.Delays", "Ada.Tags", "Ada.Task_Identification", "Ada.Unchecked_Conversion",
                          "Interfaces", "Oak", "Oak.Atomic_Actions", "Oak.Core", "Oak.Memory",
                               "Oak.Memory.Call_Stack",
                               "Oak.Core_Support_Package",
@@ -19,7 +19,7 @@ abstract project Acton_Common is
                          "Oak.Indices",
                          "Oak.Oak_Time", "Oak.Oak_Time.Conversion",
                               "Oak.Processor_Support_Package", "Oak.Processor_Support_Package.Interrupts", "Oak.Timers",
-                              "System", "System.Assertions", "System.Finalization_Root", "System.Exceptions_Debug", "System.Machine_Code", "System.Multiprocessors", "System.Standard_Library", "System.Storage_Elements", "System.Unsigned_Types",
+                              "System", "System.Assertions", "System.Exceptions_Debug", "System.Machine_Code", "System.Multiprocessors", "System.Standard_Library", "System.Storage_Elements", "System.Unsigned_Types",
                              --  Only needed for their ali files
                          "Oak.Agent.Tasks.Cycle",
                          "Oak.Agent.Tasks.Interrupts",

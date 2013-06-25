@@ -290,20 +290,20 @@ private
       Deadline_Timer    : aliased Oak.Timers.Action_Timer;
       Execution_Timer   : aliased Oak.Timers.Action_Timer;
 
-      Execution_Server  : access Ada.Execution_Server.Execution_Server;
+      Execution_Server  : access Ada.Execution_Server.Execution_Server := null;
 
       Next_Run_Cycle    : Oak_Time.Time;
       Wake_Time         : Oak_Time.Time;
       Remaining_Budget  : Oak_Time.Time_Span;
       Event_Raised      : Boolean;
 
-      Scheduler_Agent   : access Schedulers.Scheduler_Agent'Class;
+      Scheduler_Agent   : access Schedulers.Scheduler_Agent'Class := null;
       Queue_Link        : Task_Agent_Link_Element;
 
-      Activation_List   : access Task_Agent'Class;
+      Activation_List   : access Task_Agent'Class := null;
       Elaborated        : Boolean_Access;
 
-      In_Atomic_Action  : access Atomic_Actions.Atomic_Object;
+      In_Atomic_Action  : access Atomic_Actions.Atomic_Object := null;
    end record;
 
    type Activation_Chain is limited record
