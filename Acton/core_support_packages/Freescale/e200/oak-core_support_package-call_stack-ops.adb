@@ -1,5 +1,5 @@
 with Ada.Unchecked_Conversion;
-with Oak.Agent.Tasks;
+with Oak.Message;
 with System;
 
 with System.Machine_Code; use System.Machine_Code;
@@ -7,13 +7,11 @@ with System.Machine_Code; use System.Machine_Code;
 package body Oak.Core_Support_Package.Call_Stack.Ops is
    use System.Storage_Elements;
 
-   package Task_Agents renames Oak.Agent.Tasks;
-
    pragma Warnings (Off);
    function To_Message_Loc is
      new Ada.Unchecked_Conversion
        (Source => System.Address,
-        Target => Task_Agents.Oak_Task_Message_Location);
+        Target => Message.Oak_Message_Location);
    pragma Warnings (On);
 
    ----------------------------------
@@ -56,11 +54,11 @@ package body Oak.Core_Support_Package.Call_Stack.Ops is
 
    procedure Initialise_Call_Stack
      (Stack             : in out Oak.Memory.Call_Stack.Call_Stack_Handler;
-      Start_Instruction : in System.Address)
+      Start_Instruction : in     System.Address)
    is
    begin
       Stack.Pointer := Stack.Pointer -
-        Task_Agents.Oak_Task_Message_Store'Size / System.Storage_Unit;
+        Message.Oak_Message_Store'Size / System.Storage_Unit;
       Stack.Pointer := Stack.Pointer - Task_Registers_Save_Size;
       Set_Task_Body_Procedure
         (Stack             => Stack,
@@ -70,15 +68,15 @@ package body Oak.Core_Support_Package.Call_Stack.Ops is
 
    procedure Initialise_Call_Stack
      (Stack             : in out Oak.Memory.Call_Stack.Call_Stack_Handler;
-      Start_Instruction : in System.Address;
-      Task_Value_Record : in System.Address;
-      Message_Location  : out Task_Agents.Oak_Task_Message_Location)
+      Start_Instruction : in     System.Address;
+      Task_Value_Record : in     System.Address;
+      Message_Location  : out    Message.Oak_Message_Location)
    is
    begin
       Stack.Pointer := Stack.Pointer -
-        Task_Agents.Oak_Task_Message_Store'Size / System.Storage_Unit;
+        Message.Oak_Message_Store'Size / System.Storage_Unit;
       Message_Location := To_Message_Loc (Stack.Pointer);
-      Message_Location.Yield_Status := Task_Agents.Voluntary;
+      Message_Location.Yield_Status := Message.Voluntary;
       Stack.Pointer := Stack.Pointer - Task_Registers_Save_Size;
       Set_Task_Body_Procedure
         (Stack               => Stack,
@@ -88,11 +86,11 @@ package body Oak.Core_Support_Package.Call_Stack.Ops is
 
    procedure Initialise_Call_Stack
      (Stack             : in out Oak.Memory.Call_Stack.Call_Stack_Handler;
-      Start_Instruction : in System.Address;
-      Task_Value_Record : in System.Address;
-      Stack_Address     : in System.Address;
-      Stack_Size        : in System.Storage_Elements.Storage_Count;
-      Message_Location  : out Task_Agents.Oak_Task_Message_Location)
+      Start_Instruction : in     System.Address;
+      Task_Value_Record : in     System.Address;
+      Stack_Address     : in     System.Address;
+      Stack_Size        : in     System.Storage_Elements.Storage_Count;
+      Message_Location  : out    Message.Oak_Message_Location)
    is
    begin
       Stack.Top     := Stack_Address +  Stack_Size;

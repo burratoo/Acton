@@ -1,13 +1,13 @@
 with Oak.Oak_Time;
 with Oak.Timers;
-with System;
+with System; use System;
 
 limited with Oak.Agent.Tasks;
 
 package Oak.Agent.Schedulers with Preelaborate is
 
-   type Scheduler_Agent is new Oak_Agent with private
-     with Preelaborable_Initialization;
+   type Scheduler_Agent (Min_Priority, Max_Priority : Any_Priority)
+     is abstract new Oak_Agent with private with Preelaborable_Initialization;
 
    type Scheduler_Handler is access all Scheduler_Agent;
 
@@ -17,12 +17,13 @@ package Oak.Agent.Schedulers with Preelaborate is
                            Remove_Task);
 
    procedure Initialise_Scheduler_Agent
-     (Agent        : access Scheduler_Agent'Class;
-      Name         : in String;
-      Call_Stack   : in Call_Stack_Handler;
-      Max_Priority : in System.Any_Priority;
-      Min_Prioirty : in System.Any_Priority;
-      Run_Loop     : in System.Address);
+     (Agent : in out Scheduler_Agent) is abstract;
+
+   procedure Initialise_Scheduler_Agent
+     (Agent           : access Scheduler_Agent'Class;
+      Name            : in String;
+      Call_Stack_Size : in System.Storage_Elements.Storage_Count;
+      Run_Loop        : in System.Address);
 
    function Desired_Run_Time
      (Agent : in Scheduler_Agent'Class)
@@ -78,9 +79,10 @@ package Oak.Agent.Schedulers with Preelaborate is
 
 private
 
-   type Scheduler_Agent is new Oak_Agent with record
-      Lowest_Prioirty        : System.Any_Priority;
-      Highest_Prioirty       : System.Any_Priority;
+   type Scheduler_Agent (Min_Priority, Max_Priority : Any_Priority)
+     is abstract new Oak_Agent with record
+      Lowest_Prioirty        : System.Any_Priority := Min_Priority;
+      Highest_Prioirty       : System.Any_Priority := Max_Priority;
       Run_Timer              : aliased Timers.Scheduler_Timer;
 
       Task_To_Run            : access Tasks.Task_Agent'Class;

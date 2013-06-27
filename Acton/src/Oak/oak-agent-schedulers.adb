@@ -1,24 +1,32 @@
+with Oak.Core;
+
 with Oak.Memory.Call_Stack.Ops; use Oak.Memory.Call_Stack.Ops;
-with System; use System;
+with Oak.Scheduler.Agent_List; use Oak.Scheduler.Agent_List;
 
 package body Oak.Agent.Schedulers is
 
    procedure Initialise_Scheduler_Agent
-     (Agent        : access Scheduler_Agent'Class;
-      Name         : in String;
-      Call_Stack   : in Call_Stack_Handler;
-      Max_Priority : in System.Any_Priority;
-      Min_Prioirty : in System.Any_Priority;
-      Run_Loop     : in System.Address)
+     (Agent           : access Scheduler_Agent'Class;
+      Name            : in String;
+      Call_Stack_Size : in System.Storage_Elements.Storage_Count;
+      Run_Loop        : in System.Address)
    is
+      Call_Stack : Oak.Memory.Call_Stack.Call_Stack_Handler;
+
+      OI : constant access Oak.Core.Oak_Data := Oak.Core.Oak_Instance;
+
+      Scheduler : constant access Oak.Scheduler.Oak_Scheduler_Info :=
+         Oak.Core.Scheduler_Info (OI);
    begin
+      Oak.Memory.Call_Stack.Ops.Allocate_Call_Stack
+        (Stack            => Call_Stack,
+         Size_In_Elements => Call_Stack_Size);
+
       Oak.Agent.Initialise_Agent
         (Agent      => Agent,
          Name       => Name,
          Call_Stack => Call_Stack);
 
-      Agent.Lowest_Prioirty        := Min_Prioirty;
-      Agent.Highest_Prioirty       := Max_Priority;
       Agent.Task_To_Run            := null;
       Agent.Desired_Agent_Run_Time := Oak_Time.Time_Zero;
       Agent.Manage_Task            := null;
@@ -32,7 +40,14 @@ package body Oak.Agent.Schedulers is
 
       Initialise_Call_Stack
         (Stack             => Agent.Call_Stack,
-         Start_Instruction => Run_Loop);
+         Start_Instruction => Run_Loop,
+         Task_Value_Record => Agent.all'Address,
+         Message_Location  => Agent.Message_Location);
+
+      Add_Scheduler_Agent
+        (Scheduler_Info => Scheduler.all,
+         New_Agent      => Agent);
+
    end Initialise_Scheduler_Agent;
 
    procedure Set_Chosen_Task

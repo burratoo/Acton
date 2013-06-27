@@ -154,7 +154,7 @@ package body Oak.Agent.Tasks.Protected_Objects is
 
    procedure Purge_Entry_Queues
      (PO             : in out Protected_Agent'Class;
-      New_Task_State : in Task_State)
+      New_Task_State : in     Agent_State)
    is
       Current_Task : access Task_Agent'Class := null;
    begin
@@ -192,7 +192,7 @@ package body Oak.Agent.Tasks.Protected_Objects is
 
    procedure Set_Acquiring_Tasks_State
      (For_Protected_Object : in out Protected_Agent'Class;
-      To_State             : in Task_State) is
+      To_State             : in     Agent_State) is
    begin
       For_Protected_Object.Controlling_Shared_State := To_State;
    end Set_Acquiring_Tasks_State;

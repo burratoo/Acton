@@ -282,33 +282,11 @@ package body Oak.Agent.Tasks is
       For_Task.Shared_State := With_State_Pointer;
    end Set_Shared_State;
 
-   procedure Set_State
-     (T     : in out Task_Agent'Class;
-      State : in Task_State) is
-   begin
-      T.State := State;
-   end Set_State;
-
-   procedure Store_Task_Yield_Status
-     (For_Task : in out Task_Agent'Class;
-      Yielded  : in Yielded_State)
-   is
-   begin
-      For_Task.Message_Location.Yield_Status := Yielded;
-   end Store_Task_Yield_Status;
-
    procedure Set_Wake_Time
      (T  : in out Task_Agent'Class;
       WT : in Oak_Time.Time) is
    begin
       T.Wake_Time := WT;
    end Set_Wake_Time;
-
-   procedure Store_Oak_Task_Message
-     (For_Task : in out Task_Agent'Class;
-      Message  : in Oak_Task_Message) is
-   begin
-      For_Task.Message_Location.Message := Message;
-   end Store_Oak_Task_Message;
 
 end Oak.Agent.Tasks;

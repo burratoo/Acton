@@ -8,6 +8,7 @@ with Oak.Agent.Tasks;
 with Oak.Core;
 with Oak.Processor_Support_Package.Interrupts;
 with Oak.Core_Support_Package.Task_Support;
+with Oak.Message; use Oak.Message;
 
 with System;                                     use System;
 with System.Machine_Code;                        use System.Machine_Code;
@@ -365,7 +366,7 @@ package body Oak.Core_Support_Package.Interrupts is
          "evstdd r9,   8(r1)",
          Volatile => True);
 
-      Oak.Core.Current_Task.Store_Task_Yield_Status (Agent.Tasks.Timer);
+      Oak.Core.Current_Task.Set_Agent_Yield_Status (Message.Timer);
 
       Asm
         ("evldd  r9,   8(r1)" & ASCII.LF & ASCII.HT &
@@ -384,7 +385,7 @@ package body Oak.Core_Support_Package.Interrupts is
          "evstdd r9,   8(r1)",
          Volatile => True);
 
-      Oak.Core.Current_Task.Store_Task_Yield_Status (Agent.Tasks.Interrupt);
+      Oak.Core.Current_Task.Set_Agent_Yield_Status (Message.Interrupt);
 
       Asm
         ("evldd  r9,   8(r1)" & ASCII.LF & ASCII.HT &

@@ -3,6 +3,7 @@ with Oak.Core;
 with Oak.Oak_Time; use Oak.Oak_Time;
 with System;                   use System;
 with Oak.Agent.Tasks.Interrupts; use Oak.Agent.Tasks.Interrupts;
+with Oak.States; use Oak.States;
 
 package body Oak.Scheduler is
 

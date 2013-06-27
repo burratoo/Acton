@@ -119,7 +119,7 @@ package body Oak.Atomic_Actions is
          T.Set_Shared_State (AO.Controlling_State'Access);
       else
          declare
-            New_State : constant Task_State :=
+            New_State : constant Agent_State :=
                           (if AO.Exception_Raised
                            then Atomic_Action_Error else Runnable);
          begin

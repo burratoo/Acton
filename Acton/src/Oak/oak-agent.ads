@@ -1,3 +1,6 @@
+with Oak.Message; use Oak.Message;
+with Oak.States;  use Oak.States;
+
 with Oak.Core_Support_Package;
 with Oak.Oak_Time;
 with System;
@@ -43,10 +46,32 @@ package Oak.Agent with Preelaborate is
       Name            : in String;
       Call_Stack_Size : in System.Storage_Elements.Storage_Count);
 
+   function Agent_Message
+     (For_Agent : in Oak_Agent'Class)
+      return Oak_Message;
+
+   function Agent_Yield_Status
+     (For_Agent : in Oak_Agent'Class)
+      return Yielded_State;
+
+   procedure Set_Agent_Message
+     (For_Agent : in out Oak_Agent'Class;
+      Message   : in     Oak_Message) with Inline_Always;
+
+   procedure Set_Agent_Yield_Status
+     (For_Agent : in out Oak_Agent'Class;
+      Yielded   : in     Yielded_State) with Inline_Always;
+
    procedure Set_Stack_Pointer
      (Agent         : in out Oak_Agent'Class;
       Stack_Pointer : in System.Address)
      with Inline_Always;
+
+   procedure Set_State
+     (A     : in out Oak_Agent'Class;
+      State : in     Agent_State);
+
+   function State (A : in Oak_Agent'Class) return Agent_State;
 
    procedure New_Execution_Cycle (Agent : in out Oak_Agent'Class);
    procedure Charge_Execution_Time
@@ -69,6 +94,9 @@ private
       -----
       Call_Stack : Call_Stack_Handler;
 
+      State             : Agent_State;
+      Message_Location  : Oak_Message_Location;
+
       Total_Execution_Time   : Oak_Time.Time_Span;
       Max_Execution_Time     : Oak_Time.Time_Span;
       Current_Execution_Time : Oak_Time.Time_Span;
@@ -77,8 +105,16 @@ private
       --  Memory_List : Memory_Region_Link := null;
    end record;
 
+   function Agent_Message
+     (For_Agent : in Oak_Agent'Class)
+      return Oak_Message is (For_Agent.Message_Location.Message);
+
    function Agent_Id (Agent : in Oak_Agent'Class) return Task_Id is
      (Agent.Id);
+
+   function Agent_Yield_Status
+     (For_Agent : in Oak_Agent'Class)
+      return Yielded_State is (For_Agent.Message_Location.Yield_Status);
 
    function Name (Agent : in Oak_Agent'Class) return Task_Name is
      (Agent.Name);
@@ -87,4 +123,7 @@ private
      (Agent : in Oak_Agent'Class)
       return System.Address is (Agent.Call_Stack.Pointer);
 
+   function State
+     (A : in Oak_Agent'Class)
+      return Agent_State is (A.State);
 end Oak.Agent;

@@ -1,88 +1,33 @@
 with Oak.Agent.Tasks.Activation;
-with Oak.Core;
-with Oak.Memory.Call_Stack;
-with Oak.Memory.Call_Stack.Ops;
-with Oak.Scheduler.Agent_List;
-
-with Oak.Agent.Tasks;        use Oak.Agent.Tasks;
+with Oak.Agent.Tasks; use Oak.Agent.Tasks;
 with Oak.Agent.Tasks.Queues; --   use Oak.Agent.Tasks.Queues;
 with Oak.Core_Support_Package.Task_Support;
 use  Oak.Core_Support_Package.Task_Support;
 with Oak.Oak_Time;         use Oak.Oak_Time;
+with Oak.States; use Oak.States;
 
 package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
 
    package Task_Queue renames Oak.Agent.Tasks.Queues.Task_Queues;
 
-   type Task_Array is
-     array (System.Any_Priority range <>) of access Task_Agent'Class;
-
-   procedure Create_Agent
-     (Agent        : in out Scheduler_Agent'Class;
-      Min_Priority : in Any_Priority;
-      Max_Priority : in Any_Priority)
-   is
-      Call_Stack : Oak.Memory.Call_Stack.Call_Stack_Handler;
-
-      OI : constant access Oak.Core.Oak_Data := Oak.Core.Oak_Instance;
-
-      Scheduler : constant access Oak.Scheduler.Oak_Scheduler_Info :=
-         Oak.Core.Scheduler_Info (OI);
-
+   procedure Initialise_Scheduler_Agent
+     (Agent : in out FIFO_Within_Priorities) is
    begin
-      Oak.Memory.Call_Stack.Ops.Allocate_Call_Stack
-        (Stack            => Call_Stack,
-         Size_In_Elements => Stack_Size);
-
       Initialise_Scheduler_Agent
-        (Agent        => Agent'Unchecked_Access,
-         Name         => Agent_Name,
-         Call_Stack   => Call_Stack,
-         Max_Priority => Max_Priority,
-         Min_Prioirty => Min_Priority,
-         Run_Loop     => Run_Loop'Address);
-
-      Oak.Scheduler.Agent_List.Add_Scheduler_Agent
-        (Scheduler_Info => Scheduler.all,
-         New_Agent      => Agent'Unchecked_Access);
-
-   end Create_Agent;
-
-   -----------------
-   -- Remove_Task --
-   -----------------
-
-   procedure Remove_Task is
-   begin
-      --  Generated stub: replace with real body! pragma Compile_Time_Warning
-      --  (True, "Remove_Task unimplemented");
-      raise Program_Error with "Unimplemented procedure Remove_Task";
-   end Remove_Task;
-
-   --------------------------
-   -- Change_Task_Priority --
-   --------------------------
-
-   procedure Change_Task_Priority is
-   begin
-      --  Generated stub: replace with real body!
-      --  pragma Compile_Time_Warning
-      --  (True,
-      --   "Change_Task_Priority unimplemented");
-      raise Program_Error with "Unimplemented procedure Change_Task_Priority";
-   end Change_Task_Priority;
+        (Agent           => Agent'Unchecked_Access,
+         Name            => Agent_Name,
+         Call_Stack_Size => Stack_Size,
+         Run_Loop        => Run_Loop'Address);
+   end Initialise_Scheduler_Agent;
 
    --------------
    -- Run_Loop --
    --------------
 
-   procedure Run_Loop is
-      Self            : constant access Scheduler_Agent'Class :=
-                          Scheduler_Handler (Oak.Core.Current_Agent);
+   procedure Run_Loop  (Self : in out FIFO_Within_Priorities) is
       Run_Reason      : Reason_For_Run;
-      Runnable_Queues : Task_Array
-        (Self.Lowest_Priority .. Self.Highest_Priority);
-      Sleeping_Queue  : access Task_Agent'Class;
+      Runnable_Queues : Task_Array renames Self.Runnable_Queues;
+      Sleeping_Queue  : access Task_Agent'Class renames Self.Sleeping_Queue;
 
       Scheduler_Error1 : exception;
 

@@ -1,14 +1,11 @@
+with Oak.Message; use Oak.Message;
+
 limited with Oak.Agent.Tasks;
 limited with Oak.Agent.Tasks.Protected_Objects;
 limited with Oak.Indices;
 limited with Oak.Scheduler;
 
 package Oak.Protected_Objects with Preelaborate is
-
-   type Protected_Subprogram_Type is
-     (Protected_Function,
-      Protected_Procedure,
-      Protected_Entry);
 
    procedure Process_Enter_Request
      (Scheduler_Info  : in out Scheduler.Oak_Scheduler_Info;

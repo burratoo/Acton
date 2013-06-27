@@ -73,6 +73,21 @@ package body Oak.Agent is
       return Chosen_Id;
    end New_Task_Id;
 
+   procedure Set_Agent_Message
+     (For_Agent : in out Oak_Agent'Class;
+      Message   : in     Oak_Message) is
+   begin
+      For_Agent.Message_Location.Message := Message;
+   end Set_Agent_Message;
+
+   procedure Set_Agent_Yield_Status
+     (For_Agent : in out Oak_Agent'Class;
+      Yielded   : in     Yielded_State)
+   is
+   begin
+      For_Agent.Message_Location.Yield_Status := Yielded;
+   end Set_Agent_Yield_Status;
+
    procedure Set_Stack_Pointer
      (Agent         : in out Oak_Agent'Class;
       Stack_Pointer : in System.Address) is
@@ -80,4 +95,10 @@ package body Oak.Agent is
       Agent.Call_Stack.Pointer := Stack_Pointer;
    end Set_Stack_Pointer;
 
+   procedure Set_State
+     (A     : in out Oak_Agent'Class;
+      State : in     Agent_State) is
+   begin
+      A.State := State;
+   end Set_State;
 end Oak.Agent;

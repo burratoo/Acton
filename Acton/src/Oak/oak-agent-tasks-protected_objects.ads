@@ -1,7 +1,6 @@
 with System;
 
 with Oak.Indices;           use Oak.Indices;
-with Oak.Protected_Objects; use Oak.Protected_Objects;
 
 package Oak.Agent.Tasks.Protected_Objects with Preelaborate is
 
@@ -26,7 +25,7 @@ package Oak.Agent.Tasks.Protected_Objects with Preelaborate is
 
    function Acquiring_Tasks_State
      (For_Protected_Object : in Protected_Agent'Class)
-      return Task_State;
+      return Agent_State;
 
    function Entry_Queue_Length
      (PO       : in Protected_Agent'Class;
@@ -35,7 +34,7 @@ package Oak.Agent.Tasks.Protected_Objects with Preelaborate is
 
    function Is_Barrier_Open
      (PO       : in out Protected_Agent'Class;
-      Entry_Id : in Entry_Index)
+      Entry_Id : in     Entry_Index)
       return Boolean;
    --  Evaluates the entry's barrier function to see if it is open. Note that
    --  this function is not side-effect free: If an exception occurs while
@@ -81,7 +80,7 @@ package Oak.Agent.Tasks.Protected_Objects with Preelaborate is
 
    procedure Purge_Entry_Queues
      (PO             : in out Protected_Agent'Class;
-      New_Task_State : in Task_State);
+      New_Task_State : in     Agent_State);
 
    procedure Remove_Task_From_Entry_Queue
      (PO       : in out Protected_Agent'Class;
@@ -94,7 +93,7 @@ package Oak.Agent.Tasks.Protected_Objects with Preelaborate is
 
    procedure Set_Acquiring_Tasks_State
      (For_Protected_Object : in out Protected_Agent'Class;
-      To_State             : in Task_State);
+      To_State             : in     Agent_State);
 
    type Parameterless_Access is access protected procedure;
 
@@ -118,7 +117,7 @@ private
       Entry_Barriers : Entry_Barrier_Function_Handler;
       Entry_Queues   : Entry_Queue_Array (1 .. Num_Entries);
 
-      Controlling_Shared_State : aliased Task_State;
+      Controlling_Shared_State : aliased Agent_State;
       Active_Subprogram_Kind   : Protected_Subprogram_Type;
       Tasks_Within             : access Task_Agent'Class;
    end record;
@@ -129,7 +128,7 @@ private
 
    function Acquiring_Tasks_State
      (For_Protected_Object : in Protected_Agent'Class)
-      return Task_State is (For_Protected_Object.Controlling_Shared_State);
+      return Agent_State is (For_Protected_Object.Controlling_Shared_State);
 
    function Is_Entry_Id_Valid
      (PO       : in Protected_Agent'Class;

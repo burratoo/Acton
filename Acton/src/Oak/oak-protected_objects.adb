@@ -1,5 +1,5 @@
 with Oak.Indices;
-
+with Oak.States;                        use Oak.States;
 with Oak.Agent.Tasks;                   use Oak.Agent.Tasks;
 with Oak.Agent.Tasks.Protected_Objects; use Oak.Agent.Tasks.Protected_Objects;
 with Oak.Atomic_Actions; use Oak.Atomic_Actions;
@@ -10,12 +10,13 @@ use Oak.Processor_Support_Package.Interrupts;
 package body Oak.Protected_Objects is
 
    procedure Process_Enter_Request
-     (Scheduler_Info  : in out Oak_Scheduler_Info;
-      T               : not null access Task_Agent'Class;
-      PO              : not null access Protected_Agent'Class;
+     (Scheduler_Info  : in out Scheduler.Oak_Scheduler_Info;
+      T               : not null access Agent.Tasks.Task_Agent'Class;
+      PO              : not null access
+        Agent.Tasks.Protected_Objects.Protected_Agent'Class;
       Subprogram_Kind : in Protected_Subprogram_Type;
       Entry_Id        : in Indices.Entry_Index;
-      Chosen_Task     : out Task_Handler) is
+      Chosen_Task     : out Agent.Tasks.Task_Handler) is
    begin
       if PO.all not in Protected_Agent'Class or
         (Subprogram_Kind = Protected_Entry and then

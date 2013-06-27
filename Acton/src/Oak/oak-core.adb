@@ -11,6 +11,9 @@ with Oak.Core_Support_Package.Call_Stack;
 with Oak.Processor_Support_Package.Interrupts;
 use Oak.Processor_Support_Package.Interrupts;
 
+with Oak.Message; use Oak.Message;
+with Oak.States;  use Oak.States;
+
 package body Oak.Core is
 
    ----------------
@@ -115,7 +118,7 @@ package body Oak.Core is
       P            : Any_Priority;
       Interrupt_Id : Oak_Interrupt_Id;
 
-      Task_Message   : Oak_Task_Message := (Message_Type => No_State);
+      Task_Message   : Oak_Message := (Message_Type => No_State);
    begin
       loop
       --  Actually the first step should be to mask the timer interrupt we use
@@ -362,8 +365,7 @@ package body Oak.Core is
                when Shared_State =>
                   if Next_Task.Shared_State = Entering_PO then
                      declare
-                        M : constant Oak_Task_Message
-                          := Next_Task.Task_Message;
+                        M : constant Oak_Message := Next_Task.Agent_Message;
                      begin
                         Protected_Objects.Process_Enter_Request
                          (Scheduler_Info  => Oak_Instance.Scheduler,
@@ -432,9 +434,9 @@ package body Oak.Core is
 
          --  Clean up after task has return via a context switch and
          --  determine the reason why the task did.
-         Task_Message := Next_Task.Task_Message;
+         Task_Message := Next_Task.Agent_Message;
 
-         case Next_Task.Task_Yield_Status is
+         case Next_Task.Agent_Yield_Status is
             when Voluntary =>
                --  If the task yielded voluntary update the task state
                --  with the state provided by the message the task sent as
@@ -444,11 +446,11 @@ package body Oak.Core is
                Next_Task.Set_State (State => Task_Message.Message_Type);
 
             when Timer =>
-               Next_Task.Store_Task_Yield_Status (Yielded  => Voluntary);
+               Next_Task.Set_Agent_Yield_Status (Yielded  => Voluntary);
                Oak_Instance.Woken_By := Timer;
 
             when Interrupt =>
-               Next_Task.Store_Task_Yield_Status (Yielded  => Voluntary);
+               Next_Task.Set_Agent_Yield_Status (Yielded  => Voluntary);
                Oak_Instance.Woken_By := External_Interrupt;
 
          end case;

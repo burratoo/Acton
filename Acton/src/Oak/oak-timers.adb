@@ -217,5 +217,5 @@ package body Oak.Timers is
      return Oak.Agent.Tasks.Task_Handler is (Timer.Agent_To_Handle);
 
    function Scheduler_Agent (Timer : in out Scheduler_Timer'Class) return
-     access Oak.Agent.Schedulers.Scheduler_Agent is (Timer.Scheduler);
+     access Oak.Agent.Schedulers.Scheduler_Agent'Class is (Timer.Scheduler);
 end Oak.Timers;

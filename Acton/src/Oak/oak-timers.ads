@@ -75,7 +75,7 @@ package Oak.Timers with Preelaborate is
      Ada.Cyclic_Tasks.Event_Action;
 
    function Scheduler_Agent (Timer : in out Scheduler_Timer'Class) return
-     access Oak.Agent.Schedulers.Scheduler_Agent;
+     access Oak.Agent.Schedulers.Scheduler_Agent'Class;
 
 private
    type Interrupt_Timers is array (Oak_Interrupt_Priority) of

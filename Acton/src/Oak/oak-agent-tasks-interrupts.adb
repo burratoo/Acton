@@ -10,8 +10,8 @@ package body Oak.Agent.Tasks.Interrupts is
        (Task_Handler, Ada.Task_Identification.Task_Id);
 
    procedure Interrupt_Run_Loop is
-      Exit_Message : constant Oak.Agent.Tasks.Oak_Task_Message :=
-                  (Message_Type => Oak.Agent.Tasks.Interrupt_Done);
+      Exit_Message : constant Oak_Message :=
+                  (Message_Type => Interrupt_Done);
       T            : constant access Interrupt_Agent :=
                        Interrupt_Agent (Oak.Core.Current_Task.all)'Access;
    begin
@@ -24,7 +24,7 @@ package body Oak.Agent.Tasks.Interrupts is
                  (To_Task_Id (T.Timer_To_Handle.Agent_To_Handle));
          end case;
 
-         Core.Current_Task.Store_Oak_Task_Message (Exit_Message);
+         Core.Current_Task.Set_Agent_Message (Exit_Message);
          Core_Support_Package.Task_Support.Yield_Processor_To_Kernel;
       end loop;
    end Interrupt_Run_Loop;

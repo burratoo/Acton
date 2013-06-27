@@ -1,6 +1,7 @@
 with Ada.Atomic_Actions; use Ada.Atomic_Actions;
 with Oak.Indices;        use Oak.Indices;
 with Oak.Agent.Tasks;    use Oak.Agent.Tasks;
+with Oak.States; use Oak.States;
 
 limited with Oak.Agent.Tasks.Protected_Objects;
 limited with Oak.Scheduler;
@@ -64,7 +65,7 @@ private
       Exception_Raised  : Boolean;
       Participating     : Participating_Actions;
 
-      Controlling_State : aliased Task_State := No_State;
+      Controlling_State : aliased Agent_State := No_State;
 
       Parent            : access Atomic_Object := null;
       Actions           : Action_State_Array (1 .. Num_Actions);

@@ -1,7 +1,8 @@
 with Oakland.Tasks;
 with Oak.Oak_Time.Conversion; use Oak.Oak_Time.Conversion;
 
-with Oak.Agent.Tasks; use Oak.Agent.Tasks;
+with Oak.Message; use Oak.Message;
+with Oak.States;  use Oak.States;
 
 package body Ada.Real_Time.Delays is
    -----------------
@@ -9,7 +10,7 @@ package body Ada.Real_Time.Delays is
    -----------------
 
    procedure Delay_Until (T : Time) is
-      Message : constant Oak_Task_Message :=
+      Message : constant Oak_Message :=
         (Message_Type => Sleeping,
          Wake_Up_At   => To_Oak_Time (T));
    begin
