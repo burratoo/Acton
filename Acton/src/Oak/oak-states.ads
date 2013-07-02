@@ -32,7 +32,12 @@ package Oak.States with Pure is
                        Atomic_Action_Error,          -- 29
                        Handling_Interrupt,           -- 30
                        Interrupt_Done,               -- 31
-                       No_State);                    -- 32
+                       No_State,                     -- 32
+                       Agent_State_Change,
+                       Selecting_Next_Agent,
+                       Adding_Agent,
+                       Removing_Agent,
+                       Selected_Agent);
 
    subtype Waiting is Agent_State range
      Waiting_For_Event .. Waiting_For_Protected_Object;

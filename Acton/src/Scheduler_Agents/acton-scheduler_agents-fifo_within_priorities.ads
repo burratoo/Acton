@@ -1,7 +1,7 @@
 with Oak.Agent.Schedulers; use Oak.Agent.Schedulers;
 with System; use System;
 
-limited with Oak.Agent.Tasks;
+with Oak.Agent;
 
 package Acton.Scheduler_Agents.FIFO_Within_Priorities with Preelaborate is
 
@@ -18,15 +18,15 @@ package Acton.Scheduler_Agents.FIFO_Within_Priorities with Preelaborate is
    Agent_Name : constant String := "Fixed_Priority_Scheduler";
 
 private
-   type Task_Array is
+   type Agent_Array is
      array (System.Any_Priority range <>) of access
-     Oak.Agent.Tasks.Task_Agent'Class;
+     Oak.Agent.Oak_Agent'Class;
 
    type FIFO_Within_Priorities (Min_Priority, Max_Priority : Any_Priority)
      is new Scheduler_Agent (Min_Priority, Max_Priority) with record
-      Runnable_Queues : Task_Array
+      Runnable_Queues : Agent_Array
         (Min_Priority .. Max_Priority);
-      Sleeping_Queue  : access Oak.Agent.Tasks.Task_Agent'Class;
+      Sleeping_Queue  : access Oak.Agent.Oak_Agent'Class;
    end record;
 
 end Acton.Scheduler_Agents.FIFO_Within_Priorities;

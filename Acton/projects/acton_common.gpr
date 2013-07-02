@@ -27,9 +27,8 @@ abstract project Acton_Common is
                               "Oak.Core_Support_Package.Processor",
                               "Oak.Core_Support_Package.Interrupts",
                               "Oak.Core_Support_Package.Task_Support",
-                              "Oak.Protected_Objects", "Oak.Agent.Tasks.Queues",
-                         "Oak.Scheduler", "Oak.Scheduler.Agent_List"
-                             );
+                              "Oak.Protected_Objects",
+                         "Oak.Scheduler");
 
    Ada_Switches := ("-gnatwa.Xl", "-g", "-gnatn", "-gnatg", "-O2",  "-ffunction-sections", "-fdata-sections");
    Asm_Switches := ();

@@ -57,6 +57,13 @@ package body Oak.Agent is
         To_Agent.Total_Execution_Time + Exec_Time;
    end Charge_Execution_Time;
 
+   function Destination_On_Wake_Up (Agent : in out Oak_Agent)
+                                    return Wake_Destination is
+      pragma Unreferenced (Agent);
+   begin
+      return Run_Queue;
+   end Destination_On_Wake_Up;
+
    procedure New_Execution_Cycle (Agent : in out Oak_Agent'Class) is
    begin
       Agent.Execution_Cycles := Agent.Execution_Cycles + 1;
@@ -77,7 +84,7 @@ package body Oak.Agent is
      (For_Agent : in out Oak_Agent'Class;
       Message   : in     Oak_Message) is
    begin
-      For_Agent.Message_Location.Message := Message;
+      For_Agent.Message_Store.Message := Message;
    end Set_Agent_Message;
 
    procedure Set_Agent_Yield_Status
@@ -85,7 +92,7 @@ package body Oak.Agent is
       Yielded   : in     Yielded_State)
    is
    begin
-      For_Agent.Message_Location.Yield_Status := Yielded;
+      For_Agent.Message_Store.Yield_Status := Yielded;
    end Set_Agent_Yield_Status;
 
    procedure Set_Stack_Pointer
@@ -101,4 +108,12 @@ package body Oak.Agent is
    begin
       A.State := State;
    end Set_State;
+
+   procedure Set_Wake_Time
+     (Agent : in out Oak_Agent'Class;
+      WT    : in Oak_Time.Time) is
+   begin
+      Agent.Wake_Time := WT;
+   end Set_Wake_Time;
+
 end Oak.Agent;

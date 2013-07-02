@@ -1,5 +1,6 @@
 with Oak.Agent.Schedulers; use Oak.Agent.Schedulers;
 with Oak.Agent.Tasks;      use Oak.Agent.Tasks;
+with Oak.Message;           use Oak.Message;
 
 package Oak.Scheduler with Preelaborate is
 
@@ -14,21 +15,15 @@ package Oak.Scheduler with Preelaborate is
      (Scheduler_Info : Oak_Scheduler_Info)
       return access Task_Agent'Class;
 
-   procedure Activate_Task
-     (Scheduler_Info : in out Oak_Scheduler_Info;
-      T              : access Task_Agent'Class);
-
-   procedure Add_New_Task_To_Inactive_List
-     (Scheduler_Info : in out Oak_Scheduler_Info;
-      T              : access Task_Agent'Class);
-
    procedure Add_Task_To_Scheduler
      (Scheduler_Info : in out Oak_Scheduler_Info;
       T              : access Task_Agent'Class);
+   --  Adds task to one of the main scheduler agents based on the task's
+   --  priority.
 
-   procedure Deactivate_Task
+   procedure Add_Scheduler_To_Scheduler_Table
      (Scheduler_Info : in out Oak_Scheduler_Info;
-      T              : access Task_Agent'Class);
+      Scheduler      : access Scheduler_Agent'Class);
 
    procedure Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
      (Scheduler_Info : in out Oak_Scheduler_Info;
@@ -46,12 +41,12 @@ package Oak.Scheduler with Preelaborate is
 
    function Run_Scheduler_Agent
      (Agent  : access Scheduler_Agent'Class;
-      Reason : in Reason_For_Run)
+      Reason : in Oak_Message)
       return access Task_Agent'Class;
 
    procedure Run_Scheduler_Agent
      (Agent  : access Scheduler_Agent'Class;
-      Reason : in Reason_For_Run);
+      Reason : in Oak_Message);
 
    procedure Run_The_Bloody_Scheduler_Agent_That_Wanted_To_Be_Woken
      (Scheduler_Info : in out Oak_Scheduler_Info;
@@ -65,15 +60,6 @@ private
       Scheduler_Agent_Table : access Scheduler_Agent'Class := null;
       --  array of Scheduler_Agents.
       --  Populated by the preprocessor.
-
-      --  Should be a (ordered)
-      --  linked list (allows us to
-      --  insert and remove tasks in
-      --  arbitrary posistions. Is
-      --  there a better structure I
-      --  could use? Could use
-      --  Collection Package?)
-      Inactive_Task_List   : access Task_Agent'Class := null;
    end record;
 
    function Next_Task

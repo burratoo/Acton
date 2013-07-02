@@ -1,48 +1,13 @@
-with Oak.Agent.Tasks.Queues;
 with Oak.Core;
-with Oak.Oak_Time; use Oak.Oak_Time;
-with System;                   use System;
+with Oak.Agent.Queue; use Oak.Agent.Queue;
+with Oak.Oak_Time;    use Oak.Oak_Time;
+with System;          use System;
 with Oak.Agent.Tasks.Interrupts; use Oak.Agent.Tasks.Interrupts;
 with Oak.States; use Oak.States;
 
 package body Oak.Scheduler is
 
-   package Inactive_Queue renames Oak.Agent.Tasks.Queues.Task_Queues;
-
-   procedure Activate_Task
-     (Scheduler_Info : in out Oak_Scheduler_Info;
-      T              : access Task_Agent'Class)
-   is
-      Agent : constant access Scheduler_Agent'Class :=
-                T.Scheduler_Agent_For_Task;
-   begin
-      Inactive_Queue.Remove_Agent
-        (Queue => Scheduler_Info.Inactive_Task_List,
-         Agent => T);
-      T.Set_State (Runnable);
-      Agent.Set_Task_To_Manage (MT => T);
-      Run_Scheduler_Agent (Agent => Agent, Reason => Add_Task);
-   end Activate_Task;
-
-   procedure Add_New_Task_To_Inactive_List
-     (Scheduler_Info : in out Oak_Scheduler_Info;
-      T              : access Task_Agent'Class)
-   is
-      Task_Priority : constant Any_Priority := T.Normal_Priority;
-      Agent         : access Scheduler_Agent'Class :=
-                        Scheduler_Info.Scheduler_Agent_Table;
-   begin
-      while Agent /= null
-        and then Task_Priority < Agent.Lowest_Priority
-      loop
-         Agent := Agent.Next_Agent;
-      end loop;
-      T.Set_Scheduler_Agent_For_Task (Agent);
-      T.Set_State (Inactive);
-      Inactive_Queue.Add_Agent_To_Head
-        (Queue => Scheduler_Info.Inactive_Task_List,
-         Agent => T);
-   end Add_New_Task_To_Inactive_List;
+   type SH is access all Scheduler_Agent'Class;
 
    procedure Add_Task_To_Scheduler
      (Scheduler_Info : in out Oak_Scheduler_Info;
@@ -51,31 +16,47 @@ package body Oak.Scheduler is
       Task_Priority : constant Any_Priority := T.Normal_Priority;
       Agent         : access Scheduler_Agent'Class :=
         Scheduler_Info.Scheduler_Agent_Table;
+      R             : constant Oak_Message :=
+                        (Message_Type => Adding_Agent, Agent_To_Add  => T);
    begin
-      while Agent /= null
+      if Agent = null then
+         raise Program_Error;
+      end if;
+
+      while Agent /= SH (End_Of_Queue (Scheduler_Info.Scheduler_Agent_Table))
         and then Task_Priority < Agent.Lowest_Priority
       loop
-         Agent := Agent.Next_Agent;
+         Agent := Scheduler_Handler (Next_Agent (Agent));
       end loop;
       T.Set_Scheduler_Agent_For_Task (Agent);
-      Agent.Set_Task_To_Manage (T);
-      Run_Scheduler_Agent (Agent => Agent, Reason => Add_Task);
+      Run_Scheduler_Agent (Agent => Agent, Reason => R);
    end Add_Task_To_Scheduler;
 
-   procedure Deactivate_Task
+   procedure Add_Scheduler_To_Scheduler_Table
      (Scheduler_Info : in out Oak_Scheduler_Info;
-      T              : access Task_Agent'Class)
+      Scheduler      : access Scheduler_Agent'Class)
    is
-      Agent : constant access Scheduler_Agent'Class :=
-                T.Scheduler_Agent_For_Task;
+      Agent : access Scheduler_Agent'Class :=
+                     Scheduler_Info.Scheduler_Agent_Table;
    begin
-      Agent.Set_Task_To_Manage (T);
-      Run_Scheduler_Agent (Agent => Agent, Reason => Remove_Task);
-      T.Set_State (Inactive);
-      Inactive_Queue.Add_Agent_To_Head
-        (Queue => Scheduler_Info.Inactive_Task_List,
-         Agent => T);
-   end Deactivate_Task;
+      if Agent = null or else
+        Scheduler.Lowest_Priority > Scheduler.Highest_Priority
+      then
+         Add_Agent_To_Head (Scheduler_Info.Scheduler_Agent_Table, Scheduler);
+      else
+         while Agent /= SH (End_Of_Queue
+                            (Scheduler_Info.Scheduler_Agent_Table))
+           and then Agent.Lowest_Priority > Scheduler.Highest_Priority
+         loop
+            Agent := SH (Next_Agent (Agent));
+         end loop;
+         Add_Agent_Before
+           (Queue     => Scheduler_Info.Scheduler_Agent_Table,
+            Agent     => Scheduler,
+            Before    => Agent,
+            Queue_End => Tail);
+      end if;
+   end Add_Scheduler_To_Scheduler_Table;
 
    procedure Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
      (Scheduler_Info : in out Oak_Scheduler_Info;
@@ -95,11 +76,18 @@ package body Oak.Scheduler is
    begin
       Chosen_Task := null;
 
-      while Agent /= null and then Chosen_Task = null loop
+      loop
          --  Context switch to Manage Queues Routine.
-         Chosen_Task :=
-           Run_Scheduler_Agent (Agent => Agent, Reason => Select_Next_Task);
-         Agent       := Agent.Next_Agent;
+         if Agent.Wake_Time < Clock then
+            Chosen_Task :=
+              Run_Scheduler_Agent
+                (Agent  => Agent,
+                 Reason => (Message_Type => Selecting_Next_Agent));
+         end if;
+
+         Agent       := SH (Next_Agent (Agent));
+         exit when Chosen_Task /= null
+           or else Agent = From_Scheduler_Agent;
       end loop;
    end Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next;
 
@@ -113,18 +101,17 @@ package body Oak.Scheduler is
          return;
       end if;
 
-      Agent.Set_Task_To_Manage (Chosen_Task);
       Chosen_Task :=
-         Run_Scheduler_Agent (Agent => Agent, Reason => Task_State_Change);
+        Run_Scheduler_Agent
+          (Agent  => Agent,
+           Reason =>
+             (Message_Type       => Agent_State_Change,
+              Agent_That_Changed => Chosen_Task));
 
       if Chosen_Task = null then
-         if Agent.Next_Agent /= null then
-            Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
-              (From_Scheduler_Agent => Agent.Next_Agent,
-               Chosen_Task          => Chosen_Task);
-         else
-            Chosen_Task := null;
-         end if;
+         Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
+           (From_Scheduler_Agent => SH (Next_Agent (Agent)),
+            Chosen_Task          => Chosen_Task);
       end if;
    end Inform_Scheduler_Agent_Task_Has_Changed_State;
 
@@ -134,25 +121,27 @@ package body Oak.Scheduler is
       Agent : constant access Scheduler_Agent'Class :=
                 T.Scheduler_Agent_For_Task;
    begin
-      Agent.Set_Task_To_Manage (T);
-      Run_Scheduler_Agent (Agent => Agent, Reason => Remove_Task);
+      Run_Scheduler_Agent
+        (Agent  => Agent,
+         Reason => (Message_Type => Removing_Agent, Agent_To_Remove => T));
       T.Set_Scheduler_Agent_For_Task (null);
    end Remove_Task_From_Scheduler;
 
    function Run_Scheduler_Agent
      (Agent  : access Scheduler_Agent'Class;
-      Reason : in Reason_For_Run)
+      Reason : in Oak_Message)
       return access Task_Agent'Class is
    begin
       Run_Scheduler_Agent (Agent => Agent, Reason => Reason);
-      return Agent.Task_To_Run;
+      return Task_Handler (Agent.Agent_To_Run);
    end Run_Scheduler_Agent;
 
    procedure Run_Scheduler_Agent
      (Agent  : access Scheduler_Agent'Class;
-      Reason : in Reason_For_Run) is
+      Reason : in Oak_Message) is
    begin
-      Agent.Set_Run_Reason (Reason);
+      Agent.Set_Agent_Message (Reason);
+      Agent.Set_State (Reason.Message_Type);
       Core.Context_Switch_To_Agent (Agent);
       Agent.Scheduler_Timer.Update_Timer (New_Time => Agent.Desired_Run_Time);
    end Run_Scheduler_Agent;
@@ -175,21 +164,23 @@ package body Oak.Scheduler is
         Scheduler_Info.Scheduler_Agent_Table;
    begin
       Chosen_Task := null;
-      while Agent /= null and Chosen_Task = null loop
+      loop
          if Agent.Desired_Run_Time < Current_Time then
             Chosen_Task :=
                Run_Scheduler_Agent
                  (Agent  => Agent,
-                  Reason => Select_Next_Task);
+                  Reason => (Message_Type => Selecting_Next_Agent));
          end if;
-         Agent := Agent.Next_Agent;
-         exit when (Current_Task /= null and Agent /= null)
-           and then Current_Task.Normal_Priority > Agent.Highest_Priority;
+         Agent := SH (Next_Agent (Agent));
+         exit when Chosen_Task /= null
+           or else Agent = Scheduler_Info.Scheduler_Agent_Table
+           or else (Current_Task /= null and then
+                      Current_Task.Normal_Priority > Agent.Highest_Priority);
       end loop;
 
       if Chosen_Task = null
         and then Current_Task.State not in Waiting
-        and then Current_Task.State = Interrupt_Done
+        and then Current_Task.State /= Interrupt_Done
       then
          Chosen_Task := Current_Task;
       end if;

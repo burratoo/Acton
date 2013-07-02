@@ -1,65 +1,58 @@
 package body Oak.Agent.Queue is
    procedure Add_Agent_Before
      (Queue     : in out Agent_Handler;
-      Agent     : access Agent_Type'Class;
-      Before    : access Agent_Type'Class;
+      Agent     : access Oak_Agent'Class;
+      Before    : access Oak_Agent'Class;
       Queue_End : in Queue_End_Point := Head) is
    begin
       if Queue = null then
          Queue := Agent_Handler (Agent);
-         Set_Queue_Link (Agent => Agent,
-                         Prev  => Agent,
-                         Next  => Agent);
+         Agent.Previous_Agent := Agent;
+         Agent.Next_Agent     := Agent;
       else
          if Before = Queue and Queue_End = Head then
             Queue := Agent_Handler (Agent);
          end if;
          declare
-            Next  : constant access Agent_Type'Class := Before;
-            Prior : constant access Agent_Type'Class :=
-                      Get_Prev_Agent (Before);
+            Next  : constant access Oak_Agent'Class := Before;
+            Prior : constant access Oak_Agent'Class := Before.Previous_Agent;
          begin
-            Set_Queue_Link (Agent => Agent,
-                            Next  => Next,
-                            Prev  => Prior);
-            Set_Prev_Agent (Agent => Next,
-                            Prev  => Agent);
-            Set_Next_Agent (Agent => Prior,
-                            Next  => Agent);
+            Agent.Next_Agent     := Next;
+            Agent.Previous_Agent := Prior;
+
+            Next.Previous_Agent := Agent;
+            Prior.Next_Agent    := Agent;
          end;
       end if;
    end Add_Agent_Before;
 
    procedure Add_Agent_After
      (Queue : in out Agent_Handler;
-      Agent : access Agent_Type'Class;
-      After : access Agent_Type'Class)
+      Agent : access Oak_Agent'Class;
+      After : access Oak_Agent'Class)
    is
    begin
       if Queue = null then
          Queue := Agent_Handler (Agent);
-         Set_Queue_Link (Agent => Agent,
-                         Prev  => Agent,
-                         Next  => Agent);
+         Agent.Previous_Agent := Agent;
+         Agent.Next_Agent     := Agent;
       else
          declare
-            Next  : constant access Agent_Type'Class := Get_Next_Agent (After);
-            Prior : constant access Agent_Type'Class := After;
+            Next  : constant access Oak_Agent'Class := After.Next_Agent;
+            Prior : constant access Oak_Agent'Class := After;
          begin
-            Set_Queue_Link (Agent => Agent,
-                            Next  => Next,
-                            Prev  => Prior);
-            Set_Prev_Agent (Agent => Next,
-                            Prev  => Agent);
-            Set_Next_Agent (Agent => Prior,
-                            Next  => Agent);
+            Agent.Next_Agent     := Next;
+            Agent.Previous_Agent := Prior;
+
+            Next.Previous_Agent := Agent;
+            Prior.Next_Agent    := Agent;
          end;
       end if;
    end Add_Agent_After;
 
    procedure Add_Agent_To_Head
      (Queue : in out Agent_Handler;
-      Agent : access Agent_Type'Class) is
+      Agent : access Oak_Agent'Class) is
    begin
       Add_Agent_Before (Queue  => Queue,
                        Agent  => Agent,
@@ -68,7 +61,7 @@ package body Oak.Agent.Queue is
 
    procedure Add_Agent_To_Tail
      (Queue : in out Agent_Handler;
-      Agent : access Agent_Type'Class) is
+      Agent : access Oak_Agent'Class) is
    begin
       if Queue = null then
          Add_Agent_After (Queue => Queue,
@@ -77,34 +70,34 @@ package body Oak.Agent.Queue is
       else
          Add_Agent_After (Queue => Queue,
                          Agent => Agent,
-                         After => Get_Prev_Agent (Queue));
+                         After => Queue.Previous_Agent);
       end if;
    end Add_Agent_To_Tail;
 
    procedure Move_Head_To_Tail (Queue : in out Agent_Handler) is
    begin
-      Queue := Get_Next_Agent (Queue);
+      Queue := Queue.Next_Agent;
    end Move_Head_To_Tail;
 
    procedure Remove_Agent
      (Queue : in out Agent_Handler;
-      Agent : access Agent_Type'Class) is
+      Agent : access Oak_Agent'Class) is
    begin
-      if Agent = Get_Next_Agent (Agent) then
+      if Agent = Agent.Next_Agent then
          Queue := null;
       else
          if Queue = Agent then
-            Queue := Get_Next_Agent (Agent);
+            Queue := Agent.Next_Agent;
          end if;
          declare
-            Next  : constant Agent_Handler := Get_Next_Agent (Agent);
-            Prior : constant Agent_Handler := Get_Prev_Agent (Agent);
+            Next  : constant Agent_Handler := Agent.Next_Agent;
+            Prior : constant Agent_Handler := Agent.Previous_Agent;
          begin
-            Set_Prev_Agent (Agent => Next, Prev => Prior);
-            Set_Next_Agent (Agent => Prior, Next => Next);
+            Next.Previous_Agent := Prior;
+            Prior.Next_Agent    := Next;
          end;
       end if;
-      Set_Blank_Link (Agent);
+      Set_Blank_Agent_Link (Agent);
    end Remove_Agent;
 
    procedure Remove_Agent_From_Head (Queue : in out Agent_Handler) is
@@ -114,7 +107,14 @@ package body Oak.Agent.Queue is
 
    procedure Remove_Agent_From_Tail (Queue : in out Agent_Handler) is
    begin
-      Remove_Agent (Queue => Queue, Agent => Get_Prev_Agent (Queue));
+      Remove_Agent (Queue => Queue, Agent => Queue.Previous_Agent);
    end Remove_Agent_From_Tail;
+
+   procedure Set_Blank_Agent_Link
+     (A : access Oak_Agent'Class) is
+   begin
+      A.Next_Agent     := null;
+      A.Previous_Agent := null;
+   end Set_Blank_Agent_Link;
 
 end Oak.Agent.Queue;

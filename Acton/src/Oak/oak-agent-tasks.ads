@@ -16,9 +16,6 @@ package Oak.Agent.Tasks with Preelaborate is
 
    type Task_Handler is access all Task_Agent'Class;
 
-   type Shared_Task_State is access all Agent_State;
-   No_Shared_State : constant Shared_Task_State := null;
-
    type Boolean_Access is access all Boolean;
 
    type Activation_Chain is limited private;
@@ -26,8 +23,6 @@ package Oak.Agent.Tasks with Preelaborate is
    type Activation_Chain_Access is access all Activation_Chain;
 
    type Deadline_Base is (Wake_Up_Time, Clock_Time);
-
-   type Destination is (Run_Queue, Remove);
 
    Unspecified_Priority : constant Integer := -1;
 
@@ -74,8 +69,8 @@ package Oak.Agent.Tasks with Preelaborate is
      (T : in Task_Agent'Class)
       return Oak_Time.Time_Span;
 
-   function Destination_On_Wake_Up (T : in out Task_Agent'Class)
-     return Destination;
+   overriding function Destination_On_Wake_Up (Agent : in out Task_Agent)
+                                    return Wake_Destination;
    --  Returns whether the tasks that has woken up is sent to its run queue
    --  or is removed from the scheduler. Function updates the current
    --  state of the state.
@@ -87,10 +82,6 @@ package Oak.Agent.Tasks with Preelaborate is
 
    function Next_Run_Time (T : in Task_Agent'Class) return Oak_Time.Time;
 
-   function Normal_Priority
-     (T : in Task_Agent'Class)
-      return System.Any_Priority;
-
    function Phase (T : in Task_Agent'Class) return Oak_Time.Time_Span;
 
    function Remaining_Budget
@@ -99,12 +90,6 @@ package Oak.Agent.Tasks with Preelaborate is
    function Scheduler_Agent_For_Task
      (T    : in Task_Agent'Class)
       return access Schedulers.Scheduler_Agent'Class;
-
-   function Shared_State
-     (For_Task : in Task_Agent'Class)
-      return Agent_State;
-
-   function Wake_Time (T : in Task_Agent'Class) return Oak_Time.Time;
 
    procedure Set_Activation_List
      (T   : in out Task_Agent'Class;
@@ -138,24 +123,8 @@ package Oak.Agent.Tasks with Preelaborate is
      (T     : in out Task_Agent'Class;
       Agent : access Schedulers.Scheduler_Agent'Class);
 
-   procedure Set_Shared_State
-     (For_Task : in out Task_Agent'Class;
-      With_State_Pointer : in Shared_Task_State);
-
-   procedure Set_Wake_Time
-     (T  : in out Task_Agent'Class;
-      WT : in Oak_Time.Time);
-
 private
-   type Task_Agent_Link_Element is record
-      Next     : access Task_Agent'Class;
-      Previous : access Task_Agent'Class;
-   end record;
-
    type Task_Agent is new Oak_Agent with record
-      Shared_State      : Shared_Task_State;
-
-      Normal_Priority   : System.Any_Priority;
       Cycle_Behaviour   : Ada.Cyclic_Tasks.Behaviour;
       Cycle_Period      : Oak_Time.Time_Span;
       Phase             : Oak_Time.Time_Span;
@@ -169,12 +138,10 @@ private
       Execution_Server  : access Ada.Execution_Server.Execution_Server := null;
 
       Next_Run_Cycle    : Oak_Time.Time;
-      Wake_Time         : Oak_Time.Time;
       Remaining_Budget  : Oak_Time.Time_Span;
       Event_Raised      : Boolean;
 
       Scheduler_Agent   : access Schedulers.Scheduler_Agent'Class := null;
-      Queue_Link        : Task_Agent_Link_Element;
 
       Activation_List   : access Task_Agent'Class := null;
       Elaborated        : Boolean_Access;
@@ -214,10 +181,6 @@ private
      (T : in Task_Agent'Class)
       return Oak_Time.Time is (T.Next_Run_Cycle);
 
-   function Normal_Priority
-     (T : in Task_Agent'Class)
-      return System.Any_Priority is (T.Normal_Priority);
-
    function Phase
      (T : in Task_Agent'Class)
       return Oak_Time.Time_Span is (T.Phase);
@@ -228,13 +191,4 @@ private
    function Scheduler_Agent_For_Task
      (T : in Task_Agent'Class)
       return access Schedulers.Scheduler_Agent'Class is (T.Scheduler_Agent);
-
-   function Shared_State
-     (For_Task : in Task_Agent'Class)
-      return Agent_State is (For_Task.Shared_State.all);
-
-   function Wake_Time
-     (T : in Task_Agent'Class)
-      return Oak_Time.Time is (T.Wake_Time);
-
 end Oak.Agent.Tasks;

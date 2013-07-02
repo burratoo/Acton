@@ -1,9 +1,9 @@
 with Oak.Message; use Oak.Message;
 with Oak.States;  use Oak.States;
+with System;      use System;
 
 with Oak.Core_Support_Package;
 with Oak.Oak_Time;
-with System;
 with Oak.Memory.Call_Stack;         use Oak.Memory.Call_Stack;
 with System.Storage_Elements;
 --  with Ada.Finalization;
@@ -25,6 +25,10 @@ package Oak.Agent with Preelaborate is
 --     end record;
 
    type Oak_Agent is tagged limited private with Preelaborable_Initialization;
+
+   type Agent_Handler is access all Oak_Agent'Class;
+
+   type Wake_Destination is (Run_Queue, Remove);
 
    function Agent_Id (Agent : in Oak_Agent'Class) return Task_Id;
    function Name (Agent : in Oak_Agent'Class) return Task_Name;
@@ -54,6 +58,16 @@ package Oak.Agent with Preelaborate is
      (For_Agent : in Oak_Agent'Class)
       return Yielded_State;
 
+   function Destination_On_Wake_Up (Agent : in out Oak_Agent)
+                                    return Wake_Destination;
+   --  Returns whether the tasks that has woken up is sent to its run queue
+   --  or is removed from the scheduler. Function updates the current
+   --  state of the state.
+
+   function Normal_Priority
+     (Agent : in Oak_Agent'Class)
+      return System.Any_Priority;
+
    procedure Set_Agent_Message
      (For_Agent : in out Oak_Agent'Class;
       Message   : in     Oak_Message) with Inline_Always;
@@ -71,7 +85,13 @@ package Oak.Agent with Preelaborate is
      (A     : in out Oak_Agent'Class;
       State : in     Agent_State);
 
-   function State (A : in Oak_Agent'Class) return Agent_State;
+   function State (Agent : in Oak_Agent'Class) return Agent_State;
+
+   procedure Set_Wake_Time
+     (Agent : in out Oak_Agent'Class;
+      WT    : in Oak_Time.Time);
+
+   function Wake_Time (Agent : in Oak_Agent'Class) return Oak_Time.Time;
 
    procedure New_Execution_Cycle (Agent : in out Oak_Agent'Class);
    procedure Charge_Execution_Time
@@ -79,7 +99,6 @@ package Oak.Agent with Preelaborate is
       Exec_Time : in Oak_Time.Time_Span);
 
 private
-
    type Oak_Agent is tagged limited record
       Id          : Task_Id;
       Name        : Task_Name;
@@ -94,36 +113,50 @@ private
       -----
       Call_Stack : Call_Stack_Handler;
 
-      State             : Agent_State;
-      Message_Location  : Oak_Message_Location;
+      State                  : Agent_State;
+      Normal_Priority        : Any_Priority;
+      Wake_Time              : Oak_Time.Time;
+      Message_Store          : Oak_Message_Location;
 
       Total_Execution_Time   : Oak_Time.Time_Span;
       Max_Execution_Time     : Oak_Time.Time_Span;
       Current_Execution_Time : Oak_Time.Time_Span;
       Execution_Cycles       : Natural;
 
+      Next_Agent             : access Oak_Agent'Class := null;
+      Previous_Agent         : access Oak_Agent'Class := null;
+
       --  Memory_List : Memory_Region_Link := null;
    end record;
 
    function Agent_Message
      (For_Agent : in Oak_Agent'Class)
-      return Oak_Message is (For_Agent.Message_Location.Message);
+      return Oak_Message is (For_Agent.Message_Store.Message);
 
    function Agent_Id (Agent : in Oak_Agent'Class) return Task_Id is
      (Agent.Id);
 
    function Agent_Yield_Status
      (For_Agent : in Oak_Agent'Class)
-      return Yielded_State is (For_Agent.Message_Location.Yield_Status);
+      return Yielded_State is (For_Agent.Message_Store.Yield_Status);
 
    function Name (Agent : in Oak_Agent'Class) return Task_Name is
      (Agent.Name);
+
+   function Normal_Priority
+     (Agent : in Oak_Agent'Class)
+      return System.Any_Priority is (Agent.Normal_Priority);
 
    function Stack_Pointer
      (Agent : in Oak_Agent'Class)
       return System.Address is (Agent.Call_Stack.Pointer);
 
    function State
-     (A : in Oak_Agent'Class)
-      return Agent_State is (A.State);
+     (Agent : in Oak_Agent'Class)
+      return Agent_State is (Agent.State);
+
+   function Wake_Time
+     (Agent : in Oak_Agent'Class)
+      return Oak_Time.Time is (Agent.Wake_Time);
+
 end Oak.Agent;

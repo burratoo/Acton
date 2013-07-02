@@ -359,27 +359,16 @@ package body Oak.Core is
 
             if Next_Task.all in Protected_Agent'Class then
                Next_Task := Protected_Agent (Next_Task.all).Task_Within;
+            elsif Next_Task.State = Activation_Pending then
+               declare
+                  Activating_Task : constant Task_Handler :=
+                     Agent.Tasks.Activation.Continue_Activation
+                       (Activator => Next_Task);
+               begin
+                  Next_Task := (if Activating_Task /= null then
+                                    Activating_Task else Next_Task);
+               end;
             end if;
-
-            case Next_Task.State is
-               when Shared_State =>
-                  if Next_Task.Shared_State = Entering_PO then
-                     declare
-                        M : constant Oak_Message := Next_Task.Agent_Message;
-                     begin
-                        Protected_Objects.Process_Enter_Request
-                         (Scheduler_Info  => Oak_Instance.Scheduler,
-                          T               => Next_Task,
-                          PO              => M.PO_Enter,
-                          Subprogram_Kind => M.Subprogram_Kind,
-                          Entry_Id        => M.Entry_Id_Enter,
-                          Chosen_Task => Next_Task);
-                     end;
-                  end if;
-
-               when others =>
-                  null;
-            end case;
          else
             Oak_Instance.Current_Priority := Any_Priority'First;
          end if;

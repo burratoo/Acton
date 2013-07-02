@@ -23,10 +23,6 @@ package Oak.Agent.Tasks.Protected_Objects with Preelaborate is
      (PO : in Protected_Agent'Class)
       return Protected_Subprogram_Type;
 
-   function Acquiring_Tasks_State
-     (For_Protected_Object : in Protected_Agent'Class)
-      return Agent_State;
-
    function Entry_Queue_Length
      (PO       : in Protected_Agent'Class;
       Entry_Id : in Entry_Index)
@@ -53,10 +49,6 @@ package Oak.Agent.Tasks.Protected_Objects with Preelaborate is
       T  : access Task_Agent'Class)
       return Boolean;
 
-   function Reference_To_Acquiring_Tasks_State
-     (For_Protected_Object : not null access Protected_Agent'Class)
-      return Shared_Task_State;
-
    function Has_Entries
      (PO : in Protected_Agent'Class)
       return Boolean;
@@ -64,6 +56,10 @@ package Oak.Agent.Tasks.Protected_Objects with Preelaborate is
    function Task_Within
      (PO : in Protected_Agent'Class)
       return access Task_Agent'Class;
+
+   procedure Add_Contending_Task
+     (PO : in out Protected_Agent'Class;
+      T  : access Task_Agent'Class);
 
    procedure Add_Task_To_Entry_Queue
      (PO       : in out Protected_Agent'Class;
@@ -73,6 +69,10 @@ package Oak.Agent.Tasks.Protected_Objects with Preelaborate is
    procedure Add_Task_To_Protected_Object
      (PO : in out Protected_Agent'Class;
       T  : access Task_Agent'Class);
+
+   procedure Get_And_Remove_Next_Contending_Task
+     (PO        : in out Protected_Agent'Class;
+      Next_Task : out Task_Handler);
 
    procedure Get_And_Remove_Next_Task_From_Entry_Queues
      (PO         : in out Protected_Agent'Class;
@@ -90,10 +90,6 @@ package Oak.Agent.Tasks.Protected_Objects with Preelaborate is
    procedure Remove_Task_From_Protected_Object
      (PO : in out Protected_Agent'Class;
       T  : access Task_Agent'Class);
-
-   procedure Set_Acquiring_Tasks_State
-     (For_Protected_Object : in out Protected_Agent'Class;
-      To_State             : in     Agent_State);
 
    type Parameterless_Access is access protected procedure;
 
@@ -117,28 +113,19 @@ private
       Entry_Barriers : Entry_Barrier_Function_Handler;
       Entry_Queues   : Entry_Queue_Array (1 .. Num_Entries);
 
-      Controlling_Shared_State : aliased Agent_State;
       Active_Subprogram_Kind   : Protected_Subprogram_Type;
       Tasks_Within             : access Task_Agent'Class;
+      Contending_Tasks         : access Task_Agent'Class;
    end record;
 
    function Active_Subprogram_Kind
      (PO : in Protected_Agent'Class)
       return Protected_Subprogram_Type is (PO.Active_Subprogram_Kind);
 
-   function Acquiring_Tasks_State
-     (For_Protected_Object : in Protected_Agent'Class)
-      return Agent_State is (For_Protected_Object.Controlling_Shared_State);
-
    function Is_Entry_Id_Valid
      (PO       : in Protected_Agent'Class;
       Entry_Id : in Entry_Index)
       return Boolean is (Entry_Id in PO.Entry_Queues'Range);
-
-   function Reference_To_Acquiring_Tasks_State
-     (For_Protected_Object : not null access Protected_Agent'Class)
-      return Shared_Task_State
-        is (For_Protected_Object.Controlling_Shared_State'Access);
 
    function Has_Entries
      (PO : in Protected_Agent'Class)

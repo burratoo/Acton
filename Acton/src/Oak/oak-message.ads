@@ -2,6 +2,7 @@ with Oak.Indices; use Oak.Indices;
 with Oak.Oak_Time;
 with Oak.States; use Oak.States;
 
+limited with Oak.Agent;
 limited with Oak.Agent.Tasks;
 limited with Oak.Agent.Tasks.Protected_Objects;
 limited with Oak.Atomic_Actions;
@@ -52,6 +53,14 @@ package Oak.Message with Preelaborate is
               Atomic_Actions.Atomic_Object;
             Action_Id_Exit    : Indices.Action_Index;
             Atomic_Exception  : Boolean;
+         when Adding_Agent =>
+            Agent_To_Add       : not null access Oak.Agent.Oak_Agent'Class;
+         when Removing_Agent =>
+            Agent_To_Remove    : not null access Oak.Agent.Oak_Agent'Class;
+         when Agent_State_Change =>
+            Agent_That_Changed : not null access Oak.Agent.Oak_Agent'Class;
+         when Selected_Agent =>
+            Selected_Agent     : access Oak.Agent.Oak_Agent'Class;
          when others =>
             null;
       end case;

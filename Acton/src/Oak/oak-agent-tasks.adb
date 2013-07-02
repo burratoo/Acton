@@ -40,7 +40,6 @@ package body Oak.Agent.Tasks is
          Name       => Name);
 
       Agent.State             := Activation_Pending;
-      Agent.Shared_State      := No_Shared_State;
 
       Agent.Cycle_Behaviour   := Cycle_Behaviour;
       Agent.Cycle_Period      := Cycle_Period;
@@ -92,7 +91,7 @@ package body Oak.Agent.Tasks is
            (Stack             => Agent.Call_Stack,
             Start_Instruction => Run_Loop,
             Task_Value_Record => Task_Value_Record,
-            Message_Location  => Agent.Message_Location);
+            Message_Location  => Agent.Message_Store);
       elsif Stack_Address /= Null_Address then
          Initialise_Call_Stack
            (Stack             => Agent.Call_Stack,
@@ -100,9 +99,9 @@ package body Oak.Agent.Tasks is
             Task_Value_Record => Task_Value_Record,
             Stack_Address     => Stack_Address,
             Stack_Size        => Stack_Size,
-            Message_Location  => Agent.Message_Location);
+            Message_Location  => Agent.Message_Store);
       else
-         Agent.Message_Location := null;
+         Agent.Message_Store := null;
       end if;
 
       if Normal_Priority in Any_Priority then
@@ -117,9 +116,6 @@ package body Oak.Agent.Tasks is
       Agent.Wake_Time        := Oak_Time.Time_Last;
       Agent.Remaining_Budget := Oak_Time.Time_Span_Last;
       Agent.Event_Raised     := False;
-
-      Agent.Queue_Link.Next     := null;
-      Agent.Queue_Link.Previous := null;
 
       Agent.Activation_List := Chain.Head;
       Chain.Head            := Agent;
@@ -163,21 +159,21 @@ package body Oak.Agent.Tasks is
       Oak.Agent.Charge_Execution_Time (Oak_Agent (To_Agent), Exec_Time);
    end Charge_Execution_Time;
 
-   function Destination_On_Wake_Up (T : in out Task_Agent'Class)
-     return Destination is
+   overriding function Destination_On_Wake_Up (Agent : in out Task_Agent)
+                                    return Wake_Destination is
    begin
-      case T.State is
+      case Agent.State is
          when Sleeping =>
-            T.State := Runnable;
+            Agent.State := Runnable;
             return Run_Queue;
 
          when Sleeping_And_Waiting =>
-            if T.Event_Raised then
-               T.Event_Raised := False;
-               Oak.Agent.Tasks.Cycle.Task_Released (T'Access);
+            if Agent.Event_Raised then
+               Agent.Event_Raised := False;
+               Oak.Agent.Tasks.Cycle.Task_Released (Agent'Access);
                return Run_Queue;
             else
-               T.State := Waiting_For_Event;
+               Agent.State := Waiting_For_Event;
                return Remove;
             end if;
 
@@ -274,19 +270,5 @@ package body Oak.Agent.Tasks is
    begin
       T.Scheduler_Agent := Agent;
    end Set_Scheduler_Agent_For_Task;
-
-   procedure Set_Shared_State
-     (For_Task : in out Task_Agent'Class;
-      With_State_Pointer : in Shared_Task_State) is
-   begin
-      For_Task.Shared_State := With_State_Pointer;
-   end Set_Shared_State;
-
-   procedure Set_Wake_Time
-     (T  : in out Task_Agent'Class;
-      WT : in Oak_Time.Time) is
-   begin
-      T.Wake_Time := WT;
-   end Set_Wake_Time;
 
 end Oak.Agent.Tasks;

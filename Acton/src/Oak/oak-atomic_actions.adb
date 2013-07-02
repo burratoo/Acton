@@ -1,10 +1,9 @@
 with Oak.Agent.Tasks.Protected_Objects; use Oak.Agent.Tasks.Protected_Objects;
-with Oak.Agent.Tasks.Queues; use Oak.Agent.Tasks.Queues;
+with Oak.Agent.Queue; use Oak.Agent.Queue;
 with Oak.Scheduler;          use Oak.Scheduler;
+with Oak.Agent; use Oak.Agent;
 
 package body Oak.Atomic_Actions is
-
-   package Queue renames Oak.Agent.Tasks.Queues.Task_Queues;
 
    procedure Add_Protected_Object
      (AO : not null access Atomic_Object;
@@ -48,10 +47,18 @@ package body Oak.Atomic_Actions is
             --  barrier here, we could have used the activation chain link
             --  as well.
 
+            --  TODO: Need to figure out how to implement barriers without
+            --  using the shared state variable
+
             if Not_All_Present then
+               --  Holding tasks at the barrier.
+
                AO.Controlling_State := Waiting_For_Protected_Object;
-               T.Set_State (Shared_State);
-               T.Set_Shared_State (AO.Controlling_State'Access);
+--                 T.Set_State (Shared_State);
+--                 T.Set_Shared_State (AO.Controlling_State'Access);
+
+               --  All tasks are now present, release all of them.
+
             else
                AO.Controlling_State := Runnable;
                T.Set_State (Runnable);
@@ -112,11 +119,12 @@ package body Oak.Atomic_Actions is
       --  While we use the task agent's shared state to act as the
       --  barrier here, we could have used the activation chain link
       --  as well.
+      --  TODO: see the above TODO to figure out what to do here.
 
       if Not_All_Present then
          AO.Controlling_State := Waiting_For_Protected_Object;
-         T.Set_State (Shared_State);
-         T.Set_Shared_State (AO.Controlling_State'Access);
+--           T.Set_State (Shared_State);
+--           T.Set_Shared_State (AO.Controlling_State'Access);
       else
          declare
             New_State : constant Agent_State :=
@@ -178,9 +186,8 @@ package body Oak.Atomic_Actions is
 
          Scheduler.Remove_Task_From_Scheduler (T);
          T.Set_State (Waiting_For_Protected_Object);
-         Queue.Add_Agent_To_Tail
-           (Queue =>
-              Task_Handler (AO.Actions (Action_Id).Queue),
+         Add_Agent_To_Tail
+           (Queue => Agent_Handler (AO.Actions (Action_Id).Queue),
             Agent => T);
 
       else
@@ -251,8 +258,8 @@ package body Oak.Atomic_Actions is
                for Id in AO.Actions'Range loop
                   if AO.Actions (Id).Queue /= null then
                      QT := AO.Actions (Id).Queue;
-                     Queue.Remove_Agent_From_Head
-                       (Task_Handler (AO.Actions (Id).Queue));
+                     Remove_Agent_From_Head
+                       (Agent_Handler (AO.Actions (Id).Queue));
                      QT.Set_State (Runnable);
                      Scheduler.Add_Task_To_Scheduler
                        (Scheduler_Info => Scheduler_Info,

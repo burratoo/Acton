@@ -43,9 +43,10 @@ package body Oak.Protected_Objects is
 
       if T.Current_Atomic_Action /= PO.Current_Atomic_Action and then
         Parent (T.Current_Atomic_Action) /= PO.Current_Atomic_Action then
-         T.Set_State (Shared_State);
-         T.Set_Shared_State (PO.Reference_To_Acquiring_Tasks_State);
+         --  TODO: Add task to the Atomic object's PO contend list.
          Chosen_Task := null;
+         raise Program_Error;
+
       else
          if T.Current_Atomic_Action /= PO.Current_Atomic_Action then
             PO.Set_Current_Atomic_Action (T.Current_Atomic_Action);
@@ -54,12 +55,12 @@ package body Oak.Protected_Objects is
                PO => PO);
          end if;
 
+         Scheduler.Remove_Task_From_Scheduler (T);
+
          if PO.State = Inactive then
-            Scheduler.Remove_Task_From_Scheduler (T);
             Chosen_Task := null;
 
-            declare
-            begin
+            declare begin
                if Subprogram_Kind = Protected_Entry and then
                  not PO.Is_Barrier_Open (Entry_Id => Entry_Id) then
                   T.Set_State (Waiting_For_Protected_Object);
@@ -96,8 +97,10 @@ package body Oak.Protected_Objects is
             if Chosen_Task /= null then
                PO.Add_Task_To_Protected_Object (Chosen_Task);
                T.Set_State (State => Runnable);
-               PO.Set_Acquiring_Tasks_State (Waiting_For_Protected_Object);
-               Scheduler.Activate_Task
+
+               --  Run protected agent
+               PO.Set_State (State => Runnable);
+               Scheduler.Add_Task_To_Scheduler
                  (Scheduler_Info => Scheduler_Info,
                   T              => PO);
                Chosen_Task := Task_Handler (PO);
@@ -105,13 +108,11 @@ package body Oak.Protected_Objects is
 
          elsif Subprogram_Kind = Protected_Function and
                   PO.Active_Subprogram_Kind = Protected_Function then
-            Scheduler.Remove_Task_From_Scheduler (T);
             T.Set_State (Runnable);
             PO.Add_Task_To_Protected_Object (T);
             Chosen_Task := Task_Handler (PO);
          else
-            T.Set_State (Shared_State);
-            T.Set_Shared_State (PO.Reference_To_Acquiring_Tasks_State);
+            PO.Add_Contending_Task (T);
             Chosen_Task := null;
          end if;
       end if;
@@ -150,12 +151,26 @@ package body Oak.Protected_Objects is
       PO.Get_And_Remove_Next_Task_From_Entry_Queues
         (Next_Task => Chosen_Task);
 
+      while Chosen_Task = null loop
+         --  TODO: Admit new contending taks.
+         PO.Get_And_Remove_Next_Contending_Task (Chosen_Task);
+
+         exit when Chosen_Task = null;
+
+         Process_Enter_Request
+           (Scheduler_Info  => Scheduler_Info,
+            T               => T,
+            PO              => PO,
+            Subprogram_Kind => T.Agent_Message.Subprogram_Kind,
+            Entry_Id        => T.Agent_Message.Entry_Id_Enter,
+            Chosen_Task     => Chosen_Task);
+      end loop;
+
       if Chosen_Task = null then
-         --  Protected action ends.
-         PO.Set_Acquiring_Tasks_State (Entering_PO);
-         Scheduler.Deactivate_Task
-           (Scheduler_Info => Scheduler_Info,
-            T              => PO);
+         --  Protected action ends. Remove protected agentfrom scheduler.
+         Scheduler.Remove_Task_From_Scheduler (PO);
+         PO.Set_State (Inactive);
+
          --  Object release point 3.
          Release_Resource (PO);
          Scheduler.Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
