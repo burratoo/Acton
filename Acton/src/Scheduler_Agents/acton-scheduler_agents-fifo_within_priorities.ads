@@ -24,9 +24,8 @@ private
 
    type FIFO_Within_Priorities (Min_Priority, Max_Priority : Any_Priority)
      is new Scheduler_Agent (Min_Priority, Max_Priority) with record
-      Runnable_Queues : Agent_Array
-        (Min_Priority .. Max_Priority);
-      Sleeping_Queue  : access Oak.Agent.Oak_Agent'Class;
+      Runnable_Queues : Agent_Array (Min_Priority .. Max_Priority);
+      Sleeping_Queues : Agent_Array (Min_Priority .. Max_Priority);
    end record;
 
 end Acton.Scheduler_Agents.FIFO_Within_Priorities;

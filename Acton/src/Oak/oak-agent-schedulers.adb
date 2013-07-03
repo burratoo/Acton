@@ -19,10 +19,6 @@ package body Oak.Agent.Schedulers is
          Name       => Name,
          Call_Stack => Call_Stack);
 
-      Agent.Agent_To_Run           := null;
-      Agent.Desired_Agent_Run_Time := Oak_Time.Time_Zero;
-      Agent.Next_Agent             := null;
-
       Agent.Set_State (Selecting_Next_Agent);
 
       Agent.Run_Timer.Set_Timer
@@ -35,20 +31,8 @@ package body Oak.Agent.Schedulers is
          Start_Instruction => Run_Loop,
          Task_Value_Record => Agent.all'Address,
          Message_Location  => Agent.Message_Store);
+
+      Agent.Wake_Time := Oak_Time.Time_Zero;
    end Initialise_Scheduler_Agent;
-
-   procedure Set_Chosen_Agent
-     (Agent : in out Scheduler_Agent'Class;
-      T     : access Oak_Agent'Class) is
-   begin
-      Agent.Agent_To_Run := T;
-   end Set_Chosen_Agent;
-
-   procedure Set_Desired_Run_Time
-     (Agent    : in out Scheduler_Agent'Class;
-      Run_Time : in Oak.Oak_Time.Time) is
-   begin
-      Agent.Desired_Agent_Run_Time := Run_Time;
-   end Set_Desired_Run_Time;
 
 end Oak.Agent.Schedulers;

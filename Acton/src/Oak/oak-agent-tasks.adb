@@ -57,7 +57,7 @@ package body Oak.Agent.Tasks is
             Agent_To_Handle => Agent);
       else
          Agent.Deadline_Timer.Set_Timer
-           (Priority        => Oak_Priority'Last,
+           (Priority        => Normal_Priority + 1,
             Timer_Action    => Deadline_Action,
             Handler         => Deadline_Handler,
             Agent_To_Handle => Agent);

@@ -38,7 +38,7 @@ package Oak.Timers with Preelaborate is
    procedure Set_Timer
      (Timer     : in out Oak_Timer;
       Fire_Time : in Oak_Time.Time;
-      Priority  : in Oak_Interrupt_Priority);
+      Priority  : in Oak_Priority);
 
    procedure Update_Timer
      (Timer    : in out Oak_Timer'Class;
@@ -51,7 +51,7 @@ package Oak.Timers with Preelaborate is
    procedure Set_Timer
      (Timer           : in out Action_Timer;
       Fire_Time       : in Oak_Time.Time := Oak_Time.Time_Last;
-      Priority        : in Oak_Interrupt_Priority;
+      Priority        : in Oak_Priority;
       Timer_Action    : in Ada.Cyclic_Tasks.Event_Action;
       Handler         : in Ada.Cyclic_Tasks.Action_Handler;
       Agent_To_Handle : access Oak.Agent.Tasks.Task_Agent'Class);
@@ -59,7 +59,7 @@ package Oak.Timers with Preelaborate is
    procedure Set_Timer
      (Timer     : in out Scheduler_Timer;
       Fire_Time : in Oak_Time.Time := Oak_Time.Time_Last;
-      Priority  : in Oak_Interrupt_Priority;
+      Priority  : in Oak_Priority;
       Scheduler : not null access Oak.Agent.Schedulers.Scheduler_Agent'Class);
 
    function Firing_Time
@@ -78,7 +78,7 @@ package Oak.Timers with Preelaborate is
      access Oak.Agent.Schedulers.Scheduler_Agent'Class;
 
 private
-   type Interrupt_Timers is array (Oak_Interrupt_Priority) of
+   type Interrupt_Timers is array (Oak_Priority) of
      access Oak_Timer'Class;
 
    type Oak_Timer_Info is tagged limited record
@@ -88,7 +88,7 @@ private
    type Oak_Timer is tagged record
       Timer_Manager  : access Oak_Timer_Info;
       Fire_Time      : Oak_Time.Time;
-      Priority       : Oak_Interrupt_Priority;
+      Priority       : Oak_Priority;
       Next_Timer     : access Oak_Timer'Class;
       Previous_Timer : access Oak_Timer'Class;
    end record;

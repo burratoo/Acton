@@ -37,7 +37,7 @@ package Oak.States with Pure is
                        Selecting_Next_Agent,
                        Adding_Agent,
                        Removing_Agent,
-                       Selected_Agent);
+                       Scheduler_Agent_Done);
 
    subtype Waiting is Agent_State range
      Waiting_For_Event .. Waiting_For_Protected_Object;

@@ -1,4 +1,3 @@
-with Ada.Finalization;
 with Ada.Real_Time;
 with System;
 with System.Multiprocessors;
@@ -20,11 +19,9 @@ package Ada.Execution_Server is
      (Info  : access Server_Info) is abstract tagged limited private;
 
 private
-   package AF renames Ada.Finalization;
-
    type Execution_Server
      (Info  : access Server_Info)
-     is abstract new AF.Limited_Controlled with record
+     is abstract tagged limited record
       Server : Oak.Agent.Tasks.Task_Agent;
    end record;
 

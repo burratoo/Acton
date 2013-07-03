@@ -83,6 +83,8 @@ package body Oak.Scheduler is
               Run_Scheduler_Agent
                 (Agent  => Agent,
                  Reason => (Message_Type => Selecting_Next_Agent));
+         else
+            Chosen_Task := Agent.Agent_To_Run;
          end if;
 
          Agent       := SH (Next_Agent (Agent));
@@ -143,7 +145,8 @@ package body Oak.Scheduler is
       Agent.Set_Agent_Message (Reason);
       Agent.Set_State (Reason.Message_Type);
       Core.Context_Switch_To_Agent (Agent);
-      Agent.Scheduler_Timer.Update_Timer (New_Time => Agent.Desired_Run_Time);
+      Agent.Set_Wake_Time (Agent.Desired_Run_Time);
+      Agent.Scheduler_Timer.Update_Timer (New_Time => Agent.Wake_Time);
    end Run_Scheduler_Agent;
 
    ------------------------------------------------------------

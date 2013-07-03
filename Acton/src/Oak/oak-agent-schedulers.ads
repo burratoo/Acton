@@ -38,14 +38,6 @@ package Oak.Agent.Schedulers with Preelaborate is
      (Agent : access Scheduler_Agent'Class)
      return access Timers.Scheduler_Timer;
 
-   procedure Set_Chosen_Agent
-     (Agent : in out Scheduler_Agent'Class;
-      T     : access Oak_Agent'Class);
-
-   procedure Set_Desired_Run_Time
-     (Agent    : in out Scheduler_Agent'Class;
-      Run_Time : in Oak.Oak_Time.Time);
-
 private
 
    type Scheduler_Agent (Min_Priority, Max_Priority : Any_Priority)
@@ -53,18 +45,17 @@ private
       Lowest_Prioirty        : System.Any_Priority := Min_Priority;
       Highest_Prioirty       : System.Any_Priority := Max_Priority;
       Run_Timer              : aliased Timers.Scheduler_Timer;
-
-      Agent_To_Run           : access Oak_Agent'Class;
-      Desired_Agent_Run_Time : Oak.Oak_Time.Time;
    end record;
 
    function Agent_To_Run
      (Agent : in Scheduler_Agent'Class)
-      return access Oak_Agent'Class is (Agent.Agent_To_Run);
+      return access Oak_Agent'Class
+      is (Agent.Message_Store.Message.Next_Agent);
 
    function Desired_Run_Time
      (Agent : in Scheduler_Agent'Class)
-      return Oak.Oak_Time.Time is (Agent.Desired_Agent_Run_Time);
+      return Oak.Oak_Time.Time
+      is (Agent.Message_Store.Message.Wake_Scheduler_At);
 
    function Lowest_Priority
      (Agent : in Scheduler_Agent'Class)

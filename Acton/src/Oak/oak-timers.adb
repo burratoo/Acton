@@ -51,7 +51,7 @@ package body Oak.Timers is
       Above_Priority : Any_Priority := Interrupt_Priority'First - 1)
       return access Oak_Timer'Class
    is
-      P     : Oak_Priority := Oak_Interrupt_Priority'Last;
+      P     : Oak_Priority := Oak_Priority'Last;
       T     : access Oak_Timer'Class := null;
    begin
       for Timer of reverse Timer_Info.Timers loop
@@ -91,7 +91,7 @@ package body Oak.Timers is
    procedure Set_Timer
      (Timer     : in out Oak_Timer;
       Fire_Time : in Oak_Time.Time;
-      Priority  : in Oak_Interrupt_Priority) is
+      Priority  : in Oak_Priority) is
    begin
       Timer.Fire_Time := Fire_Time;
 
@@ -116,7 +116,7 @@ package body Oak.Timers is
    procedure Set_Timer
      (Timer           : in out Action_Timer;
       Fire_Time       : in Oak_Time.Time := Oak_Time.Time_Last;
-      Priority        : in Oak_Interrupt_Priority;
+      Priority        : in Oak_Priority;
       Timer_Action    : in Ada.Cyclic_Tasks.Event_Action;
       Handler         : in Ada.Cyclic_Tasks.Action_Handler;
       Agent_To_Handle : access Oak.Agent.Tasks.Task_Agent'Class) is
@@ -130,7 +130,7 @@ package body Oak.Timers is
    procedure Set_Timer
      (Timer     : in out Scheduler_Timer;
       Fire_Time : in Oak_Time.Time := Oak_Time.Time_Last;
-      Priority  : in Oak_Interrupt_Priority;
+      Priority  : in Oak_Priority;
       Scheduler : not null access Oak.Agent.Schedulers.Scheduler_Agent'Class)
    is
    begin
