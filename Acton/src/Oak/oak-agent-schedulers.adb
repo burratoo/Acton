@@ -21,8 +21,11 @@ package body Oak.Agent.Schedulers is
 
       Agent.Set_State (Selecting_Next_Agent);
 
+      Agent.Wake_Time       := Oak_Time.Time_Zero;
+      Agent.Normal_Priority := Agent.Highest_Prioirty;
+
       Agent.Run_Timer.Set_Timer
-        (Priority  => Oak_Interrupt_Priority'Last,
+        (Priority  => Agent.Normal_Priority,
          Scheduler => Agent);
       Agent.Run_Timer.Add_Timer_To_Current_Processor;
 
@@ -31,8 +34,6 @@ package body Oak.Agent.Schedulers is
          Start_Instruction => Run_Loop,
          Task_Value_Record => Agent.all'Address,
          Message_Location  => Agent.Message_Store);
-
-      Agent.Wake_Time := Oak_Time.Time_Zero;
    end Initialise_Scheduler_Agent;
 
 end Oak.Agent.Schedulers;

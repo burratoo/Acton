@@ -298,14 +298,23 @@ package body Oak.Core is
                Oak_Instance.Interrupt_States (P) := Active;
 
             when Timer =>
-               if Active_Timer = null then
-                  raise Program_Error;
-               elsif Active_Timer.Firing_Time > Clock then
+
+               --  False alarm, go back to what we were doing. Occurs in cases
+               --  where the size of the timer used is smaller that the size
+               --  of the clock.
+
+               if Active_Timer = null
+                 or else Active_Timer.Firing_Time > Clock
+               then
                   null;
+
                elsif Active_Timer.all in Timers.Scheduler_Timer then
                   Run_The_Bloody_Scheduler_Agent_That_Wanted_To_Be_Woken
-                    (Scheduler_Info => Oak_Instance.Scheduler,
-                     Chosen_Task    => Next_Task);
+                    (Agent       =>
+                       Timers.Scheduler_Timer
+                         (Active_Timer.all).Scheduler_Agent,
+                     Chosen_Task => Next_Task);
+
                elsif Active_Timer.all in Timers.Action_Timer then
                   case Timers.Action_Timer'Class
                     (Active_Timer.all).Timer_Action is
@@ -409,8 +418,14 @@ package body Oak.Core is
 
          --  These called functions are responsible for enabling the sleep
          --  timer.
-         Core_Support_Package.Task_Support.Set_Oak_Wake_Up_Timer
-           (Wake_Up_At => Active_Timer.Firing_Time);
+
+         if Active_Timer /= null then
+            Core_Support_Package.Task_Support.Set_Oak_Wake_Up_Timer
+              (Wake_Up_At => Active_Timer.Firing_Time);
+         else
+            Core_Support_Package.Task_Support.Set_Oak_Wake_Up_Timer
+              (Wake_Up_At => Oak_Time.Time_Last);
+         end if;
 
          if Next_Task = null then
             Next_Task := Oak_Instance.Sleep_Agent'Unchecked_Access;

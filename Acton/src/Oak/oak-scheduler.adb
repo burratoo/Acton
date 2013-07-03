@@ -77,15 +77,7 @@ package body Oak.Scheduler is
       Chosen_Task := null;
 
       loop
-         --  Context switch to Manage Queues Routine.
-         if Agent.Wake_Time < Clock then
-            Chosen_Task :=
-              Run_Scheduler_Agent
-                (Agent  => Agent,
-                 Reason => (Message_Type => Selecting_Next_Agent));
-         else
-            Chosen_Task := Agent.Agent_To_Run;
-         end if;
+         Chosen_Task := Agent.Agent_To_Run;
 
          Agent       := SH (Next_Agent (Agent));
          exit when Chosen_Task /= null
@@ -158,28 +150,15 @@ package body Oak.Scheduler is
    --  running
    ------------------------------------------------------------
    procedure Run_The_Bloody_Scheduler_Agent_That_Wanted_To_Be_Woken
-     (Scheduler_Info : in out Oak_Scheduler_Info;
-      Chosen_Task    : in out Task_Handler)
+     (Agent       : access Scheduler_Agent'Class;
+      Chosen_Task : in out Task_Handler)
    is
-      Current_Time : constant Time         := Oak_Time.Clock;
       Current_Task : constant Task_Handler := Chosen_Task;
-      Agent        : access Scheduler_Agent'Class :=
-        Scheduler_Info.Scheduler_Agent_Table;
    begin
-      Chosen_Task := null;
-      loop
-         if Agent.Desired_Run_Time < Current_Time then
-            Chosen_Task :=
-               Run_Scheduler_Agent
-                 (Agent  => Agent,
-                  Reason => (Message_Type => Selecting_Next_Agent));
-         end if;
-         Agent := SH (Next_Agent (Agent));
-         exit when Chosen_Task /= null
-           or else Agent = Scheduler_Info.Scheduler_Agent_Table
-           or else (Current_Task /= null and then
-                      Current_Task.Normal_Priority > Agent.Highest_Priority);
-      end loop;
+      Chosen_Task :=
+         Run_Scheduler_Agent
+           (Agent  => Agent,
+            Reason => (Message_Type => Selecting_Next_Agent));
 
       if Chosen_Task = null
         and then Current_Task.State not in Waiting

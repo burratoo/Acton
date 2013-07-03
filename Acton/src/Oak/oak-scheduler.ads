@@ -52,8 +52,8 @@ package Oak.Scheduler with Preelaborate is
       Reason : in Oak_Message);
 
    procedure Run_The_Bloody_Scheduler_Agent_That_Wanted_To_Be_Woken
-     (Scheduler_Info : in out Oak_Scheduler_Info;
-      Chosen_Task    : in out Task_Handler);
+     (Agent       : access Scheduler_Agent'Class;
+      Chosen_Task : in out Task_Handler);
 
 private
 
