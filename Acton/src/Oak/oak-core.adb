@@ -316,10 +316,10 @@ package body Oak.Core is
                      Chosen_Task => Next_Task);
 
                elsif Active_Timer.all in Timers.Action_Timer then
+                  Active_Timer.Remove_Timer;
                   case Timers.Action_Timer'Class
                     (Active_Timer.all).Timer_Action is
                      when Ada.Cyclic_Tasks.Handler =>
-                        Active_Timer.Remove_Timer;
                         P := Active_Timer.Priority;
                         Next_Task :=
                           Oak_Instance.Interrupt_Agents (P)'Unchecked_Access;
@@ -363,6 +363,8 @@ package body Oak.Core is
             P := P - 1;
          end loop;
 
+         --  Handle special states
+
          if Next_Task /= null then
             Oak_Instance.Current_Priority := Next_Task.Normal_Priority;
 
@@ -379,7 +381,7 @@ package body Oak.Core is
                end;
             end if;
          else
-            Oak_Instance.Current_Priority := Any_Priority'First;
+            Oak_Instance.Current_Priority := Oak_Priority'First;
          end if;
 
          ---------------
@@ -394,7 +396,8 @@ package body Oak.Core is
          -------------------
 
          Active_Timer :=
-           Oak_Timer_Store.Earliest_Timer_To_Fire (Above_Priority => P);
+           Oak_Timer_Store.Earliest_Timer_To_Fire
+             (Above_Priority => Oak_Instance.Current_Priority);
 
          --  Execution timers are not placed under the control of the Timer
          --  Manager since they are only relevant for the currently executing
@@ -431,34 +434,42 @@ package body Oak.Core is
             Next_Task := Oak_Instance.Sleep_Agent'Unchecked_Access;
          end if;
 
-         --   Set MMU is applicable.
+         --  Service any timers that may have fired
+         if Active_Timer /= null and then Active_Timer.Firing_Time < Clock then
+            Oak_Instance.Woken_By := Timer;
 
-         --  Switch registers and enable Wake Up Interrupt.
-         Context_Switch_To_Agent (Next_Task);
+         else
 
-         --  Clean up after task has return via a context switch and
-         --  determine the reason why the task did.
-         Task_Message := Next_Task.Agent_Message;
+            --  Otherwise run the selected task
 
-         case Next_Task.Agent_Yield_Status is
-            when Voluntary =>
-               --  If the task yielded voluntary update the task state
-               --  with the state provided by the message the task sent as
-               --  part of its yield.
+            --   Set MMU is applicable.
 
-               Oak_Instance.Woken_By := Task_Yield;
-               Next_Task.Set_State (State => Task_Message.Message_Type);
+            --  Switch registers and enable Wake Up Interrupt.
+            Context_Switch_To_Agent (Next_Task);
 
-            when Timer =>
-               Next_Task.Set_Agent_Yield_Status (Yielded  => Voluntary);
-               Oak_Instance.Woken_By := Timer;
+            --  Clean up after task has return via a context switch and
+            --  determine the reason why the task did.
+            Task_Message := Next_Task.Agent_Message;
 
-            when Interrupt =>
-               Next_Task.Set_Agent_Yield_Status (Yielded  => Voluntary);
-               Oak_Instance.Woken_By := External_Interrupt;
+            case Next_Task.Agent_Yield_Status is
+               when Voluntary =>
+                  --  If the task yielded voluntary update the task state
+                  --  with the state provided by the message the task sent as
+                  --  part of its yield.
 
-         end case;
+                  Oak_Instance.Woken_By := Task_Yield;
+                  Next_Task.Set_State (State => Task_Message.Message_Type);
 
+               when Timer =>
+                  Next_Task.Set_Agent_Yield_Status (Yielded  => Voluntary);
+                  Oak_Instance.Woken_By := Timer;
+
+               when Interrupt =>
+                  Next_Task.Set_Agent_Yield_Status (Yielded  => Voluntary);
+                  Oak_Instance.Woken_By := External_Interrupt;
+
+            end case;
+         end if;
       end loop;
    end Run_Loop;
 

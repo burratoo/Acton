@@ -26,6 +26,7 @@ package body Oak.Agent.Schedulers is
 
       Agent.Run_Timer.Set_Timer
         (Priority  => Agent.Normal_Priority,
+         Fire_Time => Agent.Wake_Time,
          Scheduler => Agent);
       Agent.Run_Timer.Add_Timer_To_Current_Processor;
 
