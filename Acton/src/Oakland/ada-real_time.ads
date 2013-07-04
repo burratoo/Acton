@@ -65,7 +65,7 @@ private
    Time_Last  : constant Time := Time'Last;
    Time_Zero : constant Time := 0;
 
-   type Time_Span is new Oak_CSP_Time.Oak_Time;
+   type Time_Span is new Oak_CSP_Time.Oak_Time_Span;
    Time_Span_First : constant Time_Span := Time_Span'First;
    Time_Span_Last  : constant Time_Span := Time_Span'Last;
    Time_Span_Zero  : constant Time_Span := 0;
