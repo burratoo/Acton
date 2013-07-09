@@ -5,8 +5,6 @@ with System.Storage_Elements;
 
 with Oak.Oak_Time; use Oak.Oak_Time;
 
-limited with Ada.Execution_Server;
-limited with Oak.Agent.Schedulers;
 limited with Oak.Atomic_Actions;
 
 package Oak.Agent.Tasks with Preelaborate is
@@ -27,7 +25,7 @@ package Oak.Agent.Tasks with Preelaborate is
    Unspecified_Priority : constant Integer := -1;
 
    procedure Initialise_Task_Agent
-     (Agent             : access Task_Agent'Class;
+     (Agent             : not null access Task_Agent'Class;
       Stack_Address     : in System.Address;
       Stack_Size        : in System.Storage_Elements.Storage_Count;
       Name              : in String;
@@ -43,13 +41,10 @@ package Oak.Agent.Tasks with Preelaborate is
       Relative_Deadline : in Oak_Time.Time_Span;
       Deadline_Action   : in Ada.Cyclic_Tasks.Event_Action;
       Deadline_Handler  : in Ada.Cyclic_Tasks.Action_Handler;
-      Execution_Server  : access Ada.Execution_Server.Execution_Server;
+      Scheduler_Agent   : access Schedulers.Scheduler_Agent'Class;
       Chain             : in out Activation_Chain;
       Elaborated        : in Boolean_Access);
 
-   procedure Initialise_Sleep_Agent
-     (Agent    : access Task_Agent'Class;
-      Run_Loop : in System.Address);
    function Activation_List
      (T    : in Task_Agent'Class)
       return access Task_Agent'Class;
@@ -87,10 +82,6 @@ package Oak.Agent.Tasks with Preelaborate is
    function Remaining_Budget
      (T : in Task_Agent'Class) return Oak_Time.Time_Span;
 
-   function Scheduler_Agent_For_Task
-     (T    : in Task_Agent'Class)
-      return access Schedulers.Scheduler_Agent'Class;
-
    procedure Set_Activation_List
      (T   : in out Task_Agent'Class;
       Add : access Task_Agent'Class);
@@ -115,14 +106,6 @@ package Oak.Agent.Tasks with Preelaborate is
      (T  : in out Task_Agent'Class;
       RD : in Oak_Time.Time_Span);
 
-   procedure Set_Scheduler_Agent
-     (T     : in out Task_Agent'Class;
-      Agent : access Schedulers.Scheduler_Agent'Class);
-
-   procedure Set_Scheduler_Agent_For_Task
-     (T     : in out Task_Agent'Class;
-      Agent : access Schedulers.Scheduler_Agent'Class);
-
 private
    type Task_Agent is new Oak_Agent with record
       Cycle_Behaviour   : Ada.Cyclic_Tasks.Behaviour;
@@ -135,13 +118,9 @@ private
       Deadline_Timer    : aliased Oak.Timers.Action_Timer;
       Execution_Timer   : aliased Oak.Timers.Action_Timer;
 
-      Execution_Server  : access Ada.Execution_Server.Execution_Server := null;
-
       Next_Run_Cycle    : Oak_Time.Time;
       Remaining_Budget  : Oak_Time.Time_Span;
       Event_Raised      : Boolean;
-
-      Scheduler_Agent   : access Schedulers.Scheduler_Agent'Class := null;
 
       Activation_List   : access Task_Agent'Class := null;
       Elaborated        : Boolean_Access;
@@ -187,8 +166,4 @@ private
 
    function Remaining_Budget (T : in Task_Agent'Class)
      return Oak_Time.Time_Span is (T.Remaining_Budget);
-
-   function Scheduler_Agent_For_Task
-     (T : in Task_Agent'Class)
-      return access Schedulers.Scheduler_Agent'Class is (T.Scheduler_Agent);
 end Oak.Agent.Tasks;

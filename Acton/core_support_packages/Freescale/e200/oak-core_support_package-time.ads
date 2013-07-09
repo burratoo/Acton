@@ -34,7 +34,7 @@ package Oak.Core_Support_Package.Time with Pure is
    MHz         : constant := 1E6;
    Clock_Speed : constant := 132 * MHz;
 
-   type Oak_Time is mod 2 ** 64 with Size => 64;
+   type Oak_Time is mod 2 ** 63 with Size => 64;
    type Oak_Time_Span is range -(2 ** 63) .. +(2 ** 63 - 1) with Size => 64;
 
    --     type Oak_Time_Span is new Oak_Time; for Oak_Time_Span'Size use 64;

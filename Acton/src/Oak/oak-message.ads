@@ -20,10 +20,14 @@ package Oak.Message with Preelaborate is
          when Sleeping =>
             Wake_Up_At : Oak_Time.Time := Oak_Time.Time_Last;
          when Change_Cycle_Period =>
-            New_Cycle_Period : Oak_Time.Time_Span := Oak_Time.Time_Span_Zero;
+            New_Cycle_Period  : Oak_Time.Time_Span := Oak_Time.Time_Span_Zero;
+            Cycle_Period_Task : not null access
+              Oak.Agent.Tasks.Task_Agent'Class;
          when Change_Relative_Deadline =>
             New_Deadline_Span : Oak_Time.Time_Span :=
                                   Oak_Time.Time_Span_Zero;
+            Deadline_Task     : not null access
+              Oak.Agent.Tasks.Task_Agent'Class;
          when Release_Task =>
             Task_To_Release   : not null access Oak.Agent.Tasks.Task_Agent;
 

@@ -66,7 +66,7 @@ package Oak.Timers with Preelaborate is
      (Timer : in out Oak_Timer'Class) return Oak_Time.Time;
 
    function Agent_To_Handle (Timer : in out Action_Timer'Class)
-     return Oak.Agent.Tasks.Task_Handler;
+     return Oak.Agent.Agent_Handler;
 
    function Handler (Timer : in out Action_Timer'Class) return
      Ada.Cyclic_Tasks.Action_Handler;
@@ -96,7 +96,7 @@ private
    type Action_Timer is new Oak_Timer with record
       Timer_Action    : Ada.Cyclic_Tasks.Event_Action;
       Handler         : Ada.Cyclic_Tasks.Action_Handler;
-      Agent_To_Handle : access Oak.Agent.Tasks.Task_Agent'Class;
+      Agent_To_Handle : access Oak.Agent.Oak_Agent'Class;
    end record;
 
    type Scheduler_Timer is new Oak_Timer with record

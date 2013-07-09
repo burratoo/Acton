@@ -2,7 +2,7 @@ with Oak.Core_Support_Package.Processor;
 
 with Oak.Agent; use Oak.Agent;
 with Oak.Agent.Tasks; use Oak.Agent.Tasks;
-with Oak.Agent.Tasks.Interrupts; use Oak.Agent.Tasks.Interrupts;
+with Oak.Agent.Interrupts; use Oak.Agent.Interrupts;
 with Oak.Core_Support_Package;      use Oak.Core_Support_Package;
 with Oak.Oak_Time;                  use Oak.Oak_Time;
 with Oak.Timers;
@@ -45,25 +45,25 @@ package Oak.Core with Preelaborate is
    --  implementing delay until for tasks running on top the the kernel.
    --  Hmmm...
 
-   function Current_Agent    return access Oak_Agent'Class with Inline_Always;
+   function Current_Agent    return not null access Oak_Agent'Class
+     with Inline_Always;
    function Current_Agent_Stack_Pointer return Address with Inline_Always;
-   function Current_Task     return access Task_Agent'Class with Inline_Always;
-   function Main_Task        return access Task_Agent;
-   function Oak_Instance     return access Oak_Data'Class with Inline_Always;
+   function Current_Task     return not null access Task_Agent'Class
+     with Inline_Always;
+   function Main_Task        return not null access Task_Agent;
+   function Oak_Instance     return not null access Oak_Data'Class
+     with Inline_Always;
    function Oak_Stack_Pointer return Address with Inline_Always;
-   function Oak_Timer_Store   return access Oak.Timers.Oak_Timer_Info
+   function Oak_Timer_Store   return not null access Oak.Timers.Oak_Timer_Info
      with Inline_Always;
    function Scheduler_Info
      (Oak_Instance : access Oak_Data'Class)
-      return access Oak_Scheduler_Info with Inline_Always;
+      return not null access Oak_Scheduler_Info with Inline_Always;
 
-   procedure Context_Switch_To_Agent (Agent : access Oak_Agent'Class);
+   procedure Context_Switch_To_Agent (Agent : not null access Oak_Agent'Class);
 
    procedure Set_Current_Agent_Stack_Pointer
      (SP : Address)
-      with Inline_Always;
-   procedure Set_Current_Agent
-     (Agent : access Oak_Agent'Class)
       with Inline_Always;
 
    procedure Set_Oak_Stack_Pointer
@@ -87,7 +87,7 @@ private
       Entry_Exit_Stamp   : Oak_Time.Time;
       --  Probably need to fix this up so that it gets set somewhere. (In case
       --  it doesn't already when the task context switches.
-      Sleep_Agent        : aliased Task_Agent;
+      Sleep_Agent        : aliased Oak_Agent;
       Interrupt_Agents   : IA_Store;
 
       Interrupt_States   : Interrupt_Active_Set;
@@ -102,30 +102,32 @@ private
      with Import, Convention => Ada,
           External_Name => "_global_start_offset";
 
-   function Current_Agent return access Oak_Agent'Class is
+   function Current_Agent return not null access Oak_Agent'Class is
      (Processor_Kernels (Processor.Proccessor_Id).Current_Agent);
 
    function Current_Agent_Stack_Pointer return Address is
      (Stack_Pointer (
         Processor_Kernels (Processor.Proccessor_Id).Current_Agent.all));
 
-   function Current_Task return access Task_Agent'Class is
+   function Current_Task return not null access Task_Agent'Class is
      (Task_Handler (Current_Agent));
 
-   function Main_Task return access Task_Agent is (Main_Task_OTCR'Access);
+   function Main_Task return not null access Task_Agent
+     is (Main_Task_OTCR'Access);
 
-   function Oak_Instance return access Oak_Data'Class is
+   function Oak_Instance return not null access Oak_Data'Class is
      (Processor_Kernels (Processor_Kernels'First)'Access);
 
    function Oak_Stack_Pointer return Address is
      (Processor_Kernels (Processor.Proccessor_Id).Stack_Pointer);
 
-   function Oak_Timer_Store return access Oak.Timers.Oak_Timer_Info  is
-     (Processor_Kernels
-        (Processor.Proccessor_Id).Oak_Timers'Unchecked_Access);
+   function Oak_Timer_Store return not null access Oak.Timers.Oak_Timer_Info
+     is (Processor_Kernels
+         (Processor.Proccessor_Id).Oak_Timers'Unchecked_Access);
 
    function Scheduler_Info
      (Oak_Instance : access Oak_Data'Class)
-      return access Oak_Scheduler_Info is (Oak_Instance.Scheduler'Access);
+      return not null access Oak_Scheduler_Info
+      is (Oak_Instance.Scheduler'Access);
 
 end Oak.Core;

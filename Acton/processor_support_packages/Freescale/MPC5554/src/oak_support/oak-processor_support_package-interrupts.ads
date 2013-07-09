@@ -7,8 +7,6 @@ limited with Oak.Agent.Tasks.Protected_Objects;
 
 package Oak.Processor_Support_Package.Interrupts with Preelaborate is
 
-   Interrupt_Stack_Size : constant  := 512;
-
    subtype Oak_Interrupt_Id is MPC5554.INTC.INTC_ID_Type;
    Default_Interrupt_Priority : constant Interrupt_Priority :=
                                   Interrupt_Priority'Last;

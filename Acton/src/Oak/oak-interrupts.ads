@@ -1,8 +1,8 @@
 with Oak.Processor_Support_Package.Interrupts;
 use Oak.Processor_Support_Package.Interrupts;
 
-limited with Oak.Agent.Tasks;
-limited with Oak.Agent.Tasks.Protected_Objects;
+with Oak.Agent; use Oak.Agent;
+with Oak.Agent.Tasks.Protected_Objects; use Oak.Agent.Tasks.Protected_Objects;
 
 package Oak.Interrupts with Preelaborate is
 
@@ -16,10 +16,9 @@ package Oak.Interrupts with Preelaborate is
      (Oak_Interrupt_Id range <>) of Interrupt_Handler_Pair;
 
    procedure Attach_Handlers
-     (Handlers        : access Interrupt_Handler_Array;
-      Handler_PO      : access
-        Agent.Tasks.Protected_Objects.Protected_Agent'Class;
-      T               : access Agent.Tasks.Task_Agent'Class;
-      Chosen_Task     : out Agent.Tasks.Task_Handler);
+     (Handlers          : access Interrupt_Handler_Array;
+      Handler_PO        : access Protected_Agent'Class;
+      Current_Agent     : in Agent_Handler;
+      Next_Agent_To_Run : out Agent_Handler);
 
 end Oak.Interrupts;

@@ -1,11 +1,10 @@
 with Oak.Agent.Schedulers;
 with Oak.Agent.Tasks.Cycle;
 with Oak.Atomic_Actions;
-with Oak.Core_Support_Package.Call_Stack;
-with Oak.Memory.Call_Stack.Ops; use Oak.Memory.Call_Stack.Ops;
-with System; use System;
-with System.Storage_Elements; use System.Storage_Elements;
+with System;                            use System;
+with System.Storage_Elements;           use System.Storage_Elements;
 with Oak.Agent.Tasks.Protected_Objects; use Oak.Agent.Tasks.Protected_Objects;
+with Oak.Scheduler;
 
 package body Oak.Agent.Tasks is
 
@@ -14,7 +13,7 @@ package body Oak.Agent.Tasks is
    ------------------
 
    procedure Initialise_Task_Agent
-     (Agent             : access Task_Agent'Class;
+     (Agent             : not null access Task_Agent'Class;
       Stack_Address     : in System.Address;
       Stack_Size        : in System.Storage_Elements.Storage_Count;
       Name              : in String;
@@ -30,16 +29,20 @@ package body Oak.Agent.Tasks is
       Relative_Deadline : in Oak_Time.Time_Span;
       Deadline_Action   : in Ada.Cyclic_Tasks.Event_Action;
       Deadline_Handler  : in Ada.Cyclic_Tasks.Action_Handler;
-      Execution_Server  : access Ada.Execution_Server.Execution_Server;
+      Scheduler_Agent   : access Schedulers.Scheduler_Agent'Class;
       Chain             : in out Activation_Chain;
       Elaborated        : in Boolean_Access)
    is
    begin
       Oak.Agent.Initialise_Agent
-        (Agent      => Agent,
-         Name       => Name);
-
-      Agent.State             := Activation_Pending;
+        (Agent              => Agent,
+         Name               => Name,
+         Call_Stack_Address => Stack_Address,
+         Call_Stack_Size    => Stack_Size,
+         Run_Loop           => Run_Loop,
+         Run_Loop_Parameter => Task_Value_Record,
+         Normal_Priority    => Normal_Priority,
+         Initial_State      => Activation_Pending);
 
       Agent.Cycle_Behaviour   := Cycle_Behaviour;
       Agent.Cycle_Period      := Cycle_Period;
@@ -78,31 +81,7 @@ package body Oak.Agent.Tasks is
             Agent_To_Handle => Agent);
       end if;
 
-      Agent.Execution_Server  := Execution_Server;
-
       Agent.Elaborated   := Elaborated;
-
-      if Stack_Address = Null_Address and Stack_Size > 0 then
-         Allocate_Call_Stack
-           (Stack            => Agent.Call_Stack,
-            Size_In_Elements => Stack_Size);
-
-         Initialise_Call_Stack
-           (Stack             => Agent.Call_Stack,
-            Start_Instruction => Run_Loop,
-            Task_Value_Record => Task_Value_Record,
-            Message_Location  => Agent.Message_Store);
-      elsif Stack_Address /= Null_Address then
-         Initialise_Call_Stack
-           (Stack             => Agent.Call_Stack,
-            Start_Instruction => Run_Loop,
-            Task_Value_Record => Task_Value_Record,
-            Stack_Address     => Stack_Address,
-            Stack_Size        => Stack_Size,
-            Message_Location  => Agent.Message_Store);
-      else
-         Agent.Message_Store := null;
-      end if;
 
       if Normal_Priority in Any_Priority then
          Agent.Normal_Priority := System.Any_Priority (Normal_Priority);
@@ -112,8 +91,14 @@ package body Oak.Agent.Tasks is
          raise Program_Error with "Priority out of range";
       end if;
 
+      if Scheduler_Agent = null then
+         Agent.Scheduler_Agent :=
+           Scheduler.Find_Scheduler_For_System_Priority (Normal_Priority, 1);
+      else
+         Agent.Scheduler_Agent  := Scheduler_Agent;
+      end if;
+
       Agent.Next_Run_Cycle   := Oak_Time.Time_Last;
-      Agent.Wake_Time        := Oak_Time.Time_Last;
       Agent.Remaining_Budget := Oak_Time.Time_Span_Last;
       Agent.Event_Raised     := False;
 
@@ -121,35 +106,6 @@ package body Oak.Agent.Tasks is
       Chain.Head            := Agent;
 
    end Initialise_Task_Agent;
-
-   procedure Initialise_Sleep_Agent
-     (Agent    : access Task_Agent'Class;
-      Run_Loop : in System.Address)
-   is
-      C : Activation_Chain;
-   begin
-      Agent.Initialise_Task_Agent
-        (Stack_Address     => Null_Address,
-         Stack_Size        => Core_Support_Package.Call_Stack.Sleep_Stack_Size,
-         Name              => "Sleep",
-         Run_Loop          => Run_Loop,
-         Task_Value_Record => Null_Address,
-         Normal_Priority   => Priority'First,
-         Cycle_Behaviour   => Ada.Cyclic_Tasks.Normal,
-         Cycle_Period      => Oak_Time.Time_Span_Last,
-         Phase             => Oak_Time.Time_Span_Zero,
-         Execution_Budget  => Oak_Time.Time_Span_Last,
-         Budget_Action     => Ada.Cyclic_Tasks.No_Action,
-         Budget_Handler    => null,
-         Relative_Deadline => Oak_Time.Time_Span_Last,
-         Deadline_Action   => Ada.Cyclic_Tasks.No_Action,
-         Deadline_Handler  => null,
-         Execution_Server  => null,
-         Chain             => C,
-         Elaborated        => null);
-
-      Agent.State := Runnable;
-   end Initialise_Sleep_Agent;
 
    overriding procedure Charge_Execution_Time
      (To_Agent  : in out Task_Agent;
@@ -235,11 +191,11 @@ package body Oak.Agent.Tasks is
       else
          case Using is
             when Wake_Up_Time =>
-               T.Deadline_Timer.Update_Timer
-                 (New_Time => T.Wake_Time + T.Relative_Deadline);
+               T.Absolute_Deadline := T.Wake_Time + T.Relative_Deadline;
+               T.Deadline_Timer.Update_Timer (New_Time => T.Absolute_Deadline);
             when Clock_Time =>
-               T.Deadline_Timer.Update_Timer
-                 (New_Time =>  Clock + T.Relative_Deadline);
+               T.Absolute_Deadline := Clock + T.Relative_Deadline;
+               T.Deadline_Timer.Update_Timer (New_Time => T.Absolute_Deadline);
          end case;
 
          if not T.Deadline_Timer.Is_Armed then
@@ -255,20 +211,5 @@ package body Oak.Agent.Tasks is
    begin
       T.Relative_Deadline := RD;
    end Set_Relative_Deadline;
-
-   procedure Set_Scheduler_Agent
-     (T     : in out Task_Agent'Class;
-      Agent : access Schedulers.Scheduler_Agent'Class)
-   is
-   begin
-      T.Scheduler_Agent := Agent;
-   end Set_Scheduler_Agent;
-
-   procedure Set_Scheduler_Agent_For_Task
-     (T     : in out Task_Agent'Class;
-      Agent : access Schedulers.Scheduler_Agent'Class) is
-   begin
-      T.Scheduler_Agent := Agent;
-   end Set_Scheduler_Agent_For_Task;
 
 end Oak.Agent.Tasks;

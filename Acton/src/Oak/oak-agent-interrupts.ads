@@ -2,12 +2,17 @@ with Oak.Processor_Support_Package.Interrupts;
 use Oak.Processor_Support_Package.Interrupts;
 with Oak.Timers; use Oak.Timers;
 
-package Oak.Agent.Tasks.Interrupts with Preelaborate is
-   type Interrupt_Agent is new Task_Agent with private
+package Oak.Agent.Interrupts with Preelaborate is
+   type Interrupt_Agent is new Oak_Agent with private
      with Preelaborable_Initialization;
 
    type Interrupt_Type is (External, Timer_Action);
-   procedure Interrupt_Run_Loop;
+
+   procedure Initialise_Interrupt_Agent
+     (Agent    : not null access Interrupt_Agent'Class;
+      Priority : in Oak_Priority);
+
+   procedure Interrupt_Run_Loop (Self : Interrupt_Agent'Class);
 
    function Interrupt_Kind (Agent : in out Interrupt_Agent'Class)
                             return Interrupt_Type;
@@ -32,11 +37,11 @@ package Oak.Agent.Tasks.Interrupts with Preelaborate is
 --        T     : access Task_Agent'Class);
 
 private
-   type Interrupt_Agent is new Task_Agent with record
+   type Interrupt_Agent is new Oak_Agent with record
       Interrupt_Kind  : Interrupt_Type;
       External_Id     : Oak_Interrupt_Id;
       Timer_To_Handle : access Action_Timer'Class;
-      Interrupt_Task  : access Task_Agent'Class;
+      Interrupt_Task  : access Oak_Agent'Class;
    end record;
 
    function Interrupt_Kind (Agent : in out Interrupt_Agent'Class)
@@ -45,4 +50,4 @@ private
    function Timer_To_Handle (Agent : in out Interrupt_Agent'Class)
      return access Action_Timer'Class is (Agent.Timer_To_Handle);
 
-end Oak.Agent.Tasks.Interrupts;
+end Oak.Agent.Interrupts;

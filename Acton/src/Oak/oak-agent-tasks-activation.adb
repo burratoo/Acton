@@ -1,4 +1,3 @@
-with Oak.Core;
 with Oak.Oak_Time;
 with Oak.Scheduler;
 
@@ -73,10 +72,6 @@ package body Oak.Agent.Tasks.Activation is
    -----------------------
 
    procedure Finish_Activation (Activator : in out Task_Agent'Class) is
-      OI        : constant access Core.Oak_Data := Core.Oak_Instance;
-      Scheduler : constant access Oak.Scheduler.Oak_Scheduler_Info :=
-         Core.Scheduler_Info (OI);
-
       T : access Task_Agent'Class := Next_Task (Activator'Access);
    begin
       while T /= null loop
@@ -85,9 +80,7 @@ package body Oak.Agent.Tasks.Activation is
 
          Set_Next_Deadline_For_Task (T.all, Using => Wake_Up_Time);
 
-         Oak.Scheduler.Add_Task_To_Scheduler
-           (Scheduler_Info => Scheduler.all,
-            T              => T);
+         Oak.Scheduler.Add_Agent_To_Scheduler (T);
          T := Next_Task (T);
       end loop;
       Activator.State           := Runnable;

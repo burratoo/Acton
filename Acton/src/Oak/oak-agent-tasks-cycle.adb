@@ -16,7 +16,7 @@ package body Oak.Agent.Tasks.Cycle is
    --  Task state on entry: Setup_Cycle.
    --  Task selected on exit: T.
 
-   procedure Setup_Cyclic_Section (T : in Task_Handler) is
+   procedure Setup_Cyclic_Section (T : in out Task_Agent'Class) is
    begin
       T.State          := Runnable;
       T.Next_Run_Cycle := Core.Global_Start_Time + T.Phase;
@@ -28,7 +28,9 @@ package body Oak.Agent.Tasks.Cycle is
    -- New_Cycle --
    ---------------
 
-   procedure New_Cycle (T : in out Task_Handler) is
+   procedure New_Cycle
+     (T                : access Task_Agent'Class;
+      Next_Task_To_Run : out Agent_Handler) is
    begin
 
       T.Execution_Cycles := T.Execution_Cycles + 1;
@@ -68,11 +70,12 @@ package body Oak.Agent.Tasks.Cycle is
 
             --  Temp arrangement
 
-            Scheduler.Remove_Task_From_Scheduler (T);
+            Scheduler.Remove_Agent_From_Scheduler (T);
             T.Deadline_Timer.Remove_Timer;
-            Scheduler.Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
-              (Scheduler_Info => Core.Scheduler_Info  (Core.Oak_Instance).all,
-               Chosen_Task    => T);
+            Scheduler.Check_Sechduler_Agents_For_Next_Task_To_Run
+              (Scheduler_Info   =>
+                 Core.Scheduler_Info  (Core.Oak_Instance).all,
+               Next_Task_To_Run => Next_Task_To_Run);
             return;
          end if;
       end if;
@@ -88,7 +91,9 @@ package body Oak.Agent.Tasks.Cycle is
             T.Set_Next_Deadline_For_Task (Using => Clock_Time);
       end case;
 
-      Scheduler.Inform_Scheduler_Agent_Task_Has_Changed_State (T);
+      Scheduler.Inform_Scheduler_Agent_Task_Has_Changed_State
+        (Changed_Task     => T,
+         Next_Task_To_Run => Next_Task_To_Run);
 
    end New_Cycle;
 
@@ -97,8 +102,9 @@ package body Oak.Agent.Tasks.Cycle is
    ------------------
 
    procedure Release_Task
-     (Task_To_Release, Releasing_Task : in Task_Handler;
-      Next_Task                       : out Task_Handler)
+     (Task_To_Release  : access Task_Agent'Class;
+      Releasing_Task   : in Agent_Handler;
+      Next_Task_To_Run : out Agent_Handler)
    is
    begin
       Releasing_Task.State := Runnable;
@@ -106,16 +112,14 @@ package body Oak.Agent.Tasks.Cycle is
       if Task_To_Release.State = Waiting_For_Event then
          Task_Released (Task_To_Release);
 
-         Scheduler.Add_Task_To_Scheduler
-           (Scheduler_Info => Core.Scheduler_Info  (Core.Oak_Instance).all,
-            T              => Task_To_Release);
-         Scheduler.Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
-           (Scheduler_Info => Core.Scheduler_Info  (Core.Oak_Instance).all,
-            Chosen_Task    => Next_Task);
+         Scheduler.Add_Agent_To_Scheduler (Task_To_Release);
+         Scheduler.Check_Sechduler_Agents_For_Next_Task_To_Run
+           (Scheduler_Info   => Core.Scheduler_Info  (Core.Oak_Instance).all,
+            Next_Task_To_Run => Next_Task_To_Run);
 
       else
          Task_To_Release.Event_Raised := True;
-         Next_Task := Releasing_Task;
+         Next_Task_To_Run := Releasing_Task;
       end if;
 
    end Release_Task;

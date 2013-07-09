@@ -6,18 +6,13 @@ package body Oak.Agent.Schedulers is
      (Agent           : access Scheduler_Agent'Class;
       Name            : in String;
       Call_Stack_Size : in System.Storage_Elements.Storage_Count;
-      Run_Loop        : in System.Address)
-   is
-      Call_Stack : Oak.Memory.Call_Stack.Call_Stack_Handler;
+      Run_Loop        : in System.Address) is
    begin
-      Oak.Memory.Call_Stack.Ops.Allocate_Call_Stack
-        (Stack            => Call_Stack,
-         Size_In_Elements => Call_Stack_Size);
 
       Oak.Agent.Initialise_Agent
         (Agent      => Agent,
          Name       => Name,
-         Call_Stack => Call_Stack);
+         Call_Stack_Size => Call_Stack_Size);
 
       Agent.Set_State (Selecting_Next_Agent);
 

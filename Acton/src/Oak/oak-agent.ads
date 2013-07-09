@@ -4,9 +4,10 @@ with System;      use System;
 
 with Oak.Core_Support_Package;
 with Oak.Oak_Time;
-with Oak.Memory.Call_Stack;         use Oak.Memory.Call_Stack;
-with System.Storage_Elements;
---  with Ada.Finalization;
+with Oak.Memory.Call_Stack;   use Oak.Memory.Call_Stack;
+with System.Storage_Elements; use System.Storage_Elements;
+
+limited with Oak.Agent.Schedulers;
 
 package Oak.Agent with Preelaborate is
 
@@ -37,18 +38,28 @@ package Oak.Agent with Preelaborate is
       return System.Address with Inline_Always;
 
    procedure Initialise_Agent
-     (Agent      : access Oak_Agent'Class;
+     (Agent      : not null access Oak_Agent'Class;
       Name       : in String);
 
    procedure Initialise_Agent
-     (Agent      : access Oak_Agent'Class;
+     (Agent      : not null access Oak_Agent'Class;
       Name       : in String;
       Call_Stack : in Call_Stack_Handler);
 
    procedure Initialise_Agent
-     (Agent           : access Oak_Agent'Class;
+     (Agent           : not null access Oak_Agent'Class;
       Name            : in String;
       Call_Stack_Size : in System.Storage_Elements.Storage_Count);
+
+   procedure Initialise_Agent
+     (Agent              : not null access Oak_Agent'Class;
+      Name               : in String;
+      Call_Stack_Address : in Address;
+      Call_Stack_Size    : in Storage_Count;
+      Run_Loop           : in Address;
+      Run_Loop_Parameter : in Address;
+      Normal_Priority    : in Integer;
+      Initial_State      : in Agent_State);
 
    function Agent_Message
      (For_Agent : in Oak_Agent'Class)
@@ -68,6 +79,10 @@ package Oak.Agent with Preelaborate is
      (Agent : in Oak_Agent'Class)
       return System.Any_Priority;
 
+   function Scheduler_Agent_For_Agent
+     (Agent : in Oak_Agent'Class)
+      return access Schedulers.Scheduler_Agent'Class;
+
    procedure Set_Agent_Message
      (For_Agent : in out Oak_Agent'Class;
       Message   : in     Oak_Message) with Inline_Always;
@@ -75,6 +90,10 @@ package Oak.Agent with Preelaborate is
    procedure Set_Agent_Yield_Status
      (For_Agent : in out Oak_Agent'Class;
       Yielded   : in     Yielded_State) with Inline_Always;
+
+   procedure Set_Scheduler_Agent
+     (Agent     : in out Oak_Agent'Class;
+      Scheduler : access Schedulers.Scheduler_Agent'Class);
 
    procedure Set_Stack_Pointer
      (Agent         : in out Oak_Agent'Class;
@@ -116,7 +135,11 @@ private
       State                  : Agent_State;
       Normal_Priority        : Any_Priority;
       Wake_Time              : Oak_Time.Time;
+
+      Absolute_Deadline      : Oak_Time.Time;
       Message_Store          : Oak_Message_Location;
+
+      Scheduler_Agent        : access Schedulers.Scheduler_Agent'Class := null;
 
       Total_Execution_Time   : Oak_Time.Time_Span;
       Max_Execution_Time     : Oak_Time.Time_Span;
@@ -146,6 +169,11 @@ private
    function Normal_Priority
      (Agent : in Oak_Agent'Class)
       return System.Any_Priority is (Agent.Normal_Priority);
+
+   function Scheduler_Agent_For_Agent
+     (Agent : in Oak_Agent'Class)
+      return access Schedulers.Scheduler_Agent'Class
+      is (Agent.Scheduler_Agent);
 
    function Stack_Pointer
      (Agent : in Oak_Agent'Class)

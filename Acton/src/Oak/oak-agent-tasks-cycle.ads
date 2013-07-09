@@ -1,9 +1,11 @@
 package Oak.Agent.Tasks.Cycle with Preelaborate is
-   procedure Setup_Cyclic_Section (T : in Task_Handler);
-   procedure New_Cycle (T : in out Task_Handler);
+   procedure Setup_Cyclic_Section (T : in out Task_Agent'Class);
+   procedure New_Cycle (T                : access Task_Agent'Class;
+                        Next_Task_To_Run : out Agent_Handler);
    procedure Release_Task
-     (Task_To_Release, Releasing_Task : in Task_Handler;
-      Next_Task                       : out Task_Handler);
+     (Task_To_Release  : access Task_Agent'Class;
+      Releasing_Task   : in Agent_Handler;
+      Next_Task_To_Run : out Agent_Handler);
 
    procedure Task_Released
      (Released_Task : access Task_Agent'Class);

@@ -7,7 +7,7 @@ with System; use System;
 package body Oak.Agent.Tasks.Protected_Objects is
 
    procedure Initialise_Protected_Agent
-     (Agent                 : access Protected_Agent'Class;
+     (Agent                 : not null access Protected_Agent'Class;
       Name                  : in String;
       Ceiling_Priority      : in Integer;
       Barriers_Function     : in Entry_Barrier_Function_Handler;
@@ -32,7 +32,7 @@ package body Oak.Agent.Tasks.Protected_Objects is
          Relative_Deadline => Oak_Time.Time_Span_Last,
          Deadline_Action   => Ada.Cyclic_Tasks.No_Action,
          Deadline_Handler  => null,
-         Execution_Server  => null,
+         Scheduler_Agent   => null,
          Chain             => No_Chain,
          Elaborated        => null);
 
@@ -52,7 +52,7 @@ package body Oak.Agent.Tasks.Protected_Objects is
 
    procedure Add_Contending_Task
      (PO : in out Protected_Agent'Class;
-      T  : access Task_Agent'Class) is
+      T  : access Oak_Agent'Class) is
    begin
       Queue.Add_Agent_To_Tail
         (Queue => PO.Contending_Tasks,
@@ -61,7 +61,7 @@ package body Oak.Agent.Tasks.Protected_Objects is
 
    procedure Add_Task_To_Entry_Queue
      (PO       : in out Protected_Agent'Class;
-      T        : access Task_Agent'Class;
+      T        : access Oak_Agent'Class;
       Entry_Id : Entry_Index) is
    begin
       Queue.Add_Agent_To_Tail
@@ -71,7 +71,7 @@ package body Oak.Agent.Tasks.Protected_Objects is
 
    procedure Add_Task_To_Protected_Object
      (PO : in out Protected_Agent'Class;
-      T  : access Task_Agent'Class) is
+      T  : not null access Oak_Agent'Class) is
    begin
       Queue.Add_Agent_To_Head
         (Queue => PO.Tasks_Within,
@@ -99,7 +99,7 @@ package body Oak.Agent.Tasks.Protected_Objects is
 
    procedure Get_And_Remove_Next_Contending_Task
      (PO        : in out Protected_Agent'Class;
-      Next_Task : out Task_Handler) is
+      Next_Task : out Agent_Handler) is
    begin
       Next_Task := PO.Contending_Tasks;
       if Next_Task /= null then
@@ -109,11 +109,11 @@ package body Oak.Agent.Tasks.Protected_Objects is
 
    procedure Get_And_Remove_Next_Task_From_Entry_Queues
      (PO         : in out Protected_Agent'Class;
-      Next_Task  : out Task_Handler) is
+      Next_Task  : out Agent_Handler) is
    begin
       Next_Task := null;
       for Entry_Id in PO.Entry_Queues'Range loop
-         Next_Task := Task_Handler (PO.Entry_Queues (Entry_Id));
+         Next_Task := PO.Entry_Queues (Entry_Id);
          if Next_Task /= null and then
            Is_Barrier_Open (PO, Entry_Id) then
             Queue.Remove_Agent
@@ -149,7 +149,7 @@ package body Oak.Agent.Tasks.Protected_Objects is
 
    function Is_Task_Inside_Protect_Object
      (PO : in Protected_Agent'Class;
-      T  : access Task_Agent'Class)
+      T  : not null access Oak_Agent'Class)
       return Boolean is
       Current_Task : access Oak_Agent'Class := PO.Tasks_Within;
    begin
@@ -194,7 +194,7 @@ package body Oak.Agent.Tasks.Protected_Objects is
 
    procedure Remove_Task_From_Protected_Object
      (PO : in out Protected_Agent'Class;
-      T  : access Task_Agent'Class) is
+      T  : access Oak_Agent'Class) is
    begin
       Queue.Remove_Agent
         (Queue => PO.Tasks_Within,

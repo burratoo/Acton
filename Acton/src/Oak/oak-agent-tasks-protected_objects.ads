@@ -13,7 +13,7 @@ package Oak.Agent.Tasks.Protected_Objects with Preelaborate is
                       E  : Protected_Entry_Index) return Boolean;
 
    procedure Initialise_Protected_Agent
-     (Agent                 : access Protected_Agent'Class;
+     (Agent                 : not null access Protected_Agent'Class;
       Name                  : in String;
       Ceiling_Priority      : in Integer;
       Barriers_Function     : in Entry_Barrier_Function_Handler;
@@ -46,7 +46,7 @@ package Oak.Agent.Tasks.Protected_Objects with Preelaborate is
 
    function Is_Task_Inside_Protect_Object
      (PO : in Protected_Agent'Class;
-      T  : access Task_Agent'Class)
+      T  : not null access Oak_Agent'Class)
       return Boolean;
 
    function Has_Entries
@@ -55,28 +55,28 @@ package Oak.Agent.Tasks.Protected_Objects with Preelaborate is
 
    function Task_Within
      (PO : in Protected_Agent'Class)
-      return access Task_Agent'Class;
+      return access Oak_Agent'Class;
 
    procedure Add_Contending_Task
      (PO : in out Protected_Agent'Class;
-      T  : access Task_Agent'Class);
+      T  : access Oak_Agent'Class);
 
    procedure Add_Task_To_Entry_Queue
      (PO       : in out Protected_Agent'Class;
-      T        : access Task_Agent'Class;
+      T        : access Oak_Agent'Class;
       Entry_Id : Entry_Index);
 
    procedure Add_Task_To_Protected_Object
      (PO : in out Protected_Agent'Class;
-      T  : access Task_Agent'Class);
+      T  : not null access Oak_Agent'Class);
 
    procedure Get_And_Remove_Next_Contending_Task
      (PO        : in out Protected_Agent'Class;
-      Next_Task : out Task_Handler);
+      Next_Task : out Agent_Handler);
 
    procedure Get_And_Remove_Next_Task_From_Entry_Queues
      (PO         : in out Protected_Agent'Class;
-      Next_Task  : out Task_Handler);
+      Next_Task  : out Agent_Handler);
 
    procedure Purge_Entry_Queues
      (PO             : in out Protected_Agent'Class;
@@ -89,7 +89,7 @@ package Oak.Agent.Tasks.Protected_Objects with Preelaborate is
 
    procedure Remove_Task_From_Protected_Object
      (PO : in out Protected_Agent'Class;
-      T  : access Task_Agent'Class);
+      T  : access Oak_Agent'Class);
 
    type Parameterless_Access is access protected procedure;
 
@@ -114,8 +114,8 @@ private
       Entry_Queues   : Entry_Queue_Array (1 .. Num_Entries);
 
       Active_Subprogram_Kind   : Protected_Subprogram_Type;
-      Tasks_Within             : access Task_Agent'Class;
-      Contending_Tasks         : access Task_Agent'Class;
+      Tasks_Within             : access Oak_Agent'Class;
+      Contending_Tasks         : access Oak_Agent'Class;
    end record;
 
    function Active_Subprogram_Kind
@@ -133,6 +133,6 @@ private
 
    function Task_Within
      (PO : in Protected_Agent'Class)
-      return access Task_Agent'Class is (PO.Tasks_Within);
+      return access Oak_Agent'Class is (PO.Tasks_Within);
 
 end Oak.Agent.Tasks.Protected_Objects;
