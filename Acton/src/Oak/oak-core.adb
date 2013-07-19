@@ -518,10 +518,6 @@ package body Oak.Core is
          Charge_Execution_Time
            (To_Agent  => To_Agent.all,
             Exec_Time => Charge_Time);
-         Timers.Delay_Delayable_Timers
-           (Timer_Info => Oak_Instance.Oak_Timers,
-            Delay_By   => Charge_Time,
-            Below_Priority => Oak_Instance.Current_Priority);
          Oak_Instance.Entry_Exit_Stamp := Current_Time;
       end Charge_Exec_Time;
    begin

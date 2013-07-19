@@ -170,9 +170,6 @@ package body Oak.Scheduler is
                SA.Set_State (Runnable);
                SA.Set_Wake_Time (SA.Desired_Run_Time);
                SA.Scheduler_Timer.Update_Timer (New_Time => SA.Wake_Time);
-               SA.Scheduler_Timer.Set_Timer_Deferrable_Behaviour
-                 (Timer_Info => Core.Oak_Timer_Store,
-                  Defer_Kind => SA.Agent_Message.Deferrable_Timer);
 
                if SA.Agent_To_Run /= null
                  and then SA.Agent_To_Run.all in Scheduler_Agent'Class
@@ -188,9 +185,6 @@ package body Oak.Scheduler is
                SA.Set_Agent_To_Run (null);
                SA.Set_Wake_Time (WT => SA.Agent_Message.Wake_Up_At);
                SA.Scheduler_Timer.Update_Timer (New_Time => Time_Last);
-               SA.Scheduler_Timer.Set_Timer_Deferrable_Behaviour
-                 (Timer_Info => Core.Oak_Timer_Store,
-                  Defer_Kind => No);
 
                Message := (Message_Type       => Agent_State_Change,
                            Agent_That_Changed => SA);

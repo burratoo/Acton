@@ -135,84 +135,7 @@ package body Oak.Timers is
    begin
       Timer.Set_Timer (Fire_Time, Priority);
       Timer.Scheduler        := Scheduler;
-      Timer.Deferrable_Timer := No;
    end Set_Timer;
-
-   procedure Set_Timer_Deferrable_Behaviour
-     (Timer      : not null access Scheduler_Timer'Class;
-      Timer_Info : not null access Oak_Timer_Info;
-      Defer_Kind : in Deferrable_Type) is
-   begin
-      if Defer_Kind = No then
-         Set_Timer_To_Not_Be_Deferrable (Timer => Timer);
-      else
-         Set_Timer_To_Be_Deferrable
-           (Timer      => Timer,
-            Timer_Info => Timer_Info,
-            Defer_Kind => Defer_Kind);
-      end if;
-   end Set_Timer_Deferrable_Behaviour;
-
-   procedure Set_Timer_To_Be_Deferrable
-     (Timer      : not null access Scheduler_Timer'Class;
-      Timer_Info : not null access Oak_Timer_Info;
-      Defer_Kind : in Deferrable_Type)
-   is
-      List : access Scheduler_Timer'Class renames
-               Timer_Info.Timers_Delayed_By_Execution;
-   begin
-      Timer.Deferrable_Timer := Defer_Kind;
-
-      if Timer.Next_Scheduler_Timer /= null then
-         return;
-      end if;
-
-      if List = null then
-         List                           := Timer;
-         Timer.Next_Scheduler_Timer     := Timer;
-         Timer.Previous_Scheduler_Timer := Timer;
-      else
-         List.Previous_Scheduler_Timer.Next_Scheduler_Timer := Timer;
-         List.Previous_Scheduler_Timer := Timer;
-
-         Timer.Previous_Scheduler_Timer := List.Previous_Scheduler_Timer;
-         Timer.Next_Scheduler_Timer     := List;
-
-         List := Timer;
-      end if;
-   end Set_Timer_To_Be_Deferrable;
-
-   procedure Set_Timer_To_Not_Be_Deferrable
-     (Timer : not null access Scheduler_Timer'Class)
-   is
-      List : access Scheduler_Timer'Class renames
-               Timer.Timer_Manager.Timers_Delayed_By_Execution;
-   begin
-      Timer.Deferrable_Timer := No;
-
-      if Timer.Next_Scheduler_Timer = null then
-         return;
-      end if;
-
-      if List.Next_Scheduler_Timer = List then
-         List.Next_Scheduler_Timer     := null;
-         List.Previous_Scheduler_Timer := null;
-         List                          := null;
-      else
-         Timer.Previous_Scheduler_Timer.Next_Scheduler_Timer :=
-           Timer.Next_Scheduler_Timer;
-         Timer.Next_Scheduler_Timer.Previous_Scheduler_Timer :=
-           Timer.Previous_Scheduler_Timer;
-
-         if List = Timer then
-            List := Timer.Next_Scheduler_Timer;
-         end if;
-
-         Timer.Next_Scheduler_Timer     := null;
-         Timer.Previous_Scheduler_Timer := null;
-      end if;
-
-   end Set_Timer_To_Not_Be_Deferrable;
 
    procedure Timer_Updated (Timer : not null access Oak_Timer'Class) is
    begin
@@ -294,31 +217,6 @@ package body Oak.Timers is
       Timer.Fire_Time := Timer.Fire_Time + Delay_By;
       Timer_Updated (Timer'Unchecked_Access);
    end Delay_Timer;
-
-   procedure Delay_Delayable_Timers
-     (Timer_Info     : in Oak_Timer_Info;
-      Delay_By       : in Oak_Time.Time_Span;
-      Below_Priority : in Oak_Priority)
-   is
-      List  : access Scheduler_Timer'Class renames
-                Timer_Info.Timers_Delayed_By_Execution;
-      Timer : access Scheduler_Timer'Class;
-   begin
-      if List /= null then
-         Timer := List;
-         loop
-            if Timer.Deferrable_Timer = Yes
-              or else (Timer.Deferrable_Timer = Only_By_Higher_Priority_Tasks
-              and then Timer.Priority < Below_Priority)
-            then
-               Timer.Fire_Time := Timer.Fire_Time + Delay_By;
-            end if;
-
-            Timer := Timer.Next_Scheduler_Timer;
-            exit when Timer = List;
-         end loop;
-      end if;
-   end Delay_Delayable_Timers;
 
    function Agent_To_Handle (Timer : in out Action_Timer'Class)
      return Oak.Agent.Agent_Handler is (Timer.Agent_To_Handle);

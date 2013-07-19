@@ -275,8 +275,7 @@ package body Acton.Scheduler_Agents.Priority_Server is
                Self.Set_Agent_Message
                  (Message => (Message_Type      => Scheduler_Agent_Done,
                               Next_Agent        => Runnable_Queue,
-                              Wake_Scheduler_At => Wake_Time,
-                              Deferrable_Timer  => No));
+                              Wake_Scheduler_At => Wake_Time));
             end if;
          end if;
 

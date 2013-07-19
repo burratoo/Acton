@@ -81,8 +81,7 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
          Self.Set_Agent_Message
            (Message => (Message_Type      => Scheduler_Agent_Done,
                         Next_Agent        => Selected_Agent,
-                        Wake_Scheduler_At => Wake_Time,
-                        Deferrable_Timer  => No));
+                        Wake_Scheduler_At => Wake_Time));
       end Select_Next_Task;
 
       ------------------
