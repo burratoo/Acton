@@ -188,6 +188,9 @@ package body Oak.Scheduler is
                SA.Set_Agent_To_Run (null);
                SA.Set_Wake_Time (WT => SA.Agent_Message.Wake_Up_At);
                SA.Scheduler_Timer.Update_Timer (New_Time => Time_Last);
+               SA.Scheduler_Timer.Set_Timer_Deferrable_Behaviour
+                 (Timer_Info => Core.Oak_Timer_Store,
+                  Defer_Kind => No);
 
                Message := (Message_Type       => Agent_State_Change,
                            Agent_That_Changed => SA);
