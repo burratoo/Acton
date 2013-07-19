@@ -55,7 +55,8 @@ package body Oak.Agent is
       Run_Loop           : in Address;
       Run_Loop_Parameter : in Address;
       Normal_Priority    : in Integer;
-      Initial_State      : in Agent_State) is
+      Initial_State      : in Agent_State;
+      Wake_Time          : in Oak_Time.Time) is
    begin
       Initialise_Agent (Agent, Name);
 
@@ -83,7 +84,7 @@ package body Oak.Agent is
 
       Agent.Normal_Priority   := Normal_Priority;
       Agent.State             := Initial_State;
-      Agent.Wake_Time         := Oak_Time.Time_Last;
+      Agent.Wake_Time         := Wake_Time;
       Agent.Absolute_Deadline := Oak_Time.Time_Last;
    end Initialise_Agent;
 

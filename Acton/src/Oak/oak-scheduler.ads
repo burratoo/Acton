@@ -48,12 +48,12 @@ package Oak.Scheduler with Preelaborate is
      (Agent : not null access Oak_Agent'Class);
 
    function Run_Scheduler_Agent
-     (Agent  : access Scheduler_Agent'Class;
+     (Agent  : not null access Scheduler_Agent'Class;
       Reason : in Oak_Message)
       return access Task_Agent'Class;
 
    procedure Run_Scheduler_Agent
-     (Agent  : access Scheduler_Agent'Class;
+     (Agent  : not null access Scheduler_Agent'Class;
       Reason : in Oak_Message);
 
    procedure Run_The_Bloody_Scheduler_Agent_That_Wanted_To_Be_Woken

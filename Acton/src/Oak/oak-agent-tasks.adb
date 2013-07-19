@@ -42,7 +42,8 @@ package body Oak.Agent.Tasks is
          Run_Loop           => Run_Loop,
          Run_Loop_Parameter => Task_Value_Record,
          Normal_Priority    => Normal_Priority,
-         Initial_State      => Activation_Pending);
+         Initial_State      => Activation_Pending,
+         Wake_Time          => Time_Last);
 
       Agent.Cycle_Behaviour   := Cycle_Behaviour;
       Agent.Cycle_Period      := Cycle_Period;

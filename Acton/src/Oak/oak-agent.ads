@@ -59,7 +59,8 @@ package Oak.Agent with Preelaborate is
       Run_Loop           : in Address;
       Run_Loop_Parameter : in Address;
       Normal_Priority    : in Integer;
-      Initial_State      : in Agent_State);
+      Initial_State      : in Agent_State;
+      Wake_Time          : in Oak_Time.Time);
 
    function Agent_Message
      (For_Agent : in Oak_Agent'Class)
@@ -139,15 +140,15 @@ private
       Absolute_Deadline      : Oak_Time.Time;
       Message_Store          : Oak_Message_Location;
 
-      Scheduler_Agent        : access Schedulers.Scheduler_Agent'Class := null;
+      Scheduler_Agent        : access Schedulers.Scheduler_Agent'Class;
 
       Total_Execution_Time   : Oak_Time.Time_Span;
       Max_Execution_Time     : Oak_Time.Time_Span;
       Current_Execution_Time : Oak_Time.Time_Span;
       Execution_Cycles       : Natural;
 
-      Next_Agent             : access Oak_Agent'Class := null;
-      Previous_Agent         : access Oak_Agent'Class := null;
+      Next_Agent             : access Oak_Agent'Class;
+      Previous_Agent         : access Oak_Agent'Class;
 
       --  Memory_List : Memory_Region_Link := null;
    end record;

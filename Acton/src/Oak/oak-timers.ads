@@ -1,5 +1,6 @@
 with Ada.Cyclic_Tasks;
-with Oak.Oak_Time;
+with Oak.Message;  use Oak.Message;
+with Oak.Oak_Time; use Oak.Oak_Time;
 with System; use System;
 
 limited with Oak.Agent.Schedulers;
@@ -46,7 +47,12 @@ package Oak.Timers with Preelaborate is
 
    procedure Delay_Timer
      (Timer    : in out Oak_Timer'Class;
-      Delay_To : in Oak_Time.Time_Span);
+      Delay_By : in Oak_Time.Time_Span);
+
+   procedure Delay_Delayable_Timers
+     (Timer_Info     : in Oak_Timer_Info;
+      Delay_By       : in Oak_Time.Time_Span;
+      Below_Priority : in Oak_Priority);
 
    procedure Set_Timer
      (Timer           : in out Action_Timer;
@@ -62,11 +68,24 @@ package Oak.Timers with Preelaborate is
       Priority  : in Oak_Priority;
       Scheduler : not null access Oak.Agent.Schedulers.Scheduler_Agent'Class);
 
-   function Firing_Time
-     (Timer : in out Oak_Timer'Class) return Oak_Time.Time;
+   procedure Set_Timer_Deferrable_Behaviour
+     (Timer      : not null access Scheduler_Timer'Class;
+      Timer_Info : not null access Oak_Timer_Info;
+      Defer_Kind : in Deferrable_Type);
+
+   procedure Set_Timer_To_Be_Deferrable
+     (Timer      : not null access Scheduler_Timer'Class;
+      Timer_Info : not null access Oak_Timer_Info;
+      Defer_Kind : in Deferrable_Type);
+
+   procedure Set_Timer_To_Not_Be_Deferrable
+     (Timer : not null access Scheduler_Timer'Class);
 
    function Agent_To_Handle (Timer : in out Action_Timer'Class)
      return Oak.Agent.Agent_Handler;
+
+   function Firing_Time
+     (Timer : in out Oak_Timer'Class) return Oak_Time.Time;
 
    function Handler (Timer : in out Action_Timer'Class) return
      Ada.Cyclic_Tasks.Action_Handler;
@@ -74,20 +93,23 @@ package Oak.Timers with Preelaborate is
    function Timer_Action (Timer : in out Action_Timer'Class) return
      Ada.Cyclic_Tasks.Event_Action;
 
-   function Scheduler_Agent (Timer : in out Scheduler_Timer'Class) return
-     access Oak.Agent.Schedulers.Scheduler_Agent'Class;
+   function Timer_Has_Fired (Timer : in out Oak_Timer'Class) return Boolean;
+
+   function Timer_Scheduler_Agent (Timer : in out Scheduler_Timer'Class)
+     return access Oak.Agent.Schedulers.Scheduler_Agent'Class;
 
 private
    type Interrupt_Timers is array (Oak_Priority) of
      access Oak_Timer'Class;
 
    type Oak_Timer_Info is tagged limited record
-      Timers : Interrupt_Timers;
+      Timers                      : Interrupt_Timers;
+      Timers_Delayed_By_Execution : access Scheduler_Timer'Class;
    end record;
 
    type Oak_Timer is tagged record
       Timer_Manager  : access Oak_Timer_Info;
-      Fire_Time      : Oak_Time.Time;
+      Fire_Time      : Time;
       Priority       : Oak_Priority;
       Next_Timer     : access Oak_Timer'Class;
       Previous_Timer : access Oak_Timer'Class;
@@ -100,7 +122,10 @@ private
    end record;
 
    type Scheduler_Timer is new Oak_Timer with record
-      Scheduler : access Oak.Agent.Schedulers.Scheduler_Agent'Class;
+      Scheduler                : access Agent.Schedulers.Scheduler_Agent'Class;
+      Next_Scheduler_Timer     : access Scheduler_Timer'Class;
+      Previous_Scheduler_Timer : access Scheduler_Timer'Class;
+      Deferrable_Timer         : Deferrable_Type;
    end record;
 
    function Firing_Time
@@ -118,5 +143,12 @@ private
 
    function Timer_Action (Timer : in out Action_Timer'Class) return
      Ada.Cyclic_Tasks.Event_Action is (Timer.Timer_Action);
+
+   function Timer_Has_Fired (Timer : in out Oak_Timer'Class) return Boolean
+     is (Timer.Is_Armed and then Clock >= Timer.Fire_Time);
+
+   function Timer_Scheduler_Agent (Timer : in out Scheduler_Timer'Class)
+     return access Oak.Agent.Schedulers.Scheduler_Agent'Class
+   is (Timer.Scheduler);
 
 end Oak.Timers;

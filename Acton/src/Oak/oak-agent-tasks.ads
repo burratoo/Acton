@@ -122,10 +122,10 @@ private
       Remaining_Budget  : Oak_Time.Time_Span;
       Event_Raised      : Boolean;
 
-      Activation_List   : access Task_Agent'Class := null;
+      Activation_List   : access Task_Agent'Class;
       Elaborated        : Boolean_Access;
 
-      In_Atomic_Action  : access Atomic_Actions.Atomic_Object := null;
+      In_Atomic_Action  : access Atomic_Actions.Atomic_Object;
    end record;
 
    type Activation_Chain is limited record

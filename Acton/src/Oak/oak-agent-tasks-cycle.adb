@@ -60,6 +60,17 @@ package body Oak.Agent.Tasks.Cycle is
                 else Sleeping_And_Waiting);
          T.Wake_Time      := T.Next_Run_Cycle;
          T.Next_Run_Cycle := T.Next_Run_Cycle + T.Cycle_Period;
+
+         --  Skip cycles if their times have passed. Used mainly when
+         --  periodic tasks may be hidden in execution server. Probably can be
+         --  removed later since people are not really going to place periodic
+         --  tasks within execution servers.
+
+         while T.Wake_Time < Clock loop
+            T.Wake_Time      := T.Next_Run_Cycle;
+            T.Next_Run_Cycle := T.Next_Run_Cycle + T.Cycle_Period;
+         end loop;
+
       end if;
 
       if T.Cycle_Behaviour in Aperiodic then

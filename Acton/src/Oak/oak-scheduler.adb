@@ -73,6 +73,12 @@ package body Oak.Scheduler is
          exit when Next_Task_To_Run /= null
            or else Agent = From_Scheduler_Agent;
       end loop;
+
+      while Next_Task_To_Run /= null
+        and then Next_Task_To_Run.all in Scheduler_Agent'Class
+      loop
+         Next_Task_To_Run := Scheduler_Handler (Next_Task_To_Run).Agent_To_Run;
+      end loop;
    end Check_Sechduler_Agents_For_Next_Task_To_Run;
 
    function Find_Scheduler_For_System_Priority
@@ -126,23 +132,73 @@ package body Oak.Scheduler is
    end Remove_Agent_From_Scheduler;
 
    function Run_Scheduler_Agent
-     (Agent  : access Scheduler_Agent'Class;
+     (Agent  : not null access Scheduler_Agent'Class;
       Reason : in Oak_Message)
-      return access Task_Agent'Class is
+      return access Task_Agent'Class
+   is
+      Selected_Agent : access Oak_Agent'Class;
    begin
       Run_Scheduler_Agent (Agent => Agent, Reason => Reason);
-      return Task_Handler (Agent.Agent_To_Run);
+      Selected_Agent := Agent.Agent_To_Run;
+      while Selected_Agent /= null
+        and then Selected_Agent.all in Scheduler_Agent'Class
+      loop
+         Selected_Agent := Scheduler_Handler (Selected_Agent).Agent_To_Run;
+      end loop;
+      return Task_Handler (Selected_Agent);
    end Run_Scheduler_Agent;
 
    procedure Run_Scheduler_Agent
-     (Agent  : access Scheduler_Agent'Class;
-      Reason : in Oak_Message) is
+     (Agent  : not null access Scheduler_Agent'Class;
+      Reason : in Oak_Message)
+   is
+      SA      : access Scheduler_Agent'Class := Agent;
+      Message : Oak_Message                  := Reason;
    begin
-      Agent.Set_Agent_Message (Reason);
-      Agent.Set_State (Reason.Message_Type);
-      Core.Context_Switch_To_Agent (Agent);
-      Agent.Set_Wake_Time (Agent.Desired_Run_Time);
-      Agent.Scheduler_Timer.Update_Timer (New_Time => Agent.Wake_Time);
+      --  Use a loop rather than recursion to limit and protected the stack.
+      --  The recursion version of this code suffered from the risk that two
+      --  agents could ping-pong between each other indefinitely, leading to
+      --  the stack overflowing. By using a loop the system simply enters an
+      --  inifinate loop.
+
+      while SA /= null loop
+         SA.Set_Agent_Message (Message);
+         Core.Context_Switch_To_Agent (SA);
+         case SA.Agent_Message.Message_Type is
+            when Scheduler_Agent_Done =>
+               SA.Set_Agent_To_Run (SA.Agent_Message.Next_Agent);
+               SA.Set_State (Runnable);
+               SA.Set_Wake_Time (SA.Desired_Run_Time);
+               SA.Scheduler_Timer.Update_Timer (New_Time => SA.Wake_Time);
+               SA.Scheduler_Timer.Set_Timer_Deferrable_Behaviour
+                 (Timer_Info => Core.Oak_Timer_Store,
+                  Defer_Kind => SA.Agent_Message.Deferrable_Timer);
+
+               if SA.Agent_To_Run /= null
+                 and then SA.Agent_To_Run.all in Scheduler_Agent'Class
+               then
+                  SA := Scheduler_Handler (SA.Agent_To_Run);
+                  Message := (Message_Type => Selecting_Next_Agent);
+               else
+                  SA := null;
+               end if;
+
+            when Sleeping =>
+               SA.Set_State (Sleeping);
+               SA.Set_Agent_To_Run (null);
+               SA.Set_Wake_Time (WT => SA.Agent_Message.Wake_Up_At);
+               SA.Scheduler_Timer.Update_Timer (New_Time => Time_Last);
+
+               Message := (Message_Type       => Agent_State_Change,
+                           Agent_That_Changed => SA);
+               SA := SA.Scheduler_Agent_For_Agent;
+            when Continue_Sleep =>
+               SA := null;
+            when others =>
+               SA := null;
+         end case;
+      end loop;
+
    end Run_Scheduler_Agent;
 
    ------------------------------------------------------------

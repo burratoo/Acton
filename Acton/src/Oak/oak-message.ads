@@ -1,6 +1,7 @@
-with Oak.Indices; use Oak.Indices;
 with Oak.Oak_Time;
-with Oak.States; use Oak.States;
+
+with Oak.Indices; use Oak.Indices;
+with Oak.States;  use Oak.States;
 
 limited with Oak.Agent;
 limited with Oak.Agent.Tasks;
@@ -14,6 +15,8 @@ package Oak.Message with Preelaborate is
      (Protected_Function,
       Protected_Procedure,
       Protected_Entry);
+
+   type Deferrable_Type is (No, Yes, Only_By_Higher_Priority_Tasks);
 
    type Oak_Message (Message_Type : Agent_State := No_State) is record
       case Message_Type is
@@ -68,6 +71,10 @@ package Oak.Message with Preelaborate is
          when Scheduler_Agent_Done =>
             Next_Agent         : access Oak.Agent.Oak_Agent'Class;
             Wake_Scheduler_At  : Oak_Time.Time;
+            Deferrable_Timer   : Deferrable_Type;
+         when Adding_Agent_To_Scheduler =>
+            Agent_To_Add_To_Scheduler : not null access
+              Oak.Agent.Oak_Agent'Class;
          when others =>
             null;
       end case;

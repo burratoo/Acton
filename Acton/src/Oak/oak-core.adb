@@ -53,7 +53,8 @@ package body Oak.Core is
             Run_Loop           => Sleep_Agent'Address,
             Run_Loop_Parameter => Null_Address,
             Normal_Priority    => Priority'First,
-            Initial_State      => Runnable);
+            Initial_State      => Runnable,
+            Wake_Time          => Time_Last);
       end loop;
 
       Oak.Core_Support_Package.Interrupts.Set_Up_Interrupts;
@@ -300,6 +301,14 @@ package body Oak.Core is
                           (Scheduler_Info   => Oak_Instance.Scheduler,
                            Next_Task_To_Run => Next_Agent);
                      end if;
+
+                  when Adding_Agent_To_Scheduler =>
+                     Add_Agent_To_Scheduler
+                       (Current_Agent.Agent_Message.Agent_To_Add_To_Scheduler);
+                     Current_Agent.Set_State (Runnable);
+                     Check_Sechduler_Agents_For_Next_Task_To_Run
+                       (Scheduler_Info   => Oak_Instance.Scheduler,
+                        Next_Task_To_Run => Next_Agent);
                   when others =>
                      null;
                end case;
@@ -331,7 +340,7 @@ package body Oak.Core is
                   Run_The_Bloody_Scheduler_Agent_That_Wanted_To_Be_Woken
                     (Agent       =>
                        Timers.Scheduler_Timer
-                         (Active_Timer.all).Scheduler_Agent,
+                         (Active_Timer.all).Timer_Scheduler_Agent,
                      Current_Agent    => Current_Agent,
                      Next_Task_To_Run => Next_Agent);
 
@@ -502,11 +511,17 @@ package body Oak.Core is
 
       procedure Charge_Exec_Time (To_Agent : not null access Oak_Agent'Class)
       is
-         Current_Time : constant Time := Clock;
+         Current_Time : constant Time      := Clock;
+         Charge_Time  : constant Time_Span :=
+                          Current_Time - Oak_Instance.Entry_Exit_Stamp;
       begin
          Charge_Execution_Time
            (To_Agent  => To_Agent.all,
-            Exec_Time => Current_Time - Oak_Instance.Entry_Exit_Stamp);
+            Exec_Time => Charge_Time);
+         Timers.Delay_Delayable_Timers
+           (Timer_Info => Oak_Instance.Oak_Timers,
+            Delay_By   => Charge_Time,
+            Below_Priority => Oak_Instance.Current_Priority);
          Oak_Instance.Entry_Exit_Stamp := Current_Time;
       end Charge_Exec_Time;
    begin

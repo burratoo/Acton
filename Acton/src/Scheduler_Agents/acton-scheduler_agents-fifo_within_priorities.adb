@@ -81,7 +81,8 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
          Self.Set_Agent_Message
            (Message => (Message_Type      => Scheduler_Agent_Done,
                         Next_Agent        => Selected_Agent,
-                        Wake_Scheduler_At => Wake_Time));
+                        Wake_Scheduler_At => Wake_Time,
+                        Deferrable_Timer  => No));
       end Select_Next_Task;
 
       ------------------
@@ -229,7 +230,7 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
 
    begin
       loop
-         Run_Reason := Self.State;
+         Run_Reason := Self.Agent_Message.Message_Type;
          case Run_Reason is
             when Agent_State_Change =>
                Task_Yielded;

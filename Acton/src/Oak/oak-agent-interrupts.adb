@@ -23,7 +23,8 @@ package body Oak.Agent.Interrupts is
          Run_Loop           => Interrupt_Run_Loop'Address,
          Run_Loop_Parameter => Agent.all'Address,
          Normal_Priority    => Priority,
-         Initial_State      => Interrupt_Done);
+         Initial_State      => Interrupt_Done,
+         Wake_Time          => Oak_Time.Time_Last);
    end Initialise_Interrupt_Agent;
 
    procedure Interrupt_Run_Loop (Self : Interrupt_Agent'Class) is
