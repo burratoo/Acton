@@ -1,8 +1,8 @@
 with Oak.Core_Support_Package.Processor;
 
-with Oak.Agent; use Oak.Agent;
-with Oak.Agent.Tasks; use Oak.Agent.Tasks;
-with Oak.Agent.Interrupts; use Oak.Agent.Interrupts;
+with Oak.Agent;                     use Oak.Agent;
+with Oak.Agent.Tasks;               use Oak.Agent.Tasks;
+with Oak.Agent.Interrupts;          use Oak.Agent.Interrupts;
 with Oak.Core_Support_Package;      use Oak.Core_Support_Package;
 with Oak.Oak_Time;                  use Oak.Oak_Time;
 with Oak.Timers;
@@ -45,17 +45,31 @@ package Oak.Core with Preelaborate is
    --  implementing delay until for tasks running on top the the kernel.
    --  Hmmm...
 
+   procedure Add_Agent_To_Charge_List
+     (Oak_Instance : in out Oak_Data'Class;
+      Agent        : not null access Oak_Agent'Class);
+
    function Current_Agent    return not null access Oak_Agent'Class
      with Inline_Always;
    function Current_Agent_Stack_Pointer return Address with Inline_Always;
    function Current_Task     return not null access Task_Agent'Class
      with Inline_Always;
+
+   function Exec_Charge_List
+     (Oak_Instance : access Oak_Data'Class)
+      return Agent_Handler;
+
    function Main_Task        return not null access Task_Agent;
    function Oak_Instance     return not null access Oak_Data'Class
      with Inline_Always;
    function Oak_Stack_Pointer return Address with Inline_Always;
    function Oak_Timer_Store   return not null access Oak.Timers.Oak_Timer_Info
      with Inline_Always;
+
+   procedure Remove_Agent_From_Charge_List
+     (Oak_Instance : in out Oak_Data'Class;
+      Agent        : not null access Oak_Agent'Class);
+
    function Scheduler_Info
      (Oak_Instance : access Oak_Data'Class)
       return not null access Oak_Scheduler_Info with Inline_Always;
@@ -92,6 +106,7 @@ private
 
       Interrupt_States   : Interrupt_Active_Set;
       Oak_Timers         : aliased Oak.Timers.Oak_Timer_Info;
+      Budgets_To_Charge  : access Oak_Agent'Class;
    end record;
 
    type Oak_List is array (Oak_Instance_Id) of aliased Oak_Data;
@@ -111,6 +126,10 @@ private
 
    function Current_Task return not null access Task_Agent'Class is
      (Task_Handler (Current_Agent));
+
+   function Exec_Charge_List
+     (Oak_Instance : access Oak_Data'Class)
+      return Agent_Handler is (Agent_Handler (Oak_Instance.Budgets_To_Charge));
 
    function Main_Task return not null access Task_Agent
      is (Main_Task_OTCR'Access);

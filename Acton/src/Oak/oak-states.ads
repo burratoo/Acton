@@ -33,8 +33,8 @@ package Oak.States with Pure is
                        Handling_Interrupt,           -- 30
                        Interrupt_Done,               -- 31
                        No_State,                     -- 32
-                       Agent_State_Change,
-                       Selecting_Next_Agent,
+                       Agent_State_Change,           -- 33
+                       Selecting_Next_Agent,         -- 34
                        Adding_Agent,
                        Removing_Agent,
                        Scheduler_Agent_Done,

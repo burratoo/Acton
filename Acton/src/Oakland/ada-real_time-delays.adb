@@ -11,8 +11,9 @@ package body Ada.Real_Time.Delays is
 
    procedure Delay_Until (T : Time) is
       Message : constant Oak_Message :=
-        (Message_Type => Sleeping,
-         Wake_Up_At   => To_Oak_Time (T));
+        (Message_Type            => Sleeping,
+         Wake_Up_At              => To_Oak_Time (T),
+         Remove_From_Charge_List => True);
    begin
       Oakland.Tasks.Yield_Processor_To_Kernel (Task_Message => Message);
    end Delay_Until;

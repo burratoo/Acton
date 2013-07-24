@@ -1,10 +1,10 @@
-with Oak.Message; use Oak.Message;
-with Oak.States;  use Oak.States;
-with System;      use System;
-
 with Oak.Core_Support_Package;
 with Oak.Oak_Time;
+
 with Oak.Memory.Call_Stack;   use Oak.Memory.Call_Stack;
+with Oak.Message;             use Oak.Message;
+with Oak.States;              use Oak.States;
+with System;                  use System;
 with System.Storage_Elements; use System.Storage_Elements;
 
 limited with Oak.Agent.Schedulers;
@@ -14,6 +14,9 @@ package Oak.Agent with Preelaborate is
    type Task_Id is range 0 .. Oak.Core_Support_Package.Max_Tasks;
    subtype Task_Name is String
      (1 .. Core_Support_Package.Max_Task_Name_Length);
+
+   type Charge_Occurrence is
+     (Do_Not_Charge, Same_Priority, All_Priorities, Below_Priority);
 
 --     type Memory_Region;
 --     type Memory_Region_Link is access all Memory_Region;
@@ -52,15 +55,16 @@ package Oak.Agent with Preelaborate is
       Call_Stack_Size : in System.Storage_Elements.Storage_Count);
 
    procedure Initialise_Agent
-     (Agent              : not null access Oak_Agent'Class;
-      Name               : in String;
-      Call_Stack_Address : in Address;
-      Call_Stack_Size    : in Storage_Count;
-      Run_Loop           : in Address;
-      Run_Loop_Parameter : in Address;
-      Normal_Priority    : in Integer;
-      Initial_State      : in Agent_State;
-      Wake_Time          : in Oak_Time.Time);
+     (Agent                : not null access Oak_Agent'Class;
+      Name                 : in String;
+      Call_Stack_Address   : in Address;
+      Call_Stack_Size      : in Storage_Count;
+      Run_Loop             : in Address;
+      Run_Loop_Parameter   : in Address;
+      Normal_Priority      : in Integer;
+      Initial_State        : in Agent_State;
+      Wake_Time            : in Oak_Time.Time;
+      When_To_Charge_Agent : in Charge_Occurrence := All_Priorities);
 
    function Agent_Message
      (For_Agent : in Oak_Agent'Class)
@@ -113,16 +117,50 @@ package Oak.Agent with Preelaborate is
 
    function Wake_Time (Agent : in Oak_Agent'Class) return Oak_Time.Time;
 
-   procedure New_Execution_Cycle (Agent : in out Oak_Agent'Class);
+   procedure Add_Agent_To_Exec_Charge_List
+     (Agent : not null access Oak_Agent'Class;
+      List  : in out Agent_Handler);
+
+   procedure Clear_Exec_Charge_List
+     (List : in out Agent_Handler);
+
    procedure Charge_Execution_Time
-     (To_Agent  : in out Oak_Agent;
+     (To_Agent  : in out Oak_Agent'Class;
       Exec_Time : in Oak_Time.Time_Span);
+
+   procedure Charge_Execution_Time_To_List
+     (List      : not null access Oak_Agent'Class;
+      Exec_Time : in Oak_Time.Time_Span;
+      Current_Priority : in Oak_Priority);
+
+   function Earliest_Expiring_Budget
+     (Charge_List : not null access Oak_Agent'Class)
+      return access Oak_Agent'Class;
+
+   procedure Replenish_Execution_Budget
+     (Agent     : in out Oak_Agent'Class;
+      By_Amount : in Oak_Time.Time_Span);
+
+   function Remaining_Budget
+     (Agent : in Oak_Agent'Class)
+      return Oak_Time.Time_Span;
+
+   procedure Remove_Agent_From_Exec_Charge_List
+     (Agent : not null access Oak_Agent'Class;
+      List  : in out Agent_Handler);
+
+   procedure Set_Remaining_Budget
+     (Agent     : in out Oak_Agent'Class;
+      To_Amount : in Oak_Time.Time_Span);
 
 private
    type Oak_Agent is tagged limited record
-      Id          : Task_Id;
-      Name        : Task_Name;
-      Name_Length : Natural;
+      Id                     : Task_Id;
+      Name                   : Task_Name;
+      Name_Length            : Natural;
+
+      Next_Agent             : access Oak_Agent'Class;
+      Previous_Agent         : access Oak_Agent'Class;
 
       ----
       --  This gives us a pointer to the starting location of the Stack (is
@@ -145,10 +183,12 @@ private
       Total_Execution_Time   : Oak_Time.Time_Span;
       Max_Execution_Time     : Oak_Time.Time_Span;
       Current_Execution_Time : Oak_Time.Time_Span;
+      Remaining_Budget       : Oak_Time.Time_Span;
       Execution_Cycles       : Natural;
+      When_To_Charge         : Charge_Occurrence;
 
-      Next_Agent             : access Oak_Agent'Class;
-      Previous_Agent         : access Oak_Agent'Class;
+      Next_Charge_Item       : access Oak_Agent'Class;
+      Previous_Charge_Item   : access Oak_Agent'Class;
 
       --  Memory_List : Memory_Region_Link := null;
    end record;
@@ -170,6 +210,10 @@ private
    function Normal_Priority
      (Agent : in Oak_Agent'Class)
       return System.Any_Priority is (Agent.Normal_Priority);
+
+   function Remaining_Budget
+     (Agent : in Oak_Agent'Class)
+      return Oak_Time.Time_Span is (Agent.Remaining_Budget);
 
    function Scheduler_Agent_For_Agent
      (Agent : in Oak_Agent'Class)

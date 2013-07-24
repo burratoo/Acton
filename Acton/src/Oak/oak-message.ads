@@ -19,9 +19,10 @@ package Oak.Message with Preelaborate is
    type Oak_Message (Message_Type : Agent_State := No_State) is record
       case Message_Type is
          when Sleeping =>
-            Wake_Up_At : Oak_Time.Time := Oak_Time.Time_Last;
+            Wake_Up_At              : Oak_Time.Time;
+            Remove_From_Charge_List : Boolean;
          when Change_Cycle_Period =>
-            New_Cycle_Period  : Oak_Time.Time_Span := Oak_Time.Time_Span_Zero;
+            New_Cycle_Period  : Oak_Time.Time_Span;
             Cycle_Period_Task : not null access
               Oak.Agent.Tasks.Task_Agent'Class;
          when Change_Relative_Deadline =>
@@ -61,17 +62,20 @@ package Oak.Message with Preelaborate is
          when Selecting_Next_Agent =>
             null;
          when Adding_Agent =>
-            Agent_To_Add       : not null access Oak.Agent.Oak_Agent'Class;
+            Agent_To_Add        : not null access Oak.Agent.Oak_Agent'Class;
          when Removing_Agent =>
-            Agent_To_Remove    : not null access Oak.Agent.Oak_Agent'Class;
+            Agent_To_Remove     : not null access Oak.Agent.Oak_Agent'Class;
          when Agent_State_Change =>
-            Agent_That_Changed : not null access Oak.Agent.Oak_Agent'Class;
+            Agent_That_Changed  : not null access Oak.Agent.Oak_Agent'Class;
          when Scheduler_Agent_Done =>
-            Next_Agent         : access Oak.Agent.Oak_Agent'Class;
-            Wake_Scheduler_At  : Oak_Time.Time;
+            Next_Agent          : access Oak.Agent.Oak_Agent'Class;
+            Wake_Scheduler_At   : Oak_Time.Time;
+            Keep_In_Charge_List : Boolean;
          when Adding_Agent_To_Scheduler =>
             Agent_To_Add_To_Scheduler : not null access
               Oak.Agent.Oak_Agent'Class;
+         when Continue_Sleep =>
+            Remain_In_Charge_List : Boolean;
          when others =>
             null;
       end case;

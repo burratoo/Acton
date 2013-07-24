@@ -36,7 +36,6 @@ private
       Execution_Budget      : Time_Span;
 
       Next_Wake_Time        : Time;
-      Budget_Exhausted_Time : Time;
    end record;
 
 end Acton.Scheduler_Agents.Priority_Server;

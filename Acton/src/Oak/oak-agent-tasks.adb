@@ -108,14 +108,6 @@ package body Oak.Agent.Tasks is
 
    end Initialise_Task_Agent;
 
-   overriding procedure Charge_Execution_Time
-     (To_Agent  : in out Task_Agent;
-      Exec_Time : in Oak_Time.Time_Span) is
-   begin
-      To_Agent.Remaining_Budget := To_Agent.Remaining_Budget - Exec_Time;
-      Oak.Agent.Charge_Execution_Time (Oak_Agent (To_Agent), Exec_Time);
-   end Charge_Execution_Time;
-
    overriding function Destination_On_Wake_Up (Agent : in out Task_Agent)
                                     return Wake_Destination is
    begin

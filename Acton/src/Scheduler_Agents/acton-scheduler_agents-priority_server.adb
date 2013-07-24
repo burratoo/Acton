@@ -27,23 +27,26 @@ package body Acton.Scheduler_Agents.Priority_Server is
       Agent.Set_Priority_Range (From => Priority, To => Priority);
 
       Initialise_Scheduler_Agent
-        (Agent           => Agent'Unchecked_Access,
-         Name            => Agent_Name,
-         Call_Stack_Size => Stack_Size,
-         Run_Loop        => Run_Loop'Address);
+        (Agent                => Agent'Unchecked_Access,
+         Name                 => Agent_Name,
+         Call_Stack_Size      => Stack_Size,
+         Run_Loop             => Run_Loop'Address,
+         When_To_Charge_Agent => Below_Priority);
 
-      Agent.Period            := Period;
-      Agent.Phase             := Phase;
-      Agent.Relative_Deadline := Relative_Deadline;
-      Agent.Execution_Budget  := Budget;
+      Agent.Period               := Period;
+      Agent.Phase                := Phase;
+      Agent.Relative_Deadline    := Relative_Deadline;
+      Agent.Execution_Budget     := Budget;
+      Agent.Set_Remaining_Budget (Budget);
 
       Agent.Set_Wake_Time (Oak.Core.Global_Start_Time + Phase);
       Agent.Next_Wake_Time := Agent.Wake_Time + Period;
-      Agent.Budget_Exhausted_Time := Agent.Wake_Time + Budget;
       Agent.Scheduler_Timer.Update_Timer (Time_Last);
 
       Agent.Set_Scheduler_Agent
         (Find_Scheduler_For_System_Priority (Priority => Priority, CPU => 0));
+
+      Agent.Set_State (Sleeping);
    end Initialise_Scheduler_Agent;
 
    procedure Run_Loop (Self : in out Priority_Server) is
@@ -197,24 +200,6 @@ package body Acton.Scheduler_Agents.Priority_Server is
 
    begin
       loop
-         --  Update Budget_Exhausted_Time from scheduler timer. The maximum
-         --  value the scheduler timer will possess (excluding Time_Last) is
-         --  the time the execution server becomes inactive. Oak is able to
-         --  delay the timer due to interference by other tasks if it is placed
-         --  in the delayable timers list. TODO: This code belongs in a
-         --  defferable server.
-
---           if Self.Scheduler_Timer.Firing_Time /= Time_Last and then
---             Self.Scheduler_Timer.Firing_Time > Self.Budget_Exhausted_Time
---           then
-            --  Budget_Exhausted_Time can be no latter than the next task cycle
---              if Self.Scheduler_Timer.Firing_Time > Self.Next_Wake_Time then
---                 Self.Budget_Exhausted_Time := Self.Wake_Time;
---              else
---              Self.Budget_Exhausted_Time := Self.Scheduler_Timer.Firing_Time;
---              end if;
---           end if;
-
          Run_Reason := Self.Agent_Message.Message_Type;
 
          case Run_Reason is
@@ -232,50 +217,73 @@ package body Acton.Scheduler_Agents.Priority_Server is
 
          --  If the agent was sleeping, it stays asleep. The agent can run
          --  while it is technically sleeping so as to add and remove tasks
-         --  from it.
+         --  from it. It will also run when its budget is exhausted, even
+         --  if it is still sleeping. In this case, we remove the agent from
+         --  the charge list.
 
          if Self.State = Sleeping then
-            Self.Set_Agent_Message
-              (Message => (Message_Type => Continue_Sleep));
+            if Self.Remaining_Budget <= Time_Span_Zero then
+               Self.Set_Agent_Message
+                    (Message => (Message_Type          => Continue_Sleep,
+                                 Remain_In_Charge_List => False));
+            else
+               Self.Set_Agent_Message
+                    (Message => (Message_Type          => Continue_Sleep,
+                                 Remain_In_Charge_List => True));
+            end if;
 
          --  The clock has passed the agent's budget exhausted time, sleep the
          --  agent and its tasks until the next wake up time.
 
-         elsif Self.Budget_Exhausted_Time < Clock then
+         elsif Self.Remaining_Budget <= Time_Span_Zero
+           and then Self.Next_Wake_Time >= Clock
+         then
+
             Self.Set_Agent_Message
-              (Message => (Message_Type => Sleeping,
-                           Wake_Up_At   => Self.Next_Wake_Time));
-            Self.Budget_Exhausted_Time := Self.Next_Wake_Time +
-              Self.Execution_Budget;
-            Self.Next_Wake_Time        := Self.Next_Wake_Time + Self.Period;
+              (Message => (Message_Type            => Sleeping,
+                           Wake_Up_At              => Self.Next_Wake_Time,
+                           Remove_From_Charge_List => True));
+
+            Self.Set_Remaining_Budget (To_Amount => Self.Execution_Budget);
+            Self.Next_Wake_Time := Self.Next_Wake_Time + Self.Period;
 
          --  The agent is active, its timer is set to the lesser of
          --  the budget exhuasted time and the eariliest wake time of its
          --  tasks in the agent's sleeping queue
 
          else
+            --  Next_Wake_Time has passed and we are still running, but have
+            --  not exhausted the budget. Replenish budget and continue.
+
+            if Self.Next_Wake_Time < Clock then
+               Self.Set_Remaining_Budget (To_Amount => Self.Execution_Budget);
+               Self.Next_Wake_Time := Self.Next_Wake_Time + Self.Period;
+            end if;
+
             if Sleeping_Queue /= null
-              and then Sleeping_Queue.Wake_Time < Self.Budget_Exhausted_Time
+              and then Sleeping_Queue.Wake_Time < Self.Next_Wake_Time
             then
                Wake_Time := Sleeping_Queue.Wake_Time;
             else
-               Wake_Time := Self.Budget_Exhausted_Time;
+               Wake_Time := Self.Next_Wake_Time;
             end if;
 
             --  If there is nothing to run the agent sleeps
 
             if Runnable_Queue = null then
                Self.Set_Agent_Message
-                 (Message => (Message_Type => Sleeping,
-                              Wake_Up_At   => Wake_Time));
+                 (Message => (Message_Type            => Sleeping,
+                              Wake_Up_At              => Wake_Time,
+                              Remove_From_Charge_List => False));
 
             --  Otherwise the task returns the chosen task
 
             else
                Self.Set_Agent_Message
-                 (Message => (Message_Type      => Scheduler_Agent_Done,
-                              Next_Agent        => Runnable_Queue,
-                              Wake_Scheduler_At => Wake_Time));
+                 (Message => (Message_Type        => Scheduler_Agent_Done,
+                              Next_Agent          => Runnable_Queue,
+                              Wake_Scheduler_At   => Wake_Time,
+                              Keep_In_Charge_List => True));
             end if;
          end if;
 

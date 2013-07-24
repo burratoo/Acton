@@ -65,8 +65,9 @@ package body Oakland.Tasks is
    --  Trival complete task.
    procedure Complete_Task is
       Message : constant Oak_Message :=
-        (Message_Type => Sleeping,
-         Wake_Up_At   => Time_Last);
+        (Message_Type            => Sleeping,
+         Wake_Up_At              => Time_Last,
+         Remove_From_Charge_List => True);
    begin
       Yield_Processor_To_Kernel (Task_Message => Message);
    end Complete_Task;

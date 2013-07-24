@@ -1,4 +1,4 @@
-with Oak.Core;
+with Oak.Core; use Oak.Core;
 with Oak.Agent.Queue; use Oak.Agent.Queue;
 with Oak.Oak_Time;    use Oak.Oak_Time;
 with Oak.States; use Oak.States;
@@ -162,6 +162,12 @@ package body Oak.Scheduler is
       --  inifinate loop.
 
       while SA /= null loop
+         --  Easier to remove and add agent than to check if agent is present
+         --  in charge list.
+
+         Oak_Instance.Remove_Agent_From_Charge_List (SA);
+         Oak_Instance.Add_Agent_To_Charge_List (SA);
+
          SA.Set_Agent_Message (Message);
          Core.Context_Switch_To_Agent (SA);
          case SA.Agent_Message.Message_Type is
@@ -170,6 +176,10 @@ package body Oak.Scheduler is
                SA.Set_State (Runnable);
                SA.Set_Wake_Time (SA.Desired_Run_Time);
                SA.Scheduler_Timer.Update_Timer (New_Time => SA.Wake_Time);
+
+               if not SA.Agent_Message.Keep_In_Charge_List then
+                  Oak_Instance.Remove_Agent_From_Charge_List (SA);
+               end if;
 
                if SA.Agent_To_Run /= null
                  and then SA.Agent_To_Run.all in Scheduler_Agent'Class
@@ -186,12 +196,27 @@ package body Oak.Scheduler is
                SA.Set_Wake_Time (WT => SA.Agent_Message.Wake_Up_At);
                SA.Scheduler_Timer.Update_Timer (New_Time => Time_Last);
 
+               if SA.Agent_Message.Remove_From_Charge_List then
+                  Oak_Instance.Remove_Agent_From_Charge_List (SA);
+               end if;
+
                Message := (Message_Type       => Agent_State_Change,
                            Agent_That_Changed => SA);
                SA := SA.Scheduler_Agent_For_Agent;
             when Continue_Sleep =>
+               --  When removing the agent from the charge list, the scheduler
+               --  agent's timer should be set to Time_Last to effectively
+               --  disable it since we never remove scheduler timers from
+               --  the manager. This needs to be done since the execution
+               --  timer code may modify it while the task is asleep.
+
+               if not SA.Agent_Message.Remain_In_Charge_List then
+                  Oak_Instance.Remove_Agent_From_Charge_List (SA);
+                  SA.Scheduler_Timer.Update_Timer (New_Time => Time_Last);
+               end if;
                SA := null;
             when others =>
+               Oak_Instance.Remove_Agent_From_Charge_List (SA);
                SA := null;
          end case;
       end loop;

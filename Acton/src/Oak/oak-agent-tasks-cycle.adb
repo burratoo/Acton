@@ -33,6 +33,8 @@ package body Oak.Agent.Tasks.Cycle is
       Next_Task_To_Run : out Agent_Handler) is
    begin
 
+      --  Update execution statistics
+
       T.Execution_Cycles := T.Execution_Cycles + 1;
       if T.Current_Execution_Time > T.Max_Execution_Time then
          T.Max_Execution_Time := T.Current_Execution_Time;

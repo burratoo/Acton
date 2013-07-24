@@ -52,10 +52,6 @@ package Oak.Agent.Tasks with Preelaborate is
    function Budget_Timer (T : not null access Task_Agent'Class)
                           return access Timers.Action_Timer'Class;
 
-   overriding procedure Charge_Execution_Time
-     (To_Agent  : in out Task_Agent;
-      Exec_Time : in Oak_Time.Time_Span);
-
    function Current_Atomic_Action
      (T : in Task_Agent'Class)
       return access Atomic_Actions.Atomic_Object;
@@ -119,7 +115,6 @@ private
       Execution_Timer   : aliased Oak.Timers.Action_Timer;
 
       Next_Run_Cycle    : Oak_Time.Time;
-      Remaining_Budget  : Oak_Time.Time_Span;
       Event_Raised      : Boolean;
 
       Activation_List   : access Task_Agent'Class;

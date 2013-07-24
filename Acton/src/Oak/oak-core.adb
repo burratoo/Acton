@@ -1,3 +1,4 @@
+with Oak.Agent.Schedulers;   use Oak.Agent.Schedulers;
 with Oak.Agent.Tasks.Activation;
 with Oak.Agent.Tasks.Cycle; use Oak.Agent.Tasks.Cycle;
 with Oak.Agent.Tasks.Protected_Objects; use Oak.Agent.Tasks.Protected_Objects;
@@ -105,6 +106,8 @@ package body Oak.Core is
    procedure Run_Loop (Oak_Instance : in out Oak_Data) is
       Active_Timer  : access Oak.Timers.Oak_Timer'Class;
       Next_Agent    : Agent_Handler := null;
+      Charge_List   : access Oak_Agent'Class renames
+                        Oak_Instance.Budgets_To_Charge;
       Current_Agent : not null access Oak_Agent'Class renames
                         Oak_Instance.Current_Agent;
       P             : Any_Priority;
@@ -303,9 +306,9 @@ package body Oak.Core is
                      end if;
 
                   when Adding_Agent_To_Scheduler =>
+                     Current_Agent.Set_State (Runnable);
                      Add_Agent_To_Scheduler
                        (Current_Agent.Agent_Message.Agent_To_Add_To_Scheduler);
-                     Current_Agent.Set_State (Runnable);
                      Check_Sechduler_Agents_For_Next_Task_To_Run
                        (Scheduler_Info   => Oak_Instance.Scheduler,
                         Next_Task_To_Run => Next_Agent);
@@ -346,6 +349,20 @@ package body Oak.Core is
 
                elsif Active_Timer.all in Timers.Action_Timer then
                   Active_Timer.Remove_Timer;
+
+                  --  Disable execution timer if fired. This is done by setting
+                  --  the property Remaining_Budget to Time_Span_Last.
+
+                  declare
+                     A : constant Agent_Handler :=
+                           Timers.Action_Timer'Class
+                             (Active_Timer.all).Agent_To_Handle;
+                  begin
+                     if A.Remaining_Budget <= Time_Span_Zero then
+                        A.Set_Remaining_Budget (Time_Span_Last);
+                     end if;
+                  end;
+
                   case Timers.Action_Timer'Class
                     (Active_Timer.all).Timer_Action is
                      when Ada.Cyclic_Tasks.Handler =>
@@ -436,23 +453,33 @@ package body Oak.Core is
          --  task and only apply if the timer will fire before any timer
          --  that is currently managed.
 
-         if Next_Agent.all in Task_Agent'Class
-           and then Task_Handler (Next_Agent).Execution_Budget
-                        /= Oak_Time.Time_Span_Last
-         then
-            declare
-               Timer_Task : constant Task_Handler := Task_Handler (Next_Agent);
-               Timer_Time : constant Time :=
-                              Clock + Timer_Task.Remaining_Budget;
-            begin
+         Next_Agent.Add_Agent_To_Exec_Charge_List
+           (Agent_Handler (Charge_List));
+
+         declare
+            Budget_Task    : constant access Oak_Agent'Class :=
+                               Earliest_Expiring_Budget (Charge_List);
+            Budget_Expires : Time;
+         begin
+            if Budget_Task /= null then
+               Budget_Expires := Clock + Budget_Task.Remaining_Budget;
                if Active_Timer = null
-                 or else Timer_Time < Active_Timer.Firing_Time
+                 or else Budget_Expires < Active_Timer.Firing_Time
                then
-                     Active_Timer := Timer_Task.Budget_Timer;
-                     Active_Timer.Update_Timer (New_Time => Timer_Time);
+                  if Budget_Task.all in Task_Agent'Class then
+                     Active_Timer := Task_Handler (Budget_Task).Budget_Timer;
+
+                  elsif Budget_Task.all in Scheduler_Agent'Class then
+                     Active_Timer :=
+                       Scheduler_Handler (Budget_Task).Scheduler_Timer;
+                  else
+                     raise Program_Error;
+                  end if;
+
+                  Active_Timer.Update_Timer (New_Time => Budget_Expires);
                end if;
-            end;
-         end if;
+            end if;
+         end;
 
          --  These called functions are responsible for enabling the sleep
          --  timer.
@@ -502,30 +529,64 @@ package body Oak.Core is
 
             end case;
          end if;
+
+         Current_Agent.Remove_Agent_From_Exec_Charge_List
+           (Agent_Handler (Charge_List));
       end loop;
    end Run_Loop;
 
+   procedure Add_Agent_To_Charge_List
+     (Oak_Instance : in out Oak_Data'Class;
+      Agent        : not null access Oak_Agent'Class) is
+   begin
+      Agent.Add_Agent_To_Exec_Charge_List (Oak_Instance.Budgets_To_Charge);
+   end Add_Agent_To_Charge_List;
+
    procedure Context_Switch_To_Agent (Agent : not null access Oak_Agent'Class)
    is
-      procedure Charge_Exec_Time (To_Agent : not null access Oak_Agent'Class);
+      Charge_List : access Oak_Agent'Class renames
+                      Oak_Instance.Budgets_To_Charge;
 
-      procedure Charge_Exec_Time (To_Agent : not null access Oak_Agent'Class)
+      procedure Charge_Exec_Time
+        (To             : not null access Oak_Agent'Class;
+         To_Charge_List : Boolean);
+
+      procedure Charge_Exec_Time
+        (To             : not null access Oak_Agent'Class;
+         To_Charge_List : Boolean)
       is
          Current_Time : constant Time      := Clock;
          Charge_Time  : constant Time_Span :=
                           Current_Time - Oak_Instance.Entry_Exit_Stamp;
       begin
-         Charge_Execution_Time
-           (To_Agent  => To_Agent.all,
-            Exec_Time => Charge_Time);
+         if To_Charge_List then
+            Charge_Execution_Time_To_List
+              (List             => To,
+               Exec_Time        => Charge_Time,
+               Current_Priority => Oak_Instance.Current_Priority);
+         else
+            Charge_Execution_Time
+              (To_Agent  => To.all,
+               Exec_Time => Charge_Time);
+         end if;
+
          Oak_Instance.Entry_Exit_Stamp := Current_Time;
       end Charge_Exec_Time;
    begin
-      Charge_Exec_Time (Oak_Instance);
+      Charge_Exec_Time (Oak_Instance, To_Charge_List => False);
       Oak_Instance.Current_Agent := Agent;
       Core_Support_Package.Task_Support.Context_Switch_To_Agent;
-      Charge_Exec_Time (Agent);
+      Charge_Exec_Time
+        (Charge_List, To_Charge_List => True);
    end Context_Switch_To_Agent;
+
+   procedure Remove_Agent_From_Charge_List
+     (Oak_Instance : in out Oak_Data'Class;
+      Agent        : not null access Oak_Agent'Class) is
+   begin
+      Agent.Remove_Agent_From_Exec_Charge_List
+        (Oak_Instance.Budgets_To_Charge);
+   end Remove_Agent_From_Charge_List;
 
    procedure Set_Current_Agent_Stack_Pointer (SP : Address) is
    begin

@@ -11,10 +11,11 @@ package Oak.Agent.Schedulers with Preelaborate is
      (Agent : in out Scheduler_Agent) is abstract;
 
    procedure Initialise_Scheduler_Agent
-     (Agent           : access Scheduler_Agent'Class;
-      Name            : in String;
-      Call_Stack_Size : in Storage_Elements.Storage_Count;
-      Run_Loop        : in Address);
+     (Agent                : access Scheduler_Agent'Class;
+      Name                 : in String;
+      Call_Stack_Size      : in Storage_Elements.Storage_Count;
+      Run_Loop             : in Address;
+      When_To_Charge_Agent : in Charge_Occurrence := All_Priorities);
 
    function Agent_To_Run
      (Agent : in Scheduler_Agent'Class)
