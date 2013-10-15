@@ -98,7 +98,7 @@ package Oak.Agent.Tasks.Protected_Objects with Preelaborate is
       return access Protected_Agent'Class;
 
    function Protected_Object_From_Access
-     (Handler : Ada.Cyclic_Tasks.Action_Handler)
+     (Handler : Ada.Cyclic_Tasks.Response_Handler)
       return access Protected_Agent'Class;
 
 private

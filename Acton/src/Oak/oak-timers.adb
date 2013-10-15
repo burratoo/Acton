@@ -116,8 +116,8 @@ package body Oak.Timers is
      (Timer           : in out Action_Timer;
       Fire_Time       : in Oak_Time.Time := Oak_Time.Time_Last;
       Priority        : in Oak_Priority;
-      Timer_Action    : in Ada.Cyclic_Tasks.Event_Action;
-      Handler         : in Ada.Cyclic_Tasks.Action_Handler;
+      Timer_Action    : in Ada.Cyclic_Tasks.Event_Response;
+      Handler         : in Ada.Cyclic_Tasks.Response_Handler;
       Agent_To_Handle : access Oak.Agent.Tasks.Task_Agent'Class) is
    begin
       Timer.Set_Timer (Fire_Time, Priority);

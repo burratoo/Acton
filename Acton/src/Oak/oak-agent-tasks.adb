@@ -24,11 +24,11 @@ package body Oak.Agent.Tasks is
       Cycle_Period      : in Oak_Time.Time_Span;
       Phase             : in Oak_Time.Time_Span;
       Execution_Budget  : in Oak_Time.Time_Span;
-      Budget_Action     : in Ada.Cyclic_Tasks.Event_Action;
-      Budget_Handler    : in Ada.Cyclic_Tasks.Action_Handler;
+      Budget_Action     : in Ada.Cyclic_Tasks.Event_Response;
+      Budget_Handler    : in Ada.Cyclic_Tasks.Response_Handler;
       Relative_Deadline : in Oak_Time.Time_Span;
-      Deadline_Action   : in Ada.Cyclic_Tasks.Event_Action;
-      Deadline_Handler  : in Ada.Cyclic_Tasks.Action_Handler;
+      Deadline_Action   : in Ada.Cyclic_Tasks.Event_Response;
+      Deadline_Handler  : in Ada.Cyclic_Tasks.Response_Handler;
       Scheduler_Agent   : access Schedulers.Scheduler_Agent'Class;
       Chain             : in out Activation_Chain;
       Elaborated        : in Boolean_Access)

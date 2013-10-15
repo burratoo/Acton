@@ -115,7 +115,7 @@ private
 
    Global_Start_Time_Offset : Time_Span
      with Import, Convention => Ada,
-          External_Name => "_global_start_offset";
+          External_Name => "_global_start_phase";
 
    function Current_Agent return not null access Oak_Agent'Class is
      (Processor_Kernels (Processor.Proccessor_Id).Current_Agent);
