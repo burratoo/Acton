@@ -27,10 +27,10 @@ package body Oak.Agent.Tasks.Protected_Objects is
          Cycle_Period      => Oak_Time.Time_Span_Last,
          Phase             => Oak_Time.Time_Span_Zero,
          Execution_Budget  => Oak_Time.Time_Span_Last,
-         Budget_Action     => Ada.Cyclic_Tasks.No_Action,
+         Budget_Action     => Ada.Cyclic_Tasks.No_Response,
          Budget_Handler    => null,
          Relative_Deadline => Oak_Time.Time_Span_Last,
-         Deadline_Action   => Ada.Cyclic_Tasks.No_Action,
+         Deadline_Action   => Ada.Cyclic_Tasks.No_Response,
          Deadline_Handler  => null,
          Scheduler_Agent   => null,
          Chain             => No_Chain,
@@ -222,12 +222,12 @@ package body Oak.Agent.Tasks.Protected_Objects is
    end Protected_Object_From_Access;
 
    function Protected_Object_From_Access
-     (Handler : Ada.Cyclic_Tasks.Action_Handler)
+     (Handler : Ada.Cyclic_Tasks.Response_Handler)
       return access Protected_Agent'Class
    is
       function To_Protected_Subprogram_Components is
         new Ada.Unchecked_Conversion
-          (Ada.Cyclic_Tasks.Action_Handler, Protected_Subprogram_Components);
+          (Ada.Cyclic_Tasks.Response_Handler, Protected_Subprogram_Components);
    begin
       return To_Protected_Subprogram_Components (Handler).Object.Agent;
    end Protected_Object_From_Access;

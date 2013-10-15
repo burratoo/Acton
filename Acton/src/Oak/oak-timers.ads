@@ -52,8 +52,8 @@ package Oak.Timers with Preelaborate is
      (Timer           : in out Action_Timer;
       Fire_Time       : in Oak_Time.Time := Oak_Time.Time_Last;
       Priority        : in Oak_Priority;
-      Timer_Action    : in Ada.Cyclic_Tasks.Event_Action;
-      Handler         : in Ada.Cyclic_Tasks.Action_Handler;
+      Timer_Action    : in Ada.Cyclic_Tasks.Event_Response;
+      Handler         : in Ada.Cyclic_Tasks.Response_Handler;
       Agent_To_Handle : access Oak.Agent.Tasks.Task_Agent'Class);
 
    procedure Set_Timer
@@ -69,10 +69,10 @@ package Oak.Timers with Preelaborate is
      (Timer : in out Oak_Timer'Class) return Oak_Time.Time;
 
    function Handler (Timer : in out Action_Timer'Class) return
-     Ada.Cyclic_Tasks.Action_Handler;
+     Ada.Cyclic_Tasks.Response_Handler;
 
    function Timer_Action (Timer : in out Action_Timer'Class) return
-     Ada.Cyclic_Tasks.Event_Action;
+     Ada.Cyclic_Tasks.Event_Response;
 
    function Timer_Has_Fired (Timer : in out Oak_Timer'Class) return Boolean;
 
@@ -97,8 +97,8 @@ private
    end record;
 
    type Action_Timer is new Oak_Timer with record
-      Timer_Action    : Ada.Cyclic_Tasks.Event_Action;
-      Handler         : Ada.Cyclic_Tasks.Action_Handler;
+      Timer_Action    : Ada.Cyclic_Tasks.Event_Response;
+      Handler         : Ada.Cyclic_Tasks.Response_Handler;
       Agent_To_Handle : access Oak.Agent.Oak_Agent'Class;
    end record;
 
@@ -115,13 +115,13 @@ private
      (Timer.Timer_Manager /= null);
 
    function Handler (Timer : in out Action_Timer'Class) return
-     Ada.Cyclic_Tasks.Action_Handler is (Timer.Handler);
+     Ada.Cyclic_Tasks.Response_Handler is (Timer.Handler);
 
    function Priority (Timer : in out Oak_Timer'Class) return Oak_Priority
      is (Timer.Priority);
 
    function Timer_Action (Timer : in out Action_Timer'Class) return
-     Ada.Cyclic_Tasks.Event_Action is (Timer.Timer_Action);
+     Ada.Cyclic_Tasks.Event_Response is (Timer.Timer_Action);
 
    function Timer_Has_Fired (Timer : in out Oak_Timer'Class) return Boolean
      is (Timer.Is_Armed and then Clock >= Timer.Fire_Time);
