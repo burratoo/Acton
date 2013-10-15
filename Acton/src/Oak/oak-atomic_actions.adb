@@ -1,10 +1,8 @@
 with Oak.Agent.Tasks.Protected_Objects; use Oak.Agent.Tasks.Protected_Objects;
-with Oak.Agent.Tasks.Queues; use Oak.Agent.Tasks.Queues;
+with Oak.Agent.Queue; use Oak.Agent.Queue;
 with Oak.Scheduler;          use Oak.Scheduler;
 
 package body Oak.Atomic_Actions is
-
-   package Queue renames Oak.Agent.Tasks.Queues.Task_Queues;
 
    procedure Add_Protected_Object
      (AO : not null access Atomic_Object;
@@ -19,16 +17,16 @@ package body Oak.Atomic_Actions is
    end Add_Protected_Object;
 
    procedure Enter_Action
-     (AO          : not null access Atomic_Object;
-      T           : not null access Task_Agent'Class;
-      Action_Id   : in Action_Index;
-      Chosen_Task : in out Task_Handler);
+     (AO                : not null access Atomic_Object;
+      T                 : not null access Task_Agent'Class;
+      Action_Id         : in Action_Index;
+      Next_Task_To_Run : out Agent_Handler);
 
    procedure Enter_Action
-     (AO          : not null access Atomic_Object;
-      T           : not null access Task_Agent'Class;
-      Action_Id   : in Action_Index;
-      Chosen_Task : in out Task_Handler) is
+     (AO                : not null access Atomic_Object;
+      T                 : not null access Task_Agent'Class;
+      Action_Id         : in Action_Index;
+      Next_Task_To_Run : out Agent_Handler) is
    begin
       AO.Actions (Action_Id).Current_Task := T;
       T.Set_Current_Atomic_Action (AO);
@@ -48,10 +46,18 @@ package body Oak.Atomic_Actions is
             --  barrier here, we could have used the activation chain link
             --  as well.
 
+            --  TODO: Need to figure out how to implement barriers without
+            --  using the shared state variable
+
             if Not_All_Present then
+               --  Holding tasks at the barrier.
+
                AO.Controlling_State := Waiting_For_Protected_Object;
-               T.Set_State (Shared_State);
-               T.Set_Shared_State (AO.Controlling_State'Access);
+--                 T.Set_State (Shared_State);
+--                 T.Set_Shared_State (AO.Controlling_State'Access);
+
+               --  All tasks are now present, release all of them.
+
             else
                AO.Controlling_State := Runnable;
                T.Set_State (Runnable);
@@ -70,20 +76,21 @@ package body Oak.Atomic_Actions is
             --  Set Chosen_Task to null as it is not our responsibility to
             --  identify the task with the highest priority.
 
-            Chosen_Task := null;
+            Next_Task_To_Run := null;
          end;
       else
          T.Set_State (Runnable);
-         Chosen_Task := Task_Handler (T);
+         Next_Task_To_Run := Agent_Handler (T);
       end if;
    end Enter_Action;
 
    procedure Exit_Barrier
-     (AO               : not null access Atomic_Object;
-      T                : not null access Task_Agent'Class;
-      Action_Id        : in Action_Index;
-      Exception_Raised : in Boolean;
-      Chosen_Task      : out Task_Handler)
+     (AO                : not null access Atomic_Object;
+      T                 : not null access Task_Agent'Class;
+      Scheduler_Info    : in out Scheduler.Oak_Scheduler_Info;
+      Action_Id         : in Action_Index;
+      Exception_Raised  : in Boolean;
+      Next_Agent_To_Run : out Agent_Handler)
    is
       Not_All_Present : Boolean := False;
    begin
@@ -112,14 +119,15 @@ package body Oak.Atomic_Actions is
       --  While we use the task agent's shared state to act as the
       --  barrier here, we could have used the activation chain link
       --  as well.
+      --  TODO: see the above TODO to figure out what to do here.
 
       if Not_All_Present then
          AO.Controlling_State := Waiting_For_Protected_Object;
-         T.Set_State (Shared_State);
-         T.Set_Shared_State (AO.Controlling_State'Access);
+--           T.Set_State (Shared_State);
+--           T.Set_Shared_State (AO.Controlling_State'Access);
       else
          declare
-            New_State : constant Task_State :=
+            New_State : constant Agent_State :=
                           (if AO.Exception_Raised
                            then Atomic_Action_Error else Runnable);
          begin
@@ -138,7 +146,9 @@ package body Oak.Atomic_Actions is
          end;
       end if;
 
-      Chosen_Task := null;
+      Scheduler.Check_Sechduler_Agents_For_Next_Task_To_Run
+        (Scheduler_Info   => Scheduler_Info,
+         Next_Task_To_Run => Next_Agent_To_Run);
 
    end Exit_Barrier;
 
@@ -158,39 +168,38 @@ package body Oak.Atomic_Actions is
    end Initialise_Atomic_Object;
 
    procedure Process_Enter_Request
-     (AO             : not null access Atomic_Object;
-      T              : not null access Task_Agent'Class;
-      Scheduler_Info : in out Scheduler.Oak_Scheduler_Info;
-      Action_Id      : in Action_Index;
-      Chosen_Task    : out Task_Handler)
+     (AO                : not null access Atomic_Object;
+      T                 : not null access Task_Agent'Class;
+      Scheduler_Info    : in out Scheduler.Oak_Scheduler_Info;
+      Action_Id         : in Action_Index;
+      Next_Agent_To_Run : out Agent_Handler)
    is
    begin
-      Chosen_Task := null;
+      Next_Agent_To_Run := null;
 
       if Action_Id not in AO.Actions'Range or
         T.Current_Atomic_Action /= AO.Parent then
          T.Set_State (Enter_Atomic_Action_Refused);
-         Chosen_Task := Task_Handler (T);
+         Next_Agent_To_Run := Agent_Handler (T);
          return;
       end if;
 
       if AO.Actions (Action_Id).Current_Task /= null then
 
-         Scheduler.Remove_Task_From_Scheduler (T);
+         Scheduler.Remove_Agent_From_Scheduler (T);
          T.Set_State (Waiting_For_Protected_Object);
-         Queue.Add_Agent_To_Tail
-           (Queue =>
-              Task_Handler (AO.Actions (Action_Id).Queue),
+         Add_Agent_To_Tail
+           (Queue => Agent_Handler (AO.Actions (Action_Id).Queue),
             Agent => T);
 
       else
-         Enter_Action (AO, T, Action_Id, Chosen_Task);
+         Enter_Action (AO, T, Action_Id, Next_Agent_To_Run);
       end if;
 
-      if Chosen_Task = null then
-         Scheduler.Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
-           (Scheduler_Info => Scheduler_Info,
-            Chosen_Task    => Chosen_Task);
+      if Next_Agent_To_Run = null then
+         Scheduler.Check_Sechduler_Agents_For_Next_Task_To_Run
+           (Scheduler_Info   => Scheduler_Info,
+            Next_Task_To_Run => Next_Agent_To_Run);
       end if;
    end Process_Enter_Request;
 
@@ -200,18 +209,18 @@ package body Oak.Atomic_Actions is
       Scheduler_Info   : in out Scheduler.Oak_Scheduler_Info;
       Action_Id        : in Action_Index;
       Exception_Raised : in Boolean;
-      Chosen_Task      : out Task_Handler)
+      Next_Agent_To_Run : out Agent_Handler)
    is
       Protected_Object : access Task_Agent'Class renames
                            AO.Protected_Objects;
    begin
       if T /= AO.Actions (Action_Id).Current_Task then
          T.Set_State (Exit_Atomic_Action_Error);
-         Chosen_Task := Task_Handler (T);
+         Next_Agent_To_Run := Agent_Handler (T);
          return;
       end if;
 
-      Chosen_Task := null;
+      Next_Agent_To_Run := null;
 
       if Exception_Raised or AO.Exception_Raised then
          T.Set_State (Atomic_Action_Error);
@@ -251,16 +260,14 @@ package body Oak.Atomic_Actions is
                for Id in AO.Actions'Range loop
                   if AO.Actions (Id).Queue /= null then
                      QT := AO.Actions (Id).Queue;
-                     Queue.Remove_Agent_From_Head
-                       (Task_Handler (AO.Actions (Id).Queue));
+                     Remove_Agent_From_Head
+                       (Agent_Handler (AO.Actions (Id).Queue));
                      QT.Set_State (Runnable);
-                     Scheduler.Add_Task_To_Scheduler
-                       (Scheduler_Info => Scheduler_Info,
-                        T              => QT);
+                     Scheduler.Add_Agent_To_Scheduler (QT);
                      Enter_Action (AO => AO,
-                                   T             => QT,
-                                   Action_Id     => Id,
-                                   Chosen_Task   => Chosen_Task);
+                                   T                 => QT,
+                                   Action_Id         => Id,
+                                   Next_Task_To_Run => Next_Agent_To_Run);
                   end if;
                end loop;
                while Protected_Object /= null loop
@@ -272,9 +279,9 @@ package body Oak.Atomic_Actions is
          end Release;
       end if;
 
-      Scheduler.Check_With_Scheduler_Agents_On_Which_Task_To_Run_Next
-       (Scheduler_Info => Scheduler_Info,
-        Chosen_Task    => Chosen_Task);
+      Scheduler.Check_Sechduler_Agents_For_Next_Task_To_Run
+       (Scheduler_Info   => Scheduler_Info,
+        Next_Task_To_Run => Next_Agent_To_Run);
 
    end Process_Exit_Request;
 

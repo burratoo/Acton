@@ -1,11 +1,10 @@
-with Oak.Oak_Time; use Oak.Oak_Time;
 with Oak.Agent.Schedulers;
 with Oak.Agent.Tasks;
 with Oak.Core;
 
 package body Oak.Timers is
 
-   procedure Timer_Updated (Timer : access Oak_Timer'Class);
+   procedure Timer_Updated (Timer : not null access Oak_Timer'Class);
 
    procedure Add_Timer
      (Timer      : not null access Oak_Timer'Class;
@@ -51,7 +50,7 @@ package body Oak.Timers is
       Above_Priority : Any_Priority := Interrupt_Priority'First - 1)
       return access Oak_Timer'Class
    is
-      P     : Oak_Priority := Oak_Interrupt_Priority'Last;
+      P     : Oak_Priority := Oak_Priority'Last;
       T     : access Oak_Timer'Class := null;
    begin
       for Timer of reverse Timer_Info.Timers loop
@@ -91,7 +90,7 @@ package body Oak.Timers is
    procedure Set_Timer
      (Timer     : in out Oak_Timer;
       Fire_Time : in Oak_Time.Time;
-      Priority  : in Oak_Interrupt_Priority) is
+      Priority  : in Oak_Priority) is
    begin
       Timer.Fire_Time := Fire_Time;
 
@@ -116,7 +115,7 @@ package body Oak.Timers is
    procedure Set_Timer
      (Timer           : in out Action_Timer;
       Fire_Time       : in Oak_Time.Time := Oak_Time.Time_Last;
-      Priority        : in Oak_Interrupt_Priority;
+      Priority        : in Oak_Priority;
       Timer_Action    : in Ada.Cyclic_Tasks.Event_Action;
       Handler         : in Ada.Cyclic_Tasks.Action_Handler;
       Agent_To_Handle : access Oak.Agent.Tasks.Task_Agent'Class) is
@@ -130,71 +129,77 @@ package body Oak.Timers is
    procedure Set_Timer
      (Timer     : in out Scheduler_Timer;
       Fire_Time : in Oak_Time.Time := Oak_Time.Time_Last;
-      Priority  : in Oak_Interrupt_Priority;
+      Priority  : in Oak_Priority;
       Scheduler : not null access Oak.Agent.Schedulers.Scheduler_Agent'Class)
    is
    begin
       Timer.Set_Timer (Fire_Time, Priority);
-      Timer.Scheduler := Scheduler;
+      Timer.Scheduler        := Scheduler;
    end Set_Timer;
 
-   procedure Timer_Updated (Timer : access Oak_Timer'Class) is
-      T, Start_Of_List : access Oak_Timer'Class;
+   procedure Timer_Updated (Timer : not null access Oak_Timer'Class) is
    begin
       if not Timer.Is_Armed then
          return;
       end if;
 
-      Start_Of_List := Timer.Timer_Manager.Timers (Timer.Priority);
+      declare
+         T             : not null access Oak_Timer'Class := Timer;
+         Start_Of_List : not null access Oak_Timer'Class renames
+                           Timer.Timer_Manager.Timers (Timer.Priority);
+      begin
+         if Timer /= Start_Of_List.Previous_Timer
+           and then Timer.Fire_Time > Timer.Next_Timer.Fire_Time
+         then
+            --  Remove timer from current position
 
-      if Timer.Fire_Time > Timer.Next_Timer.Fire_Time then
-         --  Remove timer from current position
+            Timer.Previous_Timer.Next_Timer := Timer.Next_Timer;
+            Timer.Next_Timer.Previous_Timer := Timer.Previous_Timer;
 
-         Timer.Previous_Timer.Next_Timer := Timer.Next_Timer;
-         Timer.Next_Timer.Previous_Timer := Timer.Previous_Timer;
+            if Timer = Start_Of_List then
+               Start_Of_List := Timer.Next_Timer;
+            end if;
 
-         if Timer = Start_Of_List then
-            Timer.Timer_Manager.Timers (Timer.Priority) := Timer.Next_Timer;
+            T := Timer.Next_Timer;
+
+            --  Find new position for the timer
+
+            while Timer.Fire_Time > T.Fire_Time loop
+               T := T.Next_Timer;
+               exit when T = Start_Of_List;
+            end loop;
+
+            Timer.Previous_Timer             := T.Previous_Timer;
+            Timer.Next_Timer                 := T;
+            Timer.Previous_Timer.Next_Timer  := Timer;
+            Timer.Next_Timer.Previous_Timer  := Timer;
+
+         elsif Timer /= Start_Of_List
+           and then Timer.Fire_Time < Timer.Previous_Timer.Fire_Time then
+            --  Remove timer from current position
+
+            Timer.Previous_Timer.Next_Timer := Timer.Next_Timer;
+            Timer.Next_Timer.Previous_Timer := Timer.Previous_Timer;
+
+            --  Find new position for the timer
+            T := Timer.Previous_Timer;
+
+            while Timer.Fire_Time < T.Fire_Time loop
+               T := T.Previous_Timer;
+               exit when T = Start_Of_List.Previous_Timer;
+            end loop;
+
+            Timer.Previous_Timer             := T;
+            Timer.Next_Timer                 := T.Next_Timer;
+            Timer.Previous_Timer.Next_Timer  := Timer;
+            Timer.Next_Timer.Previous_Timer  := Timer;
+
+            if Timer.Fire_Time < Start_Of_List.Fire_Time then
+               Start_Of_List := Timer;
+            end if;
+
          end if;
-
-         T := Timer.Next_Timer;
-
-         --  Find new position for the timer
-
-         while Timer.Fire_Time > T.Fire_Time loop
-            T := T.Next_Timer;
-            exit when T = Start_Of_List;
-         end loop;
-
-         Timer.Previous_Timer             := T.Previous_Timer;
-         Timer.Next_Timer                 := T;
-         Timer.Previous_Timer.Next_Timer  := Timer;
-         Timer.Next_Timer.Previous_Timer  := Timer;
-
-      elsif Timer.Fire_Time < Timer.Previous_Timer.Fire_Time then
-         --  Remove timer from current position
-
-         Timer.Previous_Timer.Next_Timer := Timer.Next_Timer;
-         Timer.Next_Timer.Previous_Timer := Timer.Previous_Timer;
-
-         --  Find new position for the timer
-         T := Timer.Previous_Timer;
-
-         while Timer.Fire_Time < T.Fire_Time loop
-            T := T.Previous_Timer;
-            exit when T = Start_Of_List.Previous_Timer;
-         end loop;
-
-         Timer.Previous_Timer             := T;
-         Timer.Next_Timer                 := T.Next_Timer;
-         Timer.Previous_Timer.Next_Timer  := Timer;
-         Timer.Next_Timer.Previous_Timer  := Timer;
-
-         if Timer.Fire_Time < Start_Of_List.Fire_Time then
-            Timer.Timer_Manager.Timers (Timer.Priority) :=  Timer;
-         end if;
-
-      end if;
+      end;
    end Timer_Updated;
 
    procedure Update_Timer
@@ -202,20 +207,18 @@ package body Oak.Timers is
       New_Time : in Oak_Time.Time) is
    begin
       Timer.Fire_Time := New_Time;
-      Timer.Timer_Updated;
+      Timer_Updated (Timer'Unchecked_Access);
    end Update_Timer;
 
    procedure Delay_Timer
      (Timer    : in out Oak_Timer'Class;
-      Delay_To : in Oak_Time.Time_Span) is
+      Delay_By : in Oak_Time.Time_Span) is
    begin
-      Timer.Fire_Time := Timer.Fire_Time + Delay_To;
-      Timer.Timer_Updated;
+      Timer.Fire_Time := Timer.Fire_Time + Delay_By;
+      Timer_Updated (Timer'Unchecked_Access);
    end Delay_Timer;
 
    function Agent_To_Handle (Timer : in out Action_Timer'Class)
-     return Oak.Agent.Tasks.Task_Handler is (Timer.Agent_To_Handle);
+     return Oak.Agent.Agent_Handler is (Timer.Agent_To_Handle);
 
-   function Scheduler_Agent (Timer : in out Scheduler_Timer'Class) return
-     access Oak.Agent.Schedulers.Scheduler_Agent is (Timer.Scheduler);
 end Oak.Timers;

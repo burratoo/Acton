@@ -1,88 +1,42 @@
-with Oak.Agent.Tasks.Activation;
-with Oak.Core;
-with Oak.Memory.Call_Stack;
-with Oak.Memory.Call_Stack.Ops;
-with Oak.Scheduler.Agent_List;
-
-with Oak.Agent.Tasks;        use Oak.Agent.Tasks;
-with Oak.Agent.Tasks.Queues; --   use Oak.Agent.Tasks.Queues;
+with Oak.Agent; use Oak.Agent;
+with Oak.Agent.Queue;
 with Oak.Core_Support_Package.Task_Support;
-use  Oak.Core_Support_Package.Task_Support;
+use Oak.Core_Support_Package.Task_Support;
+with Oak.Message; use Oak.Message;
 with Oak.Oak_Time;         use Oak.Oak_Time;
+with Oak.States; use Oak.States;
+with Oak.Scheduler; use Oak.Scheduler;
+with Oak.Core;
 
 package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
 
-   package Task_Queue renames Oak.Agent.Tasks.Queues.Task_Queues;
+   package Queue renames Oak.Agent.Queue;
 
-   type Task_Array is
-     array (System.Any_Priority range <>) of access Task_Agent'Class;
-
-   procedure Create_Agent
-     (Agent        : in out Scheduler_Agent'Class;
-      Min_Priority : in Any_Priority;
-      Max_Priority : in Any_Priority)
-   is
-      Call_Stack : Oak.Memory.Call_Stack.Call_Stack_Handler;
-
-      OI : constant access Oak.Core.Oak_Data := Oak.Core.Oak_Instance;
-
-      Scheduler : constant access Oak.Scheduler.Oak_Scheduler_Info :=
-         Oak.Core.Scheduler_Info (OI);
-
+   procedure Initialise_Scheduler_Agent
+     (Agent : in out FIFO_Within_Priorities) is
    begin
-      Oak.Memory.Call_Stack.Ops.Allocate_Call_Stack
-        (Stack            => Call_Stack,
-         Size_In_Elements => Stack_Size);
-
       Initialise_Scheduler_Agent
-        (Agent        => Agent'Unchecked_Access,
-         Name         => Agent_Name,
-         Call_Stack   => Call_Stack,
-         Max_Priority => Max_Priority,
-         Min_Prioirty => Min_Priority,
-         Run_Loop     => Run_Loop'Address);
+        (Agent           => Agent'Unchecked_Access,
+         Name            => Agent_Name,
+         Call_Stack_Size => Stack_Size,
+         Run_Loop        => Run_Loop'Address);
 
-      Oak.Scheduler.Agent_List.Add_Scheduler_Agent
-        (Scheduler_Info => Scheduler.all,
-         New_Agent      => Agent'Unchecked_Access);
+      Agent.Runnable_Queues := (others => null);
+      Agent.Sleeping_Queues := (others => null);
 
-   end Create_Agent;
-
-   -----------------
-   -- Remove_Task --
-   -----------------
-
-   procedure Remove_Task is
-   begin
-      --  Generated stub: replace with real body! pragma Compile_Time_Warning
-      --  (True, "Remove_Task unimplemented");
-      raise Program_Error with "Unimplemented procedure Remove_Task";
-   end Remove_Task;
-
-   --------------------------
-   -- Change_Task_Priority --
-   --------------------------
-
-   procedure Change_Task_Priority is
-   begin
-      --  Generated stub: replace with real body!
-      --  pragma Compile_Time_Warning
-      --  (True,
-      --   "Change_Task_Priority unimplemented");
-      raise Program_Error with "Unimplemented procedure Change_Task_Priority";
-   end Change_Task_Priority;
+      Add_Scheduler_To_Scheduler_Table
+        (Scheduler_Info => Oak.Core.Oak_Instance.Scheduler_Info.all,
+         Scheduler      => Agent'Unchecked_Access);
+   end Initialise_Scheduler_Agent;
 
    --------------
    -- Run_Loop --
    --------------
 
-   procedure Run_Loop is
-      Self            : constant access Scheduler_Agent'Class :=
-                          Scheduler_Handler (Oak.Core.Current_Agent);
-      Run_Reason      : Reason_For_Run;
-      Runnable_Queues : Task_Array
-        (Self.Lowest_Priority .. Self.Highest_Priority);
-      Sleeping_Queue  : access Task_Agent'Class;
+   procedure Run_Loop  (Self : in out FIFO_Within_Priorities) is
+      Run_Reason      : Agent_State;
+      Runnable_Queues : Agent_Array renames Self.Runnable_Queues;
+      Sleeping_Queues : Agent_Array renames Self.Sleeping_Queues;
 
       Scheduler_Error1 : exception;
 
@@ -92,10 +46,10 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
       procedure Remove_Task;
 
       procedure Insert_Into_Sleeping_Queue
-        (T     : access Task_Agent'Class);
+        (T     : access Oak_Agent'Class);
 
       procedure Add_Task_To_End_Of_Runnable_Queue
-        (Task_To_Add : access Task_Agent'Class);
+        (Task_To_Add : access Oak_Agent'Class);
       procedure Move_Woken_Tasks;
 
       --------------------------
@@ -103,53 +57,32 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
       --------------------------
 
       procedure Select_Next_Task is
-         Selected_Task : access Task_Agent'Class := null;
-         Head_Task     : access Task_Agent'Class := null;
+         Selected_Agent : access Oak_Agent'Class := null;
+         Wake_Time      : Time := Time_Last;
       begin
          Move_Woken_Tasks;
 
          for Queue_Head of reverse Runnable_Queues loop
-            Head_Task := Queue_Head;
-            if Head_Task /= null then
-               Selected_Task := Head_Task;
-               while Selected_Task.State = Shared_State
-                 and then Selected_Task.Shared_State in Waiting
-               loop
-                  Selected_Task := Task_Queue.Next_Agent (Selected_Task);
-
-                  --  We have already checked the Head_Task, so if we reach it
-                  --  again it means we have hit the end of the queue and thus
-                  --  there are no runnable tasks in the queue
-                  if Selected_Task = Head_Task then
-                     Selected_Task := null;
-                     exit;
-                  end if;
-               end loop;
-            end if;
-            exit when Selected_Task /= null;
+            Selected_Agent := Queue_Head;
+            exit when Selected_Agent /= null;
          end loop;
 
-         if Selected_Task /= null
-           and then Selected_Task.State = Activation_Pending then
-            declare
-               Activating_Task : constant access Task_Agent'Class :=
-                  Activation.Continue_Activation
-                    (Activator => Selected_Task);
-            begin
-               Selected_Task := (if Activating_Task /= null then
-                                 Activating_Task
-                                 else
-                                 Selected_Task);
-            end;
-         end if;
+         for P in reverse Sleeping_Queues'Range loop
+            exit when Selected_Agent /= null
+              and then P <= Selected_Agent.Normal_Priority;
 
-         Self.Set_Chosen_Task (Selected_Task);
+            if Sleeping_Queues (P) /= null
+              and then Sleeping_Queues (P).Wake_Time < Wake_Time
+            then
+               Wake_Time := Sleeping_Queues (P).Wake_Time;
+            end if;
+         end loop;
 
-         if Sleeping_Queue = null then
-            Self.Set_Desired_Run_Time (Time_Last);
-         else
-            Self.Set_Desired_Run_Time (Sleeping_Queue.Wake_Time);
-         end if;
+         Self.Set_Agent_Message
+           (Message => (Message_Type        => Scheduler_Agent_Done,
+                        Next_Agent          => Selected_Agent,
+                        Wake_Scheduler_At   => Wake_Time,
+                        Keep_In_Charge_List => False));
       end Select_Next_Task;
 
       ------------------
@@ -157,13 +90,13 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
       ------------------
 
       procedure Task_Yielded is
-         Yielded_Task : constant access Task_Agent'Class :=
-                          Self.Task_To_Manage;
+         Yielded_Task : constant access Oak_Agent'Class :=
+                          Self.Agent_Message.Agent_That_Changed;
          T_Priority   : constant Any_Priority := Yielded_Task.Normal_Priority;
       begin
          case Yielded_Task.State is
             when Sleep =>
-               Task_Queue.Remove_Agent
+               Queue.Remove_Agent
                  (Queue => Runnable_Queues (T_Priority),
                   Agent => Yielded_Task);
                Insert_Into_Sleeping_Queue
@@ -177,20 +110,12 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
                null;
             when Runnable =>
                if Runnable_Queues (T_Priority) = Yielded_Task then
-                  Task_Queue.Move_Head_To_Tail (Runnable_Queues (T_Priority));
-               else
-                  Task_Queue.Remove_Agent
-                    (Queue => Runnable_Queues (T_Priority),
-                     Agent => Yielded_Task);
-                  Task_Queue.Add_Agent_To_Tail
-                    (Queue => Runnable_Queues (T_Priority),
-                     Agent => Yielded_Task);
+                  Queue.Move_Head_To_Tail (Runnable_Queues (T_Priority));
                end if;
 
             when others =>
                raise Scheduler_Error1;
          end case;
-         Select_Next_Task;
       end Task_Yielded;
 
       --------------
@@ -198,15 +123,14 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
       --------------
 
       procedure Add_Task is
-         Task_To_Add  : constant access Task_Agent'Class :=
-                          Self.Task_To_Manage;
+         Task_To_Add  : constant access Oak_Agent'Class :=
+                          Self.Agent_Message.Agent_To_Add;
          Current_Time : constant Time := Clock;
       begin
          if Task_To_Add.Wake_Time < Current_Time then
             Add_Task_To_End_Of_Runnable_Queue (Task_To_Add => Task_To_Add);
          else
             Insert_Into_Sleeping_Queue (T => Task_To_Add);
-            Self.Set_Desired_Run_Time (Sleeping_Queue.Wake_Time);
          end if;
       end Add_Task;
 
@@ -215,8 +139,8 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
       -----------------
 
       procedure Remove_Task is
-         Task_To_Remove  : constant access Task_Agent'Class :=
-                             Self.Task_To_Manage;
+         Task_To_Remove  : constant access Oak_Agent'Class :=
+                             Self.Agent_Message.Agent_To_Remove;
       begin
          case Task_To_Remove.State is
          --  Probably best to move this case to the others.
@@ -227,14 +151,14 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
                   Task_Priority : constant Any_Priority :=
                            Task_To_Remove.Normal_Priority;
                begin
-                  Task_Queue.Remove_Agent
+                  Queue.Remove_Agent
                     (Queue => Runnable_Queues (Task_Priority),
                      Agent => Task_To_Remove);
                end;
 
             when Sleeping =>
-               Task_Queue.Remove_Agent
-                 (Queue => Task_Handler (Sleeping_Queue),
+               Queue.Remove_Agent
+                 (Queue => Sleeping_Queues (Task_To_Remove.Normal_Priority),
                   Agent => Task_To_Remove);
             when others =>
                raise Scheduler_Error1;
@@ -242,26 +166,28 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
       end Remove_Task;
 
       procedure Insert_Into_Sleeping_Queue
-        (T     : access Task_Agent'Class)
+        (T     : access Oak_Agent'Class)
       is
-         Current        : access Task_Agent'Class    := Sleeping_Queue;
-         Task_Wake_Time : constant Time              := T.Wake_Time;
-         Queue_End      : Task_Queue.Queue_End_Point := Task_Queue.Head;
+         Sleeping_Queue : access Oak_Agent'Class renames
+                            Sleeping_Queues (T.Normal_Priority);
+         Current        : access Oak_Agent'Class := Sleeping_Queue;
+         Task_Wake_Time : constant Time          := T.Wake_Time;
+         Queue_End      : Queue.Queue_End_Point  := Queue.Head;
       begin
          if Sleeping_Queue = null then
-            Task_Queue.Add_Agent_To_Head
-              (Queue => Task_Handler (Sleeping_Queue),
+            Queue.Add_Agent_To_Head
+              (Queue => Sleeping_Queue,
                Agent => T);
          else
             while Task_Wake_Time > Current.Wake_Time loop
-               Current := Task_Queue.Next_Agent (Current);
+               Current := Queue.Next_Agent (Current);
                if Current = Sleeping_Queue then
-                  Queue_End := Task_Queue.Tail;
+                  Queue_End := Queue.Tail;
                   exit;
                end if;
             end loop;
-            Task_Queue.Add_Agent_Before
-              (Queue  => Task_Handler (Sleeping_Queue),
+            Queue.Add_Agent_Before
+              (Queue  => Sleeping_Queue,
                 Agent => T,
                 Before => Current,
                 Queue_End => Queue_End);
@@ -269,50 +195,53 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
       end Insert_Into_Sleeping_Queue;
 
       procedure Add_Task_To_End_Of_Runnable_Queue
-        (Task_To_Add : access Task_Agent'Class)
+        (Task_To_Add : access Oak_Agent'Class)
       is
          Task_Priority : System.Any_Priority;
       begin
          Task_To_Add.Set_State (Runnable);
          Task_Priority := Task_To_Add.Normal_Priority;
-         Task_Queue.Add_Agent_To_Tail
+         Queue.Add_Agent_To_Tail
            (Queue => Runnable_Queues (Task_Priority),
             Agent => Task_To_Add);
       end Add_Task_To_End_Of_Runnable_Queue;
 
       procedure Move_Woken_Tasks is
          Current_Time : constant Time    := Clock;
-         T            : access Task_Agent'Class := Sleeping_Queue;
+         T            : access Oak_Agent'Class;
       begin
-         while Sleeping_Queue /= null
-           and then Current_Time > Sleeping_Queue.Wake_Time
-         loop
-            T := Sleeping_Queue;
-            Task_Queue.Remove_Agent
-              (Queue => Task_Handler (Sleeping_Queue),
-               Agent => T);
-            case T.Destination_On_Wake_Up is
-               when Run_Queue =>
-                  Add_Task_To_End_Of_Runnable_Queue (Task_To_Add => T);
-               when Remove =>
-                  null;
-            end case;
+         for Sleeping_Queue of Sleeping_Queues loop
+            while Sleeping_Queue /= null
+              and then Current_Time > Sleeping_Queue.Wake_Time
+            loop
+               T := Sleeping_Queue;
+               Queue.Remove_Agent
+                 (Queue => Sleeping_Queue,
+                  Agent => T);
+               case T.Destination_On_Wake_Up is
+                  when Run_Queue =>
+                     Add_Task_To_End_Of_Runnable_Queue (Task_To_Add => T);
+                  when Remove =>
+                     null;
+               end case;
+            end loop;
          end loop;
       end Move_Woken_Tasks;
 
    begin
       loop
-         Run_Reason := Self.Run_Reason;
+         Run_Reason := Self.Agent_Message.Message_Type;
          case Run_Reason is
-            when Task_State_Change =>
+            when Agent_State_Change =>
                Task_Yielded;
-            when Select_Next_Task =>
-               Select_Next_Task;
-            when Add_Task =>
+            when Adding_Agent =>
                Add_Task;
-            when Remove_Task =>
+            when Removing_Agent =>
                Remove_Task;
+            when others =>
+               null;
          end case;
+         Select_Next_Task;
          Yield_Processor_To_Kernel;
       end loop;
    end Run_Loop;

@@ -1,9 +1,11 @@
 with Ada.Atomic_Actions; use Ada.Atomic_Actions;
 with Oak.Indices;        use Oak.Indices;
 with Oak.Agent.Tasks;    use Oak.Agent.Tasks;
+with Oak.States; use Oak.States;
 
 limited with Oak.Agent.Tasks.Protected_Objects;
 limited with Oak.Scheduler;
+with Oak.Agent; use Oak.Agent;
 
 package Oak.Atomic_Actions with Preelaborate is
 
@@ -15,11 +17,12 @@ package Oak.Atomic_Actions with Preelaborate is
         Agent.Tasks.Protected_Objects.Protected_Agent'Class);
 
    procedure Exit_Barrier
-     (AO : not null access Atomic_Object;
-      T  : not null access Task_Agent'Class;
-      Action_Id        : in Action_Index;
-      Exception_Raised : in Boolean;
-      Chosen_Task      : out Task_Handler);
+     (AO                : not null access Atomic_Object;
+      T                 : not null access Task_Agent'Class;
+      Scheduler_Info    : in out Scheduler.Oak_Scheduler_Info;
+      Action_Id         : in Action_Index;
+      Exception_Raised  : in Boolean;
+      Next_Agent_To_Run : out Agent_Handler);
 
    procedure Initialise_Atomic_Object
      (AO            : not null access Atomic_Object;
@@ -33,11 +36,11 @@ package Oak.Atomic_Actions with Preelaborate is
       return access Atomic_Object;
 
    procedure Process_Enter_Request
-     (AO             : not null access Atomic_Object;
-      T              : not null access Task_Agent'Class;
-      Scheduler_Info : in out Scheduler.Oak_Scheduler_Info;
-      Action_Id      : in Action_Index;
-      Chosen_Task    : out Task_Handler);
+     (AO                : not null access Atomic_Object;
+      T                 : not null access Task_Agent'Class;
+      Scheduler_Info    : in out Scheduler.Oak_Scheduler_Info;
+      Action_Id         : in Action_Index;
+      Next_Agent_To_Run : out Agent_Handler);
 
    procedure Process_Exit_Request
      (AO               : not null access Atomic_Object;
@@ -45,7 +48,7 @@ package Oak.Atomic_Actions with Preelaborate is
       Scheduler_Info   : in out Scheduler.Oak_Scheduler_Info;
       Action_Id        : in Action_Index;
       Exception_Raised : in Boolean;
-      Chosen_Task      : out Task_Handler);
+      Next_Agent_To_Run : out Agent_Handler);
 
 private
 
@@ -64,7 +67,7 @@ private
       Exception_Raised  : Boolean;
       Participating     : Participating_Actions;
 
-      Controlling_State : aliased Task_State := No_State;
+      Controlling_State : aliased Agent_State := No_State;
 
       Parent            : access Atomic_Object := null;
       Actions           : Action_State_Array (1 .. Num_Actions);

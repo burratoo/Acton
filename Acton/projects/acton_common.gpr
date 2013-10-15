@@ -16,20 +16,21 @@ abstract project Acton_Common is
                               "Oak.Core_Support_Package.Time",
                               "Oak.Interrupts",
                          "Oak.Agent", "Oak.Agent.Tasks", "Oak.Agent.Tasks.Activation", "Oak.Agent.Tasks.Main_Task", "Oak.Agent.Tasks.Protected_Objects", "Oak.Agent.Queue", "Oak.Agent.Schedulers",
-                         "Oak.Indices",
+                         "Oak.Indices", "Oak.Message", "Oak.States",
                          "Oak.Oak_Time", "Oak.Oak_Time.Conversion",
                               "Oak.Processor_Support_Package", "Oak.Processor_Support_Package.Interrupts", "Oak.Timers",
-                              "System", "System.Assertions", "System.Exceptions_Debug", "System.Machine_Code", "System.Multiprocessors", "System.Standard_Library", "System.Storage_Elements", "System.Unsigned_Types",
+                         "System", "System.Assertions", "System.Exceptions_Debug", "System.Machine_Code", "System.Multiprocessors", "System.Standard_Library", "System.Storage_Elements", "System.Unsigned_Types",
+
+                         "Ada.Execution_Server.Priority_Server", "Acton.Scheduler_Agents.Priority_Server", "Ada.Execution_Server.Ops",
                              --  Only needed for their ali files
                          "Oak.Agent.Tasks.Cycle",
-                         "Oak.Agent.Tasks.Interrupts",
+                         "Oak.Agent.Interrupts",
                          "Oak.Memory.Call_Stack.Ops",
                               "Oak.Core_Support_Package.Processor",
                               "Oak.Core_Support_Package.Interrupts",
                               "Oak.Core_Support_Package.Task_Support",
-                              "Oak.Protected_Objects", "Oak.Agent.Tasks.Queues",
-                         "Oak.Scheduler", "Oak.Scheduler.Agent_List"
-                             );
+                              "Oak.Protected_Objects",
+                         "Oak.Scheduler");
 
    Ada_Switches := ("-gnatwa.Xl", "-g", "-gnatn", "-gnatg", "-O2",  "-ffunction-sections", "-fdata-sections");
    Asm_Switches := ();

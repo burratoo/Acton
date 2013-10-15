@@ -4,9 +4,9 @@ with System;
 package Ada.Cyclic_Tasks with Preelaborate is
    type Behaviour is (Normal, Aperiodic, Sporadic, Periodic);
 
-   type Event_Action is (No_Action, Handler, Abort_Action,
+   type Event_Response is (No_Response, Handler, Abort_Cycle,
                          Abort_And_Raise_Exception);
-   type Action_Handler is
+   type Response_Handler is
      access protected procedure (T : in Ada.Task_Identification.Task_Id);
 
    Min_Handler_Ceiling : constant System.Any_Priority :=

@@ -9,10 +9,6 @@ package body Oak.Agent.Tasks.Main_Task is
       Run_Loop        : in Address)
    is
       Agent : constant access Task_Agent  := Core.Main_Task;
-      OI : constant access Core.Oak_Data := Core.Oak_Instance;
-
-      Scheduler    : constant access Oak_Scheduler_Info :=
-                       Oak.Core.Scheduler_Info (OI);
       Current_Time : constant Time                      := Clock;
       No_Chain : Activation_Chain := (Head => null);
    begin
@@ -33,7 +29,7 @@ package body Oak.Agent.Tasks.Main_Task is
          Relative_Deadline => Oak_Time.Time_Span_Last,
          Deadline_Action   => Ada.Cyclic_Tasks.No_Action,
          Deadline_Handler  => null,
-         Execution_Server  => null,
+         Scheduler_Agent   => null,
          Chain             => No_Chain,
          Elaborated        => null);
 
@@ -41,6 +37,6 @@ package body Oak.Agent.Tasks.Main_Task is
       Agent.Next_Run_Cycle  := Current_Time;
       Agent.Wake_Time       := Current_Time;
 
-      Add_Task_To_Scheduler (Scheduler_Info => Scheduler.all, T => Agent);
+      Add_Agent_To_Scheduler (Agent);
    end Initialise_Main_Task;
 end Oak.Agent.Tasks.Main_Task;

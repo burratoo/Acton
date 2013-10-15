@@ -1,7 +1,6 @@
 with System;
 
 with Oak.Indices;           use Oak.Indices;
-with Oak.Protected_Objects; use Oak.Protected_Objects;
 
 package Oak.Agent.Tasks.Protected_Objects with Preelaborate is
 
@@ -14,7 +13,7 @@ package Oak.Agent.Tasks.Protected_Objects with Preelaborate is
                       E  : Protected_Entry_Index) return Boolean;
 
    procedure Initialise_Protected_Agent
-     (Agent                 : access Protected_Agent'Class;
+     (Agent                 : not null access Protected_Agent'Class;
       Name                  : in String;
       Ceiling_Priority      : in Integer;
       Barriers_Function     : in Entry_Barrier_Function_Handler;
@@ -24,10 +23,6 @@ package Oak.Agent.Tasks.Protected_Objects with Preelaborate is
      (PO : in Protected_Agent'Class)
       return Protected_Subprogram_Type;
 
-   function Acquiring_Tasks_State
-     (For_Protected_Object : in Protected_Agent'Class)
-      return Task_State;
-
    function Entry_Queue_Length
      (PO       : in Protected_Agent'Class;
       Entry_Id : in Entry_Index)
@@ -35,7 +30,7 @@ package Oak.Agent.Tasks.Protected_Objects with Preelaborate is
 
    function Is_Barrier_Open
      (PO       : in out Protected_Agent'Class;
-      Entry_Id : in Entry_Index)
+      Entry_Id : in     Entry_Index)
       return Boolean;
    --  Evaluates the entry's barrier function to see if it is open. Note that
    --  this function is not side-effect free: If an exception occurs while
@@ -51,12 +46,8 @@ package Oak.Agent.Tasks.Protected_Objects with Preelaborate is
 
    function Is_Task_Inside_Protect_Object
      (PO : in Protected_Agent'Class;
-      T  : access Task_Agent'Class)
+      T  : not null access Oak_Agent'Class)
       return Boolean;
-
-   function Reference_To_Acquiring_Tasks_State
-     (For_Protected_Object : not null access Protected_Agent'Class)
-      return Shared_Task_State;
 
    function Has_Entries
      (PO : in Protected_Agent'Class)
@@ -64,24 +55,32 @@ package Oak.Agent.Tasks.Protected_Objects with Preelaborate is
 
    function Task_Within
      (PO : in Protected_Agent'Class)
-      return access Task_Agent'Class;
+      return access Oak_Agent'Class;
+
+   procedure Add_Contending_Task
+     (PO : in out Protected_Agent'Class;
+      T  : access Oak_Agent'Class);
 
    procedure Add_Task_To_Entry_Queue
      (PO       : in out Protected_Agent'Class;
-      T        : access Task_Agent'Class;
+      T        : access Oak_Agent'Class;
       Entry_Id : Entry_Index);
 
    procedure Add_Task_To_Protected_Object
      (PO : in out Protected_Agent'Class;
-      T  : access Task_Agent'Class);
+      T  : not null access Oak_Agent'Class);
+
+   procedure Get_And_Remove_Next_Contending_Task
+     (PO        : in out Protected_Agent'Class;
+      Next_Task : out Agent_Handler);
 
    procedure Get_And_Remove_Next_Task_From_Entry_Queues
      (PO         : in out Protected_Agent'Class;
-      Next_Task  : out Task_Handler);
+      Next_Task  : out Agent_Handler);
 
    procedure Purge_Entry_Queues
      (PO             : in out Protected_Agent'Class;
-      New_Task_State : in Task_State);
+      New_Task_State : in     Agent_State);
 
    procedure Remove_Task_From_Entry_Queue
      (PO       : in out Protected_Agent'Class;
@@ -90,11 +89,7 @@ package Oak.Agent.Tasks.Protected_Objects with Preelaborate is
 
    procedure Remove_Task_From_Protected_Object
      (PO : in out Protected_Agent'Class;
-      T  : access Task_Agent'Class);
-
-   procedure Set_Acquiring_Tasks_State
-     (For_Protected_Object : in out Protected_Agent'Class;
-      To_State             : in Task_State);
+      T  : access Oak_Agent'Class);
 
    type Parameterless_Access is access protected procedure;
 
@@ -118,28 +113,19 @@ private
       Entry_Barriers : Entry_Barrier_Function_Handler;
       Entry_Queues   : Entry_Queue_Array (1 .. Num_Entries);
 
-      Controlling_Shared_State : aliased Task_State;
       Active_Subprogram_Kind   : Protected_Subprogram_Type;
-      Tasks_Within             : access Task_Agent'Class;
+      Tasks_Within             : access Oak_Agent'Class;
+      Contending_Tasks         : access Oak_Agent'Class;
    end record;
 
    function Active_Subprogram_Kind
      (PO : in Protected_Agent'Class)
       return Protected_Subprogram_Type is (PO.Active_Subprogram_Kind);
 
-   function Acquiring_Tasks_State
-     (For_Protected_Object : in Protected_Agent'Class)
-      return Task_State is (For_Protected_Object.Controlling_Shared_State);
-
    function Is_Entry_Id_Valid
      (PO       : in Protected_Agent'Class;
       Entry_Id : in Entry_Index)
       return Boolean is (Entry_Id in PO.Entry_Queues'Range);
-
-   function Reference_To_Acquiring_Tasks_State
-     (For_Protected_Object : not null access Protected_Agent'Class)
-      return Shared_Task_State
-        is (For_Protected_Object.Controlling_Shared_State'Access);
 
    function Has_Entries
      (PO : in Protected_Agent'Class)
@@ -147,6 +133,6 @@ private
 
    function Task_Within
      (PO : in Protected_Agent'Class)
-      return access Task_Agent'Class is (PO.Tasks_Within);
+      return access Oak_Agent'Class is (PO.Tasks_Within);
 
 end Oak.Agent.Tasks.Protected_Objects;

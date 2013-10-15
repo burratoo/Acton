@@ -4,13 +4,14 @@ with ISA.Power.e200.z6.HID;
 with ISA.Power.e200.Processor_Control_Registers;
 use ISA.Power.e200.Processor_Control_Registers;
 
-with Oak.Agent.Tasks;
 with Oak.Core;
 with Oak.Processor_Support_Package.Interrupts;
 with Oak.Core_Support_Package.Task_Support;
+with Oak.Message; use Oak.Message;
 
 with System;                                     use System;
 with System.Machine_Code;                        use System.Machine_Code;
+with Oak.Agent.Schedulers;
 
 package body Oak.Core_Support_Package.Interrupts is
 
@@ -143,17 +144,17 @@ package body Oak.Core_Support_Package.Interrupts is
            Volatile => True);
 
       Task_Stack_Pointer := Core.Current_Agent_Stack_Pointer;
-      if Core.Current_Agent.all in Agent.Tasks.Task_Agent'Class then
+      if Core.Current_Agent.all in Agent.Schedulers.Scheduler_Agent'Class then
          Asm
            ("mtsrr1   %0",
             Inputs   => Machine_State_Register_Type'Asm_Input
-                          ("r", Core_Support_Package.Task_Support.Agent_MSR),
+                          ("r", Core_Support_Package.Task_Support.Oak_MSR),
             Volatile => True);
       else
          Asm
            ("mtsrr1   %0",
             Inputs   => Machine_State_Register_Type'Asm_Input
-                          ("r", Core_Support_Package.Task_Support.Oak_MSR),
+                          ("r", Core_Support_Package.Task_Support.Agent_MSR),
             Volatile => True);
       end if;
 
@@ -365,7 +366,7 @@ package body Oak.Core_Support_Package.Interrupts is
          "evstdd r9,   8(r1)",
          Volatile => True);
 
-      Oak.Core.Current_Task.Store_Task_Yield_Status (Agent.Tasks.Timer);
+      Oak.Core.Current_Task.Set_Agent_Yield_Status (Message.Timer);
 
       Asm
         ("evldd  r9,   8(r1)" & ASCII.LF & ASCII.HT &
@@ -384,7 +385,7 @@ package body Oak.Core_Support_Package.Interrupts is
          "evstdd r9,   8(r1)",
          Volatile => True);
 
-      Oak.Core.Current_Task.Store_Task_Yield_Status (Agent.Tasks.Interrupt);
+      Oak.Core.Current_Task.Set_Agent_Yield_Status (Message.Interrupt);
 
       Asm
         ("evldd  r9,   8(r1)" & ASCII.LF & ASCII.HT &

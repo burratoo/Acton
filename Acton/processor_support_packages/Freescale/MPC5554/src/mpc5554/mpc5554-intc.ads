@@ -1,7 +1,7 @@
 with System;
 with System.Storage_Elements; use System.Storage_Elements;
 
-package MPC5554.INTC with Preelaborate  is
+package MPC5554.INTC with Preelaborate is
 
    ----------------------------------------------------------------------------
    --  Memory Addresses

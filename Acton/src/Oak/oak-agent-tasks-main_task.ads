@@ -1,5 +1,3 @@
-with System; use System;
-
 package Oak.Agent.Tasks.Main_Task with Preelaborate is
    procedure Initialise_Main_Task
      (Stack_Size      : in Storage_Elements.Storage_Count;

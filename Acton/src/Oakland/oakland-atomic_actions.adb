@@ -3,6 +3,8 @@ with Oakland.Tasks;
 
 with Oak.Agent.Tasks; use Oak.Agent.Tasks;
 with Oak.Atomic_Actions; use Oak.Atomic_Actions;
+with Oak.Message; use Oak.Message;
+with Oak.States;  use Oak.States;
 
 package body Oakland.Atomic_Actions is
    procedure Enter_Action
@@ -10,7 +12,7 @@ package body Oakland.Atomic_Actions is
       Action_Id : in Action_Index)
    is
       Self : constant access Task_Agent'Class := Oak.Core.Current_Task;
-      Message : constant Oak_Task_Message :=
+      Message : constant Oak_Message :=
                   (Message_Type    => Entering_Atomic_Action,
                    AA_Enter        => AO,
                    Action_Id_Enter => Action_Id);
@@ -27,7 +29,7 @@ package body Oakland.Atomic_Actions is
       Exception_Raised : in out Boolean)
    is
       Self : constant access Task_Agent'Class := Oak.Core.Current_Task;
-      Message : constant Oak_Task_Message :=
+      Message : constant Oak_Message :=
                   (Message_Type     => Entering_Exit_Barrier,
                    AA_EB            => AO,
                    Action_Id_EB     => Action_Id,
@@ -47,7 +49,7 @@ package body Oakland.Atomic_Actions is
       Exception_Raised : in Boolean)
    is
       Self : constant access Task_Agent'Class := Oak.Core.Current_Task;
-      Message : constant Oak_Task_Message :=
+      Message : constant Oak_Message :=
                   (Message_Type     => Exiting_Atomic_Action,
                    AA_Exit          => AO,
                    Action_Id_Exit   => Action_Id,
