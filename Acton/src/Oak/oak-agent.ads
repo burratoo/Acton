@@ -11,7 +11,6 @@ limited with Oak.Agent.Schedulers;
 
 package Oak.Agent with Preelaborate is
 
-   type Task_Id is range 0 .. Oak.Core_Support_Package.Max_Tasks;
    subtype Task_Name is String
      (1 .. Core_Support_Package.Max_Task_Name_Length);
 
@@ -34,7 +33,6 @@ package Oak.Agent with Preelaborate is
 
    type Wake_Destination is (Run_Queue, Remove);
 
-   function Agent_Id (Agent : in Oak_Agent'Class) return Task_Id;
    function Name (Agent : in Oak_Agent'Class) return Task_Name;
    function Stack_Pointer
      (Agent : in Oak_Agent'Class)
@@ -155,7 +153,6 @@ package Oak.Agent with Preelaborate is
 
 private
    type Oak_Agent is tagged limited record
-      Id                     : Task_Id;
       Name                   : Task_Name;
       Name_Length            : Natural;
 
@@ -196,9 +193,6 @@ private
    function Agent_Message
      (For_Agent : in Oak_Agent'Class)
       return Oak_Message is (For_Agent.Message_Store.Message);
-
-   function Agent_Id (Agent : in Oak_Agent'Class) return Task_Id is
-     (Agent.Id);
 
    function Agent_Yield_Status
      (For_Agent : in Oak_Agent'Class)
