@@ -3,10 +3,6 @@ with Oak.Memory.Call_Stack.Ops; use Oak.Memory.Call_Stack.Ops;
 
 package body Oak.Agent is
 
-   Global_Task_Id : Task_Id := 1;
-
-   function New_Task_Id return Task_Id;
-
    procedure Initialise_Agent
      (Agent      : not null access Oak_Agent'Class;
       Name       : in String) is
@@ -15,8 +11,6 @@ package body Oak.Agent is
          Natural'Min (Task_Name'Length, Name'Length);
       Agent.Name (1 .. Agent.Name_Length) :=
         Name (Name'First .. Name'First + Agent.Name_Length - 1);
-
-      Agent.Id         := New_Task_Id;
 
       Agent.Total_Execution_Time   := Time_Span_Zero;
       Agent.Max_Execution_Time     := Time_Span_Zero;
@@ -97,13 +91,6 @@ package body Oak.Agent is
    begin
       return Run_Queue;
    end Destination_On_Wake_Up;
-
-   function New_Task_Id return Task_Id is
-      Chosen_Id : constant Task_Id := Global_Task_Id;
-   begin
-      Global_Task_Id := Global_Task_Id + 1;
-      return Chosen_Id;
-   end New_Task_Id;
 
    procedure Set_Agent_Message
      (For_Agent : in out Oak_Agent'Class;
