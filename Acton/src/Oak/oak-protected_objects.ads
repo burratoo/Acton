@@ -1,8 +1,7 @@
 with Oak.Message; use Oak.Message;
 
 with Oak.Agent;                         use Oak.Agent;
-with Oak.Agent.Tasks;                   use Oak.Agent.Tasks;
-with Oak.Agent.Tasks.Protected_Objects; use Oak.Agent.Tasks.Protected_Objects;
+with Oak.Agent.Protected_Objects; use Oak.Agent.Protected_Objects;
 with Oak.Indices;                       use Oak.Indices;
 with Oak.Scheduler;                     use Oak.Scheduler;
 
@@ -24,10 +23,10 @@ package Oak.Protected_Objects with Preelaborate is
 
    procedure Acquire_Protected_Object_For_Interrupt
      (PO : not null access
-        Agent.Tasks.Protected_Objects.Protected_Agent'Class);
+        Agent.Protected_Objects.Protected_Agent'Class);
 
    procedure Release_Protected_Object_For_Interrupt
      (PO : not null access
-        Agent.Tasks.Protected_Objects.Protected_Agent'Class);
+        Agent.Protected_Objects.Protected_Agent'Class);
 
 end Oak.Protected_Objects;

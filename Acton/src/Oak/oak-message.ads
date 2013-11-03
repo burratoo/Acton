@@ -5,8 +5,7 @@ with Oak.States;  use Oak.States;
 
 limited with Oak.Agent;
 limited with Oak.Agent.Tasks;
-limited with Oak.Agent.Tasks.Protected_Objects;
-limited with Oak.Atomic_Actions;
+limited with Oak.Agent.Protected_Objects;
 limited with Oak.Interrupts;
 
 package Oak.Message with Preelaborate is
@@ -35,30 +34,16 @@ package Oak.Message with Preelaborate is
 
          when Entering_PO =>
             PO_Enter          : not null access
-              Oak.Agent.Tasks.Protected_Objects.Protected_Agent'Class;
+              Oak.Agent.Protected_Objects.Protected_Agent'Class;
             Subprogram_Kind  : Protected_Subprogram_Type;
             Entry_Id_Enter   : Indices.Entry_Index;
          when Exiting_PO =>
             PO_Exit           : not null access
-              Oak.Agent.Tasks.Protected_Objects.Protected_Agent'Class;
+              Oak.Agent.Protected_Objects.Protected_Agent'Class;
          when Attach_Interrupt_Handlers =>
             Attach_Handlers   : access Oak.Interrupts.Interrupt_Handler_Array;
             Attach_Handler_PO : not null access
-              Oak.Agent.Tasks.Protected_Objects.Protected_Agent'Class;
-         when Entering_Atomic_Action =>
-            AA_Enter          : not null access
-              Atomic_Actions.Atomic_Object;
-            Action_Id_Enter   : Indices.Action_Index;
-         when Entering_Exit_Barrier =>
-            AA_EB             : not null access
-              Atomic_Actions.Atomic_Object;
-            Action_Id_EB      : Indices.Action_Index;
-            Exception_Raised  : Boolean;
-         when Exiting_Atomic_Action =>
-            AA_Exit           : not null access
-              Atomic_Actions.Atomic_Object;
-            Action_Id_Exit    : Indices.Action_Index;
-            Atomic_Exception  : Boolean;
+              Oak.Agent.Protected_Objects.Protected_Agent'Class;
          when Selecting_Next_Agent =>
             null;
          when Adding_Agent =>

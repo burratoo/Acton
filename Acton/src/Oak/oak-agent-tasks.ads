@@ -5,8 +5,6 @@ with System.Storage_Elements;
 
 with Oak.Oak_Time; use Oak.Oak_Time;
 
-limited with Oak.Atomic_Actions;
-
 package Oak.Agent.Tasks with Preelaborate is
 
    type Task_Agent is new Oak_Agent with private
@@ -52,10 +50,6 @@ package Oak.Agent.Tasks with Preelaborate is
    function Budget_Timer (T : not null access Task_Agent'Class)
                           return access Timers.Action_Timer'Class;
 
-   function Current_Atomic_Action
-     (T : in Task_Agent'Class)
-      return access Atomic_Actions.Atomic_Object;
-
    function Cycle_Period
      (T : in Task_Agent'Class)
       return Oak_Time.Time_Span;
@@ -86,10 +80,6 @@ package Oak.Agent.Tasks with Preelaborate is
      (T     : in out Task_Agent'Class;
       Chain : in Activation_Chain_Access);
 
-   procedure Set_Current_Atomic_Action
-     (T  : in out Task_Agent'Class;
-      AA : access Atomic_Actions.Atomic_Object);
-
    procedure Set_Cycle_Period
      (T  : in out Task_Agent'Class;
       CP : in Oak_Time.Time_Span);
@@ -119,8 +109,6 @@ private
 
       Activation_List   : access Task_Agent'Class;
       Elaborated        : Boolean_Access;
-
-      In_Atomic_Action  : access Atomic_Actions.Atomic_Object;
    end record;
 
    type Activation_Chain is limited record
@@ -130,10 +118,6 @@ private
    function Activation_List
      (T    : in Task_Agent'Class)
       return access Task_Agent'Class is (T.Activation_List);
-
-   function Current_Atomic_Action
-     (T : in Task_Agent'Class)
-      return access Atomic_Actions.Atomic_Object is (T.In_Atomic_Action);
 
    function Cycle_Period
      (T : in Task_Agent'Class)

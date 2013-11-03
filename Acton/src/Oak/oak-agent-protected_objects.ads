@@ -1,11 +1,12 @@
 with System;
 
-with Oak.Indices;           use Oak.Indices;
+with Ada.Cyclic_Tasks;
+with Oak.Indices;     use Oak.Indices;
 
-package Oak.Agent.Tasks.Protected_Objects with Preelaborate is
+package Oak.Agent.Protected_Objects with Preelaborate is
 
    type Protected_Agent (Num_Entries : Entry_Index)
-     is new Task_Agent with private
+     is new Oak_Agent with private
      with Preelaborable_Initialization;
 
    type Entry_Barrier_Function_Handler is
@@ -84,7 +85,7 @@ package Oak.Agent.Tasks.Protected_Objects with Preelaborate is
 
    procedure Remove_Task_From_Entry_Queue
      (PO       : in out Protected_Agent'Class;
-      T        : access Task_Agent'Class;
+      T        : access Oak_Agent'Class;
       Entry_Id : Entry_Index);
 
    procedure Remove_Task_From_Protected_Object
@@ -104,10 +105,10 @@ package Oak.Agent.Tasks.Protected_Objects with Preelaborate is
 private
 
    type Entry_Queue_Array is array (Entry_Index range <>)
-     of access Task_Agent'Class;
+     of access Oak_Agent'Class;
 
    type Protected_Agent (Num_Entries : Entry_Index)
-     is new Task_Agent with record
+     is new Oak_Agent with record
       Object_Record  : System.Address;
 
       Entry_Barriers : Entry_Barrier_Function_Handler;
@@ -135,4 +136,4 @@ private
      (PO : in Protected_Agent'Class)
       return access Oak_Agent'Class is (PO.Tasks_Within);
 
-end Oak.Agent.Tasks.Protected_Objects;
+end Oak.Agent.Protected_Objects;

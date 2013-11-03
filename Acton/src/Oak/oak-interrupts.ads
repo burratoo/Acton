@@ -2,7 +2,7 @@ with Oak.Processor_Support_Package.Interrupts;
 use Oak.Processor_Support_Package.Interrupts;
 
 with Oak.Agent; use Oak.Agent;
-with Oak.Agent.Tasks.Protected_Objects; use Oak.Agent.Tasks.Protected_Objects;
+with Oak.Agent.Protected_Objects; use Oak.Agent.Protected_Objects;
 
 package Oak.Interrupts with Preelaborate is
 

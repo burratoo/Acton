@@ -145,7 +145,7 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
          case Task_To_Remove.State is
          --  Probably best to move this case to the others.
 
-            when Runnable | Entering_PO | Entering_Atomic_Action |
+            when Runnable | Entering_PO |
                  Waiting_For_Event =>
                declare
                   Task_Priority : constant Any_Priority :=
