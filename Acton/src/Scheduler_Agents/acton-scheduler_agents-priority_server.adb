@@ -127,7 +127,7 @@ package body Acton.Scheduler_Agents.Priority_Server is
          case Task_To_Remove.State is
          --  Probably best to move this case to the others.
 
-            when Runnable | Entering_PO | Entering_Atomic_Action |
+            when Runnable | Entering_PO |
                  Waiting_For_Event =>
                Queue.Remove_Agent
                  (Queue => Runnable_Queue,

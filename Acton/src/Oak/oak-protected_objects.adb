@@ -1,5 +1,4 @@
 with Oak.States;                        use Oak.States;
-with Oak.Atomic_Actions; use Oak.Atomic_Actions;
 with Oak.Processor_Support_Package.Interrupts;
 use Oak.Processor_Support_Package.Interrupts;
 
@@ -36,91 +35,63 @@ package body Oak.Protected_Objects is
       --     3. Once the protected action is completed in Process_Exit_Request.
       Get_Resource (PO);
 
-      if Entering_Agent.all in Task_Agent'Class
-        and then Task_Handler (Entering_Agent).Current_Atomic_Action /=
-                   PO.Current_Atomic_Action
-        and then Parent
-          (Task_Handler (Entering_Agent).Current_Atomic_Action) /=
-            PO.Current_Atomic_Action
-      then
-         --  TODO: Add task to the Atomic object's PO contend list.
-         Next_Agent_To_Run := null;
-         raise Program_Error;
+      Scheduler.Remove_Agent_From_Scheduler (Entering_Agent);
 
-      else
-         declare
-            Entering_Task : constant Task_Handler :=
-                              Task_Handler (Entering_Agent);
-         begin
-            if Entering_Task.Current_Atomic_Action /=
-              PO.Current_Atomic_Action
-            then
-               PO.Set_Current_Atomic_Action
-                 (Entering_Task.Current_Atomic_Action);
-               Atomic_Actions.Add_Protected_Object
-                 (AO => Entering_Task.Current_Atomic_Action,
-                  PO => PO);
+      if PO.State = Inactive then
+         Next_Agent_To_Run := null;
+
+         declare begin
+            if Subprogram_Kind = Protected_Entry and then
+              not PO.Is_Barrier_Open (Entry_Id => Entry_Id) then
+               Entering_Agent.Set_State (Waiting_For_Protected_Object);
+               PO.Add_Task_To_Entry_Queue
+                 (T        => Entering_Agent,
+                  Entry_Id => Entry_Id);
+
+               --  We need to check the queues here in case a barrier has
+               --  changed as a result of it using the queue attribute.
+               --  We are not able to conditional this to only protected
+               --  objects that have barriers that use Count as the front
+               --  end does lend itself to achieve this.
+               PO.Get_And_Remove_Next_Task_From_Entry_Queues
+                 (Next_Task => Next_Agent_To_Run);
+
+            else
+               Next_Agent_To_Run := Entering_Agent;
             end if;
+         exception
+            when Program_Error =>
+               Scheduler.Add_Agent_To_Scheduler (Entering_Agent);
+               --  Add call to check if we need to decativate the PO.
+               --  Add call to see if we need to remove the task from the
+               --  PO.
+               Entering_Agent.Set_State (Enter_PO_Refused);
+               Next_Agent_To_Run := Entering_Agent;
+               --  Object release point 1.
+               Release_Resource (PO);
+
+               --  TODO Need to unset the atomic action stuff here.
+               return;
          end;
 
-         Scheduler.Remove_Agent_From_Scheduler (Entering_Agent);
+         if Next_Agent_To_Run /= null then
+            PO.Add_Task_To_Protected_Object (Next_Agent_To_Run);
+            Next_Agent_To_Run.Set_State (State => Runnable);
 
-         if PO.State = Inactive then
-            Next_Agent_To_Run := null;
-
-            declare begin
-               if Subprogram_Kind = Protected_Entry and then
-                 not PO.Is_Barrier_Open (Entry_Id => Entry_Id) then
-                  Entering_Agent.Set_State (Waiting_For_Protected_Object);
-                  PO.Add_Task_To_Entry_Queue
-                    (T        => Entering_Agent,
-                     Entry_Id => Entry_Id);
-
-                  --  We need to check the queues here in case a barrier has
-                  --  changed as a result of it using the queue attribute.
-                  --  We are not able to conditional this to only protected
-                  --  objects that have barriers that use Count as the front
-                  --  end does lend itself to achieve this.
-                  PO.Get_And_Remove_Next_Task_From_Entry_Queues
-                    (Next_Task => Next_Agent_To_Run);
-
-               else
-                  Next_Agent_To_Run := Entering_Agent;
-               end if;
-            exception
-               when Program_Error =>
-                  Scheduler.Add_Agent_To_Scheduler (Entering_Agent);
-                  --  Add call to check if we need to decativate the PO.
-                  --  Add call to see if we need to remove the task from the
-                  --  PO.
-                  Entering_Agent.Set_State (Enter_PO_Refused);
-                  Next_Agent_To_Run := Entering_Agent;
-                  --  Object release point 1.
-                  Release_Resource (PO);
-
-                  --  TODO Need to unset the atomic action stuff here.
-                  return;
-            end;
-
-            if Next_Agent_To_Run /= null then
-               PO.Add_Task_To_Protected_Object (Next_Agent_To_Run);
-               Next_Agent_To_Run.Set_State (State => Runnable);
-
-               --  Run protected agent
-               PO.Set_State (State => Runnable);
-               Scheduler.Add_Agent_To_Scheduler (PO);
-               Next_Agent_To_Run := Agent_Handler (PO);
-            end if;
-
-         elsif Subprogram_Kind = Protected_Function and
-                  PO.Active_Subprogram_Kind = Protected_Function then
-            Entering_Agent.Set_State (Runnable);
-            PO.Add_Task_To_Protected_Object (Entering_Agent);
+            --  Run protected agent
+            PO.Set_State (State => Runnable);
+            Scheduler.Add_Agent_To_Scheduler (PO);
             Next_Agent_To_Run := Agent_Handler (PO);
-         else
-            PO.Add_Contending_Task (Entering_Agent);
-            Next_Agent_To_Run := null;
          end if;
+
+      elsif Subprogram_Kind = Protected_Function and
+               PO.Active_Subprogram_Kind = Protected_Function then
+         Entering_Agent.Set_State (Runnable);
+         PO.Add_Task_To_Protected_Object (Entering_Agent);
+         Next_Agent_To_Run := Agent_Handler (PO);
+      else
+         PO.Add_Contending_Task (Entering_Agent);
+         Next_Agent_To_Run := null;
       end if;
 
       if Next_Agent_To_Run = null then
@@ -189,7 +160,7 @@ package body Oak.Protected_Objects is
 
    procedure Acquire_Protected_Object_For_Interrupt
      (PO : not null access
-        Agent.Tasks.Protected_Objects.Protected_Agent'Class) is
+        Agent.Protected_Objects.Protected_Agent'Class) is
    begin
       PO.Set_State (Handling_Interrupt);
       Get_Resource (PO);
@@ -197,7 +168,7 @@ package body Oak.Protected_Objects is
 
    procedure Release_Protected_Object_For_Interrupt
      (PO : not null access
-        Agent.Tasks.Protected_Objects.Protected_Agent'Class) is
+        Agent.Protected_Objects.Protected_Agent'Class) is
    begin
       PO.Set_State (Inactive);
       Release_Resource (PO);

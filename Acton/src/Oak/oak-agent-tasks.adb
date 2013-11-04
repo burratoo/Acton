@@ -1,9 +1,8 @@
 with Oak.Agent.Schedulers;
 with Oak.Agent.Tasks.Cycle;
-with Oak.Atomic_Actions;
 with System;                            use System;
 with System.Storage_Elements;           use System.Storage_Elements;
-with Oak.Agent.Tasks.Protected_Objects; use Oak.Agent.Tasks.Protected_Objects;
+with Oak.Agent.Protected_Objects; use Oak.Agent.Protected_Objects;
 with Oak.Scheduler;
 
 package body Oak.Agent.Tasks is
@@ -158,13 +157,6 @@ package body Oak.Agent.Tasks is
 
       T.Activation_List := Chain.Head;
    end Set_Activation_List;
-
-   procedure Set_Current_Atomic_Action
-     (T  : in out Task_Agent'Class;
-      AA : access Atomic_Actions.Atomic_Object) is
-   begin
-      T.In_Atomic_Action := AA;
-   end Set_Current_Atomic_Action;
 
    procedure Set_Cycle_Period
      (T  : in out Task_Agent'Class;

@@ -1,10 +1,10 @@
-with Ada.Cyclic_Tasks;
 with Ada.Unchecked_Conversion;
 with Oak.Agent.Queue;
 
 with System; use System;
+with Oak.Oak_Time; use Oak.Oak_Time;
 
-package body Oak.Agent.Tasks.Protected_Objects is
+package body Oak.Agent.Protected_Objects is
 
    procedure Initialise_Protected_Agent
      (Agent                 : not null access Protected_Agent'Class;
@@ -12,37 +12,21 @@ package body Oak.Agent.Tasks.Protected_Objects is
       Ceiling_Priority      : in Integer;
       Barriers_Function     : in Entry_Barrier_Function_Handler;
       Object_Record_Address : in System.Address) is
-      No_Chain : Activation_Chain := (Head => null);
    begin
 
-      Oak.Agent.Tasks.Initialise_Task_Agent
-        (Agent             => Agent,
-         Stack_Address     => Null_Address,
-         Stack_Size        => 0,
-         Name              => Name,
-         Run_Loop          => Null_Address,
-         Task_Value_Record => Null_Address,
-         Normal_Priority   => Ceiling_Priority,
-         Cycle_Behaviour   => Ada.Cyclic_Tasks.Normal,
-         Cycle_Period      => Oak_Time.Time_Span_Last,
-         Phase             => Oak_Time.Time_Span_Zero,
-         Execution_Budget  => Oak_Time.Time_Span_Last,
-         Budget_Action     => Ada.Cyclic_Tasks.No_Response,
-         Budget_Handler    => null,
-         Relative_Deadline => Oak_Time.Time_Span_Last,
-         Deadline_Action   => Ada.Cyclic_Tasks.No_Response,
-         Deadline_Handler  => null,
-         Scheduler_Agent   => null,
-         Chain             => No_Chain,
-         Elaborated        => null);
-
-      Agent.State := Inactive;
+      Oak.Agent.Initialise_Agent
+        (Agent                => Agent,
+         Name                 => Name,
+         Call_Stack_Address   => Null_Address,
+         Call_Stack_Size      => 0,
+         Run_Loop             => Null_Address,
+         Run_Loop_Parameter   => Null_Address,
+         Normal_Priority      => Ceiling_Priority,
+         Initial_State        => Inactive,
+         Wake_Time            => Time_First);
 
       Agent.Entry_Barriers           := Barriers_Function;
       Agent.Object_Record            := Object_Record_Address;
-
-      Agent.Wake_Time      := Time_First;
-      Agent.Next_Run_Cycle := Time_First;
 
       Agent.Entry_Queues             := (others => null);
       Agent.Active_Subprogram_Kind   := Protected_Procedure;
@@ -82,7 +66,7 @@ package body Oak.Agent.Tasks.Protected_Objects is
      (PO       : in Protected_Agent'Class;
       Entry_Id : in Entry_Index) return Natural
    is
-      Head_Task    : constant access Task_Agent'Class :=
+      Head_Task    : constant access Oak_Agent'Class :=
                        PO.Entry_Queues (Entry_Id);
       Current_Task : access Oak_Agent'Class := Head_Task;
       Length       : Natural := 0;
@@ -168,7 +152,7 @@ package body Oak.Agent.Tasks.Protected_Objects is
      (PO             : in out Protected_Agent'Class;
       New_Task_State : in     Agent_State)
    is
-      Current_Task : access Task_Agent'Class := null;
+      Current_Task : access Oak_Agent'Class := null;
    begin
       for Queue_Head of PO.Entry_Queues loop
          Current_Task := Queue_Head;
@@ -184,7 +168,7 @@ package body Oak.Agent.Tasks.Protected_Objects is
 
    procedure Remove_Task_From_Entry_Queue
      (PO       : in out Protected_Agent'Class;
-      T        : access Task_Agent'Class;
+      T        : access Oak_Agent'Class;
       Entry_Id : Entry_Index) is
    begin
       Queue.Remove_Agent
@@ -232,4 +216,4 @@ package body Oak.Agent.Tasks.Protected_Objects is
       return To_Protected_Subprogram_Components (Handler).Object.Agent;
    end Protected_Object_From_Access;
 
-end Oak.Agent.Tasks.Protected_Objects;
+end Oak.Agent.Protected_Objects;

@@ -1,7 +1,7 @@
 with Oakland.Tasks;
 with Oak.Message; use Oak.Message;
 with Oak.States;  use Oak.States;
-with Oak.Agent.Tasks.Protected_Objects; use Oak.Agent.Tasks.Protected_Objects;
+with Oak.Agent.Protected_Objects; use Oak.Agent.Protected_Objects;
 with Oak.Interrupts; use Oak.Interrupts;
 
 package body Oakland.Interrupts is

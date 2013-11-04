@@ -3,7 +3,7 @@ with System; use System;
 with MPC5554; use MPC5554;
 with MPC5554.INTC; use MPC5554.INTC;
 
-limited with Oak.Agent.Tasks.Protected_Objects;
+limited with Oak.Agent.Protected_Objects;
 
 package Oak.Processor_Support_Package.Interrupts with Preelaborate is
 
@@ -25,9 +25,9 @@ package Oak.Processor_Support_Package.Interrupts with Preelaborate is
    function External_Interrupt_Id return Oak_Interrupt_Id;
 
    procedure Get_Resource
-     (PO : access Agent.Tasks.Protected_Objects.Protected_Agent'Class);
+     (PO : access Agent.Protected_Objects.Protected_Agent'Class);
    procedure Release_Resource
-        (PO : access Agent.Tasks.Protected_Objects.Protected_Agent'Class);
+        (PO : access Agent.Protected_Objects.Protected_Agent'Class);
 
 private
    type FIFO_Array is array

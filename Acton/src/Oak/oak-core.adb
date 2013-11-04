@@ -1,8 +1,7 @@
 with Oak.Agent.Schedulers;   use Oak.Agent.Schedulers;
 with Oak.Agent.Tasks.Activation;
 with Oak.Agent.Tasks.Cycle; use Oak.Agent.Tasks.Cycle;
-with Oak.Agent.Tasks.Protected_Objects; use Oak.Agent.Tasks.Protected_Objects;
-with Oak.Atomic_Actions;
+with Oak.Agent.Protected_Objects; use Oak.Agent.Protected_Objects;
 with Oak.Core_Support_Package.Task_Support;
 use Oak.Core_Support_Package.Task_Support;
 with Oak.Interrupts; use Oak.Interrupts;
@@ -257,32 +256,6 @@ package body Oak.Core is
                        (Handlers          => Task_Message.Attach_Handlers,
                         Handler_PO        => Task_Message.Attach_Handler_PO,
                         Current_Agent     => Current_Task,
-                        Next_Agent_To_Run => Next_Agent);
-
-                  when Entering_Atomic_Action =>
-                     Atomic_Actions.Process_Enter_Request
-                       (AO                => Task_Message.AA_Enter,
-                        T                 => Current_Task,
-                        Scheduler_Info    => Oak_Instance.Scheduler,
-                        Action_Id         => Task_Message.Action_Id_Enter,
-                        Next_Agent_To_Run => Next_Agent);
-
-                  when Entering_Exit_Barrier =>
-                     Atomic_Actions.Exit_Barrier
-                       (AO                => Task_Message.AA_EB,
-                        T                 => Current_Task,
-                        Scheduler_Info    => Oak_Instance.Scheduler,
-                        Action_Id         => Task_Message.Action_Id_EB,
-                        Exception_Raised  => Task_Message.Exception_Raised,
-                        Next_Agent_To_Run => Next_Agent);
-
-                  when Exiting_Atomic_Action =>
-                     Atomic_Actions.Process_Exit_Request
-                       (AO                => Task_Message.AA_Exit,
-                        T                 => Current_Task,
-                        Scheduler_Info    => Oak_Instance.Scheduler,
-                        Action_Id         => Task_Message.Action_Id_Exit,
-                        Exception_Raised  => Task_Message.Atomic_Exception,
                         Next_Agent_To_Run => Next_Agent);
 
                   when Interrupt_Done =>

@@ -24,17 +24,11 @@ package Oak.States with Pure is
                        Exiting_PO,                   -- 21
                        Exit_PO_Error,                -- 22
                        Attach_Interrupt_Handlers,    -- 23
-                       Entering_Atomic_Action,       -- 24
-                       Enter_Atomic_Action_Refused,  -- 25
-                       Exiting_Atomic_Action,        -- 26
-                       Exit_Atomic_Action_Error,     -- 27
-                       Entering_Exit_Barrier,        -- 28
-                       Atomic_Action_Error,          -- 29
-                       Handling_Interrupt,           -- 30
-                       Interrupt_Done,               -- 31
-                       No_State,                     -- 32
-                       Agent_State_Change,           -- 33
-                       Selecting_Next_Agent,         -- 34
+                       Handling_Interrupt,           -- 24
+                       Interrupt_Done,               -- 25
+                       No_State,                     -- 26
+                       Agent_State_Change,           -- 27
+                       Selecting_Next_Agent,         -- 28
                        Adding_Agent,
                        Removing_Agent,
                        Scheduler_Agent_Done,
