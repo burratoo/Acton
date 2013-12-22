@@ -123,7 +123,7 @@ package body Oak.Agent.Tasks.Cycle is
       Releasing_Task.State := Runnable;
 
       if Task_To_Release.State = Waiting_For_Event then
-         Task_Released (Task_To_Release);
+         Task_Release (Task_To_Release);
 
          Scheduler.Add_Agent_To_Scheduler (Task_To_Release);
          Scheduler.Check_Sechduler_Agents_For_Next_Task_To_Run
@@ -137,7 +137,7 @@ package body Oak.Agent.Tasks.Cycle is
 
    end Release_Task;
 
-   procedure Task_Released
+   procedure Task_Release
      (Released_Task : access Task_Agent'Class) is
    begin
       Released_Task.State := Running;

@@ -215,6 +215,8 @@ package body Oak.Agent is
       end loop;
    end Charge_Execution_Time_To_List;
 
+   --  fix this, the problem is that it can return an agent who may not
+   --  be affected by the next agent.
    function Earliest_Expiring_Budget
      (Charge_List : not null access Oak_Agent'Class)
       return access Oak_Agent'Class

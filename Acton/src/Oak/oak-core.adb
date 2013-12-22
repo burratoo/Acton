@@ -278,10 +278,10 @@ package body Oak.Core is
                            Next_Task_To_Run => Next_Agent);
                      end if;
 
-                  when Adding_Agent_To_Scheduler =>
+                  when Adding_Agent =>
                      Current_Agent.Set_State (Runnable);
                      Add_Agent_To_Scheduler
-                       (Current_Agent.Agent_Message.Agent_To_Add_To_Scheduler);
+                       (Current_Agent.Agent_Message.Agent_To_Add);
                      Check_Sechduler_Agents_For_Next_Task_To_Run
                        (Scheduler_Info   => Oak_Instance.Scheduler,
                         Next_Task_To_Run => Next_Agent);
@@ -310,7 +310,7 @@ package body Oak.Core is
                if Active_Timer = null
                  or else Active_Timer.Firing_Time > Clock
                then
-                  null;
+                  Next_Agent := Current_Agent;
 
                elsif Active_Timer.all in Timers.Scheduler_Timer then
                   Run_The_Bloody_Scheduler_Agent_That_Wanted_To_Be_Woken
@@ -382,7 +382,7 @@ package body Oak.Core is
             P := P - 1;
          end loop;
 
-         --  Handle special states
+         --  Select Correct Agent
 
          if Next_Agent /= null then
             Oak_Instance.Current_Priority := Next_Agent.Normal_Priority;

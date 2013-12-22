@@ -41,7 +41,6 @@ private
       Interrupt_Kind  : Interrupt_Type;
       External_Id     : Oak_Interrupt_Id;
       Timer_To_Handle : access Action_Timer'Class;
-      Interrupt_Task  : access Oak_Agent'Class;
    end record;
 
    function Interrupt_Kind (Agent : in out Interrupt_Agent'Class)

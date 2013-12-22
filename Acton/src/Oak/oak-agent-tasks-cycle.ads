@@ -7,7 +7,7 @@ package Oak.Agent.Tasks.Cycle with Preelaborate is
       Releasing_Task   : in Agent_Handler;
       Next_Task_To_Run : out Agent_Handler);
 
-   procedure Task_Released
+   procedure Task_Release
      (Released_Task : access Task_Agent'Class);
    --  Called when a sporadic task is released. Is called internally and
    --  indirectly by scheduler agents through the Destination_On_Wake_Up call.

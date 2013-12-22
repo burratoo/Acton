@@ -19,6 +19,9 @@ package body Oakland.Tasks is
       Activation_Complete_Message : constant Oak_Message :=
         (Message_Type => Activation_Complete);
    begin
+      --  TODO:  The check and Thetransfer of tasks from chain to Activation list
+      --  should occur in Oak not here.
+
       Self.Set_Activation_List (Chain);
       Yield_Processor_To_Kernel
         (Task_Message => Activation_Pending_Message);
@@ -49,6 +52,9 @@ package body Oakland.Tasks is
       Activation_Successful_Message : constant Oak_Message :=
         (Message_Type => Activation_Successful);
    begin
+      --  Why do we send the message twice?? And we never send a failure
+      --  message.
+
       Yield_Processor_To_Kernel
         (Task_Message => Activation_Successful_Message);
       if Self.State = Activation_Successful then

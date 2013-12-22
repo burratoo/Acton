@@ -84,8 +84,7 @@ private
      access Oak_Timer'Class;
 
    type Oak_Timer_Info is tagged limited record
-      Timers                      : Interrupt_Timers;
-      Timers_Delayed_By_Execution : access Scheduler_Timer'Class;
+      Timers : Interrupt_Timers;
    end record;
 
    type Oak_Timer is tagged record
@@ -104,7 +103,6 @@ private
 
    type Scheduler_Timer is new Oak_Timer with record
       Scheduler                : access Agent.Schedulers.Scheduler_Agent'Class;
-      Next_Scheduler_Timer     : access Scheduler_Timer'Class;
    end record;
 
    function Firing_Time

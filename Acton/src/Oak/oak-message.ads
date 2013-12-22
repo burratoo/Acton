@@ -56,9 +56,6 @@ package Oak.Message with Preelaborate is
             Next_Agent          : access Oak.Agent.Oak_Agent'Class;
             Wake_Scheduler_At   : Oak_Time.Time;
             Keep_In_Charge_List : Boolean;
-         when Adding_Agent_To_Scheduler =>
-            Agent_To_Add_To_Scheduler : not null access
-              Oak.Agent.Oak_Agent'Class;
          when Continue_Sleep =>
             Remain_In_Charge_List : Boolean;
          when others =>

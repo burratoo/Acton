@@ -227,10 +227,11 @@ package body Oak.Scheduler is
    -- Run_The_Bloody_Scheduler_Agent_That_Wanted_To_Be_Woken --
    --
    --  Note that we check from the highest priority agent down
-   --  as a higher priority agent may wake up inbetween the
+   --  as a higher priority agent may wake up in between the
    --  wake up alarm and the lower priority agent actually
    --  running
    ------------------------------------------------------------
+
    procedure Run_The_Bloody_Scheduler_Agent_That_Wanted_To_Be_Woken
      (Agent            : access Scheduler_Agent'Class;
       Current_Agent    : in Agent_Handler;

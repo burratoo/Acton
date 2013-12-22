@@ -15,14 +15,6 @@ package Oak.Scheduler with Preelaborate is
       CPU      : System.Multiprocessors.CPU_Range)
      return access Scheduler_Agent'Class;
 
-   function Next_Task
-     (Scheduler_Info : Oak_Scheduler_Info)
-      return access Task_Agent'Class;
-
-   function Running_Task
-     (Scheduler_Info : Oak_Scheduler_Info)
-      return access Task_Agent'Class;
-
    procedure Add_Agent_To_Scheduler (Agent : not null access Oak_Agent'Class);
 
    procedure Add_Scheduler_To_Scheduler_Table
@@ -47,15 +39,6 @@ package Oak.Scheduler with Preelaborate is
    procedure Remove_Agent_From_Scheduler
      (Agent : not null access Oak_Agent'Class);
 
-   function Run_Scheduler_Agent
-     (Agent  : not null access Scheduler_Agent'Class;
-      Reason : in Oak_Message)
-      return access Task_Agent'Class;
-
-   procedure Run_Scheduler_Agent
-     (Agent  : not null access Scheduler_Agent'Class;
-      Reason : in Oak_Message);
-
    procedure Run_The_Bloody_Scheduler_Agent_That_Wanted_To_Be_Woken
      (Agent            : access Scheduler_Agent'Class;
       Current_Agent    : in Agent_Handler;
@@ -64,19 +47,19 @@ package Oak.Scheduler with Preelaborate is
 private
 
    type Oak_Scheduler_Info is limited record
-      Running_Task          : access Task_Agent'Class := null;
       Next_Task             : access Task_Agent'Class := null;
       Scheduler_Agent_Table : access Scheduler_Agent'Class := null;
       --  array of Scheduler_Agents.
       --  Populated by the preprocessor.
    end record;
 
-   function Next_Task
-     (Scheduler_Info : Oak_Scheduler_Info)
-      return access Task_Agent'Class is (Scheduler_Info.Next_Task);
+   function Run_Scheduler_Agent
+     (Agent  : not null access Scheduler_Agent'Class;
+      Reason : in Oak_Message)
+      return access Task_Agent'Class;
 
-   function Running_Task
-     (Scheduler_Info : Oak_Scheduler_Info)
-      return access Task_Agent'Class is (Scheduler_Info.Running_Task);
+   procedure Run_Scheduler_Agent
+     (Agent  : not null access Scheduler_Agent'Class;
+      Reason : in Oak_Message);
 
 end Oak.Scheduler;
