@@ -1,5 +1,6 @@
 with Ada.Unchecked_Conversion;
 with Oak.Agent.Queue;
+with Oak.Scheduler;
 
 with System; use System;
 with Oak.Oak_Time; use Oak.Oak_Time;
@@ -24,6 +25,9 @@ package body Oak.Agent.Protected_Objects is
          Normal_Priority      => Ceiling_Priority,
          Initial_State        => Inactive,
          Wake_Time            => Time_First);
+
+      Agent.Scheduler_Agent :=
+        Scheduler.Find_Scheduler_For_System_Priority (Ceiling_Priority, 1);
 
       Agent.Entry_Barriers           := Barriers_Function;
       Agent.Object_Record            := Object_Record_Address;
