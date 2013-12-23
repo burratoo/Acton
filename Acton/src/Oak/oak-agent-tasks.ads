@@ -92,6 +92,11 @@ package Oak.Agent.Tasks with Preelaborate is
      (T  : in out Task_Agent'Class;
       RD : in Oak_Time.Time_Span);
 
+   procedure Update_Task_Property
+     (T                  : in out Task_Agent'Class;
+      Property_To_Update : in Task_Property;
+      Next_Task_To_Run   : out Agent_Handler);
+
 private
    type Task_Agent is new Oak_Agent with record
       Cycle_Behaviour   : Ada.Cyclic_Tasks.Behaviour;

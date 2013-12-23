@@ -106,7 +106,7 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
                  Activation_Complete   |
                  Activation_Successful =>
                null;
-            when Change_Cycle_Period | Change_Relative_Deadline =>
+            when Update_Task_Property =>
                null;
             when Runnable =>
                if Runnable_Queues (T_Priority) = Yielded_Task then

@@ -80,20 +80,23 @@ package body Oakland.Tasks is
 
    procedure Change_Cycle_Period (New_Period : in Time_Span) is
       Message : constant Oak_Message :=
-        (Message_Type      => Change_Cycle_Period,
-         New_Cycle_Period  => New_Period,
-         Cycle_Period_Task => Oak.Core.Current_Task);
+        (Message_Type       => Update_Task_Property,
+         Update_Task        => Oak.Core.Current_Task,
+         Property_To_Update =>
+           (Property     => Cycle_Period,
+            Cycle_Period => New_Period));
    begin
       Yield_Processor_To_Kernel (Task_Message => Message);
    end Change_Cycle_Period;
 
-   procedure Change_Relative_Deadline
-     (New_Deadline : in Time_Span)
+   procedure Change_Relative_Deadline (New_Deadline : in Time_Span)
    is
       Message : constant Oak_Message :=
-        (Message_Type      => Change_Relative_Deadline,
-         New_Deadline_Span => New_Deadline,
-         Deadline_Task     => Oak.Core.Current_Task);
+        (Message_Type       => Update_Task_Property,
+         Update_Task        => Oak.Core.Current_Task,
+         Property_To_Update =>
+           (Property     => Relative_Deadline,
+            Deadline_Span => New_Deadline));
    begin
       Yield_Processor_To_Kernel (Task_Message => Message);
    end Change_Relative_Deadline;

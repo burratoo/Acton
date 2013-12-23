@@ -15,20 +15,27 @@ package Oak.Message with Preelaborate is
       Protected_Procedure,
       Protected_Entry);
 
+   type Task_Property_Kind is (Cycle_Period, Relative_Deadline);
+
+   type Task_Property (Property : Task_Property_Kind := Cycle_Period) is record
+      case Property is
+         when Cycle_Period =>
+            Cycle_Period  : Oak_Time.Time_Span;
+         when Relative_Deadline =>
+            Deadline_Span : Oak_Time.Time_Span;
+      end case;
+   end record;
+
    type Oak_Message (Message_Type : Agent_State := No_State) is record
       case Message_Type is
          when Sleeping =>
             Wake_Up_At              : Oak_Time.Time;
             Remove_From_Charge_List : Boolean;
-         when Change_Cycle_Period =>
-            New_Cycle_Period  : Oak_Time.Time_Span;
-            Cycle_Period_Task : not null access
+         when Update_Task_Property =>
+            Update_Task             : not null access
               Oak.Agent.Tasks.Task_Agent'Class;
-         when Change_Relative_Deadline =>
-            New_Deadline_Span : Oak_Time.Time_Span :=
-                                  Oak_Time.Time_Span_Zero;
-            Deadline_Task     : not null access
-              Oak.Agent.Tasks.Task_Agent'Class;
+            Property_To_Update      : Task_Property;
+
          when Release_Task =>
             Task_To_Release   : not null access Oak.Agent.Tasks.Task_Agent;
 
