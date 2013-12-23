@@ -1,6 +1,4 @@
-with ISA.Power;
 with MPC5554.Flash;
-with Oak.Agent.Protected_Objects;
 with Oak.Core_Support_Package.Interrupts;
 
 package body Oak.Processor_Support_Package.Interrupts is
@@ -85,36 +83,19 @@ package body Oak.Processor_Support_Package.Interrupts is
       return Any_Priority (Current_Priority_Register) + Priority'Last;
    end Current_Interrupt_Priority;
 
-   procedure Get_Resource
-     (PO : access Agent.Protected_Objects.Protected_Agent'Class)
-   is
-      FIFO : Interrupt_FIFO renames Interrupt_Priority_FIFO;
-      P : MPC5554_Interrupt_Priority;
+   procedure Set_Hardware_Priority (P : Any_Priority) is
    begin
-      if PO.Normal_Priority in Interrupt_Priority then
-         P := MPC5554_Interrupt_Priority (PO.Normal_Priority - Priority'Last);
-         FIFO.Top := FIFO.Top + 1;
-         FIFO.Stack (FIFO.Top) := P;
-         Current_Priority_Register := P;
-         ISA.Power.Memory_Barrier;
-         ISA.Power.Instruction_Synchronize;
+      if P in Interrupt_Priority then
+         Current_Priority_Register :=
+           MPC5554_Interrupt_Priority (P - Priority'Last);
+      else
+         Current_Priority_Register := MPC5554_Interrupt_Priority'First;
       end if;
-   end Get_Resource;
+   end Set_Hardware_Priority;
 
-   procedure Release_Resource
-     (PO : access Agent.Protected_Objects.Protected_Agent'Class)
-   is
-      FIFO : Interrupt_FIFO renames Interrupt_Priority_FIFO;
+   procedure Clear_Hardware_Priority is
    begin
-      if PO.Normal_Priority in Interrupt_Priority then
-         ISA.Power.Memory_Barrier;
-         FIFO.Top := FIFO.Top - 1;
-         if FIFO.Top = 0 then
-            Current_Priority_Register := MPC5554_Interrupt_Priority'First;
-         else
-            Current_Priority_Register := FIFO.Stack (FIFO.Top + 1);
-         end if;
-      end if;
-   end Release_Resource;
+      Current_Priority_Register := MPC5554_Interrupt_Priority'First;
+   end Clear_Hardware_Priority;
 
 end Oak.Processor_Support_Package.Interrupts;

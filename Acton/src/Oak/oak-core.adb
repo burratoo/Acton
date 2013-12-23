@@ -470,9 +470,10 @@ package body Oak.Core is
          if Active_Timer /= null and then Active_Timer.Firing_Time < Clock then
             Oak_Instance.Woken_By := Timer;
 
+            --  Otherwise run the selected task
          else
 
-            --  Otherwise run the selected task
+            Set_Hardware_Priority (Oak_Instance.Current_Priority);
 
             --   Set MMU is applicable.
 

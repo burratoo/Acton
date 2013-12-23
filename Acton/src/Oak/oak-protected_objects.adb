@@ -1,6 +1,4 @@
 with Oak.States;                        use Oak.States;
-with Oak.Processor_Support_Package.Interrupts;
-use Oak.Processor_Support_Package.Interrupts;
 
 package body Oak.Protected_Objects is
 
@@ -27,13 +25,13 @@ package body Oak.Protected_Objects is
          return;
       end if;
 
-      --  Need to inform the interrupt system that we are acquiring the object.
-      --  The resource is released in three places when:
+      --  Need to lock the protected object from other processors here since we
+      --  are making modifications to the object:
       --     1. We encounter an error while evaluating the barrier states when
       --        a task calls an entry.
       --     2. There are no tasks able to run in the protected object.
       --     3. Once the protected action is completed in Process_Exit_Request.
-      Get_Resource (PO);
+      --  Acquire_Lock  (PO);
 
       Scheduler.Remove_Agent_From_Scheduler (Entering_Agent);
 
@@ -68,9 +66,7 @@ package body Oak.Protected_Objects is
                Entering_Agent.Set_State (Enter_PO_Refused);
                Next_Agent_To_Run := Entering_Agent;
                --  Object release point 1.
-               Release_Resource (PO);
-
-               --  TODO Need to unset the atomic action stuff here.
+               --  Release Lock (PO);
                return;
          end;
 
@@ -98,7 +94,7 @@ package body Oak.Protected_Objects is
          --  Object release point 2.
          --  Inform the interrupt subsystem that we are releasing the object
          --  since no task inside the protected object is able to run.
-         Release_Resource (PO);
+         --  Release Lock(PO);
          Check_Sechduler_Agents_For_Next_Task_To_Run
            (Scheduler_Info   => Scheduler_Info,
             Next_Task_To_Run => Next_Agent_To_Run);
@@ -112,6 +108,9 @@ package body Oak.Protected_Objects is
       PO                : not null access Protected_Agent'Class;
       Next_Agent_To_Run : out Agent_Handler) is
    begin
+
+      --  Lock Agent (PO)
+
       if not PO.Is_Task_Inside_Protect_Object (Exiting_Agent) then
          Exiting_Agent.Set_State (Exit_PO_Error);
          Next_Agent_To_Run := Agent_Handler (Exiting_Agent);
@@ -138,6 +137,8 @@ package body Oak.Protected_Objects is
             Subprogram_Kind  => Exiting_Agent.Agent_Message.Subprogram_Kind,
             Entry_Id         => Exiting_Agent.Agent_Message.Entry_Id_Enter,
             Next_Agent_To_Run => Next_Agent_To_Run);
+
+         --  Release Agent
          return;
       end loop;
 
@@ -147,7 +148,7 @@ package body Oak.Protected_Objects is
          PO.Set_State (Inactive);
 
          --  Object release point 3.
-         Release_Resource (PO);
+         --  Release Agent (PO);
          Check_Sechduler_Agents_For_Next_Task_To_Run
            (Scheduler_Info   => Scheduler_Info,
             Next_Task_To_Run => Next_Agent_To_Run);
@@ -156,22 +157,23 @@ package body Oak.Protected_Objects is
          Next_Agent_To_Run.Set_State (Runnable);
          PO.Add_Task_To_Protected_Object (Next_Agent_To_Run);
       end if;
+      --  Release Agent.
    end Process_Exit_Request;
 
    procedure Acquire_Protected_Object_For_Interrupt
      (PO : not null access
         Agent.Protected_Objects.Protected_Agent'Class) is
    begin
+      --  Need a Lock around this.
       PO.Set_State (Handling_Interrupt);
-      Get_Resource (PO);
    end Acquire_Protected_Object_For_Interrupt;
 
    procedure Release_Protected_Object_For_Interrupt
      (PO : not null access
         Agent.Protected_Objects.Protected_Agent'Class) is
    begin
+      --  Need a lock around this.
       PO.Set_State (Inactive);
-      Release_Resource (PO);
    end Release_Protected_Object_For_Interrupt;
 
 end Oak.Protected_Objects;

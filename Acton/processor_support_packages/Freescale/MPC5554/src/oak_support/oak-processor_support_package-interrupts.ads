@@ -3,8 +3,6 @@ with System; use System;
 with MPC5554; use MPC5554;
 with MPC5554.INTC; use MPC5554.INTC;
 
-limited with Oak.Agent.Protected_Objects;
-
 package Oak.Processor_Support_Package.Interrupts with Preelaborate is
 
    subtype Oak_Interrupt_Id is MPC5554.INTC.INTC_ID_Type;
@@ -24,22 +22,13 @@ package Oak.Processor_Support_Package.Interrupts with Preelaborate is
    function Current_Interrupt_Priority return Any_Priority;
    function External_Interrupt_Id return Oak_Interrupt_Id;
 
-   procedure Get_Resource
-     (PO : access Agent.Protected_Objects.Protected_Agent'Class);
-   procedure Release_Resource
-        (PO : access Agent.Protected_Objects.Protected_Agent'Class);
+   procedure Set_Hardware_Priority (P : Any_Priority);
+   procedure Clear_Hardware_Priority;
 
 private
    type FIFO_Array is array
      (MPC5554_Interrupt_Priority'First + 1 .. MPC5554_Interrupt_Priority'Last)
        of MPC5554_Interrupt_Priority;
-
-   type Interrupt_FIFO is record
-      Stack : FIFO_Array;
-      Top   : MPC5554_Interrupt_Priority := MPC5554_Interrupt_Priority'First;
-   end record;
-
-   Interrupt_Priority_FIFO : Interrupt_FIFO;
 
    Interrupt_Flash_Block : constant := 2;
 
