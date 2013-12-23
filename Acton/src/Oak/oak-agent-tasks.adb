@@ -118,7 +118,7 @@ package body Oak.Agent.Tasks is
          when Sleeping_And_Waiting =>
             if Agent.Event_Raised then
                Agent.Event_Raised := False;
-               Oak.Agent.Tasks.Cycle.Task_Released (Agent'Access);
+               Oak.Agent.Tasks.Cycle.Task_Release (Agent'Access);
                return Run_Queue;
             else
                Agent.State := Waiting_For_Event;

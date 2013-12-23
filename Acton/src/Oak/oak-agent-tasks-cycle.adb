@@ -145,6 +145,6 @@ package body Oak.Agent.Tasks.Cycle is
       Released_Task.Next_Run_Cycle := Released_Task.Wake_Time +
         Released_Task.Cycle_Period;
       Released_Task.Set_Next_Deadline_For_Task (Using => Wake_Up_Time);
-   end Task_Released;
+   end Task_Release;
 
 end Oak.Agent.Tasks.Cycle;

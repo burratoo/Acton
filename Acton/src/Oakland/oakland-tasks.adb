@@ -19,7 +19,7 @@ package body Oakland.Tasks is
       Activation_Complete_Message : constant Oak_Message :=
         (Message_Type => Activation_Complete);
    begin
-      --  TODO:  The check and Thetransfer of tasks from chain to Activation list
+      --  TODO:  The check and transfer of tasks from chain to Activation list
       --  should occur in Oak not here.
 
       Self.Set_Activation_List (Chain);
