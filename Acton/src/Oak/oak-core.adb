@@ -211,28 +211,15 @@ package body Oak.Core is
                         Releasing_Task   => Current_Agent,
                         Next_Task_To_Run => Next_Agent);
 
-                  when Change_Cycle_Period =>
+                  when Update_Task_Property =>
                      declare
                         Target_Task : constant access Task_Agent'Class :=
-                                        Task_Message.Cycle_Period_Task;
+                                        Task_Message.Update_Task;
                      begin
-                        Target_Task.Set_Cycle_Period
-                           (Task_Message.New_Cycle_Period);
-                        Inform_Scheduler_Agent_Task_Has_Changed_State
-                          (Changed_Task     => Target_Task,
-                           Next_Task_To_Run => Next_Agent);
-                     end;
-
-                  when Change_Relative_Deadline =>
-                     declare
-                        Target_Task : constant access Task_Agent'Class :=
-                                        Task_Message.Cycle_Period_Task;
-                     begin
-                        Target_Task.Set_Relative_Deadline
-                           (Task_Message.New_Cycle_Period);
-                        Inform_Scheduler_Agent_Task_Has_Changed_State
-                          (Changed_Task     => Target_Task,
-                           Next_Task_To_Run => Next_Agent);
+                        Target_Task.Update_Task_Property
+                          (Property_To_Update =>
+                             Task_Message.Property_To_Update,
+                           Next_Task_To_Run   => Next_Agent);
                      end;
 
                   when Entering_PO =>

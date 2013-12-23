@@ -15,19 +15,18 @@ package Oak.States with Pure is
                        Setup_Cycles,                 -- 13
                        New_Cycle,                    -- 14
                        Release_Task,                 -- 15
-                       Change_Cycle_Period,          -- 16
-                       Change_Relative_Deadline,     -- 17
-                       Terminated,                   -- 18
-                       Entering_PO,                  -- 19
-                       Enter_PO_Refused,             -- 20
-                       Exiting_PO,                   -- 21
-                       Exit_PO_Error,                -- 22
-                       Attach_Interrupt_Handlers,    -- 23
-                       Handling_Interrupt,           -- 24
-                       Interrupt_Done,               -- 25
-                       No_State,                     -- 26
-                       Agent_State_Change,           -- 27
-                       Selecting_Next_Agent,         -- 28
+                       Update_Task_Property,         -- 16
+                       Terminated,                   -- 19
+                       Entering_PO,                  -- 20
+                       Enter_PO_Refused,             -- 21
+                       Exiting_PO,                   -- 22
+                       Exit_PO_Error,                -- 23
+                       Attach_Interrupt_Handlers,    -- 24
+                       Handling_Interrupt,           -- 25
+                       Interrupt_Done,               -- 26
+                       No_State,                     -- 27
+                       Agent_State_Change,           -- 28
+                       Selecting_Next_Agent,         -- 29
                        Adding_Agent,
                        Removing_Agent,
                        Scheduler_Agent_Done,

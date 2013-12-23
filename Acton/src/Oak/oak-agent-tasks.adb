@@ -197,4 +197,22 @@ package body Oak.Agent.Tasks is
       T.Relative_Deadline := RD;
    end Set_Relative_Deadline;
 
+   procedure Update_Task_Property
+     (T                  : in out Task_Agent'Class;
+      Property_To_Update : in Task_Property;
+      Next_Task_To_Run   : out Agent_Handler) is
+   begin
+      case Property_To_Update.Property is
+         when Cycle_Period =>
+            T.Cycle_Period := Property_To_Update.Cycle_Period;
+
+         when Relative_Deadline =>
+            T.Relative_Deadline := Property_To_Update.Deadline_Span;
+      end case;
+
+      Scheduler.Inform_Scheduler_Agent_Task_Has_Changed_State
+        (Changed_Task     => T'Access,
+         Next_Task_To_Run => Next_Task_To_Run);
+   end Update_Task_Property;
+
 end Oak.Agent.Tasks;
