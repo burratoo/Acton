@@ -1,34 +1,45 @@
+------------------------------------------------------------------------------
+--                                                                          --
+--                              OAK COMPONENTS                              --
+--                                                                          --
+--                           OAK.AGENT.TASK_AGENT                           --
+--                                                                          --
+--                                 S p e c                                  --
+--                                                                          --
+--                 Copyright (C) 2010-2014, Patrick Bernardi                --
+------------------------------------------------------------------------------
+
+--  This package defines Oak's Task Agents, the agent that represents tasks in
+--  Oak. It functions a a task's control block. The Agent extends the Oak Agent
+--  data structure to include task specific components mainly focusing on
+--  cyclic related components and task activation.
+
 with Ada.Cyclic_Tasks;
 with Oak.Timers;
-with System;
-with System.Storage_Elements;
-
 with Oak.Oak_Time; use Oak.Oak_Time;
+
+with Oakland.Tasks;
+
+with System;                  use System;
+with System.Storage_Elements; use System.Storage_Elements;
 
 package Oak.Agent.Tasks with Preelaborate is
 
-   type Task_Agent is new Oak_Agent with private
-     with Preelaborable_Initialization;
-
-   type Task_Handler is access all Task_Agent'Class;
-
-   type Boolean_Access is access all Boolean;
-
-   type Activation_Chain is limited private;
-
-   type Activation_Chain_Access is access all Activation_Chain;
-
    type Deadline_Base is (Wake_Up_Time, Clock_Time);
+   --  Specifies how Oak is to set a cyclic task's next deadline: either from
+   --  the task's wake up time or from now.
 
    Unspecified_Priority : constant Integer := -1;
+   --  Allows the task creator not to have to specify the task's priority.
+   --  Instead a default priority will be applied.
 
-   procedure Initialise_Task_Agent
-     (Agent             : not null access Task_Agent'Class;
-      Stack_Address     : in System.Address;
-      Stack_Size        : in System.Storage_Elements.Storage_Count;
+   procedure New_Task_Agent
+     (Agent             : out Task_Id;
+      Stack_Address     : in Address;
+      Stack_Size        : in Storage_Count;
       Name              : in String;
-      Run_Loop          : in System.Address;
-      Task_Value_Record : in System.Address;
+      Run_Loop          : in Address;
+      Task_Value_Record : in Address;
       Normal_Priority   : in Integer;
       Cycle_Behaviour   : in Ada.Cyclic_Tasks.Behaviour;
       Cycle_Period      : in Oak_Time.Time_Span;
@@ -39,13 +50,11 @@ package Oak.Agent.Tasks with Preelaborate is
       Relative_Deadline : in Oak_Time.Time_Span;
       Deadline_Action   : in Ada.Cyclic_Tasks.Event_Response;
       Deadline_Handler  : in Ada.Cyclic_Tasks.Response_Handler;
-      Scheduler_Agent   : access Schedulers.Scheduler_Agent'Class;
-      Chain             : in out Activation_Chain;
-      Elaborated        : in Boolean_Access);
-
-   function Activation_List
-     (T    : in Task_Agent'Class)
-      return access Task_Agent'Class;
+      Scheduler_Agent   : in Scheduler_Id;
+      Chain             : in out Task_List;
+      Elaborated        : in Address);
+   --  Creates a new Task Agent with the given prameters. Allocates the storage
+   --  for the Task Agent data structure and any dependents.
 
    function Budget_Timer (T : not null access Task_Agent'Class)
                           return access Timers.Action_Timer'Class;
@@ -98,26 +107,50 @@ package Oak.Agent.Tasks with Preelaborate is
       Next_Task_To_Run   : out Agent_Handler);
 
 private
-   type Task_Agent is new Oak_Agent with record
+   type Task_Agent_Record is record
+
+   --  Cylic Task Properties
+
       Cycle_Behaviour   : Ada.Cyclic_Tasks.Behaviour;
+      --  The type of cyclic behaviour the task possesses. Takes the value of
+      --  Normal, Periodic, Sporadic and Aperiodic.
+
       Cycle_Period      : Oak_Time.Time_Span;
+      --  The cycle period of a cyclic task or the minimum inter-release period
+      --  for a sporadic task.
+
       Phase             : Oak_Time.Time_Span;
+      --  The phase of the cyclic task relative to the global start time.
 
       Execution_Budget  : Oak_Time.Time_Span;
-      Relative_Deadline : Oak_Time.Time_Span;
+      --  The amount of time alloted to the task for which it is allowed to
+      --  execute on the processor per cycle.
 
-      Deadline_Timer    : aliased Oak.Timers.Action_Timer;
-      Execution_Timer   : aliased Oak.Timers.Action_Timer;
+      Relative_Deadline : Oak_Time.Time_Span;
+      --  The wall time that the task has to complete each cycle.
+
+      Deadline_Timer    : Oak_Timer_Id;
+      --  The id of the timer used to enforce the task's deadline.
+
+      Execution_Timer   : ?;
+      --  The id of the timer used to enforce the task's execution budget.
 
       Next_Run_Cycle    : Oak_Time.Time;
+      --  The time of the next run cycle is meant to commence for periodic
+      --  tasks or the earliest time a sporadic task can commence its next
+      --  cycle.
+
       Event_Raised      : Boolean;
+      --  A flag to indicate if an event has occured and thus allowing a
+      --  sporadic or aperiodic task to commence its next cycle.
 
-      Activation_List   : access Task_Agent'Class;
-      Elaborated        : Boolean_Access;
-   end record;
+      --  Activation Properties
 
-   type Activation_Chain is limited record
-      Head : access Task_Agent'Class := null;
+      Elaborated        : Oakland.Tasks.Elaboration_Boolean;
+      --  The elaborated boolean used to indicate if the associated task body
+      --  has been elaborated. We do not do anything with the boolean in Oak,
+      --  only hang on to it for the activation subprogam in Oakland which
+      --  needs it stored somewhere.
    end record;
 
    function Activation_List

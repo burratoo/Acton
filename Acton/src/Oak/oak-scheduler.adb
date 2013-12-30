@@ -1,7 +1,18 @@
-with Oak.Core; use Oak.Core;
+------------------------------------------------------------------------------
+--                                                                          --
+--                              OAK COMPONENTS                              --
+--                                                                          --
+--                              OAK.SCHEDULER                               --
+--                                                                          --
+--                                 B o d y                                  --
+--                                                                          --
+--                 Copyright (C) 2010-2014, Patrick Bernardi                --
+------------------------------------------------------------------------------
+
+with Oak.Core;        use Oak.Core;
 with Oak.Agent.Queue; use Oak.Agent.Queue;
 with Oak.Oak_Time;    use Oak.Oak_Time;
-with Oak.States; use Oak.States;
+with Oak.States;      use Oak.States;
 
 package body Oak.Scheduler is
 

@@ -1,21 +1,39 @@
-with Ada.Cyclic_Tasks;
-with Oak.Oak_Time; use Oak.Oak_Time;
-with System; use System;
+------------------------------------------------------------------------------
+--                                                                          --
+--                              OAK COMPONENTS                              --
+--                                                                          --
+--                                OAK.TIMERS                                --
+--                                                                          --
+--                                 S p e c                                  --
+--                                                                          --
+--                 Copyright (C) 2011-2014, Patrick Bernardi                --
+------------------------------------------------------------------------------
 
-limited with Oak.Agent.Schedulers;
-limited with Oak.Agent.Tasks;
+--  This package provides the Oak Timer data structure and its storage.
+
+with Ada.Cyclic_Tasks; use Ada.Cyclic_Tasks;
+
+with Oak.Agent;                   use Oak.Agent;
+with Oak.Oak_Time;                use Oak.Oak_Time;
+with Oak.Project_Support_Package; use Oak.Project_Support_Package;
+
+with System; use System;
 
 package Oak.Timers with Preelaborate is
 
-   type Oak_Timer       is tagged private
-     with Preelaborable_Initialization;
-   type Action_Timer    is new Oak_Timer with private
-     with Preelaborable_Initialization;
-   type Scheduler_Timer is new Oak_Timer with private
-     with Preelaborable_Initialization;
+   ---------------------
+   -- Oak Timer Types --
+   ---------------------
 
-   type Oak_Timer_Info is tagged limited private
-     with Preelaborable_Initialization;
+   type Oak_Timer_Id is private;
+   --  Type use to identify an Oak Timer in the system.
+
+   type Oak_Timer_Kind is (Scheduler_Timer, Action_Timer);
+   --  Oak Timers come in three forms.
+
+   -----------------
+   -- Subprograms --
+   -----------------
 
    procedure Add_Timer
      (Timer      : not null access Oak_Timer'Class;
@@ -80,19 +98,48 @@ package Oak.Timers with Preelaborate is
      return access Oak.Agent.Schedulers.Scheduler_Agent'Class;
 
 private
-   type Interrupt_Timers is array (Oak_Priority) of
-     access Oak_Timer'Class;
 
-   type Oak_Timer_Info is tagged limited record
-      Timers : Interrupt_Timers;
-   end record;
+   ---------------------
+   -- Oak Timer Types --
+   ---------------------
 
-   type Oak_Timer is tagged record
-      Timer_Manager  : access Oak_Timer_Info;
-      Fire_Time      : Time;
-      Priority       : Oak_Priority;
-      Next_Timer     : access Oak_Timer'Class;
-      Previous_Timer : access Oak_Timer'Class;
+   type Oak_Timer_Id is mod Max_Timers;
+   --  The type that represents each Oak_Timer in the system.
+
+   type Action_Timer_Data is record
+   --  This record holds the data specific to the Action Timer. It is held in
+   --  a seperate record so that we do not have to fill part of the Oak Timer
+   --  storage pool with execution budget related timers for each task agent.
+   --  This is a problem since the storage pool used here is an ordered set
+   --  and we do not want to waste time balancing the internal tree with timers
+   --  that do not need to be ordered (since these timers are only ever active
+   --  when their task run). Instead, each Oak Instance holds a single timer
+   --  for the active execution timer. Each Task Agent then contains a copy of
+   --  this record, which the Oak Instance will access as need to fill the
+   --  relavent details for its timer. By using this record it simplifies
+   --  storing and moving the data as needed, as oppose to copying its
+   --  components individually.
+
+
+
+   type Oak_Timer (Kind : Oak_Timer_Kind := Timer_Action) is record
+   --  Oak Timer is a variant record to support the three different types of
+   --  Oak Timers. The sizes are fairly similar, with the smallest – Scheduler
+   --  Timer – used less frequently that the other two so not much space is
+   --  wasted.
+
+      Fire_Time : Time;
+      --  The time the timer will fire.
+
+      case Oak_Timer_Kind is
+         when Scheduler_Timer =>
+            Priority  : Oak_Priority;
+            --  The priority of the scheduler timer.
+
+            Scheduler : Scheduler_Id;
+            --  The scheduler that will run when the timer fires.
+
+
    end record;
 
    type Action_Timer is new Oak_Timer with record

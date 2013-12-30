@@ -1,3 +1,15 @@
+------------------------------------------------------------------------------
+--                                                                          --
+--                         OAK CORE SUPPORT PACKAGE                         --
+--                              FREESCALE e200                              --
+--                                                                          --
+--                   OAK.CORE_SUPPORT_PACKAGE.CALL_STACK                    --
+--                                                                          --
+--                                 S p e c                                  --
+--                                                                          --
+--                 Copyright (C) 2010-2014, Patrick Bernardi                --
+------------------------------------------------------------------------------
+
 with System.Storage_Elements;
 
 package Oak.Core_Support_Package.Call_Stack with Pure is

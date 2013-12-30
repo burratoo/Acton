@@ -1,3 +1,14 @@
+------------------------------------------------------------------------------
+--                                                                          --
+--                              OAK COMPONENTS                              --
+--                                                                          --
+--              ACTON.SCHEDULER_AGENTS.FIFO_WITHIN_PRIORITIES               --
+--                                                                          --
+--                                 B o d y                                  --
+--                                                                          --
+--                 Copyright (C) 2013-2014, Patrick Bernardi                --
+------------------------------------------------------------------------------
+
 with Oak.Agent; use Oak.Agent;
 with Oak.Agent.Queue;
 with Oak.Core_Support_Package.Task_Support;
@@ -51,6 +62,14 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
       procedure Add_Task_To_End_Of_Runnable_Queue
         (Task_To_Add : access Oak_Agent'Class);
       procedure Move_Woken_Tasks;
+
+      procedure Run_Iteration (Self : in out FIFO_Within_Priorities);
+
+      procedure Run_Iteration (Self : in out FIFO_Within_Priorities) is
+      begin
+         null;
+
+      end Run_Iteration;
 
       --------------------------
       -- Select_Next_Task     --

@@ -1,5 +1,5 @@
 abstract project Acton_Common is
-   Source_Dirs       := ("../src", "../src/Oakland", "../src/GNARL", "../src/Oak", "../src/Scheduler_Agents", "../core_support_packages");
+   Source_Dirs       := ("../src", "../src/Oakland", "../src/GNARL", "../src/Oak", "../src/Scheduler_Agents", "../core_support_packages", "../project_support_package");
    Object_Dir        := "../obj/";
    Languages         := ("Ada", "Asm");
    Library_Name      := "acton";
@@ -22,6 +22,7 @@ abstract project Acton_Common is
                          "System", "System.Assertions", "System.Exceptions_Debug", "System.Machine_Code", "System.Multiprocessors", "System.Standard_Library", "System.Storage_Elements", "System.Unsigned_Types",
 
                          "Ada.Execution_Server.Priority_Server", "Acton.Scheduler_Agents.Priority_Server", "Ada.Execution_Server.Ops",
+                         "Oak.Project_Support_Package",
                              --  Only needed for their ali files
                          "Oak.Agent.Tasks.Cycle",
                          "Oak.Agent.Interrupts",

@@ -1,14 +1,12 @@
 with Oak.Oak_Time;
 
+with Oak.Agent;   use Oak.Agent;
 with Oak.Indices; use Oak.Indices;
 with Oak.States;  use Oak.States;
 
-limited with Oak.Agent;
-limited with Oak.Agent.Tasks;
-limited with Oak.Agent.Protected_Objects;
 limited with Oak.Interrupts;
 
-package Oak.Message with Preelaborate is
+package Oak.Message with Pure is
 
    type Protected_Subprogram_Type is
      (Protected_Function,
@@ -32,35 +30,31 @@ package Oak.Message with Preelaborate is
             Wake_Up_At              : Oak_Time.Time;
             Remove_From_Charge_List : Boolean;
          when Update_Task_Property =>
-            Update_Task             : not null access
-              Oak.Agent.Tasks.Task_Agent'Class;
+            Update_Task             : Task_Agent_Id;
             Property_To_Update      : Task_Property;
 
          when Release_Task =>
-            Task_To_Release   : not null access Oak.Agent.Tasks.Task_Agent;
+            Task_To_Release   : Task_Agent_Id;
 
          when Entering_PO =>
-            PO_Enter          : not null access
-              Oak.Agent.Protected_Objects.Protected_Agent'Class;
-            Subprogram_Kind  : Protected_Subprogram_Type;
-            Entry_Id_Enter   : Indices.Entry_Index;
+            PO_Enter          : Protected_Agent_Id;
+            Subprogram_Kind   : Protected_Subprogram_Type;
+            Entry_Id_Enter    : Indices.Entry_Index;
          when Exiting_PO =>
-            PO_Exit           : not null access
-              Oak.Agent.Protected_Objects.Protected_Agent'Class;
+            PO_Exit           : Protected_Agent_Id;
          when Attach_Interrupt_Handlers =>
             Attach_Handlers   : access Oak.Interrupts.Interrupt_Handler_Array;
-            Attach_Handler_PO : not null access
-              Oak.Agent.Protected_Objects.Protected_Agent'Class;
+            Attach_Handler_PO : Protected_Agent_Id;
          when Selecting_Next_Agent =>
             null;
          when Adding_Agent =>
-            Agent_To_Add        : not null access Oak.Agent.Oak_Agent'Class;
+            Agent_To_Add        : Oak_Agent_Id;
          when Removing_Agent =>
-            Agent_To_Remove     : not null access Oak.Agent.Oak_Agent'Class;
+            Agent_To_Remove     : Oak_Agent_Id;
          when Agent_State_Change =>
-            Agent_That_Changed  : not null access Oak.Agent.Oak_Agent'Class;
+            Agent_That_Changed  : Oak_Agent_Id;
          when Scheduler_Agent_Done =>
-            Next_Agent          : access Oak.Agent.Oak_Agent'Class;
+            Next_Agent          : Oak_Agent_Id;
             Wake_Scheduler_At   : Oak_Time.Time;
             Keep_In_Charge_List : Boolean;
          when Continue_Sleep =>
@@ -76,7 +70,5 @@ package Oak.Message with Preelaborate is
       Yield_Status : Yielded_State;
       Message      : Oak_Message;
    end record;
-
-   type Oak_Message_Location is access all Oak_Message_Store;
 
 end Oak.Message;

@@ -1,4 +1,16 @@
+------------------------------------------------------------------------------
+--                                                                          --
+--                              OAK COMPONENTS                              --
+--                                                                          --
+--                        OAK.MEMORY.CALL_STACK.OPS                         --
+--                                                                          --
+--                                 B o d y                                  --
+--                                                                          --
+--                 Copyright (C) 2010-2014, Patrick Bernardi                --
+------------------------------------------------------------------------------
+
 with Oak.Core_Support_Package.Call_Stack.Ops;
+use Oak.Core_Support_Package.Call_Stack.Ops;
 
 package body Oak.Memory.Call_Stack.Ops is
 
@@ -24,26 +36,45 @@ package body Oak.Memory.Call_Stack.Ops is
    end Allocate_Call_Stack;
 
    procedure Initialise_Call_Stack
-     (Stack             : in out Oak.Memory.Call_Stack.Call_Stack_Handler;
-      Start_Instruction : in     System.Address)
-      renames
-     Oak.Core_Support_Package.Call_Stack.Ops.Initialise_Call_Stack;
+     (Stack             : in out Call_Stack_Handler;
+      Start_Instruction : in     Address)
+   is
+   begin
+      Stack.Pointer := Stack.Pointer - Task_Registers_Save_Size;
+      Set_Task_Body_Procedure
+        (Stack             => Stack,
+         Procedure_Address => Start_Instruction,
+         Task_Value_Record => System.Null_Address);
+   end Initialise_Call_Stack;
 
    procedure Initialise_Call_Stack
-     (Stack             : in out Oak.Memory.Call_Stack.Call_Stack_Handler;
-      Start_Instruction : in     System.Address;
-      Task_Value_Record : in     System.Address := Null_Address;
-      Message_Location  : out    Oak.Message.Oak_Message_Location)
-      renames
-     Oak.Core_Support_Package.Call_Stack.Ops.Initialise_Call_Stack;
+     (Stack             : in out Call_Stack_Handler;
+      Start_Instruction : in     Address;
+      Task_Value_Record : in     Address := Null_Address)
+   is
+   begin
+      Stack.Pointer := Stack.Pointer - Task_Registers_Save_Size;
+      Set_Task_Body_Procedure
+        (Stack                => Stack,
+         Procedure_Address    => Start_Instruction,
+         Task_Value_Record    => Task_Value_Record);
+   end Initialise_Call_Stack;
 
    procedure Initialise_Call_Stack
-     (Stack             : in out Oak.Memory.Call_Stack.Call_Stack_Handler;
-      Start_Instruction : in     System.Address;
-      Task_Value_Record : in     System.Address := Null_Address;
-      Stack_Address     : in     System.Address;
-      Stack_Size        : in     System.Storage_Elements.Storage_Count;
-      Message_Location  : out    Oak.Message.Oak_Message_Location)
-      renames
-     Oak.Core_Support_Package.Call_Stack.Ops.Initialise_Call_Stack;
+     (Stack             : in out Call_Stack_Handler;
+      Start_Instruction : in     Address;
+      Task_Value_Record : in     Address := Null_Address;
+      Stack_Address     : in     Address;
+      Stack_Size        : in     Storage_Elements.Storage_Count)
+   is
+   begin
+      Stack.Top     := Stack_Address +  Stack_Size;
+      Stack.Pointer := Stack.Top;
+      Stack.Bottom  := Stack_Address;
+
+      Initialise_Call_Stack
+        (Stack             => Stack,
+         Start_Instruction => Start_Instruction,
+         Task_Value_Record => Task_Value_Record);
+   end Initialise_Call_Stack;
 end Oak.Memory.Call_Stack.Ops;

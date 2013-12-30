@@ -2,8 +2,6 @@ with Oak.Agent.Schedulers;   use Oak.Agent.Schedulers;
 with Oak.Agent.Tasks.Activation;
 with Oak.Agent.Tasks.Cycle; use Oak.Agent.Tasks.Cycle;
 with Oak.Agent.Protected_Objects; use Oak.Agent.Protected_Objects;
-with Oak.Core_Support_Package.Task_Support;
-use Oak.Core_Support_Package.Task_Support;
 with Oak.Interrupts; use Oak.Interrupts;
 with Oak.Protected_Objects;
 with Oak.Core_Support_Package.Interrupts;
