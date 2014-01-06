@@ -53,10 +53,6 @@ package Oak.Agent with Pure is
    type Oak_Agent_Id is mod Max_Oak_Agents;
    --  Type use to identify an Oak Agent in the system.
 
-   subtype Agent_List is Oak_Agent_Id;
-   --  This subtype is used to indicate a linked-list of Oak Agents. It points
-   --  contains the Agent Id of the agent at the head of the list.
-
    No_Agent    : constant Oak_Agent_Id := Oak_Agent_Id'First;
    --  Used to indicate that no agent has been selected. It is a synonym of
    --  Sleep_Agent to ensure that in the event of a No_Agent being accidentally
@@ -67,6 +63,15 @@ package Oak.Agent with Pure is
    Sleep_Agent : constant Oak_Agent_Id := Oak_Agent_Id'First;
    --  Used to indicate the Sleep Agent. Equal to No_Agent, see above for
    --  details.
+
+   type Agent_List is record
+      Head, Tail : Oak_Agent_Id;
+   end record;
+   --  This type is used to indicate a linked-list of Oak Agents. It points
+   --  to the head and tail of the list.
+
+   Empty_List : constant Agent_List := (No_Agent, No_Agent);
+   --  Used to indicate an empty list.
 
    --  Constants used to define the range of the ids of the Agents that extend
    --  Oak Agents.

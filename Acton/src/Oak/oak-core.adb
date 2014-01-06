@@ -305,7 +305,7 @@ package body Oak.Core is
                      Current_Agent    => Current_Agent,
                      Next_Task_To_Run => Next_Agent);
 
-               elsif Active_Timer.all in Timers.Action_Timer then
+               elsif Active_Timer.all in Timers.Event_Timer then
                   Active_Timer.Remove_Timer;
 
                   --  Disable execution timer if fired. This is done by setting
@@ -313,7 +313,7 @@ package body Oak.Core is
 
                   declare
                      A : constant Agent_Handler :=
-                           Timers.Action_Timer'Class
+                           Timers.Event_Timer'Class
                              (Active_Timer.all).Agent_To_Handle;
                   begin
                      if A.Remaining_Budget <= Time_Span_Zero then
@@ -321,7 +321,7 @@ package body Oak.Core is
                      end if;
                   end;
 
-                  case Timers.Action_Timer'Class
+                  case Timers.Event_Timer'Class
                     (Active_Timer.all).Timer_Action is
                      when Ada.Cyclic_Tasks.Handler =>
                         P := Active_Timer.Priority;
@@ -333,13 +333,13 @@ package body Oak.Core is
                            Kind => Timer_Action);
                         Set_Timer_To_Handle
                           (Interrupt_Agent (Next_Agent.all),
-                           Timers.Action_Timer (Active_Timer.all)'Access);
+                           Timers.Event_Timer (Active_Timer.all)'Access);
                         Oak_Instance.Interrupt_States (P) := Active;
                         Oak.Protected_Objects.
                           Acquire_Protected_Object_For_Interrupt
                             (Protected_Object_From_Access
                               (Oak.Timers.Handler
-                                (Timers.Action_Timer (Active_Timer.all))));
+                                (Timers.Event_Timer (Active_Timer.all))));
                      when others =>
                         Check_Sechduler_Agents_For_Next_Task_To_Run
                           (Scheduler_Info   => Oak_Instance.Scheduler,

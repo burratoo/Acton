@@ -80,7 +80,8 @@ package Oak.Agent.Oak_Agent with Preelaborate is
 
    procedure Charge_Execution_Time
      (To_Agent  : in Oak_Agent_Id;
-      Exec_Time : in Oak_Time.Time_Span);
+      Exec_Time : in Oak_Time.Time_Span)
+     with Pre => Is_Storage_Ready;
    --  Charges the specified execution time to the agent.
 
    procedure Charge_Execution_Time_To_List
@@ -93,7 +94,8 @@ package Oak.Agent.Oak_Agent with Preelaborate is
    --  of the agent.
 
    function Destination_On_Wake_Up
-     (For_Agent : in Oak_Agent_Id) return Wake_Destination;
+     (For_Agent : in Oak_Agent_Id) return Wake_Destination
+     with Pre => Has_Agent (For_Agent), Inline;
    --  Returns whether the tasks that has woken up is sent to its run queue
    --  or is removed from the scheduler.
 
@@ -102,67 +104,9 @@ package Oak.Agent.Oak_Agent with Preelaborate is
    --  Returns the id of the agent that has the eariliest expiring budget.
    --  If the list is empty it will return No_Agent.
 
-   function Name (Agent : in Oak_Agent_Id) return Agent_Name;
+   function Name (Agent : in Oak_Agent_Id) return Agent_Name
+     with Pre => Has_Agent (Agent);
    --  Fetches the name of the Agent.
-
-   function Normal_Priority
-     (Agent : in Oak_Agent_Id) return System.Any_Priority;
-   --  Retrieves the priority assigned to the agent.
-
-   function Remaining_Budget
-     (Agent : in Oak_Agent_Id) return Oak_Time.Time_Span;
-   --  Retrieves the amount of execution budget remaining for the agent
-
-   procedure Replenish_Execution_Budget
-     (For_Agent : in Oak_Agent_Id;
-      By_Amount : in Oak_Time.Time_Span);
-   --  Add the time span given to the agent's execution budget.
-
-   function Scheduler_Agent_For_Agent
-     (Agent : in Oak_Agent_Id) return Scheduler_Id_With_No;
-   --  Fetches the Scheduler Agent responsible for the Agent.
-
-   procedure Set_Remaining_Budget
-     (For_Agent : in Oak_Agent_Id;
-      To_Amount : in Oak_Time.Time_Span);
-   --  Set the amount of execution budget remaining for the agent.
-
-   procedure Set_Scheduler_Agent
-     (For_Agent : in Oak_Agent_Id;
-      Scheduler : in Scheduler_Id_With_No);
-   --  Sets the Scheduler Agent responsible for scheduling the agent.
-
-   procedure Set_Stack_Pointer
-     (For_Agent     : in Oak_Agent_Id;
-      Stack_Pointer : in System.Address) with Inline_Always;
-   --  Sets the call stack pointer for the agent.
-
-   procedure Set_Wake_Time
-     (For_Agent : in Oak_Agent_Id;
-      Wake_Time : in Oak_Time.Time);
-   --  Set the wake time of the agent.
-
-   procedure Set_State
-     (For_Agent : in Oak_Agent_Id;
-      State     : in Agent_State);
-   --  Set the state of the agent.
-
-   function Stack_Pointer
-     (Agent : in Oak_Agent_Id)
-      return System.Address with Inline_Always;
-   --  Fetches the stack pointer associated with the Agent.
-
-   function State (Agent : in Oak_Agent_Id) return Agent_State;
-   --  Fetches the state of the Agent.
-
-   function Wake_Time (Agent : in Oak_Agent_Id) return Oak_Time.Time;
-   --  Fetches the time that the Agent will wake.
-
-private
-
-   -------------------------
-   -- Private Subprograms --
-   -------------------------
 
    procedure New_Agent
      (Agent                : in Oak_Agent_Id;
@@ -171,14 +115,110 @@ private
       Call_Stack_Size      : in Storage_Count;
       Run_Loop             : in Address;
       Run_Loop_Parameter   : in Address;
-      Normal_Priority      : in Integer;
+      Normal_Priority      : in Any_Priority;
       Initial_State        : in Agent_State;
-      Wake_Time            : in Oak_Time.Time;
-      When_To_Charge_Agent : in Charge_Occurrence := All_Priorities);
+      Scheduler_Agent      : in Scheduler_Id_With_No := No_Agent;
+      Wake_Time            : in Oak_Time.Time        := Oak_Time.Time_Last;
+      When_To_Charge_Agent : in Charge_Occurrence    := All_Priorities)
+     with Pre => Is_Storage_Ready;
    --  Allocates a new Oak Agent with the given parameters and allocates a call
    --  stack for the Agent. This procedure is only called by the New_Agent
    --  procedure of derivative Agents since this procedure makes no check to
    --  see if the underlying storage slot assigned to the Agent Id is free.
+
+   function Next_Agent (Agent : in Oak_Agent_Id) return Oak_Agent_Id
+     with Inline;
+   --  Returns the agent pointed to by the Agent's Next_Agent link.
+
+   function Normal_Priority
+     (Agent : in Oak_Agent_Id) return System.Any_Priority
+     with Pre => Has_Agent (Agent), Inline;
+   --  Retrieves the priority assigned to the agent.
+
+   function Remaining_Budget
+     (Agent : in Oak_Agent_Id) return Oak_Time.Time_Span
+     with Pre => Has_Agent (Agent), Inline;
+   --  Retrieves the amount of execution budget remaining for the agent
+
+   procedure Replenish_Execution_Budget
+     (For_Agent : in Oak_Agent_Id;
+      By_Amount : in Oak_Time.Time_Span)
+     with Pre => Has_Agent (For_Agent);
+   --  Add the time span given to the agent's execution budget.
+
+   function Scheduler_Agent_For_Agent
+     (Agent : in Oak_Agent_Id) return Scheduler_Id_With_No
+     with Pre => Has_Agent (Agent), Inline;
+   --  Fetches the Scheduler Agent responsible for the Agent.
+
+   procedure Set_Absolute_Deadline
+     (For_Agent : in Oak_Agent_Id;
+      Deadline  : in Oak_Time.Time)
+     with Pre => Has_Agent (For_Agent);
+   --  Set the absolute deadline for the task.
+
+   procedure Set_Remaining_Budget
+     (For_Agent : in Oak_Agent_Id;
+      To_Amount : in Oak_Time.Time_Span)
+     with Pre => Has_Agent (For_Agent);
+   --  Set the amount of execution budget remaining for the agent.
+
+   procedure Set_Next_Agent
+     (For_Agent  : in Oak_Agent_Id;
+      Next_Agent : in Oak_Agent_Id);
+   --  Set the Next_Agent link for the Agent.
+
+   procedure Set_Scheduler_Agent
+     (For_Agent : in Oak_Agent_Id;
+      Scheduler : in Scheduler_Id_With_No)
+     with Pre => Has_Agent (For_Agent);
+   --  Sets the Scheduler Agent responsible for scheduling the agent.
+
+   procedure Set_Stack_Pointer
+     (For_Agent     : in Oak_Agent_Id;
+      Stack_Pointer : in System.Address)
+     with Pre => Has_Agent (For_Agent), Inline_Always;
+   --  Sets the call stack pointer for the agent. Note that this procedure
+   --  should always be inlined since it is called from within the core
+   --  interrupt routines.
+
+   procedure Set_Wake_Time
+     (For_Agent : in Oak_Agent_Id;
+      Wake_Time : in Oak_Time.Time)
+     with Pre => Has_Agent (For_Agent);
+   --  Set the wake time of the agent.
+
+   procedure Set_State
+     (For_Agent : in Oak_Agent_Id;
+      State     : in Agent_State)
+     with Pre => Has_Agent (For_Agent);
+   --  Set the state of the agent.
+
+   function Stack_Pointer
+     (Agent : in Oak_Agent_Id)
+      return System.Address
+     with Pre => Has_Agent (Agent), Inline_Always;
+   --  Fetches the stack pointer associated with the Agent. Note that this
+   --  procedure should always be inlined should always be inlined since it is
+   --  called from within the core interrupt routines.
+
+   function State (Agent : in Oak_Agent_Id) return Agent_State
+     with Pre => Has_Agent (Agent), Inline;
+   --  Fetches the state of the Agent.
+
+   function Wake_Time (Agent : in Oak_Agent_Id) return Oak_Time.Time
+     with Pre => Has_Agent (Agent), Inline;
+   --  Fetches the time that the Agent will wake.
+
+   ---------------------
+   -- Ghost Functions --
+   ---------------------
+
+   function Has_Agent (Agent : Oak_Agent_Id) return Boolean
+     with Convention => Ghost;
+   --  Check whether the Agent existing in the store.
+
+private
 
    --------------------
    --  Private Types --
@@ -200,8 +240,8 @@ private
 
       Next_Agent             : Oak_Agent_Id;
       --  Used to allow agents to be placed on arbitary linked-lists. In Oak
-      --  these are used for entry queues or charge lists (noting that an agent
-      --  can only be on one list at a time).
+      --  these are used for entry queues and charge and activation lists
+      --  (noting that an agent can only be on one list at a time).
 
       State                  : Agent_State;
       --  The state of the agent.
@@ -243,7 +283,6 @@ private
 
       Destination_On_Wake    : Wake_Destination;
       --  States what happens when the Agent wakes from sleep.
-
    end record;
 
    package Oak_Agent_Pool is new Oak.Agent.Storage
@@ -260,12 +299,18 @@ private
      (For_Agent : in Oak_Agent_Id) return Wake_Destination is
      (Agent_Pool (For_Agent).Destination_On_Wake);
 
+   function Has_Agent (Agent : Oak_Agent_Id) return Boolean is
+     (Oak_Agent_Pool.Has_Agent (Agent));
+
    function Is_Storage_Ready return Boolean is
      (Oak_Agent_Pool.Is_Storage_Ready);
 
    function Name (Agent : in Oak_Agent_Id) return Agent_Name is
      (Agent_Pool (Agent).Name
       (Agent_Name_Length'First .. Agent_Pool (Agent).Name_Length));
+
+   function Next_Agent (Agent : in Oak_Agent_Id) return Oak_Agent_Id is
+      (Agent_Pool (Agent).Next_Agent);
 
    function Normal_Priority
      (Agent : in Oak_Agent_Id) return System.Any_Priority is

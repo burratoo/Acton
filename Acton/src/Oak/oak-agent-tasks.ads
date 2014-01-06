@@ -10,20 +10,26 @@
 ------------------------------------------------------------------------------
 
 --  This package defines Oak's Task Agents, the agent that represents tasks in
---  Oak. It functions a a task's control block. The Agent extends the Oak Agent
---  data structure to include task specific components mainly focusing on
---  cyclic related components and task activation.
+--  Oak. It functions with an Oak Agent as the task's control block. The Agent
+--  extends the Oak Agent data structure to include task specific components
+--  mainly focusing on cyclic related components and task activation.
 
 with Ada.Cyclic_Tasks;
-with Oak.Timers;
-with Oak.Oak_Time; use Oak.Oak_Time;
 
-with Oakland.Tasks;
+with Oak.Agent.Storage;
+with Oak.Indices;  use Oak.Indices;
+with Oak.Message;  use Oak.Message;
+with Oak.Oak_Time; use Oak.Oak_Time;
+with Oak.Timers;   use Oak.Timers;
 
 with System;                  use System;
 with System.Storage_Elements; use System.Storage_Elements;
 
 package Oak.Agent.Tasks with Preelaborate is
+
+   -----------
+   -- Types --
+   -----------
 
    type Deadline_Base is (Wake_Up_Time, Clock_Time);
    --  Specifies how Oak is to set a cyclic task's next deadline: either from
@@ -32,6 +38,30 @@ package Oak.Agent.Tasks with Preelaborate is
    Unspecified_Priority : constant Integer := -1;
    --  Allows the task creator not to have to specify the task's priority.
    --  Instead a default priority will be applied.
+
+   -----------------
+   -- Subprograms --
+   -----------------
+
+   function Budget_Action (T : in Task_Id) return Event_Timer_Data
+     with Pre => Has_Task (T);
+   --  Return the action details for an execution budget exhaustion event.
+
+   function Cycle_Period (T : in Task_Id) return Oak_Time.Time_Span
+     with Pre => Has_Task (T);
+   --  Return the cycle period or minimum inter-release time for the task.
+
+   function Execution_Budget (T : in Task_Id) return Oak_Time.Time_Span
+     with Pre => Has_Task (T);
+   --  Return the execution budget assigned to the task.
+
+   function Elaborated_Boolean (T : in Task_Id) return Address
+     with Pre => Has_Task (T), Inline;
+   --  Return the elaboration boolean assigned to the task.
+
+   function Id_Of_Entry (For_Task : Task_Id) return Entry_Index;
+   --  Returns the entry id of a task that is either inside an entry or queued
+   --  on one.
 
    procedure New_Task_Agent
      (Agent             : out Task_Id;
@@ -45,10 +75,10 @@ package Oak.Agent.Tasks with Preelaborate is
       Cycle_Period      : in Oak_Time.Time_Span;
       Phase             : in Oak_Time.Time_Span;
       Execution_Budget  : in Oak_Time.Time_Span;
-      Budget_Action     : in Ada.Cyclic_Tasks.Event_Response;
+      Budget_Response   : in Ada.Cyclic_Tasks.Event_Response;
       Budget_Handler    : in Ada.Cyclic_Tasks.Response_Handler;
       Relative_Deadline : in Oak_Time.Time_Span;
-      Deadline_Action   : in Ada.Cyclic_Tasks.Event_Response;
+      Deadline_Response : in Ada.Cyclic_Tasks.Event_Response;
       Deadline_Handler  : in Ada.Cyclic_Tasks.Response_Handler;
       Scheduler_Agent   : in Scheduler_Id;
       Chain             : in out Task_List;
@@ -56,64 +86,71 @@ package Oak.Agent.Tasks with Preelaborate is
    --  Creates a new Task Agent with the given prameters. Allocates the storage
    --  for the Task Agent data structure and any dependents.
 
-   function Budget_Timer (T : not null access Task_Agent'Class)
-                          return access Timers.Action_Timer'Class;
+   function Next_Run_Cycle (T : in Task_Id) return Oak_Time.Time
+     with Pre => Has_Task (T), Inline;
+   --  The time that the next cycle of the task is due or allowed to commence.
 
-   function Cycle_Period
-     (T : in Task_Agent'Class)
-      return Oak_Time.Time_Span;
+   function Next_Queue (For_Task : in Task_Id) return Task_Id_With_No;
+   --  Returns the next entry queue denoted by the Next_Queue link.
 
-   overriding function Destination_On_Wake_Up (Agent : in out Task_Agent)
-                                    return Wake_Destination;
-   --  Returns whether the tasks that has woken up is sent to its run queue
-   --  or is removed from the scheduler. Function updates the current
-   --  state of the state.
+   function Next_Queue (For_Task : in Task_Id; Entry_Id : out Entry_Index)
+                        return Task_Id_With_No;
+   --  Returns the next entry queue denoted by the Next_Queue link together
+   --  with the Entry Id that the next queue is associated with.
 
-   function Execution_Budget
-     (T : in Task_Agent'Class) return Oak_Time.Time_Span;
-
-   function Is_Elaborated (T : in Task_Agent'Class) return Boolean;
-
-   function Next_Run_Time (T : in Task_Agent'Class) return Oak_Time.Time;
-
-   function Phase (T : in Task_Agent'Class) return Oak_Time.Time_Span;
-
-   function Remaining_Budget
-     (T : in Task_Agent'Class) return Oak_Time.Time_Span;
-
-   procedure Set_Activation_List
-     (T   : in out Task_Agent'Class;
-      Add : access Task_Agent'Class);
-
-   procedure Set_Activation_List
-     (T     : in out Task_Agent'Class;
-      Chain : in Activation_Chain_Access);
+   function Phase (T : in Task_Id) return Oak_Time.Time_Span
+     with Pre => Has_Task (T), Inline;
+   --  Return the phase of the task.
 
    procedure Set_Cycle_Period
-     (T  : in out Task_Agent'Class;
-      CP : in Oak_Time.Time_Span);
+     (For_Task     : in Task_Id;
+      Cycle_Period : in Oak_Time.Time_Span)
+     with Pre => Has_Task (For_Task);
+   --  Set the cycle period or minimum release time of the task.
+
+   procedure Set_Id_Of_Entry
+     (For_Task : Task_Id;
+      Entry_Id : Entry_Index);
+   --  Set the id of the entry the task is either queued on or is in.
 
    procedure Set_Next_Deadline_For_Task
-     (T     : in out Task_Agent'Class;
-      Using : in Deadline_Base);
+     (For_Task : in Task_Id;
+      Using    : in Deadline_Base)
+     with Pre => Has_Task (For_Task);
+   --  Set the next deadline for the Task.
+
+   procedure Set_Next_Queue
+     (For_Task : Task_Id;
+      Next_Queue : Task_Id_With_No);
+   --  Set the task that represents the next queue.
 
    procedure Set_Relative_Deadline
-     (T  : in out Task_Agent'Class;
-      RD : in Oak_Time.Time_Span);
+     (For_Task          : in Task_Id;
+      Relative_Deadline : in Oak_Time.Time_Span)
+     with Pre => Has_Task (For_Task);
+   --  Set the relative deadline of the task.
 
    procedure Update_Task_Property
-     (T                  : in out Task_Agent'Class;
+     (For_Task           : in Task_Id;
       Property_To_Update : in Task_Property;
-      Next_Task_To_Run   : out Agent_Handler);
+      Next_Task_To_Run   : out Oak_Agent_Id)
+     with Pre => Has_Task (For_Task);
+   --  Update a properity of the task.
+
+   ---------------------
+   -- Ghost Functions --
+   ---------------------
+
+   function Has_Task (T : Task_Id) return Boolean with Convention => Ghost;
+   --  Does the storage have a valid task associated with the id.
 
 private
    type Task_Agent_Record is record
+   --  Note the ordering of this record is to try an achieve optimal record
+   --  packing (i.e. placing the flags together so they can occupy a single
+   --  byte).
 
    --  Cylic Task Properties
-
-      Cycle_Behaviour   : Ada.Cyclic_Tasks.Behaviour;
-      --  The type of cyclic behaviour the task possesses. Takes the value of
-      --  Normal, Periodic, Sporadic and Aperiodic.
 
       Cycle_Period      : Oak_Time.Time_Span;
       --  The cycle period of a cyclic task or the minimum inter-release period
@@ -122,6 +159,11 @@ private
       Phase             : Oak_Time.Time_Span;
       --  The phase of the cyclic task relative to the global start time.
 
+      Next_Run_Cycle    : Oak_Time.Time;
+      --  The time of the next run cycle is meant to commence for periodic
+      --  tasks or the earliest time a sporadic task can commence its next
+      --  cycle.
+
       Execution_Budget  : Oak_Time.Time_Span;
       --  The amount of time alloted to the task for which it is allowed to
       --  execute on the processor per cycle.
@@ -129,58 +171,77 @@ private
       Relative_Deadline : Oak_Time.Time_Span;
       --  The wall time that the task has to complete each cycle.
 
+      Budget_Action     : Event_Timer_Data;
+      --  The data associated with the task's execution budget exhaustion
+      --  action.
+
       Deadline_Timer    : Oak_Timer_Id;
       --  The id of the timer used to enforce the task's deadline.
 
-      Execution_Timer   : ?;
-      --  The id of the timer used to enforce the task's execution budget.
-
-      Next_Run_Cycle    : Oak_Time.Time;
-      --  The time of the next run cycle is meant to commence for periodic
-      --  tasks or the earliest time a sporadic task can commence its next
-      --  cycle.
+      Cycle_Behaviour   : Ada.Cyclic_Tasks.Behaviour;
+      --  The type of cyclic behaviour the task possesses. Takes the value of
+      --  Normal, Periodic, Sporadic and Aperiodic.
 
       Event_Raised      : Boolean;
       --  A flag to indicate if an event has occured and thus allowing a
       --  sporadic or aperiodic task to commence its next cycle.
 
+      --  Entry Properties
+
+      Id_Of_Entry       : Entry_Index;
+      --  The entry that the task is either in or is queued to enter.
+
+      Next_Queue        : Oak_Agent_Id;
+      --  Points to the next entry queue.
+
       --  Activation Properties
 
-      Elaborated        : Oakland.Tasks.Elaboration_Boolean;
+      Elaborated        : Address;
       --  The elaborated boolean used to indicate if the associated task body
       --  has been elaborated. We do not do anything with the boolean in Oak,
       --  only hang on to it for the activation subprogam in Oakland which
       --  needs it stored somewhere.
    end record;
 
-   function Activation_List
-     (T    : in Task_Agent'Class)
-      return access Task_Agent'Class is (T.Activation_List);
+   ------------------------
+   -- Task Agent Storage --
+   ------------------------
 
-   function Cycle_Period
-     (T : in Task_Agent'Class)
-      return Oak_Time.Time_Span is (T.Cycle_Period);
+   package Task_Pool is new Oak.Agent.Storage
+     (Agent_Record_Type => Task_Agent_Record,
+      Agent_Id_Type     => Task_Id);
 
-   function Execution_Budget
-     (T : in Task_Agent'Class)
-      return Oak_Time.Time_Span is (T.Execution_Budget);
+   use Task_Pool;
 
-   function Is_Elaborated
-     (T : in Task_Agent'Class)
-      return Boolean is (T.Elaborated.all);
+   --------------------------
+   -- Function Expressions --
+   --------------------------
 
-   function Budget_Timer (T : not null access Task_Agent'Class)
-                          return access Timers.Action_Timer'Class
-     is (T.Execution_Timer'Access);
+   function Budget_Action (T : in Task_Id) return Event_Timer_Data is
+      (Agent_Pool (T).Budget_Action);
 
-   function Next_Run_Time
-     (T : in Task_Agent'Class)
-      return Oak_Time.Time is (T.Next_Run_Cycle);
+   function Cycle_Period (T : in Task_Id) return Oak_Time.Time_Span is
+      (Agent_Pool (T).Cycle_Period);
 
-   function Phase
-     (T : in Task_Agent'Class)
-      return Oak_Time.Time_Span is (T.Phase);
+   function Execution_Budget (T : in Task_Id) return Oak_Time.Time_Span is
+     (Agent_Pool (T).Execution_Budget);
 
-   function Remaining_Budget (T : in Task_Agent'Class)
-     return Oak_Time.Time_Span is (T.Remaining_Budget);
+   function Elaborated_Boolean (T : in Task_Id) return Address is
+     (Agent_Pool (T).Elaborated);
+
+   function Has_Task (T : Task_Id) return Boolean is
+     (Has_Agent (T));
+
+   function Id_Of_Entry (For_Task : Task_Id) return Entry_Index is
+      (Agent_Pool (For_Task).Id_Of_Entry);
+
+   function Next_Run_Cycle (T : in Task_Id) return Oak_Time.Time is
+     (Agent_Pool (T).Next_Run_Cycle);
+
+   function Next_Queue (For_Task : in Task_Id) return Task_Id_With_No is
+     (Agent_Pool (For_Task).Next_Queue);
+
+   function Phase (T : in Task_Id) return Oak_Time.Time_Span is
+     (Agent_Pool (T).Phase);
+
 end Oak.Agent.Tasks;

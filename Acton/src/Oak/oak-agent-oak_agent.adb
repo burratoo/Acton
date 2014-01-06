@@ -58,7 +58,7 @@ package body Oak.Agent.Oak_Agent is
       Exec_Time        : in Oak_Time.Time_Span;
       Current_Priority : in Oak_Priority)
    is
-      Agent : Oak_Agent_Id := List;
+      Agent : Oak_Agent_Id := List.Head;
    begin
       while Agent /= No_Agent loop
          case Agent_Pool (Agent).When_To_Charge is
@@ -89,9 +89,9 @@ package body Oak.Agent.Oak_Agent is
    function Earliest_Expiring_Budget
      (Charge_List : in Agent_List) return Oak_Agent_Id
    is
-      Selected_Agent : Oak_Agent_Id := Charge_List;
+      Selected_Agent : Oak_Agent_Id := Charge_List.Head;
       Agent          : Oak_Agent_Id :=
-                         Agent_Pool (Charge_List).Next_Agent;
+                         Agent_Pool (Charge_List.Head).Next_Agent;
    begin
       while Agent /= No_Agent loop
          if Agent_Pool (Agent).Remaining_Budget
@@ -119,14 +119,16 @@ package body Oak.Agent.Oak_Agent is
       Call_Stack_Size      : in Storage_Count;
       Run_Loop             : in Address;
       Run_Loop_Parameter   : in Address;
-      Normal_Priority      : in Integer;
+      Normal_Priority      : in Any_Priority;
       Initial_State        : in Agent_State;
-      Wake_Time            : in Oak_Time.Time;
-      When_To_Charge_Agent : in Charge_Occurrence := All_Priorities)
+      Scheduler_Agent      : in Scheduler_Id_With_No := No_Agent;
+      Wake_Time            : in Oak_Time.Time        := Oak_Time.Time_Last;
+      When_To_Charge_Agent : in Charge_Occurrence    := All_Priorities)
    is
       A : Oak_Agent_Record renames Agent_Pool (Agent);
-
    begin
+      Allocate_An_Agent_With_Id (Agent);
+
       Set_Name (Agent, Name);
 
       if Call_Stack_Address = Null_Address and Call_Stack_Size > 0 then
@@ -155,7 +157,7 @@ package body Oak.Agent.Oak_Agent is
       A.Next_Agent             := No_Agent;
       A.State                  := Initial_State;
       A.Normal_Priority        := Normal_Priority;
-      A.Scheduler_Agent        := No_Agent;
+      A.Scheduler_Agent        := Scheduler_Agent;
       A.Wake_Time              := Wake_Time;
       A.Absolute_Deadline      := Oak_Time.Time_Last;
       A.Total_Execution_Time   := Time_Span_Zero;
@@ -163,8 +165,20 @@ package body Oak.Agent.Oak_Agent is
       A.Current_Execution_Time := Time_Span_Zero;
       A.Remaining_Budget       := Time_Span_Last;
       A.Execution_Cycles       := Natural'First;
+      A.Scheduler_Agent        := Scheduler_Agent;
       A.When_To_Charge         := When_To_Charge_Agent;
    end New_Agent;
+
+   ---------------------------
+   -- Set_Absolute_Deadline --
+   ---------------------------
+
+   procedure Set_Absolute_Deadline
+     (For_Agent : in Oak_Agent_Id;
+      Deadline  : in Oak_Time.Time) is
+   begin
+      Agent_Pool (For_Agent).Absolute_Deadline := Deadline;
+   end Set_Absolute_Deadline;
 
    --------------
    -- Set_Name --
@@ -181,6 +195,17 @@ package body Oak.Agent.Oak_Agent is
       Agent.Name (1 .. Agent.Name_Length) :=
         Name (Name'First .. Name'First + Agent.Name_Length - 1);
    end Set_Name;
+
+   --------------------
+   -- Set_Next_Agent --
+   --------------------
+
+   procedure Set_Next_Agent
+     (For_Agent  : in Oak_Agent_Id;
+      Next_Agent : in Oak_Agent_Id) is
+   begin
+      Agent_Pool (For_Agent).Next_Agent := Next_Agent;
+   end Set_Next_Agent;
 
    --------------------------
    -- Set_Remaining_Budget --

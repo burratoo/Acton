@@ -61,7 +61,7 @@ package body Oak.Agent.Interrupts is
 
    procedure Set_Timer_To_Handle
      (Agent : in out Interrupt_Agent'Class;
-      Timer : access Action_Timer) is
+      Timer : access Event_Timer) is
    begin
       Agent.Timer_To_Handle := Timer;
    end Set_Timer_To_Handle;

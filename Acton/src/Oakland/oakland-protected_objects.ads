@@ -6,6 +6,10 @@ limited with Oak.Protected_Objects;
 
 package Oakland.Protected_Objects with Preelaborate is
 
+   type Entry_Barrier_Function_Handler is
+     access function (PO : System.Address;
+                      E  : Protected_Entry_Index) return Boolean;
+
    procedure Enter_Protected_Object
      (PO              : not null access
         Oak.Agent.Protected_Objects.Protected_Agent'Class;

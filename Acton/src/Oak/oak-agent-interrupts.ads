@@ -27,10 +27,10 @@ package Oak.Agent.Interrupts with Preelaborate is
 
    procedure Set_Timer_To_Handle
      (Agent : in out Interrupt_Agent'Class;
-      Timer : access Action_Timer);
+      Timer : access Event_Timer);
 
    function Timer_To_Handle (Agent : in out Interrupt_Agent'Class)
-                             return access Action_Timer'Class;
+                             return access Event_Timer'Class;
 
 --     procedure Set_Interrupt_Task
 --       (Agent : in out Interrupt_Agent'Class;
@@ -40,13 +40,13 @@ private
    type Interrupt_Agent is new Oak_Agent with record
       Interrupt_Kind  : Interrupt_Type;
       External_Id     : Oak_Interrupt_Id;
-      Timer_To_Handle : access Action_Timer'Class;
+      Timer_To_Handle : access Event_Timer'Class;
    end record;
 
    function Interrupt_Kind (Agent : in out Interrupt_Agent'Class)
      return Interrupt_Type is (Agent.Interrupt_Kind);
 
    function Timer_To_Handle (Agent : in out Interrupt_Agent'Class)
-     return access Action_Timer'Class is (Agent.Timer_To_Handle);
+     return access Event_Timer'Class is (Agent.Timer_To_Handle);
 
 end Oak.Agent.Interrupts;

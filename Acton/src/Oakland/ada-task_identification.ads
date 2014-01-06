@@ -1,5 +1,5 @@
-with Oak.Agent.Tasks;
-with System;
+with Oak.Agent;
+--  with System;
 
 package Ada.Task_Identification with Preelaborate is
 
@@ -28,8 +28,11 @@ package Ada.Task_Identification with Preelaborate is
 
 private
 
-   type Task_Id is access Oak.Agent.Tasks.Task_Agent;
+   type Task_Id is new Oak.Agent.Task_Id_With_No;
 
-   Null_Task_Id : constant Task_Id := null;
+   Null_Task_Id : constant Task_Id := Task_Id (Oak.Agent.No_Agent);
+   --  We can do the type conversion because we are awesome. Plus Task_Id is
+   --  simply a new instance Oak.Agent.Task_Id_With_No, off which No_Agent is
+   --  a valid memeber.
 
 end Ada.Task_Identification;

@@ -29,35 +29,45 @@ package Oak.Message with Pure is
          when Sleeping =>
             Wake_Up_At              : Oak_Time.Time;
             Remove_From_Charge_List : Boolean;
+
          when Update_Task_Property =>
-            Update_Task             : Task_Agent_Id;
+            Update_Task             : Task_Id;
             Property_To_Update      : Task_Property;
 
          when Release_Task =>
-            Task_To_Release   : Task_Agent_Id;
+            Task_To_Release   : Task_Id;
 
          when Entering_PO =>
-            PO_Enter          : Protected_Agent_Id;
+            PO_Enter          : Protected_Id;
             Subprogram_Kind   : Protected_Subprogram_Type;
             Entry_Id_Enter    : Indices.Entry_Index;
+
          when Exiting_PO =>
-            PO_Exit           : Protected_Agent_Id;
+            PO_Exit           : Protected_Id;
+
          when Attach_Interrupt_Handlers =>
             Attach_Handlers   : access Oak.Interrupts.Interrupt_Handler_Array;
-            Attach_Handler_PO : Protected_Agent_Id;
+            Attach_Handler_PO : Protected_Id;
+
          when Selecting_Next_Agent =>
             null;
+
          when Adding_Agent =>
             Agent_To_Add        : Oak_Agent_Id;
+
          when Removing_Agent =>
             Agent_To_Remove     : Oak_Agent_Id;
+
          when Agent_State_Change =>
             Agent_That_Changed  : Oak_Agent_Id;
+
          when Scheduler_Agent_Done =>
             Next_Agent          : Oak_Agent_Id;
             Wake_Scheduler_At   : Oak_Time.Time;
             Keep_In_Charge_List : Boolean;
+
          when Continue_Sleep =>
+
             Remain_In_Charge_List : Boolean;
          when others =>
             null;

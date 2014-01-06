@@ -29,7 +29,9 @@ generic
 
 package Oak.Agent.Storage with Preelaborate is
 
-   Agent_Pool : array (Agent_Id_Type) of Agent_Record_Type;
+   type Pool_Type is array (Agent_Id_Type) of Agent_Record_Type;
+
+   Agent_Pool : Pool_Type;
    --  Storage used to store Agents.
 
    procedure Allocate_An_Agent (Agent : out Agent_Id_Type)
@@ -37,6 +39,13 @@ package Oak.Agent.Storage with Preelaborate is
    --  Allocates space in the pool for a new Agent and returns the Agent Id.
    --  Callers should ensure that there is space free in the pool before
    --  calling otherwise Agent_Pool_Capacity_Error will be raised.
+
+   procedure Allocate_An_Agent_With_Id (Id : in Agent_Id_Type)
+     with Pre => Is_Storage_Ready;
+   --  Like above, but this time the subprogram allocates the node associated
+   --  with the provided Id. No check is made to see if this will clobber
+   --  another agent. Used so that id's in this pool match those of the parent
+   --  pools.
 
    function Has_Agent (Agent_Id : Agent_Id_Type) return Boolean
      with Pre => Is_Storage_Ready;
