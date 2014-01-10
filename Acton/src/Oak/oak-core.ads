@@ -1,43 +1,56 @@
-with Oak.Core_Support_Package.Processor;
+------------------------------------------------------------------------------
+--                                                                          --
+--                              OAK COMPONENTS                              --
+--                                                                          --
+--                                 OAK.CORE                                 --
+--                                                                          --
+--                                 S p e c                                  --
+--                                                                          --
+--                 Copyright (C) 2010-2014, Patrick Bernardi                --
+------------------------------------------------------------------------------
+
+--  This package provides the core kernel services provided by Oak. It includes
+--  the kernel setup routines, the kernel run loop and the general agent
+--  switching services.
 
 with Oak.Agent;                     use Oak.Agent;
-with Oak.Agent.Tasks;               use Oak.Agent.Tasks;
-with Oak.Agent.Interrupts;          use Oak.Agent.Interrupts;
-with Oak.Core_Support_Package;      use Oak.Core_Support_Package;
 with Oak.Oak_Time;                  use Oak.Oak_Time;
-with Oak.Timers;
-with Oak.Scheduler;                 use Oak.Scheduler;
-with System;                        use System;
 
 package Oak.Core with Preelaborate is
 
+   -----------
+   -- Types --
+   -----------
+
    Global_Start_Time : Time;
+   --  The global start time used by the system.
 
-   type Activation_Reason is (
-      First_Run,
-      Task_Yield,
-      Timer,
-      External_Interrupt);
+   -----------------
+   -- Subprograms --
+   -----------------
 
-   type Active_State is (Inactive, Active);
-
-   type Oak_Data is new Oak_Agent with private
-     with Preelaborable_Initialization;
+   --  Ininitialisation
+   --  ???? A bit about initialising Oak.
 
    procedure Initialise
      with Export, Convention => Ada, External_Name => "__oak_initialise";
+   --  The first stage of Oak's intialisation routine. Called once by the
+   --  by the program/system's startup code.
 
    procedure Complete_Initialisation
      with Export, Convention => Ada,
-          External_Name =>  "__oak_complete_initialisation";
+     External_Name =>  "__oak_complete_initialisation";
+   --  Called once by the system's startup code after other parts of the system
+   --  have completed initialisation. This includes after setting up the top
+   --  level scheduler agents and the main task.
 
-   procedure Start
-     with Export, Convention => Ada, External_Name => "__oak_start";
-   --  System initialisation routine.
+   procedure Context_Switch_To_Agent (Agent : in Oak_Agent_Id);
+   --  Switches context to the provided agent.
 
-   procedure Start_Oak_Instance (Oak_Instance : in out Oak_Data);
+   function Oak_Kernel return Kernel_Id with Inline_Always;
+   --  Return the id of the current Oak_Kernel.
 
-   procedure Run_Loop (Oak_Instance : in out Oak_Data);
+   procedure Run_Loop (Oak_Kernel : in Kernel_Id);
    --  Run-loop that runs once. Kernel schedules the procedure at a latter date
    --  to run the run-loop again. Should document the design descision behind
    --  this. Actaully the Run_Loop can run all it likes really. If there is
@@ -45,108 +58,22 @@ package Oak.Core with Preelaborate is
    --  implementing delay until for tasks running on top the the kernel.
    --  Hmmm...
 
-   procedure Add_Agent_To_Charge_List
-     (Oak_Instance : in out Oak_Data'Class;
-      Agent        : not null access Oak_Agent'Class);
+   procedure Start
+     with Export, Convention => Ada, External_Name => "__oak_start";
+   --  Called once by the system startup code to begin executing Oak the
+   --  kernel.
 
-   function Current_Agent    return not null access Oak_Agent'Class
-     with Inline_Always;
-   function Current_Agent_Stack_Pointer return Address with Inline_Always;
-   function Current_Task     return not null access Task_Agent'Class
-     with Inline_Always;
-
-   function Exec_Charge_List
-     (Oak_Instance : access Oak_Data'Class)
-      return Agent_Handler;
-
-   function Main_Task        return not null access Task_Agent;
-   function Oak_Instance     return not null access Oak_Data'Class
-     with Inline_Always;
-   function Oak_Stack_Pointer return Address with Inline_Always;
-   function Oak_Timer_Store   return not null access Oak.Timers.Oak_Timer_Info
-     with Inline_Always;
-
-   procedure Remove_Agent_From_Charge_List
-     (Oak_Instance : in out Oak_Data'Class;
-      Agent        : not null access Oak_Agent'Class);
-
-   function Scheduler_Info
-     (Oak_Instance : access Oak_Data'Class)
-      return not null access Oak_Scheduler_Info with Inline_Always;
-
-   procedure Context_Switch_To_Agent (Agent : not null access Oak_Agent'Class);
-
-   procedure Set_Current_Agent_Stack_Pointer
-     (SP : Address)
-      with Inline_Always;
-
-   procedure Set_Oak_Stack_Pointer
-     (SP : Address)
-      with Inline_Always;
+   procedure Start_Oak_Kernel (Oak_Kernel : in Kernel_Id);
+   --  Start a particular instance of the Oak Kernel.
+   --  ??? Should be private?
 
 private
-   package Processor renames Oak.Core_Support_Package.Processor;
-
-   type IA_Store is array (Interrupt_Priority) of aliased Interrupt_Agent;
-   type Interrupt_Active_Set is array (Interrupt_Priority) of Active_State
-     with Pack;
-
-   Main_Task_OTCR : aliased Task_Agent;
-
-   type Oak_Data is new Oak_Agent with record
-      Scheduler          : aliased Oak_Scheduler_Info;
-      Woken_By           : Activation_Reason;
-      Current_Priority   : System.Any_Priority;
-      Current_Agent      : access Oak_Agent'Class;
-      Entry_Exit_Stamp   : Oak_Time.Time;
-      --  Probably need to fix this up so that it gets set somewhere. (In case
-      --  it doesn't already when the task context switches.
-      Sleep_Agent        : aliased Oak_Agent;
-      Interrupt_Agents   : IA_Store;
-
-      Interrupt_States   : Interrupt_Active_Set;
-      Oak_Timers         : aliased Oak.Timers.Oak_Timer_Info;
-      Budgets_To_Charge  : access Oak_Agent'Class;
-   end record;
-
-   type Oak_List is array (Oak_Instance_Id) of aliased Oak_Data;
-
-   Processor_Kernels : Oak_List;
-
    Global_Start_Time_Offset : Time_Span
      with Import, Convention => Ada,
           External_Name => "_global_start_phase";
 
-   function Current_Agent return not null access Oak_Agent'Class is
-     (Processor_Kernels (Processor.Proccessor_Id).Current_Agent);
-
-   function Current_Agent_Stack_Pointer return Address is
-     (Stack_Pointer (
-        Processor_Kernels (Processor.Proccessor_Id).Current_Agent.all));
-
-   function Current_Task return not null access Task_Agent'Class is
-     (Task_Handler (Current_Agent));
-
-   function Exec_Charge_List
-     (Oak_Instance : access Oak_Data'Class)
-      return Agent_Handler is (Agent_Handler (Oak_Instance.Budgets_To_Charge));
-
-   function Main_Task return not null access Task_Agent
-     is (Main_Task_OTCR'Access);
-
-   function Oak_Instance return not null access Oak_Data'Class is
-     (Processor_Kernels (Processor_Kernels'First)'Access);
-
-   function Oak_Stack_Pointer return Address is
-     (Processor_Kernels (Processor.Proccessor_Id).Stack_Pointer);
-
-   function Oak_Timer_Store return not null access Oak.Timers.Oak_Timer_Info
-     is (Processor_Kernels
-         (Processor.Proccessor_Id).Oak_Timers'Unchecked_Access);
-
-   function Scheduler_Info
-     (Oak_Instance : access Oak_Data'Class)
-      return not null access Oak_Scheduler_Info
-      is (Oak_Instance.Scheduler'Access);
-
+   function Oak_Instance return Kernel_Id is
+     (Kernel_Id'First);
+   --  In theory on a multiprocessor machine we would query the processor to
+   --  find out what its id is.
 end Oak.Core;

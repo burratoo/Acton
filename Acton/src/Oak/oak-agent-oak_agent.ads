@@ -93,6 +93,15 @@ package Oak.Agent.Oak_Agent with Preelaborate is
    --  the priority provided by the procedure and the When_To_Charge attribute
    --  of the agent.
 
+   function Current_Execution_Time
+     (For_Agent : in Oak_Agent_Id)
+      return Oak_Time.Time_Span
+     with Inline;
+   --  Return the execution time for the current cycle.
+
+   procedure Delete_Agent (Agent : Oak_Agent_Id);
+   --  Deletes the agent specified and deallocates its storage.
+
    function Destination_On_Wake_Up
      (For_Agent : in Oak_Agent_Id) return Wake_Destination
      with Pre => Has_Agent (For_Agent), Inline;
@@ -103,6 +112,18 @@ package Oak.Agent.Oak_Agent with Preelaborate is
      (Charge_List : in Agent_List) return Oak_Agent_Id;
    --  Returns the id of the agent that has the eariliest expiring budget.
    --  If the list is empty it will return No_Agent.
+
+   procedure Increment_Execution_Cycle_Count
+     (For_Agent : in Oak_Agent_Id;
+      By        : in Natural)
+     with Inline;
+   --  Increments the agent's execution cycle count by the specified amount.
+
+   function Max_Execution_Time
+     (For_Agent : in Oak_Agent_Id)
+      return Oak_Time.Time_Span
+     with Inline;
+   --  Return the maximum execution time for any cycle.
 
    function Name (Agent : in Oak_Agent_Id) return Agent_Name
      with Pre => Has_Agent (Agent);
@@ -157,16 +178,26 @@ package Oak.Agent.Oak_Agent with Preelaborate is
      with Pre => Has_Agent (For_Agent);
    --  Set the absolute deadline for the task.
 
-   procedure Set_Remaining_Budget
+   procedure Set_Current_Execution_Time
      (For_Agent : in Oak_Agent_Id;
-      To_Amount : in Oak_Time.Time_Span)
-     with Pre => Has_Agent (For_Agent);
-   --  Set the amount of execution budget remaining for the agent.
+      To        : in Oak_Time.Time_Span);
+   --  Sets the agent's current execution time.
+
+   procedure Set_Max_Execution_Time
+     (For_Agent : in Oak_Agent_Id;
+      To        : in Oak_Time.Time_Span);
+   --  Sets the agent's maximum execution time.
 
    procedure Set_Next_Agent
      (For_Agent  : in Oak_Agent_Id;
       Next_Agent : in Oak_Agent_Id);
    --  Set the Next_Agent link for the Agent.
+
+   procedure Set_Remaining_Budget
+     (For_Agent : in Oak_Agent_Id;
+      To_Amount : in Oak_Time.Time_Span)
+     with Pre => Has_Agent (For_Agent);
+   --  Set the amount of execution budget remaining for the agent.
 
    procedure Set_Scheduler_Agent
      (For_Agent : in Oak_Agent_Id;
@@ -182,17 +213,17 @@ package Oak.Agent.Oak_Agent with Preelaborate is
    --  should always be inlined since it is called from within the core
    --  interrupt routines.
 
-   procedure Set_Wake_Time
-     (For_Agent : in Oak_Agent_Id;
-      Wake_Time : in Oak_Time.Time)
-     with Pre => Has_Agent (For_Agent);
-   --  Set the wake time of the agent.
-
    procedure Set_State
      (For_Agent : in Oak_Agent_Id;
       State     : in Agent_State)
      with Pre => Has_Agent (For_Agent);
    --  Set the state of the agent.
+
+   procedure Set_Wake_Time
+     (For_Agent : in Oak_Agent_Id;
+      Wake_Time : in Oak_Time.Time)
+     with Pre => Has_Agent (For_Agent);
+   --  Set the wake time of the agent.
 
    function Stack_Pointer
      (Agent : in Oak_Agent_Id)
@@ -295,6 +326,11 @@ private
 
    use Oak_Agent_Pool;
 
+   function Current_Execution_Time
+     (For_Agent : in Oak_Agent_Id)
+      return Oak_Time.Time_Span is
+     (Agent_Pool (For_Agent).Current_Execution_Time);
+
    function Destination_On_Wake_Up
      (For_Agent : in Oak_Agent_Id) return Wake_Destination is
      (Agent_Pool (For_Agent).Destination_On_Wake);
@@ -304,6 +340,11 @@ private
 
    function Is_Storage_Ready return Boolean is
      (Oak_Agent_Pool.Is_Storage_Ready);
+
+   function Max_Execution_Time
+     (For_Agent : in Oak_Agent_Id)
+      return Oak_Time.Time_Span is
+      (Agent_Pool (For_Agent).Max_Execution_Time);
 
    function Name (Agent : in Oak_Agent_Id) return Agent_Name is
      (Agent_Pool (Agent).Name

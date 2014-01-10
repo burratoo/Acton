@@ -17,7 +17,9 @@ package body Oak.Timers is
 
    procedure Activate_Timer (Timer : in Oak_Timer_Id) is
    begin
-      Insert_Node (Pool, Timer);
+      if not In_Tree (Pool => Pool, Item_Id => Timer) then
+         Insert_Node (Pool, Timer);
+      end if;
    end Activate_Timer;
 
    ----------------------
@@ -26,7 +28,9 @@ package body Oak.Timers is
 
    procedure Deactivate_Timer (Timer : in Oak_Timer_Id) is
    begin
-      Remove_Node (Pool, Timer);
+      if In_Tree (Pool => Pool, Item_Id => Timer) then
+         Remove_Node (Pool, Timer);
+      end if;
    end Deactivate_Timer;
 
    ------------------

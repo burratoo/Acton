@@ -82,6 +82,16 @@ package body Oak.Agent.Oak_Agent is
       end loop;
    end Charge_Execution_Time_To_List;
 
+   ------------------
+   -- Delete_Agent --
+   ------------------
+
+   procedure Delete_Agent (Agent : Oak_Agent_Id)
+   is
+   begin
+      Deallocate_Agent (Agent);
+   end Delete_Agent;
+
    ------------------------------
    -- Earliest_Expiring_Budget --
    ------------------------------
@@ -107,6 +117,19 @@ package body Oak.Agent.Oak_Agent is
               No_Agent else Selected_Agent);
 
    end Earliest_Expiring_Budget;
+
+   -------------------------------------
+   -- Increment_Execution_Cycle_Count --
+   -------------------------------------
+
+   procedure Increment_Execution_Cycle_Count
+     (For_Agent : in Oak_Agent_Id;
+      By        : in Natural)
+   is
+      A : Oak_Agent_Record renames Agent_Pool (For_Agent);
+   begin
+      A.Execution_Cycles := A.Execution_Cycles + By;
+   end Increment_Execution_Cycle_Count;
 
    ---------------
    -- New_Agent --
@@ -179,6 +202,28 @@ package body Oak.Agent.Oak_Agent is
    begin
       Agent_Pool (For_Agent).Absolute_Deadline := Deadline;
    end Set_Absolute_Deadline;
+
+   --------------------------------
+   -- Set_Current_Execution_Time --
+   --------------------------------
+
+   procedure Set_Current_Execution_Time
+     (For_Agent : in Oak_Agent_Id;
+      To        : in Oak_Time.Time_Span) is
+   begin
+      Agent_Pool (For_Agent).Current_Execution_Time := To;
+   end Set_Current_Execution_Time;
+
+   ----------------------------
+   -- Set_Max_Execution_Time --
+   ----------------------------
+
+   procedure Set_Max_Execution_Time
+     (For_Agent : in Oak_Agent_Id;
+      To        : in Oak_Time.Time_Span) is
+   begin
+      Agent_Pool (For_Agent).Max_Execution_Time := To;
+   end Set_Max_Execution_Time;
 
    --------------
    -- Set_Name --

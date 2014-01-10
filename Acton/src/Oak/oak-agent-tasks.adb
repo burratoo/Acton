@@ -38,7 +38,7 @@ package body Oak.Agent.Tasks is
       Relative_Deadline : in Oak_Time.Time_Span;
       Deadline_Response : in Ada.Cyclic_Tasks.Event_Response;
       Deadline_Handler  : in Ada.Cyclic_Tasks.Response_Handler;
-      Scheduler_Agent   : in Scheduler_Id;
+      Scheduler_Agent   : in Scheduler_Id_With_No := No_Agent;
       Chain             : in out Task_List;
       Elaborated        : in Address)
    is
@@ -134,6 +134,10 @@ package body Oak.Agent.Tasks is
                   Handler      => Deadline_Handler);
          end case;
       end Setup_Task;
+
+      --  Add task to activation chain
+      Set_Next_Agent (For_Agent => Agent, Next_Agent => Chain);
+      Chain := Agent;
    end New_Task_Agent;
 
    ----------------
@@ -201,6 +205,10 @@ package body Oak.Agent.Tasks is
          Set_Absolute_Deadline (For_Task, New_Deadline);
          Update_Timer
            (Timer => T.Deadline_Timer, New_Time => New_Deadline);
+
+         if New_Deadline /= Oak_Time.Time_Last then
+            Activate_Timer (T.Deadline_Timer);
+         end if;
 
       end if;
    end Set_Next_Deadline_For_Task;

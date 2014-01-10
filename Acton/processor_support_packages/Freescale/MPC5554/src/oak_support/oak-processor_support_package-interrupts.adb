@@ -3,16 +3,17 @@ with Oak.Core_Support_Package.Interrupts;
 
 package body Oak.Processor_Support_Package.Interrupts is
 
-   procedure External_Interrupt_Handler (Interrupt_Id : Oak_Interrupt_Id) is
+   procedure External_Interrupt_Handler (Interrupt_Id : External_Interrupt_Id)
+   is
    begin
       INTC_Vector_Table (Interrupt_Id).all;
       End_Of_Interrupt_Register := End_Interrupt;
    end External_Interrupt_Handler;
 
-   function External_Interrupt_Id return Oak_Interrupt_Id is
+   function Get_External_Interrupt_Id return External_Interrupt_Id is
    begin
       return Interrupt_Acknowledge_Component.Interrupt_Vector;
-   end External_Interrupt_Id;
+   end Get_External_Interrupt_Id;
 
    procedure Initialise_Interrupts is
       use MPC5554.Flash;
@@ -54,7 +55,7 @@ package body Oak.Processor_Support_Package.Interrupts is
       Completed_Flash_Programming;
    end Complete_Interrupt_Initialisation;
 
-   procedure Attach_Handler (Interrupt : Oak_Interrupt_Id;
+   procedure Attach_Handler (Interrupt : External_Interrupt_Id;
                              Handler   : Parameterless_Handler;
                              Priority  : Interrupt_Priority)
    is

@@ -35,6 +35,10 @@ package body Oak.Memory.Call_Stack.Ops is
       Stack.Bottom      := Stack_Pool_Bottom;
    end Allocate_Call_Stack;
 
+   ---------------------------
+   -- Initialise_Call_Stack --
+   ---------------------------
+
    procedure Initialise_Call_Stack
      (Stack             : in out Call_Stack_Handler;
       Start_Instruction : in     Address)

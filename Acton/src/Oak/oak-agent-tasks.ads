@@ -80,9 +80,9 @@ package Oak.Agent.Tasks with Preelaborate is
       Relative_Deadline : in Oak_Time.Time_Span;
       Deadline_Response : in Ada.Cyclic_Tasks.Event_Response;
       Deadline_Handler  : in Ada.Cyclic_Tasks.Response_Handler;
-      Scheduler_Agent   : in Scheduler_Id;
+      Scheduler_Agent   : in Scheduler_Id_With_No := No_Agent;
       Chain             : in out Task_List;
-      Elaborated        : in Address);
+      Elaborated        : in Address := Null_Address);
    --  Creates a new Task Agent with the given prameters. Allocates the storage
    --  for the Task Agent data structure and any dependents.
 
@@ -117,7 +117,8 @@ package Oak.Agent.Tasks with Preelaborate is
      (For_Task : in Task_Id;
       Using    : in Deadline_Base)
      with Pre => Has_Task (For_Task);
-   --  Set the next deadline for the Task.
+   --  Set the next deadline for the Task. Activates the timer if the new
+   --  deadline is less than Time_Last.
 
    procedure Set_Next_Queue
      (For_Task : Task_Id;

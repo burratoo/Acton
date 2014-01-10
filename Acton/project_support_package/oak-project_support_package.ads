@@ -1,7 +1,7 @@
 package Oak.Project_Support_Package with Pure is
 
-   Max_Oak_Instances     : constant := 1;
-   --  The number of Oak Instances you need should be equal to the number of
+   Max_Kernel_Agents     : constant := 1;
+   --  The number of Oak Kernel you need should be equal to the number of
    --  processors in the system. Not linked to the constant
    --  Oak.Processor_Support_Package.Number_Of_Processors because in theory
    --  there is nothing to stop an instance being scheduled by a scheduler
@@ -25,7 +25,7 @@ package Oak.Project_Support_Package with Pure is
    --  The maximum number of sleep agents is always one. Only defined to help
    --  explain the Max_Oak_Agents constant.
 
-   Max_Oak_Agents        : constant := Max_Oak_Instances +
+   Max_Oak_Agents        : constant := Max_Kernel_Agents +
                              Max_Scheduler_Agents + Max_Interrupt_Agents +
                                Max_Task_Agents + Max_Protected_Agents +
                                  Max_Sleep_Agents;
@@ -33,7 +33,7 @@ package Oak.Project_Support_Package with Pure is
    --  agents. Each of these agents contains an Oak Agent as their general
    --  data structure.
 
-   Max_Timers            : constant := Max_Oak_Instances
+   Max_Timers            : constant := Max_Kernel_Agents
                              + Max_Task_Agents + Max_Scheduler_Agents;
    --  The maximum number of Oak Timers used in the system. At the bare minimum
    --  each oak instance, scheduler agent and task agent need at least on timer

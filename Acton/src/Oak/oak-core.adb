@@ -1,18 +1,25 @@
-with Oak.Agent.Schedulers;   use Oak.Agent.Schedulers;
 with Oak.Agent.Tasks.Activation;
 with Oak.Agent.Tasks.Cycle; use Oak.Agent.Tasks.Cycle;
 with Oak.Agent.Protected_Objects; use Oak.Agent.Protected_Objects;
 with Oak.Interrupts; use Oak.Interrupts;
 with Oak.Protected_Objects;
-with Oak.Core_Support_Package.Interrupts;
 with Ada.Cyclic_Tasks;
 with Oak.Core_Support_Package.Call_Stack;
 use Oak.Core_Support_Package.Call_Stack;
 with Oak.Processor_Support_Package.Interrupts;
 use Oak.Processor_Support_Package.Interrupts;
 
-with Oak.Message; use Oak.Message;
-with Oak.States;  use Oak.States;
+with Oak.Agent.Interrupts; use Oak.Agent.Interrupts;
+with Oak.Agent.Kernel;     use Oak.Agent.Kernel;
+--  with Oak.Agent.Schedulers; use Oak.Agent.Schedulers;
+
+with Oak.Core_Support_Package.Interrupts;
+with Oak.Core_Support_Package.Task_Support;
+
+with Oak.Message;   use Oak.Message;
+with Oak.Scheduler; use Oak.Scheduler;
+with Oak.States;    use Oak.States;
+with Oak.Timers;    use Oak.Timers;
 
 package body Oak.Core is
 
@@ -21,38 +28,10 @@ package body Oak.Core is
    ----------------
 
    procedure Initialise is
+      Kid : Kernel_Id;
    begin
-      for Kernel_Agent of Processor_Kernels loop
-         Initialise_Agent
-           (Agent => Kernel_Agent'Access,
-            Name  => "Kernel",
-            Call_Stack_Size =>
-              Core_Support_Package.Call_Stack.Oak_Call_Stack_Size);
-
-         Kernel_Agent.Woken_By         := First_Run;
-         Kernel_Agent.Current_Priority := System.Any_Priority'First;
-         Kernel_Agent.Current_Agent    := Main_Task_OTCR'Access;
-
-         for P in Interrupt_Priority'Range loop
-            Initialise_Interrupt_Agent
-              (Agent    => Kernel_Agent.Interrupt_Agents (P)'Access,
-               Priority => P);
-         end loop;
-
-         for State of Kernel_Agent.Interrupt_States loop
-            State := Inactive;
-         end loop;
-
-         Initialise_Agent
-           (Agent              => Kernel_Agent.Sleep_Agent'Access,
-            Name               => "Sleep",
-            Call_Stack_Address => Null_Address,
-            Call_Stack_Size    => Sleep_Stack_Size,
-            Run_Loop           => Sleep_Agent'Address,
-            Run_Loop_Parameter => Null_Address,
-            Normal_Priority    => Priority'First,
-            Initial_State      => Runnable,
-            Wake_Time          => Time_Last);
+      for Processor in Processors'Range loop
+         New_Kernel_Agent (Agent => Kid);
       end loop;
 
       Oak.Core_Support_Package.Interrupts.Set_Up_Interrupts;
@@ -80,53 +59,37 @@ package body Oak.Core is
       --  kernel onto each physical processor. Will require calling procesor
       --  dependent code to launch the kernel on each processor.
       Start_Oak_Instance
-        (Oak_Instance => Processor_Kernels (Processor_Kernels'First));
+        (Oak_Instance => Processors'First);
    end Start;
 
    ------------------------
    -- Start_Oak_Instance --
    ------------------------
 
-   procedure Start_Oak_Instance (Oak_Instance : in out Oak_Data) is
+   procedure Start_Oak_Instance (Oak_Kernel : in Kernel_Id) is
    begin
       --  Set up Scheduler Agents and load tasks.
 
-      Oak_Instance.Woken_By := First_Run;
+      Set_Reason_For_Run (Oak_Kernel => Oak_Kernel, Reason => First_Run);
 
-      Run_Loop (Oak_Instance => Oak_Instance);
+      Run_Loop (Oak_Kernel => Oak_Kernel);
    end Start_Oak_Instance;
 
    --------------
    -- Run_Loop --
    --------------
 
-   procedure Run_Loop (Oak_Instance : in out Oak_Data) is
-      Active_Timer  : access Oak.Timers.Oak_Timer'Class;
-      Next_Agent    : Agent_Handler := null;
-      Charge_List   : access Oak_Agent'Class renames
-                        Oak_Instance.Budgets_To_Charge;
-      Current_Agent : not null access Oak_Agent'Class renames
-                        Oak_Instance.Current_Agent;
+   procedure Run_Loop (Oak_Kernel : in Kernel_Id) is
+      Active_Timer  : Oak_Timer_Id;
+      Interrupt_Id  : Interrupt_Id;
+
+      Next_Agent    : Oak_Agent_Id := No_Agent;
       P             : Any_Priority;
-      Interrupt_Id  : Oak_Interrupt_Id;
 
       Task_Message  : Oak_Message := (Message_Type => No_State);
    begin
       loop
-      --  Actually the first step should be to mask the timer interrupt we use
-      --  to wake up so that the run loop isn't interrupted.
-
-      --  Then we should check to see if in between the wakeup timer going
-      --  off and the run-loop starting that a deadline may have been
-      --  missed. This means that we can act on the missed dealine much
-      --  quicker than if we had waited until the end of the run-loop to
-      --  check to see if any deadlines have been missed. That said, what is
-      --  the latency between the triggering of an interrupt and reaching
-      --  this point? Probably what we'll catch are deadlines that fall just
-      --  after a Scheduler Agent requesting servicing. We'll be talking
-      --  something very short here. Maybe we will need to test.
-
-      --  First step: Check to see why we have been activated.
+      --  First step: Check to see why we are running.
       --
       --  Activation of the run loop can be due to four (five?) things:
       --   1. Intial activation of the run loop,
@@ -147,11 +110,6 @@ package body Oak.Core is
       --  three (really 2 options) has caused us to wake up.
       --
 
-      --  Second Step: Beak into 2 code paths to handle normal scheduling
-      --  and
-      --  missed deadlines? Possible a good idea as it saves having two
-      --  large
-      --  blocks within an if-else statement.
       --
       --  What we expect to happen when we run the Run_Scheduler_Agents
       --  subprogram:
@@ -161,11 +119,18 @@ package body Oak.Core is
       --  On return, Oak's scheduler should have recorded which task should
       --  run now, if there are any eligible tasks to run at all.
 
-         case Oak_Instance.Woken_By is
+         --  ????? Check to see if the above is valid and makes sense.
+
+         case Reason_For_Run (Oak_Kernel) is
             when First_Run =>
-               Check_Sechduler_Agents_For_Next_Task_To_Run
+               --  First time the kernel instance has run. Simply check for
+               --  the first task to run – which would have been already placed
+               --  in a scheduler agent.
+
+               Check_Sechduler_Agents_For_Next_Agent_To_Run
                  (Scheduler_Info   => Oak_Instance.Scheduler,
                   Next_Task_To_Run => Next_Agent);
+
             when Task_Yield =>
                case Task_Message.Message_Type is
                   when Activation_Pending =>
@@ -494,13 +459,6 @@ package body Oak.Core is
       end loop;
    end Run_Loop;
 
-   procedure Add_Agent_To_Charge_List
-     (Oak_Instance : in out Oak_Data'Class;
-      Agent        : not null access Oak_Agent'Class) is
-   begin
-      Agent.Add_Agent_To_Exec_Charge_List (Oak_Instance.Budgets_To_Charge);
-   end Add_Agent_To_Charge_List;
-
    procedure Context_Switch_To_Agent (Agent : not null access Oak_Agent'Class)
    is
       Charge_List : access Oak_Agent'Class renames
@@ -538,28 +496,5 @@ package body Oak.Core is
       Charge_Exec_Time
         (Charge_List, To_Charge_List => True);
    end Context_Switch_To_Agent;
-
-   procedure Remove_Agent_From_Charge_List
-     (Oak_Instance : in out Oak_Data'Class;
-      Agent        : not null access Oak_Agent'Class) is
-   begin
-      Agent.Remove_Agent_From_Exec_Charge_List
-        (Oak_Instance.Budgets_To_Charge);
-   end Remove_Agent_From_Charge_List;
-
-   procedure Set_Current_Agent_Stack_Pointer (SP : Address) is
-   begin
-      Set_Stack_Pointer
-        (Agent           =>
-           Processor_Kernels (Processor.Proccessor_Id).Current_Agent.all,
-         Stack_Pointer => SP);
-   end Set_Current_Agent_Stack_Pointer;
-
-   procedure Set_Oak_Stack_Pointer (SP : Address) is
-   begin
-      Set_Stack_Pointer
-        (Agent         => Processor_Kernels (Processor.Proccessor_Id),
-         Stack_Pointer => SP);
-   end Set_Oak_Stack_Pointer;
 
 end Oak.Core;

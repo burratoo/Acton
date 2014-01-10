@@ -473,9 +473,12 @@ package body Oak.Agent.Protected_Objects is
 
       --  The following code is pointless when we only have one processor,
       --  because there can only be one task inside the protected object at a
-      --  time due to the Priority Ceiling Protocol.
+      --  time due to the Priority Ceiling Protocol. This should only include
+      --  the code if we have more than one processor.
 
+      pragma Warnings (Off, "condition is always*");
       if Number_Of_Processors > 1 then
+         pragma Warnings (On, "condition is always*");
          --  Search for the task. At this point there is more than one task in
          --  the list.
 

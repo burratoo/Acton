@@ -47,6 +47,9 @@ package Oak.Agent.Storage with Preelaborate is
    --  another agent. Used so that id's in this pool match those of the parent
    --  pools.
 
+   procedure Deallocate_Agent (Id : in Agent_Id_Type);
+   --  Dellocates the storage associated with the Id.
+
    function Has_Agent (Agent_Id : Agent_Id_Type) return Boolean
      with Pre => Is_Storage_Ready;
    --  Returns true if the Agent_Id has been allocate.

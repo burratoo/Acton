@@ -42,10 +42,10 @@ package Oak.Timers with Preelaborate is
    -----------------
 
    procedure Activate_Timer (Timer : in Oak_Timer_Id)
-     with Pre  => (Is_Valid (Timer) and not Is_Active (Timer)),
-          Post => (Is_Valid (Timer) and Is_Active (Timer));
+     with Pre  => Is_Valid (Timer),
+          Post => Is_Valid (Timer);
    --  Activate the specified timer. Adds the timer to storage pool's timer
-   --  list.
+   --  list. Can be safely called even if the timer is already activated.
 
    function Agent_To_Handle (Timer : in Oak_Timer_Id)
                              return Oak_Agent_Id
@@ -55,10 +55,10 @@ package Oak.Timers with Preelaborate is
    --  TIMER KIND: Event_Timer.
 
    procedure Deactivate_Timer (Timer : in Oak_Timer_Id)
-     with Pre  => (Is_Valid (Timer) and Is_Active (Timer)),
-          Post => (Is_Valid (Timer) and not Is_Active (Timer));
-   --  Deactivate the specified timer. Adds the timer to storage pool's timer
-   --  list.
+     with Pre  => Is_Valid (Timer),
+          Post => Is_Valid (Timer);
+   --  Deactivate the specified timer. Can be safely called even if the timer
+   --  is not already activated (in this case the request has no effect).
 
    procedure Delete_Timer (Timer : in Oak_Timer_Id);
    --  Delete the Timer from the storage pool.

@@ -16,6 +16,7 @@
 --     type Agent_Kind is
 --      (Oak_Agent, Oak_Instance, Scheduler_Agent, Task_Agent, Interrupt_Agent,
 --        Protected_Agent);
+--
 --  This type identifies the type of Agent. There are six kinds of Agents
 --  used by Oak:
 --    Oak_Agent         The base Agent
@@ -76,13 +77,13 @@ package Oak.Agent with Pure is
    --  Constants used to define the range of the ids of the Agents that extend
    --  Oak Agents.
 
-   Instance_Id_Low_Bound  : constant := Oak_Agent_Id'Succ (Sleep_Agent);
-   Instance_Id_High_Bound : constant := Oak_Agent_Id'First + Max_Oak_Instances;
+   Kernel_Id_Low_Bound  : constant := Oak_Agent_Id'Succ (Sleep_Agent);
+   Kernel_Id_High_Bound : constant := Oak_Agent_Id'First + Max_Kernel_Agents;
 
    Scheduler_Id_Low_Bound  : constant :=
-                               Instance_Id_High_Bound + 1;
+                               Kernel_Id_High_Bound + 1;
    Scheduler_Id_High_Bound : constant :=
-                               Instance_Id_High_Bound + Max_Scheduler_Agents;
+                               Kernel_Id_High_Bound + Max_Scheduler_Agents;
 
    Interrupt_Id_Low_Bound  : constant :=
                                Scheduler_Id_High_Bound + 1;
@@ -101,8 +102,8 @@ package Oak.Agent with Pure is
 
    --  Subtype defintions for Agent Ids that derive from Oak Agent.
 
-   subtype Oak_Id                   is Oak_Agent_Id
-     range Instance_Id_Low_Bound      .. Instance_Id_High_Bound;
+   subtype Kernel_Id                is Oak_Agent_Id
+     range Kernel_Id_Low_Bound        .. Kernel_Id_High_Bound;
 
    subtype Scheduler_Id             is Oak_Agent_Id
      range Scheduler_Id_Low_Bound     .. Scheduler_Id_High_Bound;
@@ -124,8 +125,8 @@ package Oak.Agent with Pure is
    --  specification whether or not they will accept No_Agent as a valid
    --  parameter.
 
-   subtype Oak_Id_With_No is Oak_Agent_Id
-     with Static_Predicate => Oak_Id_With_No in No_Agent | Oak_Id;
+   subtype Kernel_Id_With_No is Oak_Agent_Id
+     with Static_Predicate => Kernel_Id_With_No in No_Agent | Kernel_Id;
 
    subtype Scheduler_Id_With_No is Oak_Agent_Id
      with Static_Predicate => Scheduler_Id_With_No in No_Agent | Scheduler_Id;
@@ -139,9 +140,12 @@ package Oak.Agent with Pure is
    subtype Protected_Id_With_No is Oak_Agent_Id
      with Static_Predicate => Protected_Id_With_No in No_Agent | Protected_Id;
 
-   --  Derivatives of Agent list. Used to indicate a list is being used.
+   --  Derivatives of Agent list which only have a head pointer. Used to
+   --  indicate a list is being used.
 
    subtype Task_List is Task_Id_With_No;
+
+   subtype Charge_List is Oak_Agent_Id;
 
    Agent_Pool_Capacity_Error : exception;
    --  An error raised when there is no more room in an Agent Pool.
