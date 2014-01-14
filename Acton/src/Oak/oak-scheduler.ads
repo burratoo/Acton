@@ -17,14 +17,6 @@ with System.Multiprocessors;
 
 package Oak.Scheduler with Preelaborate is
 
-   -----------
-   -- Types --
-   -----------
-
-   subtype Scheduler_Table is Scheduler_Id_With_No;
-   --  This type is used to represent the head of the list that houses Oak's
-   --  top level scheduler agents.
-
    -----------------
    -- Subprograms --
    -----------------
@@ -32,11 +24,6 @@ package Oak.Scheduler with Preelaborate is
    procedure Add_Agent_To_Scheduler (Agent : in Oak_Agent_Id);
    --  Adds the specified Agent to its scheduler agent (which the Agent
    --  contains a reference to).
-
-   procedure Add_Scheduler_To_Scheduler_Table
-     (Table     : in out Scheduler_Table;
-      Scheduler : in     Scheduler_Id);
-   --  Add the scheduler to the scheduler table provided.
 
    procedure Check_Sechduler_Agents_For_Next_Agent_To_Run
      (From_Scheduler_Agent : in  Scheduler_Id;
@@ -77,9 +64,9 @@ private
    --  Run the specified scheduler agent, passing it the given Oak_Message.
 
    procedure Run_Scheduler_Agent
-     (Agent        : in  Scheduler_Id;
-      Reason       : in  Oak_Message;
-      Agent_To_Run : out Oak_Agent_Id);
+     (Agent             : in  Scheduler_Id;
+      Reason            : in  Oak_Message;
+      Next_Agent_To_Run : out Oak_Agent_Id);
    --  Like above, except it returns the next agent to run as a result of
    --  runing the scheduler agent.
 

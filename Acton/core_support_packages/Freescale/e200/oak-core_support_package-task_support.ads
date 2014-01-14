@@ -1,5 +1,17 @@
+------------------------------------------------------------------------------
+--                                                                          --
+--                         OAK CORE SUPPORT PACKAGE                         --
+--                              FREESCALE e200                              --
+--                                                                          --
+--                  OAK.CORE_SUPPORT_PACKAGE.TASK_SUPPORT                   --
+--                                                                          --
+--                                 S p e c                                  --
+--                                                                          --
+--                 Copyright (C) 2010-2014, Patrick Bernardi                --
+------------------------------------------------------------------------------
+
 --
---  Processor Support Package for the e200z6 PowerPC Core.
+--  Core Support Package for the e200z6 PowerPC Core.
 --
 
 with Oak.Oak_Time;
@@ -33,10 +45,15 @@ package Oak.Core_Support_Package.Task_Support with Preelaborate is
 
    procedure Initialise_Task_Enviroment;
 
-   procedure Context_Switch_To_Agent with Inline_Always;
+   procedure Context_Switch_To_Agent with Inline => False;
    procedure Context_Switch_To_Kernel with Inline_Always;
 
-   procedure Yield_Processor_To_Kernel with Inline_Always;
+   procedure Quick_Switch with Inline_Always;
+   --  Performs a quick switch to the current agent. This causes only the
+   --  stack, instruction and link return pointers to be switched. Ensure that
+   --  this procedure is inlined.
+
+   procedure Yield_Processor_To_Kernel with Inline => False;
 
    procedure Set_Oak_Wake_Up_Timer (Wake_Up_At : Oak.Oak_Time.Time);
 

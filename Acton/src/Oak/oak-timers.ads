@@ -76,6 +76,10 @@ package Oak.Timers with Preelaborate is
       return Event_Timer_Data;
    --  Fills in an Event_Timer_Data record.
 
+   function Firing_Time (Timer : in Oak_Timer_Id) return Oak_Time.Time
+     with Inline;
+   --  Returns the time that the given timer will fire.
+
    function Has_Timer_Fired (Timer : in Oak_Timer_Id) return Boolean;
    --  Has the timer fired.
 
@@ -129,6 +133,12 @@ package Oak.Timers with Preelaborate is
      with Pre => Timer_Kind (Timer) = Scheduler_Timer;
    --  Returns the scheduler attached to a scheduler timer.
    --  TIMER KIND: SCHEDULER_TIMER.
+
+   procedure Set_Timer_Event_Data
+     (Timer : in Oak_Timer_Id;
+      Data  : Event_Timer_Data);
+   --  Sets the timing event data provided by the corresponding record;
+   --  TIMER KIND: EVENT_TIMER.
 
    function Timer_Action (Timer : in Oak_Timer_Id)
      return Ada.Cyclic_Tasks.Event_Response
@@ -280,6 +290,9 @@ private
 
    function Firing_Time (Timer : in Oak_Timer) return Oak_Time.Time is
      (Timer.Fire_Time);
+
+   function Firing_Time (Timer : in Oak_Timer_Id) return Oak_Time.Time is
+     (Element (Pool, Timer).Fire_Time);
 
    function Handler (Timer : in Oak_Timer_Id)
                      return Ada.Cyclic_Tasks.Response_Handler is

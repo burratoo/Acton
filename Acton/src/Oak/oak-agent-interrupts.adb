@@ -12,15 +12,15 @@
 with Ada.Unchecked_Conversion;
 with Ada.Task_Identification;
 
+with Oak.Agent.Kernel;    use Oak.Agent.Kernel;
 with Oak.Agent.Oak_Agent; use Oak.Agent.Oak_Agent;
 
-with Oak.Core;
-with Oak.Core_Support_Package.Task_Support;
 with Oak.Core_Support_Package.Call_Stack;
 use Oak.Core_Support_Package.Call_Stack;
 
-with Oak.States; use Oak.States;
-with Oak.Timers; use Oak.Timers;
+with Oak.Core;    use Oak.Core;
+with Oak.Message; use Oak.Message;
+with Oak.States;  use Oak.States;
 
 package body Oak.Agent.Interrupts is
 
@@ -33,28 +33,31 @@ package body Oak.Agent.Interrupts is
 
    function To_Task_Id is
      new Ada.Unchecked_Conversion
-       (Agent_Handler, Ada.Task_Identification.Task_Id);
+       (Task_Id, Ada.Task_Identification.Task_Id);
 
    ------------------------
    -- Interrupt_Run_Loop --
    ------------------------
 
-   procedure Interrupt_Run_Loop (Self : Interrupt_Id) is
-      I : Interrupt_Agent_Record renames Agent_Pool (Self);
+   procedure Interrupt_Run_Loop is
+      Agent : Interrupt_Id;
 
-      Exit_Message : constant Oak_Message := (Message_Type => Interrupt_Done);
+      Exit_Message : Oak_Message :=
+                       (Message_Type => Interrupt_Done, L => 0);
    begin
       loop
-         case I.Interrupt_Kind is
+         Agent := Current_Agent (This_Oak_Kernel);
+         case Agent_Pool (Agent).Interrupt_Kind is
             when External =>
-               External_Interrupt_Handler (I.External_Id);
+               External_Interrupt_Handler (Agent_Pool (Agent).External_Id);
             when Timer_Action =>
-               Handler (I.Timer_To_Handle).all
-                 (To_Task_Id (Agent_To_Handle (I.Timer_To_Handle)));
+               null;
+               Handler (Agent_Pool (Agent).Timer_To_Handle).all
+                 (To_Task_Id
+                    (Agent_To_Handle (Agent_Pool (Agent).Timer_To_Handle)));
          end case;
 
-         Core.Current_Agent.Set_Agent_Message (Exit_Message);
-         Core_Support_Package.Task_Support.Yield_Processor_To_Kernel;
+         Core.Perform_Quick_Switch (Exit_Message);
       end loop;
    end Interrupt_Run_Loop;
 
@@ -67,13 +70,15 @@ package body Oak.Agent.Interrupts is
       Priority : in Oak_Priority)
    is
    begin
+      Allocate_An_Agent (Agent);
+
       New_Agent
         (Agent                => Agent,
          Name                 => "Interrupt_Agent",
          Call_Stack_Address   => Null_Address,
          Call_Stack_Size      => Interrupt_Stack_Size,
          Run_Loop             => Interrupt_Run_Loop'Address,
-         Run_Loop_Parameter   => Agent,
+         Run_Loop_Parameter   => Null_Address,
          Normal_Priority      => Priority,
          Initial_State        => Interrupt_Done);
    end New_Interrupt_Agent;
@@ -83,10 +88,10 @@ package body Oak.Agent.Interrupts is
    ---------------------
 
    procedure Set_External_Id
-     (Agent : in Interrupt_Id;
-      Id    : in Oak_Interrupt_Id) is
+     (For_Agent : in Interrupt_Id;
+      Id        : in External_Interrupt_Id) is
    begin
-      Agent_Pool (Agent).External_Id := Id;
+      Agent_Pool (For_Agent).External_Id := Id;
    end Set_External_Id;
 
    ------------------------
@@ -94,10 +99,10 @@ package body Oak.Agent.Interrupts is
    ------------------------
 
    procedure Set_Interrupt_Kind
-     (Agent : in Interrupt_Id;
-      Kind  : in Interrupt_Type) is
+     (For_Agent : in Interrupt_Id;
+      Kind      : in Interrupt_Type) is
    begin
-      Agent_Pool (Agent).Interrupt_Kind := Kind;
+      Agent_Pool (For_Agent).Interrupt_Kind := Kind;
    end Set_Interrupt_Kind;
 
    -------------------------

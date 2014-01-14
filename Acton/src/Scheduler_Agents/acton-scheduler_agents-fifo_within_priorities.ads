@@ -1,31 +1,61 @@
-with Oak.Agent.Schedulers; use Oak.Agent.Schedulers;
-with System;               use System;
+------------------------------------------------------------------------------
+--                                                                          --
+--                           ACTON SCHEDULER AGENT                          --
+--                                                                          --
+--               ACTON.SCHEDULER_AGENTS.FIFO_WITHIN_PRIORITIES              --
+--                                                                          --
+--                                 S p e c                                  --
+--                                                                          --
+--                 Copyright (C) 2010-2014, Patrick Bernardi                --
+------------------------------------------------------------------------------
 
-with Oak.Agent;
+with Oak.Agent; use Oak.Agent;
+with System;    use System;
+
+with Oak.Project_Support_Package; use Oak.Project_Support_Package;
 
 package Acton.Scheduler_Agents.FIFO_Within_Priorities with Preelaborate is
 
-   type FIFO_Within_Priorities (Min_Priority, Max_Priority : Any_Priority)
-     is new Scheduler_Agent with private
-     with Preelaborable_Initialization;
-
    procedure Initialise_Scheduler_Agent
-     (Agent : in out FIFO_Within_Priorities);
-
-   procedure Run_Loop (Self : in out FIFO_Within_Priorities) with No_Return;
+     (Min_Priority : Any_Priority;
+      Max_Priority : Any_Priority;
+      Oak_Kernel   : Kernel_Id);
 
    Stack_Size : constant := 1 * 1024;
-   Agent_Name : constant String := "Fixed_Priority_Scheduler";
 
 private
-   type Agent_Array is
-     array (System.Any_Priority range <>) of access
-     Oak.Agent.Oak_Agent'Class;
 
-   type FIFO_Within_Priorities (Min_Priority, Max_Priority : Any_Priority)
-     is new Scheduler_Agent (Min_Priority, Max_Priority) with record
-      Runnable_Queues : Agent_Array (Min_Priority .. Max_Priority);
-      Sleeping_Queues : Agent_Array (Min_Priority .. Max_Priority);
+   Max_Schedulable_Agents : constant :=
+                              Max_Scheduler_Agents + Max_Task_Agents +
+                                Max_Protected_Agents;
+
+   type Storage_Id is mod Max_Schedulable_Agents + 1;
+
+   No_Node : constant Storage_Id := Storage_Id'First;
+
+   type Queue is record
+      Head, Tail : Oak_Agent_Id;
+   end record;
+
+   type Queues is
+     array (System.Any_Priority range <>) of Queue;
+
+   type Scheduler_Element is record
+      Agent : Oak_Agent_Id;
+      Next  : Storage_Id;
+   end record;
+
+   type Elements is array (Storage_Id)
+     of Scheduler_Element;
+
+   type Scheduler_Storage (Min, Max : Any_Priority) is record
+      Agents : Elements;
+
+      Runnable_Queues : Queues (Min .. Max);
+      Sleeping_Queues : Queues (Min .. Max);
+
+      Bulk_Free : Storage_Id := No_Node + 1;
+      Free_List : Storage_Id;
    end record;
 
 end Acton.Scheduler_Agents.FIFO_Within_Priorities;

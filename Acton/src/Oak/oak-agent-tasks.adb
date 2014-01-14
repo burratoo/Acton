@@ -11,9 +11,10 @@
 
 with Ada.Cyclic_Tasks; use Ada.Cyclic_Tasks;
 
-with Oak.Agent.Oak_Agent; use Oak.Agent.Oak_Agent;
-with Oak.Scheduler;       use Oak.Scheduler;
-with Oak.States;          use Oak.States;
+with Oak.Agent.Oak_Agent;         use Oak.Agent.Oak_Agent;
+with Oak.Agent.Protected_Objects; use Oak.Agent.Protected_Objects;
+with Oak.Scheduler;               use Oak.Scheduler;
+with Oak.States;                  use Oak.States;
 
 package body Oak.Agent.Tasks is
 
@@ -40,7 +41,7 @@ package body Oak.Agent.Tasks is
       Deadline_Handler  : in Ada.Cyclic_Tasks.Response_Handler;
       Scheduler_Agent   : in Scheduler_Id_With_No := No_Agent;
       Chain             : in out Task_List;
-      Elaborated        : in Address)
+      Elaborated        : in Address := Null_Address)
    is
       P  : Any_Priority;
    begin
@@ -99,8 +100,8 @@ package body Oak.Agent.Tasks is
                T.Budget_Action := Fill_Event_Timer_Data
                  (Timer_Action     => Handler,
                   Handler_Priority =>
-                     Protected_Object_From_Access
-                    (Budget_Handler).Normal_Priority,
+                     Oak_Agent.Normal_Priority
+                    (Protected_Object_From_Access (Budget_Handler)),
                   Agent_To_Handle  => Agent,
                   Handler          => Budget_Handler);
 
@@ -119,8 +120,8 @@ package body Oak.Agent.Tasks is
                New_Event_Timer
                  (Timer        => T.Deadline_Timer,
                   Priority     =>
-                     Protected_Object_From_Access
-                    (Deadline_Handler).Normal_Priority,
+                     Oak_Agent.Normal_Priority (Protected_Object_From_Access
+                    (Deadline_Handler)),
                   Timer_Action => Handler,
                   Agent        => Agent,
                   Handler      => Deadline_Handler);
@@ -224,6 +225,23 @@ package body Oak.Agent.Tasks is
       Agent_Pool (For_Task).Next_Queue := Next_Queue;
    end Set_Next_Queue;
 
+   ---------------------------------
+   -- Set_Protected_Entry_Request --
+   ---------------------------------
+
+   procedure Set_Protected_Entry_Request
+     (For_Task         : Task_Id;
+      Protected_Object : Protected_Id;
+      Subprogram_Kind  : Protected_Subprogram_Type;
+      Entry_Id         : Entry_Index)
+   is
+      T : Task_Agent_Record renames Agent_Pool (For_Task);
+   begin
+      T.Protected_Object := Protected_Object;
+      T.Subprogram_Kind  := Subprogram_Kind;
+      T.Id_Of_Entry      := Entry_Id;
+   end Set_Protected_Entry_Request;
+
    ---------------------------
    -- Set_Relative_Deadline --
    ---------------------------
@@ -254,9 +272,9 @@ package body Oak.Agent.Tasks is
             T.Relative_Deadline := Property_To_Update.Deadline_Span;
       end case;
 
-      Scheduler.Inform_Scheduler_Agent_Task_Has_Changed_State
-        (Changed_Task     => For_Task,
-         Next_Task_To_Run => Next_Task_To_Run);
+      Inform_Scheduler_Agent_Has_Changed_State
+        (Changed_Agent     => For_Task,
+         Next_Agent_To_Run => Next_Task_To_Run);
    end Update_Task_Property;
 
 end Oak.Agent.Tasks;

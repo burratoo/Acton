@@ -15,10 +15,8 @@ package Oak.Agent.Tasks.Activation with Preelaborate is
 
    procedure Continue_Activation
      (Activator        : in Task_Id;
-      Activation_List  : in Task_List;
       Next_Task_To_Run : out Task_Id);
-   --  Continues the activation process. The task that is activating a set
-   --  of tasks contained within the activation chain is called the Activator.
+   --  Continues the activation process.
    --  The procedure will select an unactivated task once each call until all
    --  the tasks in the list have been activated, in which case the Activator
    --  task will be selected to run. If a task terminates instead of
@@ -26,7 +24,6 @@ package Oak.Agent.Tasks.Activation with Preelaborate is
 
    procedure Finish_Activation
      (Activator        : in Task_Id;
-      Activation_List  : in Task_List;
       Next_Task_To_Run : out Task_Id);
    --  Called when all tasks on the activation chain have been activated.
    --  Releases the tasks on the chain (i.e. they get added to their scheduler
@@ -39,5 +36,13 @@ package Oak.Agent.Tasks.Activation with Preelaborate is
    --  Called when a task within the activation list fails at either its
    --  elaboration or activation. Causes any storage associated with the tasks
    --  to be deallocated.
+
+   procedure Start_Activation
+     (Activator        : in Task_Id;
+      Activation_List  : in Task_List;
+      Next_Task_To_Run : out Task_Id);
+   --  Starts the activation of a list of tasks within the activation list. The
+   --  task that is activating a set of tasks contained within the activation
+   --  chain is called the Activator.
 
 end Oak.Agent.Tasks.Activation;

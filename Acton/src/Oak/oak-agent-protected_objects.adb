@@ -10,11 +10,12 @@
 ------------------------------------------------------------------------------
 
 with Ada.Unchecked_Conversion;
-with Oak.Scheduler;
 
-with Oak.Agent.Oak_Agent; use Oak.Agent.Oak_Agent;
-with Oak.Agent.Tasks;     use Oak.Agent.Tasks;
-with Oak.Oak_Time;        use Oak.Oak_Time;
+with Oak.Agent.Oak_Agent;         use Oak.Agent.Oak_Agent;
+with Oak.Agent.Protected_Objects; use Oak.Agent.Protected_Objects;
+with Oak.Agent.Tasks;             use Oak.Agent.Tasks;
+with Oak.Oak_Time;                use Oak.Oak_Time;
+with Oak.Scheduler;               use Oak.Scheduler;
 
 with Oak.Processor_Support_Package; use Oak.Processor_Support_Package;
 
@@ -301,11 +302,8 @@ package body Oak.Agent.Protected_Objects is
       Setup_Oak_Agent : declare
          SA : Scheduler_Id_With_No;
       begin
-         --  Find Scheduler Agent if needed
-         if SA = No_Agent then
-            SA := Scheduler.Find_Scheduler_For_System_Priority
-              (Ceiling_Priority, 1);
-         end if;
+         SA := Scheduler.Find_Scheduler_For_System_Priority
+           (Ceiling_Priority, 1);
 
          New_Agent
            (Agent              => Agent,
@@ -357,7 +355,8 @@ package body Oak.Agent.Protected_Objects is
             Set_Next_Agent (For_Agent => T, Next_Agent => No_Agent);
             Set_Next_Queue (For_Task  => T, Next_Queue => No_Agent);
             Set_Id_Of_Entry (For_Task => T, Entry_Id => No_Entry);
-
+            Set_State (For_Agent => T, State => New_Task_State);
+            Add_Agent_To_Scheduler (Agent => T);
             T := Next_T;
          end loop;
 
@@ -373,10 +372,10 @@ package body Oak.Agent.Protected_Objects is
    is
       P : Protected_Agent_Record renames Agent_Pool (PO);
 
-      Entry_Id       : Entry_Index     := Id_Of_Entry (T);
-      Prev_Q         : Task_Id_With_No := No_Agent;
-      Q              : Task_Id_With_No := P.Entry_Queues;
-      New_Q          : Task_Id_With_No := P.Entry_Queues;
+      Entry_Id       : constant Entry_Index := Id_Of_Entry (T);
+      Prev_Q         : Task_Id_With_No      := No_Agent;
+      Q              : Task_Id_With_No      := P.Entry_Queues;
+      New_Q          : Task_Id_With_No      := P.Entry_Queues;
       Queue_Entry_Id : Entry_Index;
 
    begin
@@ -438,14 +437,9 @@ package body Oak.Agent.Protected_Objects is
          Set_Next_Agent (For_Agent => Prev_Q, Next_Agent => Next_Agent (Q));
       end if;
 
-      --  There is the possiblity that the agent was not on the list so we need
-      --  to guard for this case.
-
-      if T /= No_Agent then
-         Set_Next_Agent  (For_Agent => T, Next_Agent => No_Agent);
-         Set_Next_Queue  (For_Task  => T, Next_Queue => No_Agent);
-         Set_Id_Of_Entry (For_Task  => T, Entry_Id  => No_Entry);
-      end if;
+      Set_Next_Agent  (For_Agent => T, Next_Agent => No_Agent);
+      Set_Next_Queue  (For_Task  => T, Next_Queue => No_Agent);
+      Set_Id_Of_Entry (For_Task  => T, Entry_Id  => No_Entry);
 
    end Remove_Task_From_Entry_Queue;
 

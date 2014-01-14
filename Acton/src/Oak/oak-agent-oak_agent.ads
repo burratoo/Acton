@@ -85,7 +85,7 @@ package Oak.Agent.Oak_Agent with Preelaborate is
    --  Charges the specified execution time to the agent.
 
    procedure Charge_Execution_Time_To_List
-     (List             : in Agent_List;
+     (List             : in Charge_List_Head;
       Exec_Time        : in Oak_Time.Time_Span;
       Current_Priority : in Oak_Priority);
    --  Charges the provided execution time to agents on the the specified
@@ -109,7 +109,7 @@ package Oak.Agent.Oak_Agent with Preelaborate is
    --  or is removed from the scheduler.
 
    function Earliest_Expiring_Budget
-     (Charge_List : in Agent_List) return Oak_Agent_Id;
+     (Charge_List : in Charge_List_Head) return Oak_Agent_Id;
    --  Returns the id of the agent that has the eariliest expiring budget.
    --  If the list is empty it will return No_Agent.
 

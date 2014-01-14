@@ -24,7 +24,7 @@ package body Oak.Agent.Tasks.Cycle is
    ----------------
 
    subtype Event_Based is Behaviour range Aperiodic .. Sporadic;
-   subtype Time_Based is Behaviour range Sporadic .. Periodic;
+   subtype Time_Based  is Behaviour range Sporadic  .. Periodic;
    --  These two subtypes categorise the behaviour of the different cyclic
    --  kinds.
 
@@ -33,10 +33,10 @@ package body Oak.Agent.Tasks.Cycle is
    ---------------
 
    procedure New_Cycle
-     (For_Task         : in  Task_Id;
-      Next_Task_To_Run : out Oak_Agent_Id)
+     (For_Task          : in  Task_Id;
+      Next_Agent_To_Run : out Oak_Agent_Id)
    is
-      T : Task_Agent_Record renames Agent_Pool (For_Agent);
+      T : Task_Agent_Record renames Agent_Pool (For_Task);
    begin
 
       --  Update execution statistics
@@ -108,8 +108,9 @@ package body Oak.Agent.Tasks.Cycle is
             --  Notify the task's scheduler agent that the state of the task
             --  has changed.
 
-            Inform_Scheduler_Agent_Task_Has_Changed_State
-              (For_Task, Next_Task_To_Run => Next_Task_To_Run);
+            Inform_Scheduler_Agent_Has_Changed_State
+              (Changed_Agent     => For_Task,
+               Next_Agent_To_Run => Next_Agent_To_Run);
 
          when Event_Based =>
             --  The handling of Aperiodic and Sporadic tasks depends on if an
@@ -130,26 +131,27 @@ package body Oak.Agent.Tasks.Cycle is
 
                   T.Event_Raised := False;
                   Set_Next_Deadline_For_Task
-                    (Task_To_Release, Using => Wake_Up_Time);
+                    (For_Task, Using => Wake_Up_Time);
                   T.Next_Run_Cycle :=
-                    Wake_Time (Task_To_Release) + T.Cycle_Period;
+                    Wake_Time (For_Task) + T.Cycle_Period;
 
-                  Inform_Scheduler_Agent_Task_Has_Changed_State
-                    (For_Task, Next_Task_To_Run => Next_Task_To_Run);
+                  Inform_Scheduler_Agent_Has_Changed_State
+                    (Changed_Agent     => For_Task,
+                     Next_Agent_To_Run => Next_Agent_To_Run);
 
                when False =>
                   --  While a aperiodic or sporadic task is waiting for an
                   --  event, it is removed from its scheduler agent. Its state
                   --  is set to Waiting_For_Event.
 
-                  Remove_Agent_From_Scheduler (T);
+                  Remove_Agent_From_Scheduler (For_Task);
                   Deactivate_Timer (T.Deadline_Timer);
                   Set_State (For_Task, Waiting_For_Event);
 
-                  Check_Sechduler_Agents_For_Next_Task_To_Run
-                    (Scheduler_Info   =>
-                        Core.Scheduler_Info  (Core.Oak_Instance).all,
-                     Next_Task_To_Run => Next_Task_To_Run);
+                  Check_Sechduler_Agents_For_Next_Agent_To_Run
+                    (From_Scheduler_Agent =>
+                        Scheduler_Agent_For_Agent (For_Task),
+                     Next_Agent_To_Run    => Next_Agent_To_Run);
             end case;
 
          when Normal =>
@@ -158,8 +160,9 @@ package body Oak.Agent.Tasks.Cycle is
             --  place the task at the end of its runnable queue.
 
             Set_Next_Deadline_For_Task (For_Task, Using => Clock_Time);
-            Inform_Scheduler_Agent_Task_Has_Changed_State
-              (For_Task, Next_Task_To_Run => Next_Task_To_Run);
+            Inform_Scheduler_Agent_Has_Changed_State
+              (Changed_Agent     => For_Task,
+               Next_Agent_To_Run => Next_Agent_To_Run);
       end case;
 
    end New_Cycle;
@@ -169,15 +172,15 @@ package body Oak.Agent.Tasks.Cycle is
    ------------------
 
    procedure Release_Task
-     (Task_To_Release  : in Task_Id;
-      Releasing_Task   : in Oak_Agent_Id;
-      Next_Task_To_Run : out Oak_Agent_Id)
+     (Task_To_Release   : in  Task_Id;
+      Releasing_Agent   : in  Oak_Agent_Id;
+      Next_Agent_To_Run : out Oak_Agent_Id)
    is
       T : Task_Agent_Record renames Agent_Pool (Task_To_Release);
       C : Oak_Time.Time;
 
    begin
-      Set_State (For_Agent => Releasing_Task, State => Runnable);
+      Set_State (For_Agent => Releasing_Agent, State => Runnable);
 
       if State (Task_To_Release) = Waiting_For_Event then
 
@@ -215,14 +218,15 @@ package body Oak.Agent.Tasks.Cycle is
          --  run next.
 
          Add_Agent_To_Scheduler (Task_To_Release);
-         Check_Sechduler_Agents_For_Next_Task_To_Run
-           (Scheduler_Info   => Core.Scheduler_Info (Core.Oak_Instance).all,
-            Next_Task_To_Run => Next_Task_To_Run);
+         Check_Sechduler_Agents_For_Next_Agent_To_Run
+           (From_Scheduler_Agent =>
+              Scheduler_Agent_For_Agent (Task_To_Release),
+            Next_Agent_To_Run    => Next_Agent_To_Run);
 
       else
          --  Make a note that the event have been raised in the target task.
          T.Event_Raised := True;
-         Next_Task_To_Run := Releasing_Task;
+         Next_Agent_To_Run := Releasing_Agent;
       end if;
 
    end Release_Task;
@@ -234,9 +238,11 @@ package body Oak.Agent.Tasks.Cycle is
    --  Task state on entry: Setup_Cycle.
    --  Task selected on exit: T.
 
-   procedure Setup_Cyclic_Section (For_Task : in Task_Id)
+   procedure Setup_Cyclic_Section
+     (For_Task          : in Task_Id;
+      Next_Agent_To_Run : out Oak_Agent_Id)
    is
-      T : Task_Agent_Record renames Agent_Pool (Agent);
+      T : Task_Agent_Record renames Agent_Pool (For_Task);
    begin
       Set_State (For_Agent => For_Task, State => Runnable);
 
@@ -244,6 +250,8 @@ package body Oak.Agent.Tasks.Cycle is
       T.Event_Raised   := False;
 
       Deactivate_Timer (T.Deadline_Timer);
+
+      Next_Agent_To_Run := For_Task;
    end Setup_Cyclic_Section;
 
 end Oak.Agent.Tasks.Cycle;

@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                              OAK COMPONENTS                              --
+--                           ACTON SCHEDULER AGENT                          --
 --                                                                          --
 --              ACTON.SCHEDULER_AGENTS.FIFO_WITHIN_PRIORITIES               --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                 Copyright (C) 2013-2014, Patrick Bernardi                --
+--                 Copyright (C) 2010-2014, Patrick Bernardi                --
 ------------------------------------------------------------------------------
 
 with Oak.Agent; use Oak.Agent;
@@ -17,58 +17,87 @@ with Oak.Message; use Oak.Message;
 with Oak.Oak_Time;         use Oak.Oak_Time;
 with Oak.States; use Oak.States;
 with Oak.Scheduler; use Oak.Scheduler;
-with Oak.Core;
+
+with Oak.Agent.Schedulers; use Oak.Agent.Schedulers;
+
+with Oak.Core;      use Oak.Core;
+with Oak.Scheduler; use Oak.Scheduler;
 
 package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
 
-   package Queue renames Oak.Agent.Queue;
+   -----------------------
+   -- Local Subprograms --
+   -----------------------
+
+   procedure Run_Loop with No_Return;
+
+   --------------------------------
+   -- Initialise_Scheduler_Agent --
+   --------------------------------
 
    procedure Initialise_Scheduler_Agent
-     (Agent : in out FIFO_Within_Priorities) is
+     (Min_Priority : Any_Priority;
+      Max_Priority : Any_Priority;
+      Oak_Kernel   : Kernel_Id)
+   is
+      Agent : Scheduler_Id;
    begin
-      Initialise_Scheduler_Agent
-        (Agent           => Agent'Unchecked_Access,
-         Name            => Agent_Name,
-         Call_Stack_Size => Stack_Size,
-         Run_Loop        => Run_Loop'Address);
-
-      Agent.Runnable_Queues := (others => null);
-      Agent.Sleeping_Queues := (others => null);
+      New_Scheduler_Agent
+        (Agent                => Agent,
+         Name                 => "Fixed_Priority_Scheduler",
+         Call_Stack_Size      => Stack_Size,
+         Run_Loop             => Run_Loop'Address,
+         Lowest_Priority      => Min_Priority,
+         Highest_Priority     => Max_Priority)
 
       Add_Scheduler_To_Scheduler_Table
-        (Scheduler_Info => Oak.Core.Oak_Instance.Scheduler_Info.all,
-         Scheduler      => Agent'Unchecked_Access);
+        (Scheduler_Info => Oak_Kernel,
+         Scheduler      => Agent);
    end Initialise_Scheduler_Agent;
 
    --------------
    -- Run_Loop --
    --------------
 
-   procedure Run_Loop  (Self : in out FIFO_Within_Priorities) is
-      Run_Reason      : Agent_State;
-      Runnable_Queues : Agent_Array renames Self.Runnable_Queues;
-      Sleeping_Queues : Agent_Array renames Self.Sleeping_Queues;
+   procedure Run_Loop is
+
+      Me : constant Scheduler_Id := Current_Agent (This_Oak_Kernel);
+
+      Pool : Scheduler_Storage (Lowest_Resposible_Priority (Me),
+                                Highest_Resposible_Priority (Me));
 
       Scheduler_Error1 : exception;
 
-      procedure Select_Next_Task;
-      procedure Task_Yielded;
-      procedure Add_Task;
-      procedure Remove_Task;
-
-      procedure Insert_Into_Sleeping_Queue
-        (T     : access Oak_Agent'Class);
+      procedure Add_Agent (Agent : in Oak_Agent_Id);
 
       procedure Add_Task_To_End_Of_Runnable_Queue
-        (Task_To_Add : access Oak_Agent'Class);
+        (Task_To_Add : in Oak_Agent_Id);
+
+      procedure Agent_Changed (Agent : in Oak_Agent_Id);
+
+      procedure Insert_Into_Sleeping_Queue (Agent : in Oak_Agent_Id);
+
       procedure Move_Woken_Tasks;
 
-      procedure Run_Iteration (Self : in out FIFO_Within_Priorities);
+      procedure Remove_Agent (Agent : in Oak_Agent_Id);
 
-      procedure Run_Iteration (Self : in out FIFO_Within_Priorities) is
+      procedure Select_Next_Task (Selected_Agent : out Oak_Agent_Id);
+
+      procedure Service_Agent (Message : in out Oak_Message);
+
+      procedure Service_Agent (Message : in out Oak_Message) is
       begin
-         null;
-
+         case Message.Message_Type is
+            when Agent_State_Change =>
+               Task_Yielded;
+            when Adding_Agent =>
+               Add_Agent (Message.Agent_To_Add);
+            when Removing_Agent =>
+               Remove_Task (Message.Agent_To_Remove);
+            when others =>
+               null;
+         end case;
+         Select_Next_Task;
       end Run_Iteration;
 
       --------------------------
@@ -247,21 +276,11 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
          end loop;
       end Move_Woken_Tasks;
 
+      Message : Oak_Message := (Kind => Scheduler_Agent_Done, L => 0);
    begin
       loop
-         Run_Reason := Self.Agent_Message.Message_Type;
-         case Run_Reason is
-            when Agent_State_Change =>
-               Task_Yielded;
-            when Adding_Agent =>
-               Add_Task;
-            when Removing_Agent =>
-               Remove_Task;
-            when others =>
-               null;
-         end case;
-         Select_Next_Task;
-         Yield_Processor_To_Kernel;
+         Perform_Quick_Switch (Message);
+         Service_Agent (Message);
       end loop;
    end Run_Loop;
 

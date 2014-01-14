@@ -756,7 +756,6 @@ package body Oak.Storage.Time_Priority_Pool is
    --                         B        C
    --
 
-
    procedure Rotate_Right
      (Pool    : in out Pool_Type;
       Node_Id : in Node_Location)

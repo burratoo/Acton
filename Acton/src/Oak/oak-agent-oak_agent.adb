@@ -54,11 +54,11 @@ package body Oak.Agent.Oak_Agent is
    -----------------------------------
 
    procedure Charge_Execution_Time_To_List
-     (List             : in Agent_List;
+     (List             : in Charge_List_Head;
       Exec_Time        : in Oak_Time.Time_Span;
       Current_Priority : in Oak_Priority)
    is
-      Agent : Oak_Agent_Id := List.Head;
+      Agent : Oak_Agent_Id := List;
    begin
       while Agent /= No_Agent loop
          case Agent_Pool (Agent).When_To_Charge is
@@ -97,11 +97,11 @@ package body Oak.Agent.Oak_Agent is
    ------------------------------
 
    function Earliest_Expiring_Budget
-     (Charge_List : in Agent_List) return Oak_Agent_Id
+     (Charge_List : in Charge_List_Head) return Oak_Agent_Id
    is
-      Selected_Agent : Oak_Agent_Id := Charge_List.Head;
+      Selected_Agent : Oak_Agent_Id := Charge_List;
       Agent          : Oak_Agent_Id :=
-                         Agent_Pool (Charge_List.Head).Next_Agent;
+                         Agent_Pool (Charge_List).Next_Agent;
    begin
       while Agent /= No_Agent loop
          if Agent_Pool (Agent).Remaining_Budget

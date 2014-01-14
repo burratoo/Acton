@@ -11,7 +11,9 @@
 
 with Oak.Oak_Time;
 
+with Oak.Agent.Kernel;    use Oak.Agent.Kernel;
 with Oak.Agent.Oak_Agent; use Oak.Agent.Oak_Agent;
+with Oak.Core;            use Oak.Core;
 with Oak.Scheduler;       use Oak.Scheduler;
 with Oak.States;          use Oak.States;
 
@@ -23,22 +25,16 @@ package body Oak.Agent.Tasks.Activation is
 
    procedure Continue_Activation
      (Activator        : in Task_Id;
-      Activation_List  : in Task_List;
       Next_Task_To_Run : out Task_Id)
    is
-      T : Task_Id;
+      T : Task_Id_With_No;
    begin
-      --  Possibly redundant check to make sure that the Activator has tasks to
-      --  activate
-      if Activation_List = No_Agent then
-         raise Program_Error with "Activator has no tasks to activate!";
-      end if;
-
       --  Loop through activation list to find the first task whose state is
       --  Activation_Pending or Terminated. If we reach the end of the list
-      --  then all tasks have activated successfully.
+      --  then all tasks have activated successfully. The next agent link
+      --  in the activator stores the head of the activation list.
 
-      T := Activation_List;
+      T := Next_Agent (Activator);
 
       while T /= No_Agent
         and then (State (T) = Activation_Pending or State (T) = Terminated)
@@ -68,7 +64,7 @@ package body Oak.Agent.Tasks.Activation is
 
                Purge_Activation_List
                  (Activator        => Activator,
-                  Activation_List  => Activation_List,
+                  Activation_List  => Next_Agent (Activator),
                   Next_Task_To_Run => Next_Task_To_Run);
 
             when others =>
@@ -84,10 +80,11 @@ package body Oak.Agent.Tasks.Activation is
 
    procedure Finish_Activation
      (Activator        : in Task_Id;
-      Activation_List  : in Task_List;
       Next_Task_To_Run : out Task_Id)
    is
-      T, Prev_T : Task_Id := Activation_List;
+      T, Prev_T : Task_Id_With_No := Next_Agent (Activator);
+      --  Note that the activation list head lives in the Next_Agent field of
+      --  the Activator.
    begin
       --  Release each task in the activation list since if we got this far all
       --  tasks will have been activated.
@@ -102,12 +99,20 @@ package body Oak.Agent.Tasks.Activation is
          Prev_T := T;
          T := Next_Agent (T);
 
-         Set_Next_Agent (For_Agent =>  T, Next_Agent => No_Agent);
+         Set_Next_Agent (For_Agent =>  Prev_T, Next_Agent => No_Agent);
       end loop;
 
       --  The activator can now continue.
 
       Set_State (For_Agent => Activator, State => Runnable);
+
+      --  Need to check from top scheduler agent since an activator task may
+      --  activate children task who may be managed by a higher priority
+      --  scheduler.
+
+      Check_Sechduler_Agents_For_Next_Agent_To_Run
+        (From_Scheduler_Agent => Top_Level_Schedulers (This_Oak_Kernel),
+         Next_Agent_To_Run    => Next_Task_To_Run);
    end Finish_Activation;
 
    ---------------------------
@@ -119,7 +124,8 @@ package body Oak.Agent.Tasks.Activation is
       Activation_List  : in Task_List;
       Next_Task_To_Run : out Task_Id)
    is
-      T, Delete_T : Task_Id := Activation_List;
+      T        : Task_Id_With_No := Activation_List;
+      Delete_T : Task_Id;
    begin
       while T /= No_Agent loop
 
@@ -134,7 +140,28 @@ package body Oak.Agent.Tasks.Activation is
       end loop;
 
       Set_State (For_Agent => Activator, State => Activation_Failed);
-
+      Next_Task_To_Run := Activator;
    end Purge_Activation_List;
+
+   ----------------------
+   -- Start_Activation --
+   ----------------------
+
+   procedure Start_Activation
+     (Activator        : in Task_Id;
+      Activation_List  : in Task_List;
+      Next_Task_To_Run : out Task_Id) is
+   begin
+      --  Possibly redundant check to make sure that the Activator has tasks to
+      --  activate
+      if Activation_List = No_Agent then
+         raise Program_Error with "Activator has no tasks to activate!";
+      end if;
+
+      --  Store activation list in the activator's next agent link.
+      Set_Next_Agent (For_Agent => Activator, Next_Agent => Activation_List);
+
+      Next_Task_To_Run := Activator;
+   end Start_Activation;
 
 end Oak.Agent.Tasks.Activation;

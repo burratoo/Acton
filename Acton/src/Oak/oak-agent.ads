@@ -145,7 +145,7 @@ package Oak.Agent with Pure is
 
    subtype Task_List is Task_Id_With_No;
 
-   subtype Charge_List is Oak_Agent_Id;
+   subtype Charge_List_Head is Oak_Agent_Id;
 
    Agent_Pool_Capacity_Error : exception;
    --  An error raised when there is no more room in an Agent Pool.

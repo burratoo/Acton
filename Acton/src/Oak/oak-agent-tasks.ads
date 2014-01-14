@@ -102,6 +102,16 @@ package Oak.Agent.Tasks with Preelaborate is
      with Pre => Has_Task (T), Inline;
    --  Return the phase of the task.
 
+   function Protected_Subprogram_Kind
+     (For_Task : in Task_Id)
+      return Protected_Subprogram_Type;
+   --  Return the protected subprogram kind that the task wishes to acccess.
+
+   function Protected_Agent_To_Access
+     (For_Task : in Task_Id)
+      return Protected_Id;
+   --  Return the protected agent the the agent wishes to enter or is inside.
+
    procedure Set_Cycle_Period
      (For_Task     : in Task_Id;
       Cycle_Period : in Oak_Time.Time_Span)
@@ -121,9 +131,17 @@ package Oak.Agent.Tasks with Preelaborate is
    --  deadline is less than Time_Last.
 
    procedure Set_Next_Queue
-     (For_Task : Task_Id;
+     (For_Task   : Task_Id;
       Next_Queue : Task_Id_With_No);
    --  Set the task that represents the next queue.
+
+   procedure Set_Protected_Entry_Request
+     (For_Task         : Task_Id;
+      Protected_Object : Protected_Id;
+      Subprogram_Kind  : Protected_Subprogram_Type;
+      Entry_Id         : Entry_Index);
+   --  Set the corresponding components of the task agent to store the entry
+   --  request.
 
    procedure Set_Relative_Deadline
      (For_Task          : in Task_Id;
@@ -187,10 +205,18 @@ private
       --  A flag to indicate if an event has occured and thus allowing a
       --  sporadic or aperiodic task to commence its next cycle.
 
-      --  Entry Properties
+      --  Protected Object Properties
+
+      Subprogram_Kind   : Protected_Subprogram_Type;
+      --  The type of protected subprogram that the task will execute inside
+      --  a protected object.
+
+      Protected_Object  : Protected_Id;
+      --  The protected object that the task wishes to enter.
 
       Id_Of_Entry       : Entry_Index;
-      --  The entry that the task is either in or is queued to enter.
+      --  The entry that the task is either in, is queued to enter or wishes to
+      --  enter.
 
       Next_Queue        : Oak_Agent_Id;
       --  Points to the next entry queue.
@@ -202,6 +228,7 @@ private
       --  has been elaborated. We do not do anything with the boolean in Oak,
       --  only hang on to it for the activation subprogam in Oakland which
       --  needs it stored somewhere.
+
    end record;
 
    ------------------------
@@ -244,5 +271,15 @@ private
 
    function Phase (T : in Task_Id) return Oak_Time.Time_Span is
      (Agent_Pool (T).Phase);
+
+   function Protected_Subprogram_Kind
+     (For_Task : in Task_Id)
+      return Protected_Subprogram_Type is
+     (Agent_Pool (For_Task).Subprogram_Kind);
+
+   function Protected_Agent_To_Access
+     (For_Task : in Task_Id)
+      return Protected_Id is
+     (Agent_Pool (For_Task).Protected_Object);
 
 end Oak.Agent.Tasks;

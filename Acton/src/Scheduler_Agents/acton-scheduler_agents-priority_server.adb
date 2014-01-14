@@ -1,4 +1,3 @@
-with Oak.Agent.Queue;
 with Oak.Message;   use Oak.Message;
 with Oak.Scheduler; use Oak.Scheduler;
 with Oak.States;    use Oak.States;

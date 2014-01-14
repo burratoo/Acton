@@ -1,12 +1,11 @@
 with Oak.Oak_Time;
 
-with Oak.Agent;   use Oak.Agent;
-with Oak.Indices; use Oak.Indices;
-with Oak.States;  use Oak.States;
+with Oak.Agent;      use Oak.Agent;
+with Oak.Indices;    use Oak.Indices;
+with Oak.Interrupts; use Oak.Interrupts;
+with Oak.States;     use Oak.States;
 
-limited with Oak.Interrupts;
-
-package Oak.Message with Pure is
+package Oak.Message with Preelaborate is
 
    type Protected_Subprogram_Type is
      (Protected_Function,
@@ -24,8 +23,14 @@ package Oak.Message with Pure is
       end case;
    end record;
 
-   type Oak_Message (Message_Type : Agent_State := No_State) is record
+   --
+
+   type Oak_Message (Message_Type : Agent_State; L : Natural)
+   is record
       case Message_Type is
+         when Activation_Complete =>
+            Activation_List         : Task_List;
+
          when Sleeping =>
             Wake_Up_At              : Oak_Time.Time;
             Remove_From_Charge_List : Boolean;
@@ -46,7 +51,7 @@ package Oak.Message with Pure is
             PO_Exit           : Protected_Id;
 
          when Attach_Interrupt_Handlers =>
-            Attach_Handlers   : access Oak.Interrupts.Interrupt_Handler_Array;
+            Attach_Handlers   : Interrupt_Handler_Array (1 .. L);
             Attach_Handler_PO : Protected_Id;
 
          when Selecting_Next_Agent =>
@@ -75,10 +80,5 @@ package Oak.Message with Pure is
    end record;
 
    type Yielded_State is (Timer, Interrupt, Voluntary);
-
-   type Oak_Message_Store is record
-      Yield_Status : Yielded_State;
-      Message      : Oak_Message;
-   end record;
 
 end Oak.Message;

@@ -19,8 +19,8 @@ with Oak.Agent.Storage;
 with Oak.Processor_Support_Package.Interrupts;
 use Oak.Processor_Support_Package.Interrupts;
 
-with Oak.Timers;        use Oak.Timers;
-with System;            use System;
+with Oak.Timers; use Oak.Timers;
+with System;     use System;
 
 package Oak.Agent.Interrupts with Preelaborate is
 
@@ -47,14 +47,14 @@ package Oak.Agent.Interrupts with Preelaborate is
    --  storage for the Task Agent data structure and any dependents.
 
    procedure Set_External_Id
-     (Agent : in Interrupt_Id;
-      Id    : in External_Interrupt_Id);
+     (For_Agent : in Interrupt_Id;
+      Id        : in External_Interrupt_Id);
    --  Sets the external id of the external interrupt that the Agent will
    --  handle.
 
    procedure Set_Interrupt_Kind
-     (Agent : in Interrupt_Id;
-      Kind  : in Interrupt_Type);
+     (For_Agent : in Interrupt_Id;
+      Kind      : in Interrupt_Type);
    --  Sets the kind of interrupt that the Agent will handle. See the
    --  Interrupt_Type for the kinds of interrupts that the Agent can handle.
 
@@ -104,7 +104,7 @@ private
    -- Private Subprograms --
    -------------------------
 
-   procedure Interrupt_Run_Loop (Self : in Interrupt_Id);
+   procedure Interrupt_Run_Loop;
    --  The run loop of the interrupt agent.
 
    --------------------------

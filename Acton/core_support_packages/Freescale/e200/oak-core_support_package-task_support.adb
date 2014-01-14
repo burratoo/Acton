@@ -1,3 +1,15 @@
+------------------------------------------------------------------------------
+--                                                                          --
+--                         OAK CORE SUPPORT PACKAGE                         --
+--                              FREESCALE e200                              --
+--                                                                          --
+--                  OAK.CORE_SUPPORT_PACKAGE.TASK_SUPPORT                   --
+--                                                                          --
+--                                 B o d y                                  --
+--                                                                          --
+--                 Copyright (C) 2010-2014, Patrick Bernardi                --
+------------------------------------------------------------------------------
+
 with System;                         use System;
 with System.Machine_Code;            use System.Machine_Code;
 
@@ -32,6 +44,15 @@ package body Oak.Core_Support_Package.Task_Support is
    begin
       null;
    end Context_Switch_To_Kernel;
+
+   ------------------
+   -- Quick_Switch --
+   ------------------
+
+   procedure Quick_Switch is
+   begin
+      Asm ("sc", Volatile => True);
+   end Quick_Switch;
 
    -------------------------------
    -- Yield_Processor_To_Kernel --

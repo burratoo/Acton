@@ -63,7 +63,7 @@ package Oak.Agent.Schedulers with Preelaborate is
       To    : in Any_Priority);
    --  Stores the priority range that the Scheduler Agent is responisble for.
 
-   function Scheduler_Timer
+   function Timer_For_Scheduler_Agent
      (Agent : in Scheduler_Id)
       return Oak_Timer_Id;
    --  Returns the timer associated with the Scheduler Agent, used to run the
@@ -117,7 +117,7 @@ private
      (Agent : in Scheduler_Id)
       return Any_Priority is (Agent_Pool (Agent).Lowest_Priority);
 
-   function Scheduler_Timer
+   function Timer_For_Scheduler_Agent
      (Agent : in Scheduler_Id)
       return Oak_Timer_Id
       is (Agent_Pool (Agent).Run_Timer);

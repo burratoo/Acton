@@ -1,17 +1,30 @@
+------------------------------------------------------------------------------
+--                                                                          --
+--                         OAK CORE SUPPORT PACKAGE                         --
+--                                                                          --
+--                    OAK.CORE_SUPPORT_PACKAGE.INTERRUPTS                   --
+--                                                                          --
+--                                 B o d y                                  --
+--                                                                          --
+--                 Copyright (C) 2010-2014, Patrick Bernardi                --
+------------------------------------------------------------------------------
+
 with ISA;
 with ISA.Power.e200.Timer_Registers;
 with ISA.Power.e200.z6.HID;
 with ISA.Power.e200.Processor_Control_Registers;
 use ISA.Power.e200.Processor_Control_Registers;
 
-with Oak.Core;
+with Oak.Agent;           use Oak.Agent;
+with Oak.Agent.Kernel;    use Oak.Agent.Kernel;
+with Oak.Agent.Oak_Agent; use Oak.Agent.Oak_Agent;
+
+with Oak.Core;    use Oak.Core;
+
 with Oak.Processor_Support_Package.Interrupts;
 with Oak.Core_Support_Package.Task_Support;
-with Oak.Message; use Oak.Message;
 
-with System;                                     use System;
 with System.Machine_Code;                        use System.Machine_Code;
-with Oak.Agent.Schedulers;
 
 package body Oak.Core_Support_Package.Interrupts is
 
@@ -143,8 +156,8 @@ package body Oak.Core_Support_Package.Interrupts is
            Inputs   => Address'Asm_Input ("m", IVOR8_CS_To_Kernel),
            Volatile => True);
 
-      Task_Stack_Pointer := Core.Current_Agent_Stack_Pointer;
-      if Core.Current_Agent.all in Agent.Schedulers.Scheduler_Agent'Class then
+      Task_Stack_Pointer := Stack_Pointer (Current_Agent (This_Oak_Kernel));
+      if Current_Agent (This_Oak_Kernel) in Scheduler_Id then
          Asm
            ("mtsrr1   %0",
             Inputs   => Machine_State_Register_Type'Asm_Input
@@ -292,7 +305,7 @@ package body Oak.Core_Support_Package.Interrupts is
            Inputs   => (Address'Asm_Input ("m", IVOR8_CS_To_Task)),
            Volatile => True);
 
-      Core.Set_Current_Agent_Stack_Pointer (SP => Task_Stack_Pointer);
+      Set_Stack_Pointer (Current_Agent (This_Oak_Kernel), Task_Stack_Pointer);
 
       Asm
         ("mtsrr1   %0",
@@ -366,7 +379,7 @@ package body Oak.Core_Support_Package.Interrupts is
          "evstdd r9,   8(r1)",
          Volatile => True);
 
-      Oak.Core.Current_Task.Set_Agent_Yield_Status (Message.Timer);
+--        Oak.Core.Current_Task.Set_Agent_Yield_Status (Message.Timer);
 
       Asm
         ("evldd  r9,   8(r1)" & ASCII.LF & ASCII.HT &
@@ -385,7 +398,7 @@ package body Oak.Core_Support_Package.Interrupts is
          "evstdd r9,   8(r1)",
          Volatile => True);
 
-      Oak.Core.Current_Task.Set_Agent_Yield_Status (Message.Interrupt);
+--        Oak.Core.Current_Task.Set_Agent_Yield_Status (Message.Interrupt);
 
       Asm
         ("evldd  r9,   8(r1)" & ASCII.LF & ASCII.HT &
