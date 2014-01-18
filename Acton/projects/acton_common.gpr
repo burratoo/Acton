@@ -21,7 +21,7 @@ abstract project Acton_Common is
                               "Oak.Processor_Support_Package", "Oak.Processor_Support_Package.Interrupts", "Oak.Timers",
                          "System", "System.Assertions", "System.Exceptions_Debug", "System.Machine_Code", "System.Multiprocessors", "System.Standard_Library", "System.Storage_Elements", "System.Unsigned_Types",
 
-                         "Ada.Execution_Server.Priority_Server", "Acton.Scheduler_Agents.Priority_Server", "Ada.Execution_Server.Ops",
+                         "Ada.Execution_Server.Priority_Server", "Acton.Scheduler_Agents.Priority_Server",
                          "Oak.Project_Support_Package",
                              --  Only needed for their ali files
                          "Oak.Agent.Tasks.Cycle",

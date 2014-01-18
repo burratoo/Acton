@@ -56,14 +56,17 @@ package body Oak.Agent.Oak_Agent is
    procedure Charge_Execution_Time_To_List
      (List             : in Charge_List_Head;
       Exec_Time        : in Oak_Time.Time_Span;
+      Current_Agent    : in Oak_Agent_Id;
       Current_Priority : in Oak_Priority)
    is
       Agent : Oak_Agent_Id := List;
    begin
       while Agent /= No_Agent loop
          case Agent_Pool (Agent).When_To_Charge is
-            when Do_Not_Charge =>
-               null;
+            when Only_While_Running =>
+               if Agent = Current_Agent then
+                  Charge_Execution_Time (Agent, Exec_Time);
+               end if;
 
             when Same_Priority =>
                if Current_Priority = Agent_Pool (Agent).Normal_Priority then
@@ -129,6 +132,12 @@ package body Oak.Agent.Oak_Agent is
       A : Oak_Agent_Record renames Agent_Pool (For_Agent);
    begin
       A.Execution_Cycles := A.Execution_Cycles + By;
+
+      if A.Current_Execution_Time > A.Max_Execution_Time then
+         A.Max_Execution_Time := A.Current_Execution_Time;
+      end if;
+
+      A.Current_Execution_Time := Time_Span_Zero;
    end Increment_Execution_Cycle_Count;
 
    ---------------

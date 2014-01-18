@@ -16,12 +16,13 @@ with Oak.Project_Support_Package; use Oak.Project_Support_Package;
 
 package Acton.Scheduler_Agents.FIFO_Within_Priorities with Preelaborate is
 
-   procedure Initialise_Scheduler_Agent
+   procedure New_Scheduler_Agent
      (Min_Priority : Any_Priority;
       Max_Priority : Any_Priority;
       Oak_Kernel   : Kernel_Id);
 
    Stack_Size : constant := 1 * 1024;
+   Agent_Name : constant String := "Fixed_Priority_Scheduler";
 
 private
 
@@ -33,13 +34,6 @@ private
 
    No_Node : constant Storage_Id := Storage_Id'First;
 
-   type Queue is record
-      Head, Tail : Oak_Agent_Id;
-   end record;
-
-   type Queues is
-     array (System.Any_Priority range <>) of Queue;
-
    type Scheduler_Element is record
       Agent : Oak_Agent_Id;
       Next  : Storage_Id;
@@ -48,11 +42,25 @@ private
    type Elements is array (Storage_Id)
      of Scheduler_Element;
 
-   type Scheduler_Storage (Min, Max : Any_Priority) is record
-      Agents : Elements;
+   type Queue is record
+      Head, Tail : Storage_Id;
+   end record;
 
-      Runnable_Queues : Queues (Min .. Max);
-      Sleeping_Queues : Queues (Min .. Max);
+   Empty_Queue : constant Queue := (Head => No_Node, Tail => No_Node);
+
+   type Queues is
+     array (System.Any_Priority range <>) of Queue;
+
+   type Scheduler_Storage (Min, Max : Any_Priority) is record
+   --  Storage is currently very similar to the time priority pool when it
+   --  comes to allocating from an array.
+
+      Pool : Elements;
+
+      Runnable_Queues : Queues (Min .. Max) :=
+                          (others => (No_Node, No_Node));
+      Sleeping_Queues : Queues (Min .. Max) :=
+                          (others => (No_Node, No_Node));
 
       Bulk_Free : Storage_Id := No_Node + 1;
       Free_List : Storage_Id;

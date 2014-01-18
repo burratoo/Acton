@@ -28,7 +28,7 @@ package Oak.Message with Preelaborate is
    type Oak_Message (Message_Type : Agent_State; L : Natural)
    is record
       case Message_Type is
-         when Activation_Complete =>
+         when Activation_Pending =>
             Activation_List         : Task_List;
 
          when Sleeping =>

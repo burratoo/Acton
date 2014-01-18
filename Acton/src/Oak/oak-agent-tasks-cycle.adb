@@ -42,10 +42,6 @@ package body Oak.Agent.Tasks.Cycle is
       --  Update execution statistics
 
       Increment_Execution_Cycle_Count (For_Agent => For_Task, By => 1);
-      if Current_Execution_Time (For_Task) > Max_Execution_Time (For_Task) then
-         Set_Max_Execution_Time (For_Task, Current_Execution_Time (For_Task));
-      end if;
-      Set_Current_Execution_Time (For_Task, Time_Span_Zero);
       Set_Remaining_Budget (For_Task, T.Execution_Budget);
 
       --  The task at this points sleeps. The wake time of the task will be

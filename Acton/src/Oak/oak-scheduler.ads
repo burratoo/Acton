@@ -47,6 +47,11 @@ package Oak.Scheduler with Preelaborate is
    --  Notifies the scheduler responsible for the given task that the task has
    --  changed state.
 
+   procedure New_Scheduler_Cycle
+     (Scheduler         : in  Scheduler_Id;
+      Next_Agent_To_Run : out Oak_Agent_Id);
+   --  Starts a new cycle for the scheduler agent.
+
    procedure Remove_Agent_From_Scheduler (Agent : in Oak_Agent_Id);
    --  Removes the agent from its scheduler.
 

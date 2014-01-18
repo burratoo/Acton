@@ -1,87 +1,210 @@
-with Oak.Message;   use Oak.Message;
+------------------------------------------------------------------------------
+--                                                                          --
+--                           ACTON SCHEDULER AGENT                          --
+--                                                                          --
+--                  ACTON.SCHEDULER_AGENTS.PRIORITY_SERVER                  --
+--                                                                          --
+--                                 B o d y                                  --
+--                                                                          --
+--                 Copyright (C) 2013-2014, Patrick Bernardi                --
+------------------------------------------------------------------------------
+
+with Oak.Message;  use Oak.Message;
+with Oak.States;   use Oak.States;
+
+with Oak.Agent.Kernel;     use Oak.Agent.Kernel;
+with Oak.Agent.Oak_Agent;  use Oak.Agent.Oak_Agent;
+with Oak.Agent.Schedulers; use Oak.Agent.Schedulers;
+
+with Oak.Core;      use Oak.Core;
+with Oak.Storage;   use Oak.Storage;
 with Oak.Scheduler; use Oak.Scheduler;
-with Oak.States;    use Oak.States;
-with Oak.Timers;    use Oak.Timers;
-with Oak.Core;
-with Oak.Core_Support_Package.Task_Support;
-use Oak.Core_Support_Package.Task_Support;
 
 package body Acton.Scheduler_Agents.Priority_Server is
-   procedure Initialise_Scheduler_Agent
-     (Agent : in out Priority_Server) is
-   begin
-      raise Program_Error;
-   end Initialise_Scheduler_Agent;
 
-   procedure Initialise_Scheduler_Agent
-     (Agent             : in out Priority_Server;
+   -----------------------
+   -- Local Subprograms --
+   -----------------------
+
+   procedure Run_Loop with No_Return;
+
+   -------------------------
+   -- New_Scheduler_Agent --
+   -------------------------
+
+   procedure New_Scheduler_Agent
+     (Agent             : out Scheduler_Id;
+      Min_Priority      : in Any_Priority;
+      Max_Priority      : in Any_Priority;
+      Oak_Kernel        : in Kernel_Id;
       Budget            : in Time_Span;
-      Priority          : in Any_Priority;
       Period            : in Time_Span;
       Phase             : in Time_Span;
       Relative_Deadline : in Time_Span;
-      CPU               : in CPU_Range) is
-      pragma Unreferenced (CPU);
+      CPU               : in CPU_Range)
+   is
+      pragma Unreferenced (Max_Priority);
    begin
-      Agent.Set_Priority_Range (From => Priority, To => Priority);
+      New_Scheduler_Agent
+        (Agent                 => Agent,
+         Name                  => Agent_Name,
+         Call_Stack_Size       => Stack_Size,
+         Run_Loop              => Run_Loop'Address,
+         Lowest_Priority       => Min_Priority,
+         Highest_Priority      => Min_Priority,
+         Scheduler_Agent       =>
+           Find_Scheduler_For_System_Priority (Min_Priority, CPU),
+         When_To_Charge_Agent  => Below_Priority,
+         Interpret_No_Agent_As => As_Is,
+         Charge_While_No_Agent => True,
+         Agent_Active_Till     => Budget_Exhaustion,
+         Cycle_Period          => Period,
+         Cycle_Phase           => Phase,
+         Relative_Deadline     => Relative_Deadline,
+         Execution_Budget      => Budget);
 
-      Initialise_Scheduler_Agent
-        (Agent                => Agent'Unchecked_Access,
-         Name                 => Agent_Name,
-         Call_Stack_Size      => Stack_Size,
-         Run_Loop             => Run_Loop'Address,
-         When_To_Charge_Agent => Below_Priority);
+      Add_Scheduler_To_Scheduler_Table
+        (Oak_Kernel =>  Oak_Kernel,
+         Scheduler  => Agent);
+   end New_Scheduler_Agent;
 
-      Agent.Period               := Period;
-      Agent.Phase                := Phase;
-      Agent.Relative_Deadline    := Relative_Deadline;
-      Agent.Execution_Budget     := Budget;
-      Agent.Set_Remaining_Budget (Budget);
+   --------------
+   -- Run_Loop --
+   --------------
 
-      Agent.Set_Wake_Time (Oak.Core.Global_Start_Time + Phase);
-      Agent.Next_Wake_Time := Agent.Wake_Time + Period;
-      Agent.Scheduler_Timer.Update_Timer (Time_Last);
+   procedure Run_Loop is
 
-      Agent.Set_Scheduler_Agent
-        (Find_Scheduler_For_System_Priority (Priority => Priority, CPU => 0));
+      Me : constant Scheduler_Id := Current_Agent (This_Oak_Kernel);
 
-      Agent.Set_State (Sleeping);
-   end Initialise_Scheduler_Agent;
-
-   procedure Run_Loop (Self : in out Priority_Server) is
-      Run_Reason     : Agent_State;
-      Runnable_Queue : access Oak_Agent'Class renames Self.Runnable_Queue;
-      Sleeping_Queue : access Oak_Agent'Class renames Self.Sleeping_Queue;
-      Wake_Time      : Time;
+      Scheduler : Scheduler_Storage (Lowest_Resposible_Priority (Me),
+                                     Highest_Resposible_Priority (Me));
 
       Scheduler_Error1 : exception;
 
-      procedure Task_Yielded;
-      procedure Add_Task;
-      procedure Remove_Task;
+      --------------------------
+      -- Run Loop Subprograms --
+      --------------------------
 
-      procedure Insert_Into_Sleeping_Queue
-        (T     : access Oak_Agent'Class);
+      procedure Add_Agent_To_End_Of_Runnable_Queue
+        (Agent_Sid : in Storage_Id);
 
-      procedure Add_Task_To_End_Of_Runnable_Queue
-        (Task_To_Add : access Oak_Agent'Class);
+      procedure Add_Agent_To_Scheduler (Agent : in Oak_Agent_Id);
+
+      procedure Agent_Changed (Agent : in Oak_Agent_Id);
+
+      procedure Insert_Into_Sleeping_Queue (Agent_Sid : in Storage_Id);
+
       procedure Move_Woken_Tasks;
 
-      ------------------
-      -- Task_Yielded --
-      ------------------
+      procedure Remove_Agent_From_Scheduler (Agent : in Oak_Agent_Id);
 
-      procedure Task_Yielded is
-         Yielded_Task : constant access Oak_Agent'Class :=
-                          Self.Agent_Message.Agent_That_Changed;
+      procedure Select_Next_Task
+        (Message : out Oak_Message);
+
+      procedure Service_Agent (Message : in out Oak_Message);
+
+      ---------------------------------------
+      -- Add_Task_To_End_Of_Runnable_Queue --
+      ---------------------------------------
+
+      procedure Add_Agent_To_End_Of_Runnable_Queue
+        (Agent_Sid : in Storage_Id)
+      is
+         Agent : constant Oak_Agent_Id := Scheduler.Pool (Agent_Sid).Agent;
+         P     : constant Any_Priority := Normal_Priority (Agent);
+
+         Queue_Head_Id  : Storage_Id renames
+                            Scheduler.Runnable_Queues (P).Head;
+
+         Queue_Tail_Id  : Storage_Id renames
+                            Scheduler.Runnable_Queues (P).Tail;
+
+         Queue_Tail     : Scheduler_Element renames
+                            Scheduler.Pool (Queue_Tail_Id);
+
       begin
-         case Yielded_Task.State is
+         Scheduler.Pool (Agent_Sid).Next := No_Node;
+         Queue_Tail.Next := Agent_Sid;
+         Queue_Tail_Id   := Agent_Sid;
+
+         if Queue_Head_Id = No_Node then
+            Queue_Head_Id := Agent_Sid;
+         end if;
+
+      end Add_Agent_To_End_Of_Runnable_Queue;
+
+      ----------------------------
+      -- Add_Agent_To_Scheduler --
+      ----------------------------
+
+      procedure Add_Agent_To_Scheduler (Agent : in Oak_Agent_Id) is
+         Agent_Sid : Storage_Id;
+      begin
+         --  Storage allocation follows the Storage.Time_Priority_Pool.
+
+         if Scheduler.Free_List = No_Node then
+            --  The free list is empty so we allocate a node from the bulk free
+            --  store.
+
+            if Scheduler.Bulk_Free = No_Node then
+               --  No more room in the pool!
+               raise Pool_Capacity_Error with "No room in the pool!";
+            end if;
+
+            Agent_Sid      := Scheduler.Bulk_Free;
+            Scheduler.Bulk_Free := Scheduler.Bulk_Free + 1;
+
+         else
+            --  Extract a node from the free list.
+
+            Agent_Sid           := Scheduler.Free_List;
+            Scheduler.Free_List := Scheduler.Pool (Scheduler.Free_List).Next;
+         end if;
+
+         if Wake_Time (Agent) < Clock then
+            Add_Agent_To_End_Of_Runnable_Queue (Agent_Sid);
+         else
+            Insert_Into_Sleeping_Queue (Agent_Sid);
+         end if;
+      end Add_Agent_To_Scheduler;
+
+      -------------------
+      -- Agent_Changed --
+      -------------------
+
+      procedure Agent_Changed (Agent : in Oak_Agent_Id)
+      is
+         Agent_Priority : constant Any_Priority :=  Normal_Priority (Agent);
+
+         Queue_Head_Id  : Storage_Id renames
+                            Scheduler.Runnable_Queues (Agent_Priority).Head;
+
+         Queue_Head     : Scheduler_Element renames
+                            Scheduler.Pool (Queue_Head_Id);
+
+         Queue_Tail_Id  : Storage_Id renames
+                            Scheduler.Runnable_Queues (Agent_Priority).Tail;
+
+         Queue_Tail     : Scheduler_Element renames
+                            Scheduler.Pool (Queue_Tail_Id);
+
+      begin
+         --  Assumes that the task was in a runnable state before and is the
+         --  head of its runnable queue.
+
+         pragma Assert (Agent = Queue_Head.Agent);
+
+         case State (Agent) is
             when Sleep =>
-               Queue.Remove_Agent
-                 (Queue => Runnable_Queue,
-                  Agent => Yielded_Task);
-               Insert_Into_Sleeping_Queue
-                 (T     => Yielded_Task);
+               --  Remove agent from its runnable queue and insert it into the
+               --  sleep queue.
+
+               Move_Agent_From_Runnable_To_Sleep_Queues : declare
+                  Agent_Sid : constant Storage_Id := Queue_Head_Id;
+               begin
+                  Queue_Head_Id := Queue_Head.Next;
+                  Insert_Into_Sleeping_Queue (Agent_Sid => Agent_Sid);
+               end Move_Agent_From_Runnable_To_Sleep_Queues;
 
             when Activation_Pending    |
                  Activation_Complete   |
@@ -90,203 +213,234 @@ package body Acton.Scheduler_Agents.Priority_Server is
             when Update_Task_Property =>
                null;
             when Runnable =>
-               if Runnable_Queue = Yielded_Task then
-                  Queue.Move_Head_To_Tail (Runnable_Queue);
-               end if;
+               --  Move agent from the head of its queue to its tail.
+
+               Rotate_Queue : declare
+                  New_Head : constant Storage_Id := Queue_Head.Next;
+               begin
+                  Queue_Tail.Next := Queue_Head_Id;
+                  Queue_Head.Next := No_Node;
+
+                  Queue_Tail_Id := Queue_Head_Id;
+                  Queue_Head_Id := New_Head;
+               end Rotate_Queue;
 
             when others =>
                raise Scheduler_Error1;
          end case;
-      end Task_Yielded;
+      end Agent_Changed;
 
-      --------------
-      -- Add_Task --
-      --------------
+      --------------------------------
+      -- Insert_Into_Sleeping_Queue --
+      --------------------------------
 
-      procedure Add_Task is
-         Task_To_Add  : constant access Oak_Agent'Class :=
-                          Self.Agent_Message.Agent_To_Add;
-         Current_Time : constant Time := Clock;
-      begin
-         if Task_To_Add.Wake_Time < Current_Time then
-            Add_Task_To_End_Of_Runnable_Queue (Task_To_Add => Task_To_Add);
-         else
-            Insert_Into_Sleeping_Queue (T => Task_To_Add);
-         end if;
-      end Add_Task;
-
-      -----------------
-      -- Remove_Task --
-      -----------------
-
-      procedure Remove_Task is
-         Task_To_Remove  : constant access Oak_Agent'Class :=
-                             Self.Agent_Message.Agent_To_Remove;
-      begin
-         case Task_To_Remove.State is
-         --  Probably best to move this case to the others.
-
-            when Runnable | Entering_PO |
-                 Waiting_For_Event =>
-               Queue.Remove_Agent
-                 (Queue => Runnable_Queue,
-                  Agent => Task_To_Remove);
-
-            when Sleeping =>
-               Queue.Remove_Agent
-                 (Queue => Sleeping_Queue,
-                  Agent => Task_To_Remove);
-            when others =>
-               raise Scheduler_Error1;
-         end case;
-      end Remove_Task;
-
-      procedure Insert_Into_Sleeping_Queue
-        (T     : access Oak_Agent'Class)
+      procedure Insert_Into_Sleeping_Queue (Agent_Sid : in Storage_Id)
       is
-         Current        : access Oak_Agent'Class := Sleeping_Queue;
-         Task_Wake_Time : constant Time          := T.Wake_Time;
-         Queue_End      : Queue.Queue_End_Point  := Queue.Head;
+         Agent : Oak_Agent_Id renames Scheduler.Pool (Agent_Sid).Agent;
+
+         Sleeping_Queue : Queue renames
+                            Scheduler.Sleeping_Queues
+                              (Normal_Priority (Agent));
+
+         Node_Id         : Storage_Id        := Sleeping_Queue.Head;
+         Prev_Id         : Storage_Id        := No_Node;
+         Current_Node    : Scheduler_Element renames Scheduler.Pool (Node_Id);
+         Current_Agent   : Oak_Agent_Id      renames Current_Node.Agent;
+         Agent_Wake_Time : constant Time     := Wake_Time (Agent);
       begin
-         if Sleeping_Queue = null then
-            Queue.Add_Agent_To_Head
-              (Queue => Sleeping_Queue,
-               Agent => T);
+         if Sleeping_Queue.Head = No_Node then
+            Sleeping_Queue.Head := Agent_Sid;
          else
-            while Task_Wake_Time > Current.Wake_Time loop
-               Current := Queue.Next_Agent (Current);
-               if Current = Sleeping_Queue then
-                  Queue_End := Queue.Tail;
-                  exit;
-               end if;
+            while Node_Id /= No_Node
+              and then Agent_Wake_Time > Wake_Time (Current_Agent)
+            loop
+               Prev_Id := Node_Id;
+               Node_Id := Current_Node.Next;
             end loop;
-            Queue.Add_Agent_Before
-              (Queue  => Sleeping_Queue,
-                Agent => T,
-                Before => Current,
-                Queue_End => Queue_End);
+
+            Scheduler.Pool (Agent_Sid).Next := Node_Id;
+
+            if Prev_Id /= No_Node then
+               Scheduler.Pool (Agent_Sid).Next := Agent_Sid;
+            else
+               --  If Prev_Id is No_Node it means that the sleeping node is
+               --  in front of the head node.
+               Sleeping_Queue.Head := Agent_Sid;
+            end if;
          end if;
       end Insert_Into_Sleeping_Queue;
 
-      procedure Add_Task_To_End_Of_Runnable_Queue
-        (Task_To_Add : access Oak_Agent'Class) is
-      begin
-         Task_To_Add.Set_State (Runnable);
-         Queue.Add_Agent_To_Tail
-           (Queue => Runnable_Queue,
-            Agent => Task_To_Add);
-      end Add_Task_To_End_Of_Runnable_Queue;
+      ----------------------
+      -- Move_Woken_Tasks --
+      ----------------------
 
       procedure Move_Woken_Tasks is
-         Current_Time : constant Time    := Clock;
-         T            : access Oak_Agent'Class;
+         Current_Time : constant Time := Clock;
       begin
-         while Sleeping_Queue /= null
-           and then Current_Time > Sleeping_Queue.Wake_Time
-         loop
-            T := Sleeping_Queue;
-            Queue.Remove_Agent
-              (Queue => Sleeping_Queue,
-               Agent => T);
-            case T.Destination_On_Wake_Up is
-               when Run_Queue =>
-                  Add_Task_To_End_Of_Runnable_Queue (Task_To_Add => T);
-               when Remove =>
-                  null;
-            end case;
+         for Sleeping_Queue of Scheduler.Sleeping_Queues loop
+            declare
+               Node_Id      : Storage_Id    := Sleeping_Queue.Head;
+               Current_Node : Scheduler_Element renames
+                                Scheduler.Pool (Node_Id);
+            begin
+
+               while Node_Id /= No_Node
+                 and then Current_Time > Wake_Time (Current_Node.Agent)
+               loop
+                  --  Remove Agent from sleeping queue...
+
+                  Sleeping_Queue.Head := Scheduler.Pool (Node_Id).Next;
+
+                  --  ... and add it to its runnable queue.
+
+                  Add_Agent_To_End_Of_Runnable_Queue (Node_Id);
+
+                  Node_Id := Sleeping_Queue.Head;
+
+               end loop;
+            end;
          end loop;
       end Move_Woken_Tasks;
 
-   begin
-      loop
-         Run_Reason := Self.Agent_Message.Message_Type;
+      ---------------------------------
+      -- Remove_Agent_From_Scheduler --
+      ---------------------------------
 
-         case Run_Reason is
+      procedure Remove_Agent_From_Scheduler (Agent : in Oak_Agent_Id) is
+
+      begin
+         --  The state of the agent determines which queue it is on.
+
+         case State (Agent) is
+            when Runnable | Entering_PO | Waiting_For_Event =>
+               Remove_Agent_And_Deallocate_Storage : declare
+                  P : constant Any_Priority :=
+                        Normal_Priority (Agent);
+
+                  Queue_Head_Id : Storage_Id renames
+                                    Scheduler.Runnable_Queues (P).Head;
+
+                  Queue_Head    : Scheduler_Element renames
+                                    Scheduler.Pool (Queue_Head_Id);
+
+                  Queue_Tail_Id  : Storage_Id renames
+                                     Scheduler.Runnable_Queues (P).Tail;
+
+                  Old_Storage_Id : constant Storage_Id := Queue_Head_Id;
+               begin
+                  --  For now we can only delete an agent at the head of its
+                  --  queue (the only possible way for an agent to be deleted
+                  --  at the moment).
+
+                  pragma Assert (Agent = Queue_Head.Agent);
+
+                  --  Remove from runnable queue
+
+                  Queue_Head_Id := Queue_Head.Next;
+
+                  if Queue_Tail_Id = Old_Storage_Id then
+                     Queue_Tail_Id := No_Node;
+                  end if;
+
+                  --  Deallocate storage, follows Storage.Time_Priority_Pool.
+
+                  if Old_Storage_Id + 1 = Scheduler.Bulk_Free then
+                     Scheduler.Pool (Old_Storage_Id).Agent := No_Agent;
+                     Scheduler.Pool (Old_Storage_Id).Next := No_Node;
+                     Scheduler.Bulk_Free := Old_Storage_Id;
+
+                  else
+                     Scheduler.Pool (Old_Storage_Id).Next :=
+                       Scheduler.Free_List;
+                     Scheduler.Free_List := Old_Storage_Id;
+                  end if;
+
+               end Remove_Agent_And_Deallocate_Storage;
+
+            when Sleeping =>
+               --  Not supported at this point. Support for it would need
+               --  a double linked list or a tree to ease its removal.
+               raise Scheduler_Error1;
+            when others =>
+               raise Scheduler_Error1;
+         end case;
+      end Remove_Agent_From_Scheduler;
+
+      ----------------------
+      -- Select_Next_Task --
+      ----------------------
+
+      procedure Select_Next_Task
+        (Message : out Oak_Message)
+      is
+         Selected_Agent : Oak_Agent_Id := No_Agent;
+         Wake_Time      : Time         := Time_Last;
+      begin
+         Move_Woken_Tasks;
+
+         --  Find next agent to run
+
+         for Queue of reverse Scheduler.Runnable_Queues loop
+            Selected_Agent := Scheduler.Pool (Queue.Head).Agent;
+            exit when Selected_Agent /= No_Agent;
+         end loop;
+
+         --  Find next time to wake up
+
+         for P in reverse Scheduler.Sleeping_Queues'Range loop
+            exit when P <= Normal_Priority (Selected_Agent);
+
+            if Scheduler.Sleeping_Queues (P).Head /= No_Node
+              and then Oak_Agent.Wake_Time
+                (Scheduler.Pool (Scheduler.Sleeping_Queues (P).Head).Agent) <
+              Wake_Time
+            then
+               --  Test here against No_Agent short circuits the case where
+               --  the sleeping queue is empty, preventing the need to do the
+               --  64 bit memory fetch and comparision.
+
+               Wake_Time :=
+                 Oak_Agent.Wake_Time
+                   (Scheduler.Pool (Scheduler.Sleeping_Queues (P).Head).Agent);
+            end if;
+         end loop;
+
+         Message :=
+           (Message_Type        => Scheduler_Agent_Done, L => 0,
+            Next_Agent          => Selected_Agent,
+            Wake_Scheduler_At   => Wake_Time,
+            Keep_In_Charge_List => False);
+      end Select_Next_Task;
+
+      -------------------
+      -- Service_Agent --
+      -------------------
+
+      procedure Service_Agent (Message : in out Oak_Message) is
+      begin
+         case Message.Message_Type is
             when Agent_State_Change =>
-               Task_Yielded;
+               Agent_Changed (Message.Agent_That_Changed);
             when Adding_Agent =>
-               Add_Task;
+               Add_Agent_To_Scheduler (Message.Agent_To_Add);
             when Removing_Agent =>
-               Remove_Task;
+               Remove_Agent_From_Scheduler (Message.Agent_To_Remove);
             when others =>
                null;
          end case;
+         Select_Next_Task (Message);
+      end Service_Agent;
 
-         Move_Woken_Tasks;
+      Message : Oak_Message :=
+                  (Message_Type        => Scheduler_Agent_Done, L => 0,
+                   Next_Agent          => No_Agent,
+                   Wake_Scheduler_At   => Time_Last,
+                   Keep_In_Charge_List => False);
 
-         --  If the agent was sleeping, it stays asleep. The agent can run
-         --  while it is technically sleeping so as to add and remove tasks
-         --  from it. It will also run when its budget is exhausted, even
-         --  if it is still sleeping. In this case, we remove the agent from
-         --  the charge list.
-
-         if Self.State = Sleeping then
-            if Self.Remaining_Budget <= Time_Span_Zero then
-               Self.Set_Agent_Message
-                    (Message => (Message_Type          => Continue_Sleep,
-                                 Remain_In_Charge_List => False));
-            else
-               Self.Set_Agent_Message
-                    (Message => (Message_Type          => Continue_Sleep,
-                                 Remain_In_Charge_List => True));
-            end if;
-
-         --  The clock has passed the agent's budget exhausted time, sleep the
-         --  agent and its tasks until the next wake up time.
-
-         elsif Self.Remaining_Budget <= Time_Span_Zero
-           and then Self.Next_Wake_Time >= Clock
-         then
-
-            Self.Set_Agent_Message
-              (Message => (Message_Type            => Sleeping,
-                           Wake_Up_At              => Self.Next_Wake_Time,
-                           Remove_From_Charge_List => True));
-
-            Self.Set_Remaining_Budget (To_Amount => Self.Execution_Budget);
-            Self.Next_Wake_Time := Self.Next_Wake_Time + Self.Period;
-
-         --  The agent is active, its timer is set to the lesser of
-         --  the budget exhuasted time and the eariliest wake time of its
-         --  tasks in the agent's sleeping queue
-
-         else
-            --  Next_Wake_Time has passed and we are still running, but have
-            --  not exhausted the budget. Replenish budget and continue.
-
-            if Self.Next_Wake_Time < Clock then
-               Self.Set_Remaining_Budget (To_Amount => Self.Execution_Budget);
-               Self.Next_Wake_Time := Self.Next_Wake_Time + Self.Period;
-            end if;
-
-            if Sleeping_Queue /= null
-              and then Sleeping_Queue.Wake_Time < Self.Next_Wake_Time
-            then
-               Wake_Time := Sleeping_Queue.Wake_Time;
-            else
-               Wake_Time := Self.Next_Wake_Time;
-            end if;
-
-            --  If there is nothing to run the agent sleeps
-
-            if Runnable_Queue = null then
-               Self.Set_Agent_Message
-                 (Message => (Message_Type            => Sleeping,
-                              Wake_Up_At              => Wake_Time,
-                              Remove_From_Charge_List => False));
-
-            --  Otherwise the task returns the chosen task
-
-            else
-               Self.Set_Agent_Message
-                 (Message => (Message_Type        => Scheduler_Agent_Done,
-                              Next_Agent          => Runnable_Queue,
-                              Wake_Scheduler_At   => Wake_Time,
-                              Keep_In_Charge_List => True));
-            end if;
-         end if;
-
-         Yield_Processor_To_Kernel;
+   begin
+      loop
+         Perform_Quick_Switch (Message);
+         Service_Agent (Message);
       end loop;
    end Run_Loop;
 

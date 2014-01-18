@@ -119,10 +119,11 @@ package body Oak.Timers is
       Activate  : in  Boolean := False)
    is
       New_Timer : constant Oak_Timer :=
-                    (Fire_Time   => Fire_Time,
-                     Priority    => Priority,
-                     Kind        => Scheduler_Timer,
-                     Scheduler   => Scheduler);
+                    (Fire_Time        => Fire_Time,
+                     Priority         => Priority,
+                     Kind             => Scheduler_Timer,
+                     Scheduler        => Scheduler,
+                     Scheduler_Action => Service);
    begin
       New_Item
         (Pool        => Pool,
@@ -148,6 +149,29 @@ package body Oak.Timers is
                       Priority   => Priority (Timer),
                       Data       => Data));
    end Set_Timer_Event_Data;
+
+   --------------------------------
+   -- Set_Timer_Scheduler_Action --
+   --------------------------------
+
+   procedure Set_Timer_Scheduler_Action
+     (Timer            : in Oak_Timer_Id;
+      Scheduler_Action : in Scheduler_Timer_Action)
+   is
+   begin
+      Replace_Item
+        (Pool     => Pool,
+         Item_Id  => Timer,
+         Contents => (Kind             => Scheduler_Timer,
+                      Fire_Time        => Firing_Time (Timer),
+                      Priority         => Priority (Timer),
+                      Scheduler        => Scheduler_Agent (Timer),
+                      Scheduler_Action => Scheduler_Action));
+   end Set_Timer_Scheduler_Action;
+
+   ------------------
+   -- Update_Timer --
+   ------------------
 
    procedure Update_Timer
      (Timer    : in Oak_Timer_Id;

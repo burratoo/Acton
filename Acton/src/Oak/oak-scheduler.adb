@@ -17,9 +17,6 @@ with Oak.Oak_Time;         use Oak.Oak_Time;
 with Oak.States;           use Oak.States;
 with Oak.Timers;           use Oak.Timers;
 
-with Oak.Core_Support_Package.Task_Support;
-use Oak.Core_Support_Package.Task_Support;
-
 package body Oak.Scheduler is
 
    -----------------------
@@ -77,9 +74,7 @@ package body Oak.Scheduler is
       --  If a top-level scheduler agent returns another scheduler agent, we
       --  need to keep searching until we find a non-scheduler agent.
 
-      while Next_Agent_To_Run /= No_Agent
-        and then Next_Agent_To_Run in Scheduler_Id
-      loop
+      while Next_Agent_To_Run in Scheduler_Id loop
          Next_Agent_To_Run := Agent_To_Run (Next_Agent_To_Run);
       end loop;
    end Check_Sechduler_Agents_For_Next_Agent_To_Run;
@@ -137,6 +132,41 @@ package body Oak.Scheduler is
       end if;
    end Inform_Scheduler_Agent_Has_Changed_State;
 
+   -------------------------
+   -- New_Scheduler_Cycle --
+   -------------------------
+
+   procedure New_Scheduler_Cycle
+     (Scheduler         : in  Scheduler_Id;
+      Next_Agent_To_Run : out Oak_Agent_Id)
+   is
+      New_Wake_Time : constant Time := Time_Next_Cycle_Commences (Scheduler);
+      RD            : constant Time_Span :=
+                        Scheduler_Relative_Deadline (Scheduler);
+      EB            : constant Time_Span :=
+                        Scheduler_Execution_Budget (Scheduler);
+
+   begin
+      Deactivate_Timer (Timer_For_Scheduler_Agent (Scheduler));
+      Set_Wake_Time (Scheduler, New_Wake_Time);
+      Set_Next_Cycle_Start_Time
+        (Scheduler  => Scheduler,
+         Start_Time => New_Wake_Time + Scheduler_Cycle_Period (Scheduler));
+
+      if RD < Time_Span_Last then
+         Set_Absolute_Deadline (Scheduler, New_Wake_Time + RD);
+      end if;
+
+      Set_Remaining_Budget (Scheduler, To_Amount => EB);
+
+      Increment_Execution_Cycle_Count (For_Agent => Scheduler, By => 1);
+
+      Set_State (For_Agent => Scheduler, State => Sleeping);
+      Inform_Scheduler_Agent_Has_Changed_State
+        (Changed_Agent     => Scheduler,
+         Next_Agent_To_Run => Next_Agent_To_Run);
+   end New_Scheduler_Cycle;
+
    ---------------------------------
    -- Remove_Agent_From_Scheduler --
    ---------------------------------
@@ -157,9 +187,10 @@ package body Oak.Scheduler is
      (Agent  : in Scheduler_Id;
       Reason : in Oak_Message)
    is
-      SA           : Scheduler_Id_With_No := Agent;
-      Message      : Oak_Message          := Reason;
-      My_Kernel_Id : constant Kernel_Id   := This_Oak_Kernel;
+      SA                : Scheduler_Id_With_No := Agent;
+      Message           : Oak_Message          := Reason;
+      My_Kernel_Id      : constant Kernel_Id   := This_Oak_Kernel;
+      Agent_Prior_State : Agent_State;
 
    begin
       --  Use a loop rather than recursion to limit and protected the stack.
@@ -175,9 +206,8 @@ package body Oak.Scheduler is
          Remove_Agent_From_Charge_List (My_Kernel_Id, SA);
          Add_Agent_To_Charge_List (My_Kernel_Id, SA);
 
-         --  Run Scheduler Agent. ????? This will need fixing for the new stuff
+         --  Run Scheduler Agent.
 
-         --  SA.Set_Agent_Message (Message);
          Switch_To_Scheduler_Agent (SA, Message);
 
          --  React to the scheduler agent's response.
@@ -188,72 +218,173 @@ package body Oak.Scheduler is
                --  of its return message and set up its timer for its next run
                --  so it can serivce its queues.
 
+               --  Store the scehduler agent's selected task inside the agent
+               --  data stucture
+
                Set_Agent_To_Run (SA, Message.Next_Agent);
-               Set_State (For_Agent => SA, State => Runnable);
-               Set_Wake_Time (SA, Wake_Time => Message.Wake_Scheduler_At);
-               Update_Timer
-                 (Timer    => Timer_For_Scheduler_Agent (SA),
-                  New_Time => Message.Wake_Scheduler_At);
 
-               if not Message.Keep_In_Charge_List then
-                  Remove_Agent_From_Charge_List
-                    (Oak_Kernel => My_Kernel_Id,
-                     Agent      => SA);
-               end if;
+               --  Update the agent's state to runnable (since the scheduler
+               --  agent cannot do it itself). Note the sleep agent is alway
+               --  runnable and is equivilent to No_Agent, hence no test needs
+               --  to be done here.
 
-               --  If the agent to run is a scheduler agent we will run it now.
+               Agent_Prior_State := State (Message.Next_Agent);
+               Set_State (Message.Next_Agent, Runnable);
 
-               if Message.Next_Agent in Scheduler_Id then
-                  SA := Message.Next_Agent;
-                  Message := (Message_Type => Selecting_Next_Agent, L => 0);
-               else
-                  --  Otherwise we are done
-                  SA := No_Agent;
-               end if;
+               --  From here it depends on whether the scheduler agent was
+               --  sleeping or runnable.
 
-            when Sleeping =>
-               --  The scheduler agent has decided to go to sleep. This occurs
-               --  for non-top-level scheduler agents whose execution budgets
-               --  have expired.
+               case State (SA) is
+                  when Runnable =>
+                     --  The scheduler agent is in a runnable state. Wake_Time
+                     --  is used to set the scheduler timer to enable the agent
+                     --  to manage its queues when needed.
 
-               Set_State (For_Agent => SA, State => Sleeping);
-               Set_Agent_To_Run (For_Agent => SA, Agent_To_Run => No_Agent);
-               Set_Wake_Time (For_Agent => SA,
-                              Wake_Time => Message.Wake_Up_At);
-               Deactivate_Timer (Timer_For_Scheduler_Agent (SA));
+                     Set_Wake_Time
+                       (For_Agent => SA,
+                        Wake_Time => Message.Wake_Scheduler_At);
 
-               if Message.Remove_From_Charge_List then
-                  Remove_Agent_From_Charge_List
-                    (Oak_Kernel => My_Kernel_Id, Agent => SA);
-               end if;
+                     --  How the timer is updated depends how long the
+                     --  the scheduler is active for.
 
-               --  Notify the scheduler agent's own scheduler agent that its
-               --  state has changed.
+                     case Scheduler_Active_Till (SA) is
+                        when Always_Active =>
+                           Update_Timer
+                             (Timer    => Timer_For_Scheduler_Agent (SA),
+                              New_Time => Message.Wake_Scheduler_At);
 
-               Message := (Message_Type       => Agent_State_Change,
-                           Agent_That_Changed => SA, L => 0);
-               SA := Scheduler_Agent_For_Agent (SA);
+                        when Deadline =>
+                           if Message.Wake_Scheduler_At <
+                             Absolute_Deadline (SA) then
+                              Update_Timer
+                                (Timer    => Timer_For_Scheduler_Agent (SA),
+                                 New_Time => Message.Wake_Scheduler_At);
+                              Set_Timer_Scheduler_Action
+                                (Timer            =>
+                                   Timer_For_Scheduler_Agent (SA),
+                                 Scheduler_Action => Service);
+                           else
+                              Update_Timer
+                                (Timer    => Timer_For_Scheduler_Agent (SA),
+                                 New_Time => Absolute_Deadline (SA));
+                              Set_Timer_Scheduler_Action
+                                (Timer            =>
+                                   Timer_For_Scheduler_Agent (SA),
+                                 Scheduler_Action => End_Cycle);
+                           end if;
 
-            when Continue_Sleep =>
-               --  A sleeping scheduler agent has run (yes that is possible
-               --  so tasks can be added and removed) and is still sleeping.
-               --  May need to remove from the charge list in the event the
-               --  agent was sleeping while the budget expired.
+                        when Budget_Exhaustion =>
+                           --  Budget expiration is handled in Oak.Core, using
+                           --  the same mechanism as for task agents.
 
-               if not Message.Remain_In_Charge_List then
-                  Remove_Agent_From_Charge_List
-                    (Oak_Kernel => My_Kernel_Id, Agent => SA);
-                  Deactivate_Timer (Timer_For_Scheduler_Agent (SA));
-               end if;
+                           Update_Timer
+                             (Timer    => Timer_For_Scheduler_Agent (SA),
+                              New_Time => Message.Wake_Scheduler_At);
+                     end case;
 
-               --  And we are done.
-               SA := No_Agent;
+                     --  The scheduler agent is only kept on the charge list
+                     --  if its when charge state is not Only_While_Running or
+                     --  if the scheduler agent does not want to be charged
+                     --  while it has the No_Agent selected.
 
-            when others =>
-               --  ??? Should not get here.
-               Remove_Agent_From_Charge_List
-                 (Oak_Kernel => My_Kernel_Id, Agent => SA);
-               SA := No_Agent;
+                     if When_To_Charge (SA) /= Only_While_Running
+                       or else (Message.Next_Agent = No_Agent
+                                and then not Charge_While_No_Agent (SA))
+                     then
+                        Remove_Agent_From_Charge_List
+                          (Oak_Kernel => My_Kernel_Id,
+                           Agent      => SA);
+                     end if;
+
+                     --  Handle the case where the selected agent is itself
+                     --  another scheduler agent (i.e. a nested scheduler
+                     --  agent).
+
+                     if Message.Next_Agent in Scheduler_Id then
+
+                        --  Check the previous state of the scheduler agent
+                        --  before it was selected.
+
+                        if Agent_Prior_State = Sleeping then
+                           --  The scheduler agent was sleeping, but is now
+                           --  runnable. Need to activate its timer and to
+                           --  make things easier service it now if it needs
+                           --  servicing.
+
+                           --  Activate Timer
+
+                           Activate_Timer (Timer_For_Scheduler_Agent (SA));
+
+                           --  Check the scheduler agent's timer to see if
+                           --  it needs servicing
+
+                           if Firing_Time (Timer_For_Scheduler_Agent (SA)) <
+                             Clock
+                           then
+                              --  Has timer that needs servicing
+
+                              SA := Message.Next_Agent;
+                              Message :=
+                                (Message_Type => Selecting_Next_Agent, L => 0);
+                           else
+
+                              --  Otherwise there is nothing to do
+
+                              SA := No_Agent;
+                           end if;
+
+                        else
+                           SA := No_Agent;
+                        end if;
+
+                        --  If there is no agent to run and the scheduler agent
+                        --  is set to treat No_Agent as a No_Agent (and not a
+                        --  sleep agent), then sleep the agent, allowing
+                        --  another task to run.
+
+                        if SA = No_Agent
+                          and then Agent_To_Run (SA) = No_Agent
+                          and then Interpret_No_Agent_As (SA) = As_Is
+                        then
+                           Set_State (Message.Next_Agent, Sleeping);
+                           Message :=
+                             (Message_Type => Agent_State_Change, L => 0,
+                              Agent_That_Changed => Message.Next_Agent);
+                           SA := Scheduler_Agent_For_Agent (SA);
+                        end if;
+                     else
+                        --  The selected agent is not a scheduler agent, so we
+                        --  can exit now.
+
+                        SA := No_Agent;
+
+                     end if;
+
+                  when Sleeping =>
+                     --  The scheduler agent was in a sleeping state when it
+                     --  was run.
+
+                     --  Wake time for the sleeping agent remains unaffected by
+                     --  the value return by the agent. The timer is updated,
+                     --  but remains inactive. This allows the kernel not to
+                     --  have to run the scheduler agent when it wakes up if
+                     --  nothing has changed.
+
+                     Update_Timer
+                       (Timer    => Timer_For_Scheduler_Agent (SA),
+                        New_Time => Message.Wake_Scheduler_At);
+
+                     --  The scheduler agent is removed from the charge list.
+
+                     Remove_Agent_From_Charge_List
+                       (Oak_Kernel => My_Kernel_Id, Agent => SA);
+
+                  when others =>
+                     --  ??? Should not get here.
+                     pragma Assert (False);
+               end case;
+
+            when others => pragma Assert (False);
          end case;
       end loop;
 
@@ -321,7 +452,7 @@ package body Oak.Scheduler is
       Set_Current_Agent
         (Oak_Kernel => My_Kernel_Id, Agent => Scheduler_Agent);
       Update_Exit_Stats (Oak_Kernel => My_Kernel_Id);
-      Perform_Switch (Message);
+      Perform_Quick_Switch (Message);
       Update_Entry_Stats (Oak_Kernel => My_Kernel_Id);
    end Switch_To_Scheduler_Agent;
 

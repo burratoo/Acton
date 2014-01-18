@@ -37,6 +37,11 @@ package Oak.Timers with Preelaborate is
    type Event_Timer_Data is private;
    --  Type used to house data for an Action Timer.
 
+   type Scheduler_Timer_Action is (Service, End_Cycle);
+   --  The type to use to signal what action Oak should do in response to the
+   --  scheduler timer. Service runs the scheduler agent, while End_Cycle
+   --  ends the agent's current cycle and puts the agent to sleep.
+
    -----------------
    -- Subprograms --
    -----------------
@@ -134,11 +139,24 @@ package Oak.Timers with Preelaborate is
    --  Returns the scheduler attached to a scheduler timer.
    --  TIMER KIND: SCHEDULER_TIMER.
 
+   function Scheduler_Action
+     (Timer : in Oak_Timer_Id)
+      return Scheduler_Timer_Action
+     with Pre => Timer_Kind (Timer) = Scheduler_Timer;
+   --  Returns the action that the timer will perform when it fires..
+   --  TIMER KIND: SCHEDULER_TIMER.
+
    procedure Set_Timer_Event_Data
      (Timer : in Oak_Timer_Id;
-      Data  : Event_Timer_Data);
+      Data  : in Event_Timer_Data);
    --  Sets the timing event data provided by the corresponding record;
    --  TIMER KIND: EVENT_TIMER.
+
+   procedure Set_Timer_Scheduler_Action
+     (Timer : in Oak_Timer_Id;
+      Scheduler_Action : in Scheduler_Timer_Action)
+     with Pre => Timer_Kind (Timer) = Scheduler_Timer;
+   --  Sets the scheduler action of the timer.
 
    function Timer_Action (Timer : in Oak_Timer_Id)
      return Ada.Cyclic_Tasks.Event_Response
@@ -218,6 +236,9 @@ private
          when Scheduler_Timer =>
             Scheduler : Scheduler_Id;
             --  The scheduler that will run when the timer fires.
+
+            Scheduler_Action : Scheduler_Timer_Action;
+            --  The action Oak will take when the scheduler timer fires.
 
          when Event_Timer =>
             Data      : Event_Timer_Data;
@@ -301,6 +322,11 @@ private
    function Scheduler_Agent (Timer : in Oak_Timer_Id)
                              return Scheduler_Id is
       (Element (Pool, Timer).Scheduler);
+
+   function Scheduler_Action
+     (Timer : in Oak_Timer_Id)
+      return Scheduler_Timer_Action is
+     (Element (Pool, Timer).Scheduler_Action);
 
    function Timer_Action (Timer : in Oak_Timer_Id)
                           return Ada.Cyclic_Tasks.Event_Response is

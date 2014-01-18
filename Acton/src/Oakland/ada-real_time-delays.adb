@@ -1,3 +1,14 @@
+------------------------------------------------------------------------------
+--                                                                          --
+--                            OAKLAND COMPONENTS                            --
+--                                                                          --
+--                           ADA.REAL_TIME.DELAYS                           --
+--                                                                          --
+--                                 B o d y                                  --
+--                                                                          --
+--                 Copyright (C) 2011-2014, Patrick Bernardi                --
+------------------------------------------------------------------------------
+
 with Oakland.Tasks;
 with Oak.Oak_Time.Conversion; use Oak.Oak_Time.Conversion;
 
@@ -11,11 +22,11 @@ package body Ada.Real_Time.Delays is
 
    procedure Delay_Until (T : Time) is
       Message : constant Oak_Message :=
-        (Message_Type            => Sleeping,
+        (Message_Type            => Sleeping, L => 0,
          Wake_Up_At              => To_Oak_Time (T),
          Remove_From_Charge_List => True);
    begin
-      Oakland.Tasks.Yield_Processor_To_Kernel (Task_Message => Message);
+      Oakland.Tasks.Yield_Processor_To_Kernel (With_Message => Message);
    end Delay_Until;
 
 end Ada.Real_Time.Delays;

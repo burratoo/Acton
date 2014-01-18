@@ -1,61 +1,71 @@
-with Oak.Core;
-with Oakland.Tasks;
+------------------------------------------------------------------------------
+--                                                                          --
+--                            OAKLAND COMPONENTS                            --
+--                                                                          --
+--                         OAKLAND.PROTECTED_OBJECTS                        --
+--                                                                          --
+--                                 B o d y                                  --
+--                                                                          --
+--                 Copyright (C) 2011-2014, Patrick Bernardi                --
+------------------------------------------------------------------------------
 
-with Oak.Agent; use Oak.Agent;
+with Oak.Agent.Kernel;            use Oak.Agent.Kernel;
+with Oak.Agent.Oak_Agent;         use Oak.Agent.Oak_Agent;
 with Oak.Agent.Protected_Objects; use Oak.Agent.Protected_Objects;
-with Oak.Message; use Oak.Message;
+
+with Oak.Core;    use Oak.Core;
 with Oak.States;  use Oak.States;
+
+with Oakland.Tasks; use Oakland.Tasks;
 
 package body Oakland.Protected_Objects is
 
    procedure Enter_Protected_Object
-     (PO              : not null access
-        Oak.Agent.Protected_Objects.Protected_Agent'Class;
-      Subprogram_Kind : in Oak.Message.Protected_Subprogram_Type;
+     (PO              : in Protected_Id;
+      Subprogram_Kind : in Protected_Subprogram_Type;
       Entry_Id        : in Entry_Index := No_Entry)
    is
-      Self : constant access Oak_Agent'Class := Oak.Core.Current_Agent;
+      Self : constant Oak_Agent_Id := Current_Agent (This_Oak_Kernel);
    begin
-      if PO.State = Handling_Interrupt then
+      if State (PO) = Handling_Interrupt then
          return;
       else
-         Tasks.Yield_Processor_To_Kernel
-           (Task_Message =>
-             (Message_Type       => Entering_PO,
+         Yield_Processor_To_Kernel
+           (With_Message =>
+             (Message_Type       => Entering_PO, L => 0,
                  PO_Enter        => PO,
                  Subprogram_Kind => Subprogram_Kind,
                  Entry_Id_Enter  => Entry_Id));
-         if Self.State = Enter_PO_Refused then
+         if State (Self) = Enter_PO_Refused then
             raise Program_Error;
-         elsif Self.State = Entering_PO then
+         elsif State (Self) = Entering_PO then
             raise Program_Error;
          end if;
       end if;
    end Enter_Protected_Object;
 
-   procedure Exit_Protected_Object
-     (PO : not null access Protected_Agent'Class)
+   procedure Exit_Protected_Object (PO : Protected_Id)
    is
-      Self : constant access Oak_Agent'Class := Oak.Core.Current_Agent;
+      Self : constant Oak_Agent_Id := Current_Agent (This_Oak_Kernel);
    begin
-      if PO.State = Handling_Interrupt then
+      if State (PO) = Handling_Interrupt then
          return;
       else
-         Tasks.Yield_Processor_To_Kernel
-           (Task_Message =>
-             (Message_Type  => Exiting_PO,
+         Yield_Processor_To_Kernel
+           (With_Message =>
+             (Message_Type  => Exiting_PO, L => 0,
               PO_Exit       => PO));
-         if Self.State = Exit_PO_Error then
+         if State (Self) = Exit_PO_Error then
             raise Program_Error;
          end if;
       end if;
    end Exit_Protected_Object;
 
    function Entry_Count
-     (PO       : not null access Protected_Agent'Class;
+     (PO       : in Protected_Id;
       Entry_Id : Entry_Index) return Natural is
    begin
-      return PO.Entry_Queue_Length (Entry_Id => Entry_Id);
+      return Entry_Queue_Length (PO =>  PO, Entry_Id => Entry_Id);
    end Entry_Count;
 
 end Oakland.Protected_Objects;

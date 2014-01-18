@@ -37,7 +37,7 @@ package Oak.Agent.Oak_Agent with Preelaborate is
    --  The name of the Agent. Uses a fixed string to make storage easier.
 
    type Charge_Occurrence is
-     (Do_Not_Charge, Same_Priority, All_Priorities, Below_Priority);
+     (Only_While_Running, Same_Priority, All_Priorities, Below_Priority);
    --  When to charge an Agent which is on a charge list. Priority is
    --  referenced to the Agent's priority when compared to the current priority
    --  of the Oak Instance. So for Below_Priority, an Agent will be charged
@@ -78,6 +78,10 @@ package Oak.Agent.Oak_Agent with Preelaborate is
    -- Access Subprograms --
    ------------------------
 
+   function Absolute_Deadline
+     (For_Agent : in Oak_Agent_Id) return Oak_Time.Time;
+   --  The absolute deadline of the agent.
+
    procedure Charge_Execution_Time
      (To_Agent  : in Oak_Agent_Id;
       Exec_Time : in Oak_Time.Time_Span)
@@ -87,6 +91,7 @@ package Oak.Agent.Oak_Agent with Preelaborate is
    procedure Charge_Execution_Time_To_List
      (List             : in Charge_List_Head;
       Exec_Time        : in Oak_Time.Time_Span;
+      Current_Agent    : in Oak_Agent_Id;
       Current_Priority : in Oak_Priority);
    --  Charges the provided execution time to agents on the the specified
    --  execution time charge list. Whether an agent is charged is dependent on
@@ -101,12 +106,6 @@ package Oak.Agent.Oak_Agent with Preelaborate is
 
    procedure Delete_Agent (Agent : Oak_Agent_Id);
    --  Deletes the agent specified and deallocates its storage.
-
-   function Destination_On_Wake_Up
-     (For_Agent : in Oak_Agent_Id) return Wake_Destination
-     with Pre => Has_Agent (For_Agent), Inline;
-   --  Returns whether the tasks that has woken up is sent to its run queue
-   --  or is removed from the scheduler.
 
    function Earliest_Expiring_Budget
      (Charge_List : in Charge_List_Head) return Oak_Agent_Id;
@@ -241,6 +240,9 @@ package Oak.Agent.Oak_Agent with Preelaborate is
      with Pre => Has_Agent (Agent), Inline;
    --  Fetches the time that the Agent will wake.
 
+   function When_To_Charge (Agent : in Oak_Agent_Id) return Charge_Occurrence;
+   --  Returns when the agent is to be charged when it is on a charge list.
+
    ---------------------
    -- Ghost Functions --
    ---------------------
@@ -311,9 +313,6 @@ private
       When_To_Charge         : Charge_Occurrence;
       --  Defines the conditions that an agent who is part of a charge list is
       --  charged for a member of the charge list executing on the processor.
-
-      Destination_On_Wake    : Wake_Destination;
-      --  States what happens when the Agent wakes from sleep.
    end record;
 
    package Oak_Agent_Pool is new Oak.Agent.Storage
@@ -326,14 +325,14 @@ private
 
    use Oak_Agent_Pool;
 
+   function Absolute_Deadline
+     (For_Agent : in Oak_Agent_Id) return Oak_Time.Time is
+      (Agent_Pool (For_Agent).Absolute_Deadline);
+
    function Current_Execution_Time
      (For_Agent : in Oak_Agent_Id)
       return Oak_Time.Time_Span is
      (Agent_Pool (For_Agent).Current_Execution_Time);
-
-   function Destination_On_Wake_Up
-     (For_Agent : in Oak_Agent_Id) return Wake_Destination is
-     (Agent_Pool (For_Agent).Destination_On_Wake);
 
    function Has_Agent (Agent : Oak_Agent_Id) return Boolean is
      (Oak_Agent_Pool.Has_Agent (Agent));
@@ -374,5 +373,10 @@ private
 
    function Wake_Time (Agent : in Oak_Agent_Id) return Oak_Time.Time is
      (Agent_Pool (Agent).Wake_Time);
+
+   function When_To_Charge
+     (Agent : in Oak_Agent_Id)
+      return Charge_Occurrence is
+      (Agent_Pool (Agent).When_To_Charge);
 
 end Oak.Agent.Oak_Agent;

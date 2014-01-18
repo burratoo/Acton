@@ -395,11 +395,20 @@ package body Oak.Core is
             elsif Timer_Kind (Current_Timer) = Scheduler_Timer then
                --  A scheduler wants to run.
 
-               Run_The_Bloody_Scheduler_Agent_That_Wanted_To_Be_Woken
-                 (Scheduler         =>
-                    Scheduler_Agent (Timer => Current_Timer),
-                  Current_Agent     => Current_Agent,
-                  Next_Agent_To_Run => Next_Agent);
+               case Scheduler_Action (Current_Timer) is
+                  when Service =>
+                     Run_The_Bloody_Scheduler_Agent_That_Wanted_To_Be_Woken
+                       (Scheduler         =>
+                           Scheduler_Agent (Timer => Current_Timer),
+                        Current_Agent     => Current_Agent,
+                        Next_Agent_To_Run => Next_Agent);
+
+                  when End_Cycle =>
+                     New_Scheduler_Cycle
+                       (Scheduler         =>
+                           Scheduler_Agent (Timer => Current_Timer),
+                        Next_Agent_To_Run => Next_Agent);
+               end case;
 
             elsif Timer_Kind (Current_Timer) = Event_Timer then
                --  An event timer wishes to run.
@@ -529,6 +538,12 @@ package body Oak.Core is
 
                elsif Budget_Task in Scheduler_Id then
                   Next_Timer := Timer_For_Scheduler_Agent (Budget_Task);
+                  Update_Timer
+                    (Timer    => Next_Timer,
+                     New_Time => Budget_Expires);
+                  Set_Timer_Scheduler_Action
+                    (Timer            => Next_Timer,
+                     Scheduler_Action => End_Cycle);
                else
                   raise Program_Error;
                end if;
@@ -566,6 +581,7 @@ package body Oak.Core is
       Charge_Execution_Time_To_List
         (List             => Charge_List (Oak_Kernel),
          Exec_Time        => Charge_Time,
+         Current_Agent    => Current_Agent (Oak_Kernel),
          Current_Priority => Current_Priority (Oak_Kernel));
       Set_Entry_Exit_Stamp (Oak_Kernel, Time => Current_Time);
    end Update_Entry_Stats;
