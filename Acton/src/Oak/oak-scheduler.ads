@@ -61,6 +61,11 @@ package Oak.Scheduler with Preelaborate is
       Next_Agent_To_Run : out Oak_Agent_Id);
    --  Runs the scheduler that requested to be run through a Scheduler Timer.
 
+   procedure Switch_To_Scheduler_Agent
+     (Scheduler_Agent : in     Scheduler_Id;
+      Message         : in out Oak_Message);
+   --  Switch to the specified scheduler agent.
+
 private
 
    procedure Run_Scheduler_Agent

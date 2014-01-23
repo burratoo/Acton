@@ -202,6 +202,17 @@ package body Oak.Agent.Oak_Agent is
    end New_Agent;
 
    ---------------------------
+   -- Set_Agent_Interrupted --
+   ---------------------------
+
+   procedure Set_Agent_Interrupted
+     (For_Agent : in Oak_Agent_Id;
+      Value     : Boolean := True) is
+   begin
+      Agent_Pool (For_Agent).Agent_Interrupted := Value;
+   end Set_Agent_Interrupted;
+
+   ---------------------------
    -- Set_Absolute_Deadline --
    ---------------------------
 

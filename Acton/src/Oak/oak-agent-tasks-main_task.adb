@@ -20,13 +20,13 @@ package body Oak.Agent.Tasks.Main_Task is
    ---------------------
 
    procedure Setup_Main_Task
-     (Agent           : out Task_Id;
-      Stack_Size      : in  Storage_Count;
+     (Stack_Size      : in  Storage_Count;
       Name            : in  String;
       Normal_Priority : in  Integer;
       Run_Loop        : in  Address)
    is
       No_Chain : Task_List := No_Agent;
+      Agent    : Task_Id;
    begin
       New_Task_Agent
         (Agent             => Agent,

@@ -18,10 +18,14 @@ with Oak.Oak_Time;
 with ISA.Power.e200.Processor_Control_Registers;
 with ISA;
 
+with Oak.Core;    use Oak.Core;
+with Oak.Message; use Oak.Message;
 package Oak.Core_Support_Package.Task_Support with Preelaborate is
 
    use ISA.Power.e200.Processor_Control_Registers;
    use ISA;
+
+   type Message_Access is access all Oak_Message;
 
    --  This procedure saves the Kernel's registers to its respective store,
    --  loads in the task's registers, enables Oak's wakeup call and then
@@ -45,15 +49,19 @@ package Oak.Core_Support_Package.Task_Support with Preelaborate is
 
    procedure Initialise_Task_Enviroment;
 
-   procedure Context_Switch_To_Agent with Inline => False;
-   procedure Context_Switch_To_Kernel with Inline_Always;
+   procedure Context_Switch with Inline_Always;
+   procedure Context_Switch
+     (Reason_For_Oak_To_Run : out    Run_Reason;
+      Message               : out Message_Access);
+   procedure Context_Switch_Save_Callee_Registers with Inline_Always;
+   procedure Context_Switch_Save_Callee_Registers
+     (Message : in out Message_Access);
+   --  Procedures that initiate the context switch.
 
-   procedure Quick_Switch with Inline_Always;
-   --  Performs a quick switch to the current agent. This causes only the
-   --  stack, instruction and link return pointers to be switched. Ensure that
-   --  this procedure is inlined.
-
-   procedure Yield_Processor_To_Kernel with Inline => False;
+   procedure Context_Switch_Will_Be_To_Interrupted_Task;
+   procedure Context_Switch_Will_Be_To_Agent;
+   procedure Context_Switch_Will_Switch_In_Place;
+   --  Procedures that set up the appropriate interrupt handlers.
 
    procedure Set_Oak_Wake_Up_Timer (Wake_Up_At : Oak.Oak_Time.Time);
 
@@ -94,4 +102,22 @@ package Oak.Core_Support_Package.Task_Support with Preelaborate is
                   Instruction_Address_Space  => 0,
                   Data_Address_Space         => 0,
                   Performance_Monitor        => Disable);
+
+   In_Place_MSR : constant Machine_State_Register_Type :=
+               (Computation_Mode           => Mode_32,
+                Interrupt_Computation_Mode => Mode_32,
+                User_Mode_Cache_Lock       => Disable,
+                Signal_Processing          => Enable,
+                Wait_State                 => Disable,
+                Critical_Interrupts        => Disable,
+                External_Interrupts        => Disable,
+                Processor_Mode             => Supervisor,
+                Floating_Point             => Not_Available,
+                Machine_Check              => Disable,
+                FP_Exception_Mode_0        => False,
+                Debug_Interrupt            => Disable,
+                FP_Exception_Mode_1        => False,
+                Instruction_Address_Space  => 0,
+                Data_Address_Space         => 0,
+                Performance_Monitor        => Disable);
 end Oak.Core_Support_Package.Task_Support;

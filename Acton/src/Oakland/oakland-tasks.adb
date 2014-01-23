@@ -15,8 +15,6 @@ with Oak.Agent.Oak_Agent; use Oak.Agent.Oak_Agent;
 with Oak.Core;    use Oak.Core;
 with Oak.States;  use Oak.States;
 
-with Oak.Core_Support_Package.Task_Support;
-
 package body Oakland.Tasks is
 
    --------------------
@@ -28,11 +26,11 @@ package body Oakland.Tasks is
    procedure Activate_Tasks (Activation_Chain : in Task_List) is
       Self : constant Oak_Agent_Id := Current_Agent (This_Oak_Kernel);
 
-      Activation_Pending_Message  : constant Oak_Message :=
-                                (Message_Type    => Activation_Pending, L => 0,
+      Activation_Pending_Message  : Oak_Message :=
+                                (Message_Type    => Activation_Pending,
                                  Activation_List => Activation_Chain);
-      Activation_Complete_Message : constant Oak_Message :=
-                                (Message_Type => Activation_Complete, L => 0);
+      Activation_Complete_Message : Oak_Message :=
+                                (Message_Type => Activation_Complete);
    begin
       --  TODO:  The check and transfer of tasks from chain to Activation list
       --  should occur in Oak not here.
@@ -52,7 +50,7 @@ package body Oakland.Tasks is
    end Activate_Tasks;
 
    procedure Begin_Cycles_Stage is
-      Message : constant Oak_Message := (Message_Type => Setup_Cycles, L => 0);
+      Message : Oak_Message := (Message_Type => Setup_Cycles);
    begin
       Yield_Processor_To_Kernel (With_Message => Message);
    end Begin_Cycles_Stage;
@@ -65,8 +63,8 @@ package body Oakland.Tasks is
 
    procedure Complete_Activation is
       Self : constant Oak_Agent_Id := Current_Agent (This_Oak_Kernel);
-      Activation_Successful_Message : constant Oak_Message :=
-        (Message_Type => Activation_Successful, L => 0);
+      Activation_Successful_Message : Oak_Message :=
+        (Message_Type => Activation_Successful);
    begin
       --  Why do we send the message twice?? And we never send a failure
       --  message.
@@ -86,8 +84,8 @@ package body Oakland.Tasks is
 
    --  Trival complete task.
    procedure Complete_Task is
-      Message : constant Oak_Message :=
-        (Message_Type            => Sleeping, L => 0,
+      Message : Oak_Message :=
+        (Message_Type            => Sleeping,
          Wake_Up_At              => Time_Last,
          Remove_From_Charge_List => True);
    begin
@@ -95,8 +93,8 @@ package body Oakland.Tasks is
    end Complete_Task;
 
    procedure Change_Cycle_Period (New_Period : in Time_Span) is
-      Message : constant Oak_Message :=
-        (Message_Type       => Update_Task_Property, L => 0,
+      Message : Oak_Message :=
+        (Message_Type       => Update_Task_Property,
          Update_Task        => Current_Agent (This_Oak_Kernel),
          Property_To_Update =>
            (Property     => Cycle_Period,
@@ -107,8 +105,8 @@ package body Oakland.Tasks is
 
    procedure Change_Relative_Deadline (New_Deadline : in Time_Span)
    is
-      Message : constant Oak_Message :=
-        (Message_Type       => Update_Task_Property, L => 0,
+      Message : Oak_Message :=
+        (Message_Type       => Update_Task_Property,
          Update_Task        => Current_Agent (This_Oak_Kernel),
          Property_To_Update =>
            (Property     => Relative_Deadline,
@@ -118,16 +116,18 @@ package body Oakland.Tasks is
    end Change_Relative_Deadline;
 
    procedure New_Cycle is
-      Message : constant Oak_Message := (Message_Type => New_Cycle, L => 0);
+      Message : Oak_Message := (Message_Type => New_Cycle);
    begin
       Yield_Processor_To_Kernel (With_Message => Message);
    end New_Cycle;
 
    procedure Yield_Processor_To_Kernel
-     (With_Message : in Oak_Message) is
-      pragma Unreferenced (With_Message);
+     (With_Message : in out Oak_Message)
+   is
    begin
-      Oak.Core_Support_Package.Task_Support.Yield_Processor_To_Kernel;
+      Request_Oak_Service
+        (Reason_For_Run => Agent_Request,
+         Message        => With_Message);
    end Yield_Processor_To_Kernel;
 
 end Oakland.Tasks;

@@ -24,7 +24,8 @@ with Oak.Core;    use Oak.Core;
 with Oak.Processor_Support_Package.Interrupts;
 with Oak.Core_Support_Package.Task_Support;
 
-with System.Machine_Code;                        use System.Machine_Code;
+with System;              use System;
+with System.Machine_Code; use System.Machine_Code;
 
 package body Oak.Core_Support_Package.Interrupts is
 
@@ -32,8 +33,6 @@ package body Oak.Core_Support_Package.Interrupts is
    --  problems.
 
    pragma Suppress (All_Checks);
-
-   procedure Clear_Decrementer_Interrupt with Inline_Always;
 
    -----------------------
    -- Set_Up_Interrupts --
@@ -46,23 +45,23 @@ package body Oak.Core_Support_Package.Interrupts is
       HID0 : HID0_Type;
    begin
       Disable_External_Interrupts;
-      --  Setup interrupt pointers
+      --  Setup interrupt pointers for external and decrementer interrupts.
+
       Asm
-        ("lwz       r3, %0"    & ASCII.LF & ASCII.HT &
-         "mtivpr    r3"        & ASCII.LF & ASCII.HT &
-         "mtivor4   r3"        & ASCII.LF & ASCII.HT &
-         "lwz       r3, %1"    & ASCII.LF & ASCII.HT &
-         "mtivor8   r3"        & ASCII.LF & ASCII.HT &
-         "lwz       r3, %2"    & ASCII.LF & ASCII.HT &
-         "mtivor10  r3"        & ASCII.LF & ASCII.HT &
+        ("mtivpr    %0"        & ASCII.LF & ASCII.HT &
+         "mtivor4   %0"        & ASCII.LF & ASCII.HT &
+         "mtivor10  %1"        & ASCII.LF & ASCII.HT &
          "lis       r3, 0"     & ASCII.LF & ASCII.HT &
-         "mttbl     r3"        & ASCII.LF & ASCII.HT &
-         "mttbu     r3",
-         Inputs   => (System.Address'Asm_Input ("m", IVOR4_Ex_Interrupt),
-                      System.Address'Asm_Input ("m", IVOR8_CS_To_Task),
-                      System.Address'Asm_Input ("m", IVOR10_Decrementer_Intr)),
+         "mttbl     r3"        & ASCII.LF & ASCII.HT & -- Sets time base
+         "mttbu     r3",                               -- register
+         Inputs   => (System.Address'Asm_Input
+                      ("r", External_Interrupt_Handler'Address),
+                      System.Address'Asm_Input
+                        ("r", Decrementer_Interrupt'Address)),
          Clobber  => "r3",
          Volatile => True);
+
+      --  Enable time base.
       Asm
         ("mfspr  %0, 1008",
          Outputs  => (HID0_Type'Asm_Output ("=r", HID0)),
@@ -77,86 +76,129 @@ package body Oak.Core_Support_Package.Interrupts is
       Oak.Processor_Support_Package.Interrupts.Initialise_Interrupts;
    end Set_Up_Interrupts;
 
-   procedure Enable_External_Interrupts is
+   ---------------------------
+   -- Decrementer_Interrupt --
+   ---------------------------
+
+   procedure Decrementer_Interrupt is
    begin
-      Asm ("wrteei 1", Volatile => True);
-   end Enable_External_Interrupts;
+      --  Clear the decrementer interrupt.
+      --
+      --  The following is written to the time status register:
+      --  TSR : constant Timer_Status_Register_Type :=
+      --    (Next_Watchdog_Time       => Disable,
+      --     Watchdog_Timer_Interrupt => Not_Occurred,
+      --     Watchdog_Timer_Reset     => 0,
+      --     Decrement_Interrupt      => Occurred,
+      --     Fixed_Interval_Interrupt => Not_Occurred);
+      Asm
+        ("stwu    r1, -8(r1)"    & ASCII.LF & ASCII.HT &
+           "stw     r2,  0(r1)"    & ASCII.LF & ASCII.HT &
+           "lis     r2,  0x800"    & ASCII.LF & ASCII.HT &
+           "mttsr   r2"            & ASCII.LF & ASCII.HT &
+           "lwz     r2,  0(r1)"    & ASCII.LF & ASCII.HT &
+           "addi    r1, r1, 8",
+         Volatile => True);
+
+      Enable_SPE_Instructions;
+      Asm
+        ("stu    r1, -8(r1)" & ASCII.LF & ASCII.HT &
+           "evstdd r3,  0(r1)" & ASCII.LF & ASCII.HT &
+           "li     r3,     %0",
+         Inputs   => Run_Reason'Asm_Input ("I", Timer), --  or "i"
+         Volatile => True);
+
+      Full_Context_Switch_To_Oak;
+   end Decrementer_Interrupt;
+
+   ---------------------------------
+   -- Disable_External_Interrupts --
+   ---------------------------------
 
    procedure Disable_External_Interrupts is
    begin
       Asm ("wrteei 0", Volatile => True);
    end Disable_External_Interrupts;
 
-   --------------------------------------
-   -- Context_Switch_To_Task_Interrupt --
-   --------------------------------------
+   --------------------------------
+   -- Enable_External_Interrupts --
+   --------------------------------
 
-   procedure Context_Switch_To_Task_Interrupt is
+   procedure Enable_External_Interrupts is
+   begin
+      Asm ("wrteei 1", Volatile => True);
+   end Enable_External_Interrupts;
 
+   -----------------------------
+   -- Enable_SPE_Instructions --
+   -----------------------------
+
+   --  We use r2 and r13 as they are the only registers guaranteed not to
+   --  be using the whole 64 bits of the register.
+   procedure Enable_SPE_Instructions is
+   begin
+      --  The machine state register is modified as follows:
+      --       MSR.Signal_Processing := ISA.Enable;
+      Asm
+        ("stwu    r1, -8(r1)"     & ASCII.LF & ASCII.HT &
+           "stw     r2,  4(r1)"     & ASCII.LF & ASCII.HT &
+           "stw     r13, 0(r1)"     & ASCII.LF & ASCII.HT &
+           "li      r2,  1"         & ASCII.LF & ASCII.HT &
+           "mfmsr   r13"            & ASCII.LF & ASCII.HT &
+           "rlwimi  r13,r2,25,6,6"  & ASCII.LF & ASCII.HT &
+           "mtmsr   r13"            & ASCII.LF & ASCII.HT &
+           "lwz     r2,  4(r1)"     & ASCII.LF & ASCII.HT &
+           "lwz     r13, 0(r1)"     & ASCII.LF & ASCII.HT &
+           "addi    r1, r1, 8",
+         Volatile => True);
+   end Enable_SPE_Instructions;
+
+   --------------------------------
+   -- External_Interrupt_Handler --
+   --------------------------------
+
+   procedure External_Interrupt_Handler is
+   begin
+      Enable_SPE_Instructions;
+      Asm
+        ("stu    r1, -8(r1)" & ASCII.LF & ASCII.HT &
+           "evstdd r3,  0(r1)" & ASCII.LF & ASCII.HT &
+           "li     r3,     %0",
+         Inputs   => Run_Reason'Asm_Input ("I", External_Interrupt), --  or "i"
+         Volatile => True);
+      Full_Context_Switch_To_Oak;
+   end External_Interrupt_Handler;
+
+   --------------------------------------------
+   -- Full_Context_Switch_To_Agent_Interrupt --
+   --------------------------------------------
+
+   procedure Full_Context_Switch_To_Agent_Interrupt is
       Task_Stack_Pointer : Address;
    begin
 
       Enable_SPE_Instructions;
 
+      --  Save kernel's stack and instruction pointer into their special store
+
       Asm
-        ("stwu   r1, -148(r1)" & ASCII.LF & ASCII.HT &  -- Allocate stack space
-         "stwcx. r1,  r0,  r1" & ASCII.LF & ASCII.HT &  -- Clear memory
-         "msync" & ASCII.LF & ASCII.HT &                -- reservation
-         "stw    r0,  144(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r2,  140(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r3,  136(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r4,  132(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r5,  128(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r6,  124(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r7,  120(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r8,  116(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r9,  112(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r10, 108(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r11, 104(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r12, 100(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r13,  96(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r14,  92(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r15,  88(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r16,  84(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r17,  80(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r18,  76(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r19,  72(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r20,  68(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r21,  64(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r22,  60(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r23,  56(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r24,  52(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r25,  48(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r26,  44(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r27,  40(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r28,  36(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r29,  32(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r30,  28(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r31,  24(r1)" & ASCII.LF & ASCII.HT &
-      --  Copy SPRs to GPRs to Stack
-         "mfxer           r25" & ASCII.LF & ASCII.HT & -- Next instruction
-         "mflr            r26" & ASCII.LF & ASCII.HT & -- address
-         "mfcr            r27" & ASCII.LF & ASCII.HT &
-         "mfctr           r28" & ASCII.LF & ASCII.HT &
-         "mfusprg0        r29" & ASCII.LF & ASCII.HT &
-         "mfsrr0          r30" & ASCII.LF & ASCII.HT &
-         "stw    r25,  20(r1)" & ASCII.LF & ASCII.HT & --  Store SPRs to stack
-         "stw    r26,  16(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r27,  12(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r28,   8(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r29,   4(r1)" & ASCII.LF & ASCII.HT &
-         "stw    r30,   0(r1)" & ASCII.LF & ASCII.HT &
-         "mtsprg0          r1",                        -- Store kernel stack pt
+        ("msync"      & ASCII.LF & ASCII.HT &
+         "mtsprg0 r1" & ASCII.LF & ASCII.HT & -- store kernel stack pointer
+         "mfsrr0  r9" & ASCII.LF & ASCII.HT & -- store kernel inst. pointer
+         "mtsprg1 r9",
          Volatile => True);
 
-      --  Setup IVOR8 to point to Switch to Context Kernel handler
+      --  Setup IVOR8 with the handler value already stored in SPRG2
+
       Asm (
-           "lwz    r20,      %0" & ASCII.LF & ASCII.HT &
-           "mtivor8         r20",
-           Inputs   => Address'Asm_Input ("m", IVOR8_CS_To_Kernel),
+           "mfsprg2 r10" & ASCII.LF & ASCII.HT &
+           "mtivor8 r10",
            Volatile => True);
 
       Task_Stack_Pointer := Stack_Pointer (Current_Agent (This_Oak_Kernel));
+
+      --  Load the appropriate Machine State Register for the agent.
+
       if Current_Agent (This_Oak_Kernel) in Scheduler_Id then
          Asm
            ("mtsrr1   %0",
@@ -191,9 +233,8 @@ package body Oak.Core_Support_Package.Interrupts is
          "evldd  r9,   32(r1)" & ASCII.LF & ASCII.HT & -- Restore accumulator
          "evmra  r10,      r9" & ASCII.LF & ASCII.HT &
          "addi   r1, r1, 40"   & ASCII.LF & ASCII.HT & -- Drop stack frame (?)
-         "evldd  r0,  240(r1)" & ASCII.LF & ASCII.HT & -- and restore GPRs
-         "evldd  r2,  232(r1)" & ASCII.LF & ASCII.HT &
-         "evldd  r3,  224(r1)" & ASCII.LF & ASCII.HT &
+         "evldd  r0,  232(r1)" & ASCII.LF & ASCII.HT & -- and restore GPRs
+         "evldd  r2,  224(r1)" & ASCII.LF & ASCII.HT &
          "evldd  r4,  216(r1)" & ASCII.LF & ASCII.HT &
          "evldd  r5,  208(r1)" & ASCII.LF & ASCII.HT &
          "evldd  r6,  200(r1)" & ASCII.LF & ASCII.HT &
@@ -222,38 +263,41 @@ package body Oak.Core_Support_Package.Interrupts is
          "evldd  r29, 16(r1)"  & ASCII.LF & ASCII.HT &
          "evldd  r30,  8(r1)"  & ASCII.LF & ASCII.HT &
          "evldd  r31,  0(r1)"  & ASCII.LF & ASCII.HT &
-         "addi   r1, r1, 248"  & ASCII.LF & ASCII.HT &  --  Restore stack
-         "rfi",                   --   switch to kernel routine.
+         "addi   r1, r1, 248"  & ASCII.LF & ASCII.HT & -- restore stack
+         "evldd  r3 ,  0(r1)"  & ASCII.LF & ASCII.HT & -- load GRP3 as it was
+         "addi   r1, r1, 8"    & ASCII.LF & ASCII.HT & -- the first thing on.
+         "rfi",                                        -- exit handler.
          Inputs   => Address'Asm_Input ("r", Task_Stack_Pointer),
          Volatile => True);
 
-   end Context_Switch_To_Task_Interrupt;
+   end Full_Context_Switch_To_Agent_Interrupt;
 
-   ----------------------------------------
-   -- Context_Switch_To_Kernel_Interrupt --
-   ----------------------------------------
+   --------------------------------
+   -- Full_Context_Switch_To_Oak --
+   --------------------------------
 
-   procedure Context_Switch_To_Kernel_Interrupt is
+   procedure Full_Context_Switch_To_Oak is
       Task_Stack_Pointer : Address;
    begin
 
       Enable_SPE_Instructions;
 
-      Asm
-        ("stwu   r1, -248(r1)" & ASCII.LF & ASCII.HT & -- Allocate stack space
+      --  Save agent context, except GPR3 which should already be saved (as it
+      --  carries the reason for the full context switch.
+      Asm (
          "stwcx. r1,  r0, r1"  & ASCII.LF & ASCII.HT & -- Clear memory
          "msync" & ASCII.LF & ASCII.HT &              --  reservation
-         "evstdd r0,  240(r1)" & ASCII.LF & ASCII.HT & -- Note that we only
-         "evstdd r2,  232(r1)" & ASCII.LF & ASCII.HT & -- allocatespace for the
-         "evstdd r3,  224(r1)" & ASCII.LF & ASCII.HT & -- GPR at this access
-         "evstdd r4,  216(r1)" & ASCII.LF & ASCII.HT & -- 248 bytes through the
-         "evstdd r5,  208(r1)" & ASCII.LF & ASCII.HT & -- offset referencing
-         "evstdd r6,  200(r1)" & ASCII.LF & ASCII.HT &
+         "stwu   r1, -240(r1)" & ASCII.LF & ASCII.HT & -- Allocate stack space
+         "evstdd r0,  232(r1)" & ASCII.LF & ASCII.HT & -- Note that we only
+         "evstdd r2,  224(r1)" & ASCII.LF & ASCII.HT & -- allocatespace for the
+         "evstdd r4,  216(r1)" & ASCII.LF & ASCII.HT & -- GPR at this access
+         "evstdd r5,  208(r1)" & ASCII.LF & ASCII.HT & -- so we can use offset
+         "evstdd r6,  200(r1)" & ASCII.LF & ASCII.HT & -- referencing
          "evstdd r7,  192(r1)" & ASCII.LF & ASCII.HT &
-         "evstdd r8,  184(r1)" & ASCII.LF & ASCII.HT &
-         "evstdd r9,  176(r1)" & ASCII.LF & ASCII.HT &
-         "evstdd r10, 168(r1)" & ASCII.LF & ASCII.HT &
-         "evstdd r11, 160(r1)" & ASCII.LF & ASCII.HT &
+         "evstdd r8,  184(r1)" & ASCII.LF & ASCII.HT & -- Note that it is
+         "evstdd r9,  176(r1)" & ASCII.LF & ASCII.HT & -- expected that gpr3
+         "evstdd r10, 168(r1)" & ASCII.LF & ASCII.HT & -- has already been
+         "evstdd r11, 160(r1)" & ASCII.LF & ASCII.HT & -- saved.
          "evstdd r12, 152(r1)" & ASCII.LF & ASCII.HT &
          "evstdd r13, 144(r1)" & ASCII.LF & ASCII.HT &
          "evstdd r14, 136(r1)" & ASCII.LF & ASCII.HT &
@@ -298,154 +342,182 @@ package body Oak.Core_Support_Package.Interrupts is
          Outputs  => (Address'Asm_Output ("=r", Task_Stack_Pointer)),
          Volatile => True);
 
-      --  Setup IVOR8 to point to Switch to Context Task handler
-      Asm (
-           "lwz     r20,     %0" & ASCII.LF & ASCII.HT &
-           "mtivor8         r20",
-           Inputs   => (Address'Asm_Input ("m", IVOR8_CS_To_Task)),
-           Volatile => True);
-
       Set_Stack_Pointer (Current_Agent (This_Oak_Kernel), Task_Stack_Pointer);
 
+      --  Load Oak's Machine State Register
       Asm
         ("mtsrr1   %0",
          Inputs   => Machine_State_Register_Type'Asm_Input
                        ("r", Core_Support_Package.Task_Support.Oak_MSR),
          Volatile => True);
 
+      --  Restore Oak Kernel's stack and instruction pointer.
+
       Asm
-        ("mfsprg0         r1" & ASCII.LF & ASCII.HT & -- load kernel stack ptr
-      --  Copy SPRs from Stack to GPRs to SPRs
-         "lwz   r25,  20(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r26,  16(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r27,  12(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r28,   8(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r29,   4(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r30,   0(r1)" & ASCII.LF & ASCII.HT &
-         "mtxer          r25" & ASCII.LF & ASCII.HT &
-         "mtlr           r26" & ASCII.LF & ASCII.HT &
-         "mtcr           r27" & ASCII.LF & ASCII.HT &
-         "mtctr          r28" & ASCII.LF & ASCII.HT &
-         "mtusprg0       r29" & ASCII.LF & ASCII.HT &
-         "mtsrr0         r30" & ASCII.LF & ASCII.HT & -- Next instruction addr
-      --  Restore GPRs
-         "lwz   r0,  148(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r2,  140(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r3,  136(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r4,  132(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r5,  128(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r6,  124(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r7,  120(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r8,  116(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r9,  112(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r10, 108(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r11, 104(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r12, 100(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r13,  96(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r14,  92(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r15,  88(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r16,  84(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r17,  80(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r18,  76(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r19,  72(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r20,  68(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r21,  64(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r22,  60(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r23,  56(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r24,  52(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r25,  48(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r26,  44(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r27,  40(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r28,  36(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r29,  32(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r30,  28(r1)" & ASCII.LF & ASCII.HT &
-         "lwz   r31,  24(r1)" & ASCII.LF & ASCII.HT &
-         "addi  r1, r1, 148"  & ASCII.LF & ASCII.HT &  --  Restore stack
-         "rfi",                     --   switch to task routine.
+        ("mfsprg0  r1" & ASCII.LF & ASCII.HT & -- load kernel stack ptr
+         "mfsprg1  r9" & ASCII.LF & ASCII.HT & -- kernel instruction addr
+         "mtsrr0   r9" & ASCII.LF & ASCII.HT &
+         "rfi",                     --   switch to oak.
          Volatile => True);
 
-   end Context_Switch_To_Kernel_Interrupt;
+   end Full_Context_Switch_To_Oak;
 
-   --  Check that the assembly code for Store_Task_Yielded_Status always uses
-   --  r6 to r10.
+   ------------------------------------------------
+   -- In_Place_Context_Switch_To_Agent_Interrupt --
+   ------------------------------------------------
 
-   procedure Decrementer_Interrupt is
+   procedure In_Place_Context_Switch_To_Agent_Interrupt is
+      Task_Stack_Pointer : Address;
    begin
-      Clear_Decrementer_Interrupt;
-      Enable_SPE_Instructions;
-      Asm
-        ("stu    r1, -8(r1)" & ASCII.LF & ASCII.HT &
-         "evstdd r10,  0(r1)" & ASCII.LF & ASCII.HT &
-         "evstdd r9,   8(r1)",
-         Volatile => True);
-
---        Oak.Core.Current_Task.Set_Agent_Yield_Status (Message.Timer);
+      --  Save kernel's stack and instruction pointer into their special store
 
       Asm
-        ("evldd  r9,   8(r1)" & ASCII.LF & ASCII.HT &
-         "evldd  r10,  0(r1)" & ASCII.LF & ASCII.HT &
-         "addi   r1, r1, 8",
+        ("msync"      & ASCII.LF & ASCII.HT &
+           "mtsprg0 r1" & ASCII.LF & ASCII.HT & -- store kernel stack pointer
+           "mfsrr0  r9" & ASCII.LF & ASCII.HT & -- store kernel inst. pointer
+           "mtsprg1 r9",
          Volatile => True);
-      Context_Switch_To_Kernel_Interrupt;
-   end Decrementer_Interrupt;
 
-   procedure External_Interrupt_Handler is
+      --  Setup IVOR8 with the handler value already stored in SPRG2
+
+      Asm (
+           "mfsprg2 r10" & ASCII.LF & ASCII.HT &
+             "mtivor8 r10",
+           Volatile => True);
+
+      --  Load the in place Machine State Register - keeps interrupts disables
+      --  but places the processor into user mode.
+
+         Asm
+        ("mtsrr1   %0",
+         Inputs   => Machine_State_Register_Type'Asm_Input
+           ("r", Core_Support_Package.Task_Support.In_Place_MSR),
+         Volatile => True);
+
+      --  Load task's stack pointer.
+
+      Task_Stack_Pointer := Stack_Pointer (Current_Agent (This_Oak_Kernel));
+
+      Asm
+        ("mr r1, %0" & ASCII.LF & ASCII.HT &
+         "rfi",
+         Inputs   => Address'Asm_Input ("r", Task_Stack_Pointer),
+         Volatile => True);
+   end In_Place_Context_Switch_To_Agent_Interrupt;
+
+   ----------------------------------------------
+   -- In_Place_Context_Switch_To_Oak_Interrupt --
+   ----------------------------------------------
+
+   procedure In_Place_Context_Switch_To_Oak_Interrupt is
    begin
-      Enable_SPE_Instructions;
+      --  In place switching does not store any modifications to the agent.
+
+      --  Load Oak's Machine State Register
       Asm
-        ("stu    r1, -8(r1)" & ASCII.LF & ASCII.HT &
-         "evstdd r10,  0(r1)" & ASCII.LF & ASCII.HT &
-         "evstdd r9,   8(r1)",
+        ("mtsrr1   %0",
+         Inputs   => Machine_State_Register_Type'Asm_Input
+           ("r", Core_Support_Package.Task_Support.Oak_MSR),
          Volatile => True);
 
---        Oak.Core.Current_Task.Set_Agent_Yield_Status (Message.Interrupt);
+      --  Restore Oak Kernel's stack and instruction pointer.
 
       Asm
-        ("evldd  r9,   8(r1)" & ASCII.LF & ASCII.HT &
-         "evldd  r10,  0(r1)" & ASCII.LF & ASCII.HT &
-         "addi   r1, r1, 8",
+        ("mfsprg0  r1" & ASCII.LF & ASCII.HT & -- load kernel stack ptr
+           "mfsprg1  r9" & ASCII.LF & ASCII.HT & -- kernel instruction addr
+           "mtsrr0   r9" & ASCII.LF & ASCII.HT &
+           "rfi",                     --   switch to oak.
          Volatile => True);
-      Context_Switch_To_Kernel_Interrupt;
-   end External_Interrupt_Handler;
+   end In_Place_Context_Switch_To_Oak_Interrupt;
 
-   --  We use r2 and r13 as they are the only registers guaranteed not to
-   --  be using the whole 64 bits of the register.
-   procedure Enable_SPE_Instructions is
+   -----------------------------------------------
+   -- Request_Context_Switch_To_Agent_Interrupt --
+   -----------------------------------------------
+
+   procedure Request_Context_Switch_To_Agent_Interrupt is
+      Task_Stack_Pointer : Address;
    begin
-      --  The machine state register is modified as follows:
-      --       MSR.Signal_Processing := ISA.Enable;
-      Asm
-        ("stwu    r1, -8(r1)"     & ASCII.LF & ASCII.HT &
-         "stw     r2,  4(r1)"     & ASCII.LF & ASCII.HT &
-         "stw     r13, 0(r1)"     & ASCII.LF & ASCII.HT &
-         "li      r2,  1"         & ASCII.LF & ASCII.HT &
-         "mfmsr   r13"            & ASCII.LF & ASCII.HT &
-         "rlwimi  r13,r2,25,6,6"  & ASCII.LF & ASCII.HT &
-         "mtmsr   r13"            & ASCII.LF & ASCII.HT &
-         "lwz     r2,  4(r1)"     & ASCII.LF & ASCII.HT &
-         "lwz     r13, 0(r1)"     & ASCII.LF & ASCII.HT &
-         "addi    r1, r1, 8",
-         Volatile => True);
-   end Enable_SPE_Instructions;
+      --  Save kernel's stack and instruction pointer into their special store
 
-   procedure Clear_Decrementer_Interrupt is
-   begin
-      --  The following is written to the time status register:
-      --  TSR : constant Timer_Status_Register_Type :=
-      --    (Next_Watchdog_Time       => Disable,
-      --     Watchdog_Timer_Interrupt => Not_Occurred,
-      --     Watchdog_Timer_Reset     => 0,
-      --     Decrement_Interrupt      => Occurred,
-      --     Fixed_Interval_Interrupt => Not_Occurred);
       Asm
-        ("stwu    r1, -8(r1)"    & ASCII.LF & ASCII.HT &
-         "stw     r2,  0(r1)"    & ASCII.LF & ASCII.HT &
-         "lis     r2,  0x800"    & ASCII.LF & ASCII.HT &
-         "mttsr   r2"            & ASCII.LF & ASCII.HT &
-         "lwz     r2,  0(r1)"    & ASCII.LF & ASCII.HT &
-         "addi    r1, r1, 8",
+        ("msync"      & ASCII.LF & ASCII.HT &
+           "mtsprg0 r1" & ASCII.LF & ASCII.HT & -- store kernel stack pointer
+           "mfsrr0  r9" & ASCII.LF & ASCII.HT & -- store kernel inst. pointer
+           "mtsprg1 r9",
          Volatile => True);
-   end Clear_Decrementer_Interrupt;
+
+      --  Setup IVOR8 with the handler value already stored in SPRG2
+
+      Asm (
+           "mfsprg2 r10" & ASCII.LF & ASCII.HT &
+             "mtivor8 r10",
+           Volatile => True);
+
+      Task_Stack_Pointer := Stack_Pointer (Current_Agent (This_Oak_Kernel));
+
+      --  Load the appropriate Machine State Register for the agent.
+
+      if Current_Agent (This_Oak_Kernel) in Scheduler_Id then
+         Asm
+           ("mtsrr1   %0",
+            Inputs   => Machine_State_Register_Type'Asm_Input
+              ("r", Core_Support_Package.Task_Support.Oak_MSR),
+            Volatile => True);
+      else
+         Asm
+           ("mtsrr1   %0",
+            Inputs   => Machine_State_Register_Type'Asm_Input
+              ("r", Core_Support_Package.Task_Support.Agent_MSR),
+            Volatile => True);
+      end if;
+
+      --  Load agent's stack pointer and instruction register.
+
+      Asm
+        ("mr     r1,    %0" & ASCII.LF & ASCII.HT & -- load task stack ptr.
+         "lwz    r9, 0(r1)" & ASCII.LF & ASCII.HT & -- load instr. pointer
+         "addi   r1, r1, 4" & ASCII.LF & ASCII.HT &
+         "mtsrr0 r9"        & ASCII.LF & ASCII.HT &
+         "rfi",                                     -- exit handler.
+         Inputs   => Address'Asm_Input ("r", Task_Stack_Pointer),
+         Volatile => True);
+   end Request_Context_Switch_To_Agent_Interrupt;
+
+   ---------------------------------------------
+   -- Request_Context_Switch_To_Oak_Interrupt --
+   ---------------------------------------------
+
+   procedure Request_Context_Switch_To_Oak_Interrupt is
+            Task_Stack_Pointer : Address;
+   begin
+      --  Save agent's stack and instruction pointer.
+      Asm (
+           "msync" & ASCII.LF & ASCII.HT &
+             "stwu r1, -4(r1)" & ASCII.LF & ASCII.HT & -- Allocate stack space
+             "mfsrr0       r9" & ASCII.LF & ASCII.HT &
+             "stw  r9,  0(r1)" & ASCII.LF & ASCII.HT &
+             "mr   %0,     r1",
+           Outputs  => (Address'Asm_Output ("=r", Task_Stack_Pointer)),
+           Volatile => True);
+
+      Set_Stack_Pointer (Current_Agent (This_Oak_Kernel), Task_Stack_Pointer);
+
+      --  Load Oak's Machine State Register
+      Asm
+        ("mtsrr1   %0",
+         Inputs   => Machine_State_Register_Type'Asm_Input
+           ("r", Core_Support_Package.Task_Support.Oak_MSR),
+         Volatile => True);
+
+      --  Restore Oak Kernel's stack and instruction pointer.
+
+      Asm
+        ("mfsprg0  r1" & ASCII.LF & ASCII.HT & -- load kernel stack ptr
+           "mfsprg1  r9" & ASCII.LF & ASCII.HT & -- kernel instruction addr
+           "mtsrr0   r9" & ASCII.LF & ASCII.HT &
+           "rfi",                     --   switch to oak.
+         Volatile => True);
+   end Request_Context_Switch_To_Oak_Interrupt;
 
    -----------------------------------
    -- Disable_Oak_Wake_Up_Interrupt --

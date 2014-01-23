@@ -14,8 +14,8 @@ package body Ada.Cyclic_Tasks is
        (Ada.Task_Identification.Task_Id, Oak.Agent.Task_Id);
 
    procedure Release_Task (T : in Ada.Task_Identification.Task_Id) is
-      Message : constant Oak_Message :=
-                  (Message_Type    => Release_Task, L => 0,
+      Message : Oak_Message :=
+                  (Message_Type    => Release_Task,
                    Task_To_Release => To_Task_Handler (T));
    begin
       if T /= Null_Task_Id then

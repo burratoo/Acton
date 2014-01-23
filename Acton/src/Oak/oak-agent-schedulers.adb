@@ -53,7 +53,7 @@ package body Oak.Agent.Schedulers is
          Run_Loop             => Run_Loop,
          Run_Loop_Parameter   => Null_Address,
          Normal_Priority      => Highest_Priority,
-         Initial_State        => Sleeping,
+         Initial_State        => Not_Initialised,
          Scheduler_Agent      => Scheduler_Agent,
          Wake_Time            => WT,
          When_To_Charge_Agent => When_To_Charge_Agent);

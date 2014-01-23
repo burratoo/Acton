@@ -17,9 +17,9 @@ with Oak.Project_Support_Package; use Oak.Project_Support_Package;
 package Acton.Scheduler_Agents.FIFO_Within_Priorities with Preelaborate is
 
    procedure New_Scheduler_Agent
-     (Min_Priority : Any_Priority;
-      Max_Priority : Any_Priority;
-      Oak_Kernel   : Kernel_Id);
+     (Agent        : out Scheduler_Id;
+      Min_Priority : in  Any_Priority;
+      Max_Priority : in  Any_Priority);
 
    Stack_Size : constant := 1 * 1024;
    Agent_Name : constant String := "Fixed_Priority_Scheduler";

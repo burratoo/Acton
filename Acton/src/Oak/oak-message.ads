@@ -25,7 +25,7 @@ package Oak.Message with Preelaborate is
 
    --
 
-   type Oak_Message (Message_Type : Agent_State; L : Natural)
+   type Oak_Message (Message_Type : Agent_State := No_Message)
    is record
       case Message_Type is
          when Activation_Pending =>
@@ -50,9 +50,8 @@ package Oak.Message with Preelaborate is
          when Exiting_PO =>
             PO_Exit           : Protected_Id;
 
-         when Attach_Interrupt_Handlers =>
-            Attach_Handlers   : Interrupt_Handler_Array (1 .. L);
-            Attach_Handler_PO : Protected_Id;
+         when Attach_Interrupt_Handler =>
+            Attach_Handler    : Interrupt_Handler_Pair;
 
          when Selecting_Next_Agent =>
             null;

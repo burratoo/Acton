@@ -16,16 +16,15 @@ with Oakland.Tasks;  use Oakland.Tasks;
 
 package body Oakland.Interrupts is
    procedure Attach_Handlers
-     (PO        : in Protected_Id;
-      Handlers  : in Interrupt_Handler_Array)
+     (Handlers  : in Interrupt_Handler_Array)
    is
-      Message : constant Oak_Message :=
-                  (Message_Type      => Attach_Interrupt_Handlers,
-                   L                 => Handlers'Length,
-                   Attach_Handlers   => Handlers,
-                   Attach_Handler_PO => PO);
+      Message : Oak_Message;
    begin
-      Yield_Processor_To_Kernel (With_Message => Message);
+      for Handler of Handlers loop
+         Message := (Message_Type   => Attach_Interrupt_Handler,
+                     Attach_Handler => Handler);
+         Yield_Processor_To_Kernel (With_Message => Message);
+      end loop;
    end Attach_Handlers;
 
 end Oakland.Interrupts;

@@ -7,6 +7,7 @@ with Oak.Core; use Oak.Core;
 with Oak.Agent.Kernel; use Oak.Agent.Kernel;
 with Oakland.Tasks; use Oakland.Tasks;
 with Oak.States; use Oak.States;
+with Oak.Message; use Oak.Message;
 
 package body Ada.Execution_Server.Priority_Server is
 
@@ -20,21 +21,19 @@ package body Ada.Execution_Server.Priority_Server is
       CPU               : in System.Multiprocessors.CPU_Range :=
         System.Multiprocessors.Not_A_Specific_CPU)
    is
+      Message : Oak_Message := (Message_Type => Adding_Agent,
+                                Agent_To_Add => Server.Scheduler);
    begin
       New_Scheduler_Agent
         (Agent             => Server.Scheduler,
          Min_Priority      => Priority,
          Max_Priority      => Priority,
-         Oak_Kernel        => Current_Agent (This_Oak_Kernel),
          Budget            => To_Oak_Time_Span (Budget),
          Period            => To_Oak_Time_Span (Period),
          Phase             => To_Oak_Time_Span (Phase),
          Relative_Deadline => To_Oak_Time_Span (Relative_Deadline),
          CPU               => CPU);
-      Yield_Processor_To_Kernel
-        (With_Message =>
-           (Message_Type => Adding_Agent, L => 0,
-            Agent_To_Add => Server.Scheduler));
+      Yield_Processor_To_Kernel (With_Message => Message);
    end Add_Execution_Server;
 
 end Ada.Execution_Server.Priority_Server;

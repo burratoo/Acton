@@ -21,7 +21,7 @@ package Oak.States with Pure is
       Enter_PO_Refused,             -- 21
       Exiting_PO,                   -- 22
       Exit_PO_Error,                -- 23
-      Attach_Interrupt_Handlers,    -- 24
+      Attach_Interrupt_Handler,     -- 24
       Handling_Interrupt,           -- 25
       Interrupt_Done,               -- 26
       No_State,                     -- 27
@@ -30,6 +30,7 @@ package Oak.States with Pure is
       Adding_Agent,
       Removing_Agent,
       Scheduler_Agent_Done,
+      Not_Initialised,
       Continue_Sleep,
       No_Message,
       Invalid_Message);

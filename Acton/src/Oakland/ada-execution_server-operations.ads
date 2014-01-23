@@ -2,16 +2,21 @@
 --                                                                          --
 --                            OAKLAND COMPONENTS                            --
 --                                                                          --
---                            OAKLAND.INTERRUPTS                            --
+--                      ADA.EXECUTION_SERVER.OPERATIONS                     --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                 Copyright (C) 2011-2014, Patrick Bernardi                --
+--                 Copyright (C) 2014-2014, Patrick Bernardi                --
 ------------------------------------------------------------------------------
 
-with Oak.Interrupts; use Oak.Interrupts;
+package Ada.Execution_Server.Operations is
+   function Scheduler_Id_For_Server
+     (Server : in Execution_Server'Class)
+      return Oak.Agent.Scheduler_Id_With_No;
 
-package Oakland.Interrupts with Preelaborate is
-   procedure Attach_Handlers
-     (Handlers  : in Interrupt_Handler_Array);
-end Oakland.Interrupts;
+private
+   function Scheduler_Id_For_Server
+     (Server : in Execution_Server'Class)
+      return Oak.Agent.Scheduler_Id_With_No is (Server.Scheduler);
+
+end Ada.Execution_Server.Operations;

@@ -118,6 +118,9 @@ package Oak.Agent.Oak_Agent with Preelaborate is
      with Inline;
    --  Increments the agent's execution cycle count by the specified amount.
 
+   function Is_Agent_Interrupted (Agent : in Oak_Agent_Id) return Boolean;
+   --  Returns whether or not the agent had been interrupted.
+
    function Max_Execution_Time
      (For_Agent : in Oak_Agent_Id)
       return Oak_Time.Time_Span
@@ -170,6 +173,11 @@ package Oak.Agent.Oak_Agent with Preelaborate is
      (Agent : in Oak_Agent_Id) return Scheduler_Id_With_No
      with Pre => Has_Agent (Agent), Inline;
    --  Fetches the Scheduler Agent responsible for the Agent.
+
+   procedure Set_Agent_Interrupted
+     (For_Agent : in Oak_Agent_Id;
+      Value     : Boolean := True);
+   --  Sets whether the agent was interrupted.
 
    procedure Set_Absolute_Deadline
      (For_Agent : in Oak_Agent_Id;
@@ -313,6 +321,12 @@ private
       When_To_Charge         : Charge_Occurrence;
       --  Defines the conditions that an agent who is part of a charge list is
       --  charged for a member of the charge list executing on the processor.
+
+      Agent_Interrupted      : Boolean;
+      --  Flags whether the agent has been interrupted or not. Indicates
+      --  whether a full register restor is needed when the context is switched
+      --  back to the task.
+
    end record;
 
    package Oak_Agent_Pool is new Oak.Agent.Storage
@@ -336,6 +350,9 @@ private
 
    function Has_Agent (Agent : Oak_Agent_Id) return Boolean is
      (Oak_Agent_Pool.Has_Agent (Agent));
+
+   function Is_Agent_Interrupted (Agent : in Oak_Agent_Id) return Boolean is
+     (Agent_Pool (Agent).Agent_Interrupted);
 
    function Is_Storage_Ready return Boolean is
      (Oak_Agent_Pool.Is_Storage_Ready);

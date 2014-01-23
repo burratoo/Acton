@@ -26,7 +26,7 @@ package Oak.Core with Preelaborate is
    Global_Start_Time : Time;
    --  The global start time used by the system.
 
-   type Run_Reason is (First_Run, Task_Yield, Timer, External_Interrupt);
+   type Run_Reason is (First_Run, Agent_Request, Timer, External_Interrupt);
    --  The reason why Oak was run.
 
    -----------------
@@ -48,10 +48,14 @@ package Oak.Core with Preelaborate is
    --  have completed initialisation. This includes after setting up the top
    --  level scheduler agents and the main task.
 
-   procedure Perform_Quick_Switch (Message : in out Oak_Message)
-     with Inline => False;
-   --  Performs a quick switch to the scheduler agent. Does not save most
-   --  registers. Ensure that this is not inlined.
+   procedure Request_Agent_Service (Message : in out Oak_Message);
+   --  Called by Oak to request a service from the kernel's Current_Agent.
+
+   procedure Request_Oak_Service
+     (Reason_For_Run : in     Run_Reason;
+      Message        : in out Oak_Message) with Inline => False;
+   --  Called by agents to request something from Oak. The signature of this
+   --  procedure must be the same as the Run_Oak.
 
    procedure Run_Loop with No_Return;
    --  The Oak kernel's run loop that performs the kernel's operations.
@@ -62,7 +66,9 @@ package Oak.Core with Preelaborate is
    --  Run Oak once to handle the reason for why Oak needs to run.
 
    function This_Oak_Kernel return Kernel_Id with Inline_Always;
-   --  Return the id of the current Oak_Kernel.
+   --  Return the id of the current Oak_Kernel. This needs to be inlined since
+   --  it is called from within interrupt handlers where we want to avoid
+   --  calling subprograms as it messes with the agent's stack.
 
    procedure Start
      with Export, Convention => Ada, External_Name => "__oak_start";

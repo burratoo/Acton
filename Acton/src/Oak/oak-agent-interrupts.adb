@@ -43,7 +43,7 @@ package body Oak.Agent.Interrupts is
       Agent : Interrupt_Id;
 
       Exit_Message : Oak_Message :=
-                       (Message_Type => Interrupt_Done, L => 0);
+                       (Message_Type => Interrupt_Done);
    begin
       loop
          Agent := Current_Agent (This_Oak_Kernel);
@@ -57,7 +57,8 @@ package body Oak.Agent.Interrupts is
                     (Agent_To_Handle (Agent_Pool (Agent).Timer_To_Handle)));
          end case;
 
-         Core.Perform_Quick_Switch (Exit_Message);
+         Request_Oak_Service
+           (Reason_For_Run => Agent_Request, Message => Exit_Message);
       end loop;
    end Interrupt_Run_Loop;
 

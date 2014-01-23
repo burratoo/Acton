@@ -16,7 +16,9 @@ with Oak.Agent.Schedulers; use Oak.Agent.Schedulers;
 with Oak.Core_Support_Package.Call_Stack;
 use Oak.Core_Support_Package.Call_Stack;
 
-with Oak.States; use Oak.States;
+with Oak.States;  use Oak.States;
+with Oak.Message; use Oak.Message;
+with Oak.Scheduler; use Oak.Scheduler;
 
 package body Oak.Agent.Kernel is
 
@@ -90,6 +92,20 @@ package body Oak.Agent.Kernel is
             Set_Next_Agent (For_Agent => Scheduler,  Next_Agent => Agent);
          end Search_For_Spot;
       end if;
+
+      --  Initialise the scheduler agent if needed
+
+      if State (Scheduler) = Not_Initialised then
+         declare
+            Message : Oak_Message := (Message_Type => No_Message);
+         begin
+            Switch_To_Scheduler_Agent
+              (Scheduler_Agent => Scheduler,
+               Message         => Message);
+         end;
+      end if;
+
+      Set_State (Scheduler, Runnable);
    end Add_Scheduler_To_Scheduler_Table;
 
    ------------------------------

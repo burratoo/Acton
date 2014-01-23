@@ -33,11 +33,10 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
    -------------------------
 
    procedure New_Scheduler_Agent
-     (Min_Priority : Any_Priority;
-      Max_Priority : Any_Priority;
-      Oak_Kernel   : Kernel_Id)
+     (Agent        : out Scheduler_Id;
+      Min_Priority : in  Any_Priority;
+      Max_Priority : in  Any_Priority)
    is
-      Agent : Scheduler_Id;
    begin
       New_Scheduler_Agent
         (Agent                => Agent,
@@ -48,7 +47,7 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
          Highest_Priority     => Max_Priority);
 
       Add_Scheduler_To_Scheduler_Table
-        (Oak_Kernel =>  Oak_Kernel,
+        (Oak_Kernel => This_Oak_Kernel,
          Scheduler  => Agent);
    end New_Scheduler_Agent;
 
@@ -390,7 +389,7 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
          end loop;
 
          Message :=
-           (Message_Type        => Scheduler_Agent_Done, L => 0,
+           (Message_Type        => Scheduler_Agent_Done,
             Next_Agent          => Selected_Agent,
             Wake_Scheduler_At   => Wake_Time,
             Keep_In_Charge_List => False);
@@ -415,16 +414,12 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
          Select_Next_Task (Message);
       end Service_Agent;
 
-      Message : Oak_Message :=
-                  (Message_Type        => Scheduler_Agent_Done, L => 0,
-                   Next_Agent          => No_Agent,
-                   Wake_Scheduler_At   => Time_Last,
-                   Keep_In_Charge_List => False);
+      Message : Oak_Message := (Message_Type => Selecting_Next_Agent);
 
    begin
       loop
-         Perform_Quick_Switch (Message);
          Service_Agent (Message);
+         Request_Agent_Service (Message);
       end loop;
    end Run_Loop;
 

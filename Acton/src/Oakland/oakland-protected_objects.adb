@@ -25,17 +25,17 @@ package body Oakland.Protected_Objects is
       Subprogram_Kind : in Protected_Subprogram_Type;
       Entry_Id        : in Entry_Index := No_Entry)
    is
-      Self : constant Oak_Agent_Id := Current_Agent (This_Oak_Kernel);
+      Self    : constant Oak_Agent_Id := Current_Agent (This_Oak_Kernel);
+      Message : Oak_Message := (Message_Type       => Entering_PO,
+                                PO_Enter           => PO,
+                                Subprogram_Kind    => Subprogram_Kind,
+                                Entry_Id_Enter     => Entry_Id);
    begin
       if State (PO) = Handling_Interrupt then
          return;
       else
-         Yield_Processor_To_Kernel
-           (With_Message =>
-             (Message_Type       => Entering_PO, L => 0,
-                 PO_Enter        => PO,
-                 Subprogram_Kind => Subprogram_Kind,
-                 Entry_Id_Enter  => Entry_Id));
+         Yield_Processor_To_Kernel (With_Message => Message);
+
          if State (Self) = Enter_PO_Refused then
             raise Program_Error;
          elsif State (Self) = Entering_PO then
@@ -46,15 +46,15 @@ package body Oakland.Protected_Objects is
 
    procedure Exit_Protected_Object (PO : Protected_Id)
    is
-      Self : constant Oak_Agent_Id := Current_Agent (This_Oak_Kernel);
+      Self    : constant Oak_Agent_Id := Current_Agent (This_Oak_Kernel);
+      Message : Oak_Message := (Message_Type  => Exiting_PO,
+                                PO_Exit       => PO);
    begin
       if State (PO) = Handling_Interrupt then
          return;
       else
-         Yield_Processor_To_Kernel
-           (With_Message =>
-             (Message_Type  => Exiting_PO, L => 0,
-              PO_Exit       => PO));
+         Yield_Processor_To_Kernel (With_Message => Message);
+
          if State (Self) = Exit_PO_Error then
             raise Program_Error;
          end if;

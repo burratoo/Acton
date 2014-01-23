@@ -18,6 +18,8 @@ with Oak.Oak_Time;                use Oak.Oak_Time;
 with Oak.Scheduler;               use Oak.Scheduler;
 
 with Oak.Processor_Support_Package; use Oak.Processor_Support_Package;
+with Oak.Core_Support_Package.Task_Support;
+use  Oak.Core_Support_Package.Task_Support;
 
 package body Oak.Agent.Protected_Objects is
 
@@ -176,6 +178,101 @@ package body Oak.Agent.Protected_Objects is
       end if;
    end Entry_Queue_Length;
 
+   ---------------------
+   -- Find_Open_Entry --
+   ---------------------
+
+   procedure Find_Open_Entry
+     (Protected_Object : in  Protected_Id;
+      Open_Entry       : out Entry_Index;
+      Exception_Raised : out Boolean;
+      Preference       : in  Entry_Index := No_Entry)
+   is
+
+      procedure Task_Action
+        (Protected_Object : in  Protected_Id;
+         Open_Entry       : out Entry_Index;
+         Exception_Raised : out Boolean;
+         Preference       : in  Entry_Index := No_Entry);
+
+      -----------------
+      -- Task_Action --
+      -----------------
+
+      procedure Task_Action
+        (Protected_Object : in  Protected_Id;
+         Open_Entry       : out Entry_Index;
+         Exception_Raised : out Boolean;
+         Preference       : in  Entry_Index := No_Entry)
+      is
+         P : Protected_Agent_Record renames Agent_Pool (Protected_Object);
+
+         type Barrier_Eval_Function is access function
+           (O : Address; E : Entry_Index) return Boolean;
+
+         function To_Barrier_Eval_Function is
+           new Ada.Unchecked_Conversion
+             (Address, Barrier_Eval_Function);
+
+         Is_Barrier_Open : constant Barrier_Eval_Function :=
+                             To_Barrier_Eval_Function (P.Entry_Barriers);
+
+      begin
+         if Preference /= No_Entry then
+            if Is_Barrier_Open (P.Object_Record, Preference) then
+               Open_Entry := Preference;
+               Exception_Raised := False;
+               return;
+            end if;
+         end if;
+
+         --  Search queues and check to see if they are open
+
+         Search_For_Open_Queue : declare
+            Queue : Task_Id_With_No := P.Entry_Queues;
+         begin
+            while Queue /= No_Agent loop
+               if Is_Barrier_Open (P.Object_Record, Id_Of_Entry (Queue)) then
+                  Open_Entry := Id_Of_Entry (Queue);
+                  Exception_Raised := False;
+                  return;
+               end if;
+               Queue := Next_Agent (Queue);
+            end loop;
+         end Search_For_Open_Queue;
+
+         Open_Entry := No_Index;
+         Exception_Raised := False;
+
+      exception
+         when others =>
+            Exception_Raised := False;
+            return;
+      end Task_Action;
+
+   begin
+
+      --  This procedure operates in the context of the current agent.
+      --  Switching across requires the callee registers to be saved since we
+      --  cannot trust the agent not to damage them.
+
+      Context_Switch_Will_Switch_In_Place;
+      Context_Switch_Save_Callee_Registers;
+
+      Task_Action
+        (Protected_Object => Protected_Object,
+         Open_Entry       => Open_Entry,
+         Exception_Raised => Exception_Raised,
+         Preference       => Preference);
+
+      Context_Switch;
+
+      if Exception_Raised then
+         Purge_Entry_Queues
+           (Protected_Object, New_Task_State => Enter_PO_Refused);
+      end if;
+   end Find_Open_Entry;
+
    -----------------------------------------
    -- Get_And_Remove_Next_Contending_Task --
    -----------------------------------------
@@ -294,7 +391,6 @@ package body Oak.Agent.Protected_Objects is
       Name                  : in String;
       Ceiling_Priority      : in Integer;
       Barriers_Function     : in Address;
-      Number_Of_Entries     : in Entry_Index;
       Object_Record_Address : in Address) is
    begin
       Allocate_An_Agent (Agent);
@@ -324,7 +420,6 @@ package body Oak.Agent.Protected_Objects is
          P.Object_Record          := Object_Record_Address;
          P.Entry_Barriers         := Barriers_Function;
          P.Entry_Queues           := No_Agent;
-         P.Number_Of_Entries      := Number_Of_Entries;
          P.Active_Subprogram_Kind := Protected_Procedure;
          P.Tasks_Within           := Empty_List;
          P.Contending_Tasks       := Empty_List;

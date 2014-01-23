@@ -28,9 +28,8 @@ package Oak.Interrupts with Preelaborate is
      (Positive range <>) of Interrupt_Handler_Pair;
    --  An array of interrupt handling pairs.
 
-   procedure Attach_Handlers
-     (Handlers          : in  Interrupt_Handler_Array;
-      Handler_PO        : in  Protected_Id;
+   procedure Attach_Handler
+     (Handler           : in  Interrupt_Handler_Pair;
       Current_Agent     : in  Task_Id;
       Next_Agent_To_Run : out Oak_Agent_Id);
    --  Attaches the handlers provided in the handler array to the specified

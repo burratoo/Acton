@@ -44,8 +44,11 @@ package Oak.Agent.Kernel with Preelaborate is
    function Charge_List (Oak_Kernel : in Kernel_Id) return Charge_List_Head;
    --  Return the head of the charge list.
 
-   function Current_Agent (Oak_Kernel : in Kernel_Id) return Oak_Agent_Id;
-   --  Return the currently selected agent for the kernel instance.
+   function Current_Agent (Oak_Kernel : in Kernel_Id) return Oak_Agent_Id
+     with Inline_Always;
+   --  Return the currently selected agent for the kernel instance. This needs
+   --  to be inlined since it is called from within interrupt handlers where we
+   --  want to avoid calling subprograms as it messes with the agent's stack.
 
    function Current_Priority (Oak_Kernel : in Kernel_Id) return Any_Priority;
    --  Returns the current priority that the kernel is running at.

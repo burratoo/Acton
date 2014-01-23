@@ -7,15 +7,15 @@ package Oak.Project_Support_Package with Pure is
    --  there is nothing to stop an instance being scheduled by a scheduler
    --  agent.
 
-   Max_Scheduler_Agents  : constant := 1;
+   Max_Scheduler_Agents  : constant := 2;
    --  A limit on the number of Scheduler Agents in the system.
 
-   Max_Interrupt_Agents  : constant := 15;
+   Max_Interrupt_Agents  : constant := 5;
    --  A limit on the number of interrupt priorities used by the system. Could
    --  be less than the number of interrupt prioities available on the hardware
    --  if not all the priorities are used. This allows for some space saving.
 
-   Max_Task_Agents       : constant := 20;
+   Max_Task_Agents       : constant := 6;
    --  Limit on the number of tasks on the system.
 
    Max_Protected_Agents  : constant := 1;

@@ -26,7 +26,7 @@ package Oakland.Tasks with Preelaborate is
    procedure Begin_Cycles_Stage;
 
    procedure Yield_Processor_To_Kernel
-     (With_Message : in Oak_Message);
+     (With_Message : in out Oak_Message) with Inline => False;
 
    procedure New_Cycle;
 

@@ -16,17 +16,10 @@ with Oak.Core;             use Oak.Core;
 with Oak.Oak_Time;         use Oak.Oak_Time;
 with Oak.States;           use Oak.States;
 with Oak.Timers;           use Oak.Timers;
+with Oak.Core_Support_Package.Task_Support;
+use  Oak.Core_Support_Package.Task_Support;
 
 package body Oak.Scheduler is
-
-   -----------------------
-   -- Local Subprograms --
-   -----------------------
-
-   procedure Switch_To_Scheduler_Agent
-     (Scheduler_Agent : in     Scheduler_Id;
-      Message         : in out Oak_Message);
-   --  Switch to the specified scheduler agent.
 
    ----------------------------
    -- Add_Agent_To_Scheduler --
@@ -42,14 +35,24 @@ package body Oak.Scheduler is
          raise Program_Error;
       end if;
 
+      if Agent in Scheduler_Id and then State (Agent) = Not_Initialised then
+         declare
+            Message : Oak_Message := (Message_Type => No_Message);
+         begin
+            Switch_To_Scheduler_Agent
+              (Scheduler_Agent => Agent,
+               Message         => Message);
+         end;
+         Set_State (Agent, Sleeping);
+      end if;
+
       --  TODO: Add a check to see if the scheduler agent has been initialised
       --  or not.
 
       Run_Scheduler_Agent
         (Agent  => Scheduler_Agent_For_Agent (Agent),
          Reason => (Message_Type  => Adding_Agent,
-                    Agent_To_Add  => Agent,
-                    L            => 0));
+                    Agent_To_Add  => Agent));
    end Add_Agent_To_Scheduler;
 
    --------------------------------------------------
@@ -118,8 +121,7 @@ package body Oak.Scheduler is
         (Agent             => Agent,
          Reason            =>
            (Message_Type       => Agent_State_Change,
-            Agent_That_Changed => Changed_Agent,
-            L                  => 0),
+            Agent_That_Changed => Changed_Agent),
          Next_Agent_To_Run => Next_Agent_To_Run);
 
       --  If the scheduler agent has no agents to run, check with scheduler
@@ -176,7 +178,7 @@ package body Oak.Scheduler is
       Run_Scheduler_Agent
         (Agent  => Scheduler_Agent_For_Agent (Agent),
          Reason => (Message_Type    => Removing_Agent,
-                    Agent_To_Remove => Agent, L => 0));
+                    Agent_To_Remove => Agent));
    end Remove_Agent_From_Scheduler;
 
    -------------------------
@@ -325,7 +327,7 @@ package body Oak.Scheduler is
 
                               SA := Message.Next_Agent;
                               Message :=
-                                (Message_Type => Selecting_Next_Agent, L => 0);
+                                (Message_Type => Selecting_Next_Agent);
                            else
 
                               --  Otherwise there is nothing to do
@@ -348,7 +350,7 @@ package body Oak.Scheduler is
                         then
                            Set_State (Message.Next_Agent, Sleeping);
                            Message :=
-                             (Message_Type => Agent_State_Change, L => 0,
+                             (Message_Type => Agent_State_Change,
                               Agent_That_Changed => Message.Next_Agent);
                            SA := Scheduler_Agent_For_Agent (SA);
                         end if;
@@ -425,7 +427,7 @@ package body Oak.Scheduler is
    begin
       Run_Scheduler_Agent
         (Agent              => Scheduler,
-         Reason             => (Message_Type => Selecting_Next_Agent, L => 0),
+         Reason             => (Message_Type => Selecting_Next_Agent),
          Next_Agent_To_Run  => Next_Agent_To_Run);
 
       --  This is a curious bit of code. Apparently the current agent will not
@@ -452,7 +454,8 @@ package body Oak.Scheduler is
       Set_Current_Agent
         (Oak_Kernel => My_Kernel_Id, Agent => Scheduler_Agent);
       Update_Exit_Stats (Oak_Kernel => My_Kernel_Id);
-      Perform_Quick_Switch (Message);
+      Context_Switch_Will_Be_To_Agent;
+      Request_Agent_Service (Message);
       Update_Entry_Stats (Oak_Kernel => My_Kernel_Id);
    end Switch_To_Scheduler_Agent;
 

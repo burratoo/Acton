@@ -36,7 +36,6 @@ package body Acton.Scheduler_Agents.Priority_Server is
      (Agent             : out Scheduler_Id;
       Min_Priority      : in Any_Priority;
       Max_Priority      : in Any_Priority;
-      Oak_Kernel        : in Kernel_Id;
       Budget            : in Time_Span;
       Period            : in Time_Span;
       Phase             : in Time_Span;
@@ -62,10 +61,6 @@ package body Acton.Scheduler_Agents.Priority_Server is
          Cycle_Phase           => Phase,
          Relative_Deadline     => Relative_Deadline,
          Execution_Budget      => Budget);
-
-      Add_Scheduler_To_Scheduler_Table
-        (Oak_Kernel =>  Oak_Kernel,
-         Scheduler  => Agent);
    end New_Scheduler_Agent;
 
    --------------
@@ -406,7 +401,7 @@ package body Acton.Scheduler_Agents.Priority_Server is
          end loop;
 
          Message :=
-           (Message_Type        => Scheduler_Agent_Done, L => 0,
+           (Message_Type        => Scheduler_Agent_Done,
             Next_Agent          => Selected_Agent,
             Wake_Scheduler_At   => Wake_Time,
             Keep_In_Charge_List => False);
@@ -432,15 +427,15 @@ package body Acton.Scheduler_Agents.Priority_Server is
       end Service_Agent;
 
       Message : Oak_Message :=
-                  (Message_Type        => Scheduler_Agent_Done, L => 0,
+                  (Message_Type        => Scheduler_Agent_Done,
                    Next_Agent          => No_Agent,
                    Wake_Scheduler_At   => Time_Last,
                    Keep_In_Charge_List => False);
 
    begin
       loop
-         Perform_Quick_Switch (Message);
          Service_Agent (Message);
+         Request_Agent_Service (Message);
       end loop;
    end Run_Loop;
 

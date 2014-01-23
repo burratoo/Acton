@@ -17,21 +17,6 @@ with Oak.States;    use Oak.States;
 
 package body Oak.Protected_Objects is
 
-   -----------------------
-   -- Local Subprograms --
-   -----------------------
-
-   function Find_Open_Entry
-     (Protected_Object : in  Protected_Id;
-      Exception_Raised : out Boolean;
-      Preference       : in  Entry_Index := No_Entry)
-      return Entry_Index;
-   --  Finds an open entry for the protected object and returns the id of the
-   --  first open entry with task's it finds, otherwise it returns No_Entry is
-   --  no open entry with tasks are found. If a prefered entry is provided, it
-   --  will it will be checked first and the function will return with that
-   --  index as long as the entry is open.
-
    --------------------------------------------
    -- Acquire_Protected_Object_For_Interrupt --
    --------------------------------------------
@@ -41,24 +26,6 @@ package body Oak.Protected_Objects is
       --  Need a Lock around this.
       Set_State (For_Agent => PO, State => Handling_Interrupt);
    end Acquire_Protected_Object_For_Interrupt;
-
-   ---------------------
-   -- Find_Open_Entry --
-   ---------------------
-
-   function Find_Open_Entry
-     (Protected_Object : in  Protected_Id;
-      Exception_Raised : out Boolean;
-      Preference       : in  Entry_Index := No_Entry)
-      return Entry_Index
-   is
-      pragma Unreferenced (Preference,
-                           Exception_Raised);
-   begin
-      Purge_Entry_Queues
-        (Protected_Object, New_Task_State => Enter_PO_Refused);
-      return No_Entry;
-   end Find_Open_Entry;
 
    ---------------------------
    -- Process_Enter_Request --
@@ -115,8 +82,9 @@ package body Oak.Protected_Objects is
                Open_Entry       : Entry_Index;
                Exception_Raised : Boolean;
             begin
-               Open_Entry := Find_Open_Entry
+               Find_Open_Entry
                  (Protected_Object => PO,
+                  Open_Entry       => Open_Entry,
                   Exception_Raised => Exception_Raised,
                   Preference       => Entry_Id);
 
@@ -232,8 +200,9 @@ package body Oak.Protected_Objects is
             E          : Boolean;
             Next_Entry : Entry_Index;
          begin
-            Next_Entry := Find_Open_Entry
+            Find_Open_Entry
               (Protected_Object => PO,
+               Open_Entry       => Next_Entry,
                Exception_Raised => E);
             Get_And_Remove_Next_Task_From_Entry_Queue
               (PO        => PO,

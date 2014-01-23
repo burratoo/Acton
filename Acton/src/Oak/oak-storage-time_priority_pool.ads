@@ -27,10 +27,12 @@ generic
    type Element_Type is private;
    type Key_Type is private;
    type Node_Location is mod <>;
-   type Priority_Type is range <>;
-
    --  Node_Location is mod so it can pack the most elements in the smallest
    --  base type.
+
+   type Priority_Type is range <>;
+
+   pragma Preelaborable_Initialization (Element_Type);
 
    with function "<" (Left, Right : Element_Type) return Boolean is <>;
 
@@ -39,11 +41,17 @@ generic
 
 package Oak.Storage.Time_Priority_Pool with Pure is
 
-   type Pool_Type is private;
+   No_Node_Value : constant := 0;
+   --  The constant that represents the No_Node. Needed to satisfy the
+   --  preelaborable initialization constraints on the types below. ??? Should
+   --  check to see if there is a bug in the compiler preventing the direct use
+   --  of No_Node.
 
-   No_Node : constant := 0;
+   No_Node : constant Node_Location := No_Node_Value;
    --  The Node_Location that represents the null node, or that no node exists
    --  at all.
+
+   type Pool_Type is private with Preelaborable_Initialization;
 
    procedure Delete_Item
      (Pool    : in out Pool_Type;
@@ -106,11 +114,11 @@ package Oak.Storage.Time_Priority_Pool with Pure is
 
 private
 
-   type Node_Colour is (Red, Black);
-   --  Colour of a node in the red-black tree.
-
    First_Priority : constant Priority_Type := Priority_Type'First;
    --  Constant for the first priority.
+
+   type Node_Colour is (Red, Black);
+   --  Colour of a node in the red-black tree.
 
    type Node_Type is record
    --  This type represents a Node in the tree. Each node has a link to its
@@ -121,13 +129,13 @@ private
    --  components into just two registers, or two 32 bit words in memory, with
    --  two bytes free.
 
-      Colour         : Node_Colour;
+      Colour         : Node_Colour   := Black;
       Has_Element    : Boolean       := False;
       In_Tree        : Boolean       := False;
-      Parent         : Node_Location := No_Node;
-      Left, Right    : Node_Location := No_Node;
-      Left_Priority  : Priority_Type := First_Priority;
-      Right_Priority : Priority_Type := First_Priority;
+      Parent         : Node_Location := No_Node_Value;
+      Left, Right    : Node_Location := No_Node_Value;
+      Left_Priority  : Priority_Type := Priority_Type'First;
+      Right_Priority : Priority_Type := Priority_Type'First;
       --  Left and right subtree priorities are store seperately so we do not
       --  have to access the child nodes just so we can determine which path to
       --  take.
@@ -140,17 +148,17 @@ private
    type Pool_Type is record
    --  This type represents the set which is actually a red-black tree.
 
-      Root      : Node_Location := No_Node;
+      Root      : Node_Location := No_Node_Value;
       --  The node pointing to the root of the tree.
 
-      Free_List : Node_Location := No_Node;
+      Free_List : Node_Location := No_Node_Value;
       --  The first node in the free list. This list consists of free nodes
       --  that are not part of the bulk free store of the array, since they
       --  have been allocated and subsquently deallocated.
       --
       --  No_Node means the list is empty.
 
-      Bulk_Free : Node_Location := No_Node + 1;
+      Bulk_Free : Node_Location := No_Node_Value;
       --  The first node in the bulk free store. This is the free area on the
       --  right side of the array that has not been allocate. The bulk store
       --  saves from having to populate the free list in the first place, which
@@ -158,17 +166,7 @@ private
       --
       --  No_Node means bulk free store is empty.
 
-      Nodes     : Node_Array :=
-                    ((Colour         => Black,
-                      Has_Element    => False,
-                      In_Tree        => False,
-                      Parent         => No_Node,
-                      Left           => No_Node,
-                      Right          => No_Node,
-                      Left_Priority  => First_Priority,
-                      Right_Priority => First_Priority,
-                      Element        => <>),
-                     others => <>);
+      Nodes     : Node_Array;
       --  The node pool. The first node is the No_Node which needs to be
       --  initialised here.
    end record;

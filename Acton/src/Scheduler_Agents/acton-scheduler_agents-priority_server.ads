@@ -21,7 +21,6 @@ package Acton.Scheduler_Agents.Priority_Server with Preelaborate is
      (Agent             : out Scheduler_Id;
       Min_Priority      : in  Any_Priority;
       Max_Priority      : in  Any_Priority;
-      Oak_Kernel        : in  Kernel_Id;
       Budget            : in  Time_Span;
       Period            : in  Time_Span;
       Phase             : in  Time_Span;

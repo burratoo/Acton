@@ -56,6 +56,17 @@ package Oak.Agent.Protected_Objects with Preelaborate is
       return Natural;
    --  Returns the number of agents currently queued on an entry queue.
 
+   procedure Find_Open_Entry
+     (Protected_Object : in  Protected_Id;
+      Open_Entry       : out Entry_Index;
+      Exception_Raised : out Boolean;
+      Preference       : in  Entry_Index := No_Entry);
+   --  Finds an open entry for the protected object and returns the id of the
+   --  first open entry with task's it finds, otherwise it returns No_Entry is
+   --  no open entry with tasks are found. If a prefered entry is provided, it
+   --  will it will be checked first and the function will return with that
+   --  index as long as the entry is open.
+
    procedure Get_And_Remove_Next_Contending_Task
      (PO        : in Protected_Id;
       Next_Task : out Task_Id_With_No);
@@ -90,7 +101,6 @@ package Oak.Agent.Protected_Objects with Preelaborate is
       Name                  : in String;
       Ceiling_Priority      : in Integer;
       Barriers_Function     : in Address;
-      Number_Of_Entries     : in Entry_Index;
       Object_Record_Address : in Address);
    --  Creates a new Protected Agent with the given prameters. Allocates the
    --  storage for the Protected Agent data structure and any dependents.
@@ -155,9 +165,6 @@ private
       --  Denotes the head of the two-demensional entry queue for the protected
       --  object. Tasks are sorted by first by entry then FIFO.
 
-      Number_Of_Entries      : Entry_Index;
-      --  The number of entries possesed by the protected object.
-
       Active_Subprogram_Kind : Protected_Subprogram_Type;
       --  The type of subprogram currently operating inside the object.
 
@@ -196,7 +203,7 @@ private
      (PO       : in Protected_Id;
       Entry_Id : in Entry_Index)
       return Boolean is
-     (Entry_Id > No_Entry and Entry_Id <= Agent_Pool (PO).Number_Of_Entries);
+     (Entry_Id > No_Entry);
 
    function Task_Within
      (PO : in Protected_Id)
