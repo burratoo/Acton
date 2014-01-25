@@ -25,8 +25,7 @@ package Oak.Message with Preelaborate is
 
    --
 
-   type Oak_Message (Message_Type : Agent_State := No_Message)
-   is record
+   type Oak_Message (Message_Type : Agent_State := No_Message) is record
       case Message_Type is
          when Activation_Pending =>
             Activation_List         : Task_List;

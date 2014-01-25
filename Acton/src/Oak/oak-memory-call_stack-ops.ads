@@ -34,7 +34,7 @@ package Oak.Memory.Call_Stack.Ops with Preelaborate is
    procedure Initialise_Call_Stack
      (Stack             : in out Call_Stack_Handler;
       Start_Instruction : in     Address;
-      Task_Value_Record : in     Address := Null_Address);
+      Task_Value_Record : in     Address);
    --  Initialise a call stack with the specified instrucution address and a
    --  pointer to the record that contains the task's private data.
 

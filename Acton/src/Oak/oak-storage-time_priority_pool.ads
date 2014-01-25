@@ -42,6 +42,7 @@ generic
 package Oak.Storage.Time_Priority_Pool with Pure is
 
    No_Node_Value : constant := 0;
+   First_Node_Value : constant := No_Node_Value + 1;
    --  The constant that represents the No_Node. Needed to satisfy the
    --  preelaborable initialization constraints on the types below. ??? Should
    --  check to see if there is a bug in the compiler preventing the direct use
@@ -158,7 +159,7 @@ private
       --
       --  No_Node means the list is empty.
 
-      Bulk_Free : Node_Location := No_Node_Value;
+      Bulk_Free : Node_Location := First_Node_Value;
       --  The first node in the bulk free store. This is the free area on the
       --  right side of the array that has not been allocate. The bulk store
       --  saves from having to populate the free list in the first place, which

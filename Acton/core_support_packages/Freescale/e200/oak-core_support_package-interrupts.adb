@@ -199,19 +199,11 @@ package body Oak.Core_Support_Package.Interrupts is
 
       --  Load the appropriate Machine State Register for the agent.
 
-      if Current_Agent (This_Oak_Kernel) in Scheduler_Id then
-         Asm
-           ("mtsrr1   %0",
-            Inputs   => Machine_State_Register_Type'Asm_Input
-                          ("r", Core_Support_Package.Task_Support.Oak_MSR),
-            Volatile => True);
-      else
-         Asm
-           ("mtsrr1   %0",
-            Inputs   => Machine_State_Register_Type'Asm_Input
-                          ("r", Core_Support_Package.Task_Support.Agent_MSR),
-            Volatile => True);
-      end if;
+      Asm
+        ("mtsrr1   %0",
+         Inputs   => Machine_State_Register_Type'Asm_Input
+           ("r", Core_Support_Package.Task_Support.Agent_MSR),
+         Volatile => True);
 
       --  Load task's registers
       Asm
@@ -263,7 +255,7 @@ package body Oak.Core_Support_Package.Interrupts is
          "evldd  r29, 16(r1)"  & ASCII.LF & ASCII.HT &
          "evldd  r30,  8(r1)"  & ASCII.LF & ASCII.HT &
          "evldd  r31,  0(r1)"  & ASCII.LF & ASCII.HT &
-         "addi   r1, r1, 248"  & ASCII.LF & ASCII.HT & -- restore stack
+         "addi   r1, r1, 240"  & ASCII.LF & ASCII.HT & -- restore stack
          "evldd  r3 ,  0(r1)"  & ASCII.LF & ASCII.HT & -- load GRP3 as it was
          "addi   r1, r1, 8"    & ASCII.LF & ASCII.HT & -- the first thing on.
          "rfi",                                        -- exit handler.
@@ -424,9 +416,9 @@ package body Oak.Core_Support_Package.Interrupts is
 
       Asm
         ("mfsprg0  r1" & ASCII.LF & ASCII.HT & -- load kernel stack ptr
-           "mfsprg1  r9" & ASCII.LF & ASCII.HT & -- kernel instruction addr
-           "mtsrr0   r9" & ASCII.LF & ASCII.HT &
-           "rfi",                     --   switch to oak.
+          "mfsprg1  r9" & ASCII.LF & ASCII.HT & -- kernel instruction addr
+          "mtsrr0   r9" & ASCII.LF & ASCII.HT &
+          "rfi",                     --   switch to oak.
          Volatile => True);
    end In_Place_Context_Switch_To_Oak_Interrupt;
 
@@ -450,7 +442,7 @@ package body Oak.Core_Support_Package.Interrupts is
 
       Asm (
            "mfsprg2 r10" & ASCII.LF & ASCII.HT &
-             "mtivor8 r10",
+           "mtivor8 r10",
            Volatile => True);
 
       Task_Stack_Pointer := Stack_Pointer (Current_Agent (This_Oak_Kernel));
@@ -493,10 +485,10 @@ package body Oak.Core_Support_Package.Interrupts is
       --  Save agent's stack and instruction pointer.
       Asm (
            "msync" & ASCII.LF & ASCII.HT &
-             "stwu r1, -4(r1)" & ASCII.LF & ASCII.HT & -- Allocate stack space
-             "mfsrr0       r9" & ASCII.LF & ASCII.HT &
-             "stw  r9,  0(r1)" & ASCII.LF & ASCII.HT &
-             "mr   %0,     r1",
+            "stwu r1, -4(r1)" & ASCII.LF & ASCII.HT & -- Allocate stack space
+            "mfsrr0       r9" & ASCII.LF & ASCII.HT &
+            "stw  r9,  0(r1)" & ASCII.LF & ASCII.HT &
+            "mr   %0,     r1",
            Outputs  => (Address'Asm_Output ("=r", Task_Stack_Pointer)),
            Volatile => True);
 
@@ -513,8 +505,8 @@ package body Oak.Core_Support_Package.Interrupts is
 
       Asm
         ("mfsprg0  r1" & ASCII.LF & ASCII.HT & -- load kernel stack ptr
-           "mfsprg1  r9" & ASCII.LF & ASCII.HT & -- kernel instruction addr
-           "mtsrr0   r9" & ASCII.LF & ASCII.HT &
+         "mfsprg1  r9" & ASCII.LF & ASCII.HT & -- kernel instruction addr
+         "mtsrr0   r9" & ASCII.LF & ASCII.HT &
            "rfi",                     --   switch to oak.
          Volatile => True);
    end Request_Context_Switch_To_Oak_Interrupt;

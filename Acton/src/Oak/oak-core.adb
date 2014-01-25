@@ -33,6 +33,8 @@ with Oak.Core_Support_Package.Task_Support;
 use Oak.Core_Support_Package.Task_Support;
 
 with Oak.Processor_Support_Package; use Oak.Processor_Support_Package;
+with Oak.Core_Support_Package.Call_Stack;
+use Oak.Core_Support_Package.Call_Stack;
 
 with System; use System;
 
@@ -45,9 +47,23 @@ package body Oak.Core is
    procedure Initialise is
       Kid : Kernel_Id;
    begin
+      Setup_Storage;
       for Processor in Processors'Range loop
          New_Kernel_Agent (Agent => Kid);
       end loop;
+
+      New_Agent
+        (Agent                => Agent.Sleep_Agent,
+         Name                 => "Sleep",
+         Call_Stack_Address   => Null_Address,
+         Call_Stack_Size      => Sleep_Stack_Size,
+         Run_Loop             => Sleep_Agent_Run_Loop'Address,
+         Run_Loop_Parameter   => Null_Address,
+         Normal_Priority      => Priority'First,
+         Initial_State        => Runnable,
+         Scheduler_Agent      => No_Agent,
+         Wake_Time            => Time_First,
+         When_To_Charge_Agent => Only_While_Running);
 
       Oak.Core_Support_Package.Interrupts.Set_Up_Interrupts;
       Oak.Core_Support_Package.Task_Support.Initialise_Task_Enviroment;
@@ -118,7 +134,7 @@ package body Oak.Core is
             Agent_Message   : Message_Access;
             Reason_For_Run  : Run_Reason;
          begin
-            Context_Switch
+            Context_Switch_From_Oak
               (Reason_For_Oak_To_Run => Reason_For_Run,
                Message               => Agent_Message);
 
@@ -258,6 +274,7 @@ package body Oak.Core is
                   --  ??? Should we allow other agents to use this message?
 
                   if Current_Agent in Task_Id then
+                     Set_State (Current_Agent, Sleeping);
                      Set_Wake_Time (Current_Agent, Message.Wake_Up_At);
                      Inform_Scheduler_Agent_Has_Changed_State
                        (Changed_Agent     => Current_Agent,
@@ -413,7 +430,7 @@ package body Oak.Core is
          when Timer =>
 
             if Current_Timer = No_Timer
-              or else Has_Timer_Fired (Current_Timer)
+              or else not Has_Timer_Fired (Current_Timer)
             then
                --  False alarm, go back to what we were doing. Occurs in cases
                --  where the size of the timer used is smaller that the size
@@ -482,7 +499,7 @@ package body Oak.Core is
          --  priority equal to and above the agent selected above.
 
          Handle_Active_Interrupts : declare
-            Interrupt_Agent : constant Interrupt_Id :=
+            Interrupt_Agent : constant Interrupt_Id_With_No :=
                                 Find_Top_Active_Interrupt (My_Kernel_Id);
          begin
             --  Select the interrupt agent if it has a priority equal to or
@@ -605,10 +622,11 @@ package body Oak.Core is
            (Wake_Up_At => Firing_Time (Next_Timer));
       end if;
 
-      --  Next_Agent becomes Current_Agent and Next_Timer becomes Current_Timer
+      --  Store the value of Next_Agent and Next_Timer into the kernel
+      --  data structure.
 
-      Set_Current_Agent (Oak_Kernel => My_Kernel_Id, Agent => Current_Agent);
-      Set_Current_Timer (Oak_Kernel => My_Kernel_Id, Timer => Current_Timer);
+      Set_Current_Agent (Oak_Kernel => My_Kernel_Id, Agent => Next_Agent);
+      Set_Current_Timer (Oak_Kernel => My_Kernel_Id, Timer => Next_Timer);
       Set_Hardware_Priority (Current_Priority (Oak_Kernel => My_Kernel_Id));
 
       if Is_Agent_Interrupted (Next_Agent) then

@@ -28,10 +28,7 @@ package Oak.Core_Support_Package.Call_Stack with Pure is
 
    Minimum_Call_Stack_Size    : constant := 1 * 1024;
 
-   Task_Registers_Save_Size   : constant := 296;
-   Kernel_Registers_Save_Size : constant := 152;
-
-   Sleep_Stack_Size           : constant := 2 * Task_Registers_Save_Size;
+   Sleep_Stack_Size           : constant := 288;
 
    --  Warning! This is not a real variable. It is defined in the linker script
    --  and as such does not have any data storage allocated for it. Instead

@@ -12,28 +12,28 @@ package Oak.States with Pure is
       Waiting_For_Event,            -- 9
       Waiting_For_Protected_Object, -- 10
       Inactive,                     -- 11
-      Setup_Cycles,                 -- 13
-      New_Cycle,                    -- 14
-      Release_Task,                 -- 15
-      Update_Task_Property,         -- 16
-      Terminated,                   -- 19
-      Entering_PO,                  -- 20
-      Enter_PO_Refused,             -- 21
-      Exiting_PO,                   -- 22
-      Exit_PO_Error,                -- 23
-      Attach_Interrupt_Handler,     -- 24
-      Handling_Interrupt,           -- 25
-      Interrupt_Done,               -- 26
-      No_State,                     -- 27
-      Agent_State_Change,           -- 28
-      Selecting_Next_Agent,         -- 29
-      Adding_Agent,
-      Removing_Agent,
-      Scheduler_Agent_Done,
-      Not_Initialised,
-      Continue_Sleep,
-      No_Message,
-      Invalid_Message);
+      Setup_Cycles,                 -- 12
+      New_Cycle,                    -- 13
+      Release_Task,                 -- 14
+      Update_Task_Property,         -- 15
+      Terminated,                   -- 16
+      Entering_PO,                  -- 17
+      Enter_PO_Refused,             -- 18
+      Exiting_PO,                   -- 19
+      Exit_PO_Error,                -- 20
+      Attach_Interrupt_Handler,     -- 21
+      Handling_Interrupt,           -- 22
+      Interrupt_Done,               -- 23
+      No_State,                     -- 24
+      Agent_State_Change,           -- 25
+      Selecting_Next_Agent,         -- 26
+      Adding_Agent,                 -- 27
+      Removing_Agent,               -- 28
+      Scheduler_Agent_Done,         -- 29
+      Not_Initialised,              -- 30
+      Continue_Sleep,               -- 31
+      No_Message,                   -- 32
+      Invalid_Message);             -- 33
 
    subtype Waiting is Agent_State range
      Waiting_For_Event .. Waiting_For_Protected_Object;

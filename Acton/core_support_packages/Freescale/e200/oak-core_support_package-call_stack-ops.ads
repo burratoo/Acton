@@ -17,12 +17,12 @@ with System; use System;
 package Oak.Core_Support_Package.Call_Stack.Ops with Pure is
 
    procedure Set_Task_Instruction_Pointer
-     (Stack               : in Call_Stack_Handler;
+     (Stack               : in out Call_Stack_Handler;
       Instruction_Address : in Address)
      with Inline;
 
    procedure Set_Task_Body_Procedure
-     (Stack             : in Call_Stack_Handler;
+     (Stack             : in out Call_Stack_Handler;
       Procedure_Address : in Address;
       Task_Value_Record : in Address);
 

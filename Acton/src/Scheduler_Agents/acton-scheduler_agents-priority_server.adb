@@ -433,6 +433,9 @@ package body Acton.Scheduler_Agents.Priority_Server is
                    Keep_In_Charge_List => False);
 
    begin
+      --  Initialise the No_Node element of the scheduler's storage pool
+      Scheduler.Pool (No_Node) := (Agent => No_Agent, Next => No_Node);
+
       loop
          Service_Agent (Message);
          Request_Agent_Service (Message);

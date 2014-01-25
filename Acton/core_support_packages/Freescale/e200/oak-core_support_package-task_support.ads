@@ -50,9 +50,9 @@ package Oak.Core_Support_Package.Task_Support with Preelaborate is
    procedure Initialise_Task_Enviroment;
 
    procedure Context_Switch with Inline_Always;
-   procedure Context_Switch
+   procedure Context_Switch_From_Oak
      (Reason_For_Oak_To_Run : out    Run_Reason;
-      Message               : out Message_Access);
+      Message               : out Message_Access) with Inline_Always;
    procedure Context_Switch_Save_Callee_Registers with Inline_Always;
    procedure Context_Switch_Save_Callee_Registers
      (Message : in out Message_Access);
@@ -65,7 +65,7 @@ package Oak.Core_Support_Package.Task_Support with Preelaborate is
 
    procedure Set_Oak_Wake_Up_Timer (Wake_Up_At : Oak.Oak_Time.Time);
 
-   procedure Sleep_Agent;
+   procedure Sleep_Agent_Run_Loop;
 
    Agent_MSR : constant Machine_State_Register_Type :=
                  (Computation_Mode           => Mode_32,

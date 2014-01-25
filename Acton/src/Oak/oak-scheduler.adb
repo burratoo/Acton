@@ -129,7 +129,7 @@ package body Oak.Scheduler is
 
       if Next_Agent_To_Run = No_Agent then
          Check_Sechduler_Agents_For_Next_Agent_To_Run
-           (From_Scheduler_Agent => Next_Agent (Agent),
+           (From_Scheduler_Agent => Agent,
             Next_Agent_To_Run    => Next_Agent_To_Run);
       end if;
    end Inform_Scheduler_Agent_Has_Changed_State;
@@ -289,7 +289,7 @@ package body Oak.Scheduler is
                      --  if the scheduler agent does not want to be charged
                      --  while it has the No_Agent selected.
 
-                     if When_To_Charge (SA) /= Only_While_Running
+                     if When_To_Charge (SA) = Only_While_Running
                        or else (Message.Next_Agent = No_Agent
                                 and then not Charge_While_No_Agent (SA))
                      then
@@ -399,15 +399,9 @@ package body Oak.Scheduler is
    is
    begin
       Run_Scheduler_Agent (Agent => Agent, Reason => Reason);
-      Next_Agent_To_Run := Agent_To_Run (Agent);
-
-      --  Check to make sure selected agent is not another scheduler agent,
-      --  and check that one if it is the case.
-
-      while Next_Agent_To_Run in Scheduler_Id
-      loop
-         Next_Agent_To_Run := Agent_To_Run (Next_Agent_To_Run);
-      end loop;
+      Check_Sechduler_Agents_For_Next_Agent_To_Run
+        (From_Scheduler_Agent => Agent,
+         Next_Agent_To_Run    => Next_Agent_To_Run);
    end Run_Scheduler_Agent;
 
    ------------------------------------------------------------
@@ -424,21 +418,12 @@ package body Oak.Scheduler is
       Current_Agent     : in  Oak_Agent_Id;
       Next_Agent_To_Run : out Oak_Agent_Id)
    is
+      pragma Unreferenced (Current_Agent);
    begin
       Run_Scheduler_Agent
         (Agent              => Scheduler,
          Reason             => (Message_Type => Selecting_Next_Agent),
          Next_Agent_To_Run  => Next_Agent_To_Run);
-
-      --  This is a curious bit of code. Apparently the current agent will not
-      --  be selected if it is a Waiting state or is a completed interrupt
-      --  agent. Are these states even possible to get here????
-
-      if State (Current_Agent) not in Waiting
-        and then State (Current_Agent) /= Interrupt_Done
-      then
-         Next_Agent_To_Run := Current_Agent;
-      end if;
    end Run_The_Bloody_Scheduler_Agent_That_Wanted_To_Be_Woken;
 
    -------------------------------

@@ -36,7 +36,7 @@ package body Oak.Core_Support_Package.Task_Support is
       Asm ("sc", Volatile => True);
    end Context_Switch;
 
-   procedure Context_Switch
+   procedure Context_Switch_From_Oak
      (Reason_For_Oak_To_Run : out    Run_Reason;
       Message               : out Message_Access) is
    begin
@@ -44,7 +44,7 @@ package body Oak.Core_Support_Package.Task_Support is
            Outputs  => (Run_Reason'Asm_Output ("=r", Reason_For_Oak_To_Run),
                         Message_Access'Asm_Output ("=r", Message)),
            Volatile => True);
-   end Context_Switch;
+   end Context_Switch_From_Oak;
 
    ------------------------------------------
    -- Context_Switch_Save_Callee_Registers --
@@ -54,7 +54,7 @@ package body Oak.Core_Support_Package.Task_Support is
    begin
       Asm ("sc", Volatile => True,
            Clobber => "r14, r15, r16, r17, r18, r19, r20, r21, r22, r23, r24, "
-           & "r25, r26, r27, r28, r29, r30, r31");
+           & "r25, r26, r27, r28, r29, r30, r31, cc, ctr, lr");
    end Context_Switch_Save_Callee_Registers;
 
    procedure Context_Switch_Save_Callee_Registers
@@ -64,7 +64,7 @@ package body Oak.Core_Support_Package.Task_Support is
            Volatile => True,
            Outputs => Message_Access'Asm_Output ("=r", Message),
            Clobber => "r14, r15, r16, r17, r18, r19, r20, r21, r22, r23, r24, "
-           & "r25, r26, r27, r28, r29, r30, r31");
+           & "r25, r26, r27, r28, r29, r30, r31, cc, ctr, lr");
    end Context_Switch_Save_Callee_Registers;
 
    ------------------------------------------------
@@ -75,7 +75,7 @@ package body Oak.Core_Support_Package.Task_Support is
    begin
       Asm
         ("mtivor8   %0"        & ASCII.LF & ASCII.HT &
-         "mfsprg2   %1",
+         "mtsprg2   %1",
          Inputs   => (System.Address'Asm_Input
                       ("r", Full_Context_Switch_To_Agent_Interrupt'Address),
                       System.Address'Asm_Input ("r",
@@ -91,7 +91,7 @@ package body Oak.Core_Support_Package.Task_Support is
    begin
       Asm
         ("mtivor8   %0"        & ASCII.LF & ASCII.HT &
-         "mfsprg2   %1",
+         "mtsprg2   %1",
          Inputs   =>
            (System.Address'Asm_Input
                 ("r", Request_Context_Switch_To_Agent_Interrupt'Address),
@@ -108,7 +108,7 @@ package body Oak.Core_Support_Package.Task_Support is
    begin
       Asm
         ("mtivor8   %0"        & ASCII.LF & ASCII.HT &
-         "mfsprg2   %1",
+         "mtsprg2   %1",
          Inputs   =>
            (System.Address'Asm_Input
                 ("r", In_Place_Context_Switch_To_Agent_Interrupt'Address),
@@ -141,7 +141,7 @@ package body Oak.Core_Support_Package.Task_Support is
    --  Sleep_Agent --
    ------------------
 
-   procedure Sleep_Agent is
+   procedure Sleep_Agent_Run_Loop is
    begin
 
       --  On the e200 we do not have a sleep instruction so we just burn
@@ -149,6 +149,6 @@ package body Oak.Core_Support_Package.Task_Support is
       loop
          null;
       end loop;
-   end Sleep_Agent;
+   end Sleep_Agent_Run_Loop;
 
 end Oak.Core_Support_Package.Task_Support;

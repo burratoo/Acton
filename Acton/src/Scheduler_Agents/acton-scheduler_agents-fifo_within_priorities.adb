@@ -17,8 +17,9 @@ with Oak.Agent.Kernel;     use Oak.Agent.Kernel;
 with Oak.Agent.Oak_Agent;  use Oak.Agent.Oak_Agent;
 with Oak.Agent.Schedulers; use Oak.Agent.Schedulers;
 
-with Oak.Core;      use Oak.Core;
-with Oak.Storage;   use Oak.Storage;
+with Oak.Core;    use Oak.Core;
+with Oak.Storage; use Oak.Storage;
+with Oak.Timers;  use Oak.Timers;
 
 package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
 
@@ -49,6 +50,8 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
       Add_Scheduler_To_Scheduler_Table
         (Oak_Kernel => This_Oak_Kernel,
          Scheduler  => Agent);
+
+      Activate_Timer (Timer_For_Scheduler_Agent (Agent));
    end New_Scheduler_Agent;
 
    --------------
@@ -86,9 +89,9 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
 
       procedure Service_Agent (Message : in out Oak_Message);
 
-      ---------------------------------------
-      -- Add_Task_To_End_Of_Runnable_Queue --
-      ---------------------------------------
+      ----------------------------------------
+      -- Add_Agent_To_End_Of_Runnable_Queue --
+      ----------------------------------------
 
       procedure Add_Agent_To_End_Of_Runnable_Queue
         (Agent_Sid : in Storage_Id)
@@ -107,12 +110,14 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
 
       begin
          Scheduler.Pool (Agent_Sid).Next := No_Node;
-         Queue_Tail.Next := Agent_Sid;
-         Queue_Tail_Id   := Agent_Sid;
 
          if Queue_Head_Id = No_Node then
             Queue_Head_Id := Agent_Sid;
+         else
+            Queue_Tail.Next := Agent_Sid;
          end if;
+
+         Queue_Tail_Id   := Agent_Sid;
 
       end Add_Agent_To_End_Of_Runnable_Queue;
 
@@ -144,7 +149,9 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
             Scheduler.Free_List := Scheduler.Pool (Scheduler.Free_List).Next;
          end if;
 
-         if Wake_Time (Agent) < Clock then
+         Scheduler.Pool (Agent_Sid).Agent := Agent;
+
+         if Wake_Time (Agent) <= Clock then
             Add_Agent_To_End_Of_Runnable_Queue (Agent_Sid);
          else
             Insert_Into_Sleeping_Queue (Agent_Sid);
@@ -232,7 +239,8 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
          Agent_Wake_Time : constant Time     := Wake_Time (Agent);
       begin
          if Sleeping_Queue.Head = No_Node then
-            Sleeping_Queue.Head := Agent_Sid;
+            Sleeping_Queue.Head             := Agent_Sid;
+            Scheduler.Pool (Agent_Sid).Next := No_Node;
          else
             while Node_Id /= No_Node
               and then Agent_Wake_Time > Wake_Time (Current_Agent)
@@ -268,7 +276,7 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
             begin
 
                while Node_Id /= No_Node
-                 and then Current_Time > Wake_Time (Current_Node.Agent)
+                 and then Current_Time >= Wake_Time (Current_Node.Agent)
                loop
                   --  Remove Agent from sleeping queue...
 
@@ -364,7 +372,7 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
          --  Find next agent to run
 
          for Queue of reverse Scheduler.Runnable_Queues loop
-            Selected_Agent := Scheduler.Pool (Queue.Head).Agent;
+               Selected_Agent := Scheduler.Pool (Queue.Head).Agent;
             exit when Selected_Agent /= No_Agent;
          end loop;
 
@@ -375,7 +383,7 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
 
             if Scheduler.Sleeping_Queues (P).Head /= No_Node
               and then Oak_Agent.Wake_Time
-                (Scheduler.Pool (Scheduler.Sleeping_Queues (P).Head).Agent) <
+                (Scheduler.Pool (Scheduler.Sleeping_Queues (P).Head).Agent) <=
               Wake_Time
             then
                --  Test here against No_Agent short circuits the case where
@@ -417,6 +425,9 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
       Message : Oak_Message := (Message_Type => Selecting_Next_Agent);
 
    begin
+      --  Initialise the No_Node element of the scheduler's storage pool
+      Scheduler.Pool (No_Node) := (Agent => No_Agent, Next => No_Node);
+
       loop
          Service_Agent (Message);
          Request_Agent_Service (Message);

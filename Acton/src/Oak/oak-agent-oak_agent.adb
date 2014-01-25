@@ -12,10 +12,6 @@
 with Oak.Oak_Time;              use Oak.Oak_Time;
 with Oak.Memory.Call_Stack.Ops; use Oak.Memory.Call_Stack.Ops;
 
-with Oak.Core_Support_Package.Task_Support;
-with Oak.Core_Support_Package.Call_Stack;
-use  Oak.Core_Support_Package.Call_Stack;
-
 package body Oak.Agent.Oak_Agent is
 
    -----------------------
@@ -170,10 +166,17 @@ package body Oak.Agent.Oak_Agent is
            (Stack            => A.Call_Stack,
             Size_In_Elements => Call_Stack_Size);
 
-         Initialise_Call_Stack
-           (Stack             => A.Call_Stack,
-            Start_Instruction => Run_Loop,
-            Task_Value_Record => Run_Loop_Parameter);
+         if Agent in Task_Id then
+            --  Scheduler agent only need their initial instruction set
+            Initialise_Call_Stack
+              (Stack             => A.Call_Stack,
+               Start_Instruction => Run_Loop,
+               Task_Value_Record => Run_Loop_Parameter);
+         else
+            Initialise_Call_Stack
+              (Stack             => A.Call_Stack,
+               Start_Instruction => Run_Loop);
+         end if;
 
       elsif Call_Stack_Address /= Null_Address then
          --  Otherwise just assigned the passed stack
@@ -199,6 +202,12 @@ package body Oak.Agent.Oak_Agent is
       A.Execution_Cycles       := Natural'First;
       A.Scheduler_Agent        := Scheduler_Agent;
       A.When_To_Charge         := When_To_Charge_Agent;
+      if Agent in Task_Id then
+         A.Agent_Interrupted := True;
+      else
+         A.Agent_Interrupted := False;
+      end if;
+
    end New_Agent;
 
    ---------------------------
@@ -332,25 +341,8 @@ package body Oak.Agent.Oak_Agent is
    -------------------
 
    procedure Setup_Storage is
-      SAgent : Oak_Agent_Record renames Agent_Pool (Sleep_Agent);
    begin
       Oak_Agent_Pool.Setup_Storage;
-
-      --  Set up the Sleep Agent
-
-      Allocate_Call_Stack
-          (Stack            => SAgent.Call_Stack,
-           Size_In_Elements => Sleep_Stack_Size);
-
-      Initialise_Call_Stack
-        (Stack             => SAgent.Call_Stack,
-         Start_Instruction =>
-           Core_Support_Package.Task_Support.Sleep_Agent'Address,
-         Task_Value_Record => Null_Address);
-
-      Set_Name (Sleep_Agent, "Sleep");
-      SAgent.Normal_Priority := Priority'First;
-      SAgent.State           := Runnable;
    end Setup_Storage;
 
    --------------------------------

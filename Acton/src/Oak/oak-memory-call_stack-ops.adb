@@ -44,20 +44,17 @@ package body Oak.Memory.Call_Stack.Ops is
       Start_Instruction : in     Address)
    is
    begin
-      Stack.Pointer := Stack.Pointer - Task_Registers_Save_Size;
-      Set_Task_Body_Procedure
-        (Stack             => Stack,
-         Procedure_Address => Start_Instruction,
-         Task_Value_Record => System.Null_Address);
+      Set_Task_Instruction_Pointer
+        (Stack               => Stack,
+         Instruction_Address => Start_Instruction);
    end Initialise_Call_Stack;
 
    procedure Initialise_Call_Stack
      (Stack             : in out Call_Stack_Handler;
       Start_Instruction : in     Address;
-      Task_Value_Record : in     Address := Null_Address)
+      Task_Value_Record : in     Address)
    is
    begin
-      Stack.Pointer := Stack.Pointer - Task_Registers_Save_Size;
       Set_Task_Body_Procedure
         (Stack                => Stack,
          Procedure_Address    => Start_Instruction,
