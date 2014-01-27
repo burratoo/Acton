@@ -146,6 +146,12 @@ package Oak.Timers with Preelaborate is
    --  Returns the action that the timer will perform when it fires..
    --  TIMER KIND: SCHEDULER_TIMER.
 
+   procedure Set_Event_Timer
+     (Timer       : in Oak_Timer_Id;
+      Action_Data : in  Event_Timer_Data;
+      Fire_Time   : in  Oak_Time.Time);
+   --  Replaces the contents of an existing event timer.
+
    procedure Set_Timer_Event_Data
      (Timer : in Oak_Timer_Id;
       Data  : in Event_Timer_Data);
@@ -285,7 +291,7 @@ private
       (Element (Pool, Timer).Data.Agent_To_Handle);
 
    function Has_Timer_Fired (Timer : in Oak_Timer_Id) return Boolean is
-      (Is_Active (Timer) and Element (Pool, Timer).Fire_Time <= Clock);
+      (Element (Pool, Timer).Fire_Time <= Clock);
 
    function Is_Active (Timer : in Oak_Timer_Id) return Boolean is
      (In_Tree (Pool, Timer));

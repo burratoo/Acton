@@ -609,9 +609,10 @@ package body Oak.Core is
             then
                if Budget_Task in Task_Id then
                   Next_Timer := Kernel_Timer (My_Kernel_Id);
-                  Set_Timer_Event_Data
-                    (Timer => Next_Timer,
-                     Data  => Budget_Action (Budget_Task));
+                  Set_Event_Timer
+                    (Timer       => Next_Timer,
+                     Action_Data => Budget_Action (Budget_Task),
+                     Fire_Time   => Budget_Expires);
 
                elsif Budget_Task in Scheduler_Id then
                   Next_Timer := Timer_For_Scheduler_Agent (Budget_Task);

@@ -150,6 +150,24 @@ package body Oak.Timers is
          Add_To_Tree => Activate);
    end New_Scheduler_Timer;
 
+   ---------------------
+   -- Set_Event_Timer --
+   ---------------------
+
+   procedure Set_Event_Timer
+     (Timer       : in Oak_Timer_Id;
+      Action_Data : in  Event_Timer_Data;
+      Fire_Time   : in  Oak_Time.Time) is
+   begin
+      Replace_Item
+        (Pool     => Pool,
+         Item_Id  => Timer,
+         Contents => (Kind       => Event_Timer,
+                      Fire_Time  => Fire_Time,
+                      Priority   => Action_Data.Handler_Priority,
+                      Data       => Action_Data));
+   end Set_Event_Timer;
+
    --------------------------
    -- Set_Timer_Event_Data --
    --------------------------
