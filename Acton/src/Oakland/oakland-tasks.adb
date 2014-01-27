@@ -71,10 +71,7 @@ package body Oakland.Tasks is
 
       Yield_Processor_To_Kernel
         (With_Message => Activation_Successful_Message);
-      if State (Self) = Activation_Successful then
-         Yield_Processor_To_Kernel
-           (With_Message => Activation_Successful_Message);
-      else
+      if State (Self) /= Runnable then
          --  Need to include a cleanup routine here, though for a Ravenscar
          --  Profile system that isn't required as no tasks will be running on
          --  the system.

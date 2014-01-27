@@ -23,6 +23,13 @@ use  Oak.Core_Support_Package.Task_Support;
 
 package body Oak.Agent.Protected_Objects is
 
+   procedure Task_Action
+     (Protected_Object : in  Protected_Id;
+      Open_Entry       : out Entry_Index;
+      Exception_Raised : out Boolean;
+      Preference       : in  Entry_Index := No_Entry)
+     with Export, Convention => Ada;
+
    -------------------------
    -- Add_Contending_Task --
    -------------------------
@@ -189,67 +196,6 @@ package body Oak.Agent.Protected_Objects is
       Preference       : in  Entry_Index := No_Entry)
    is
 
-      procedure Task_Action
-        (Protected_Object : in  Protected_Id;
-         Open_Entry       : out Entry_Index;
-         Exception_Raised : out Boolean;
-         Preference       : in  Entry_Index := No_Entry);
-
-      -----------------
-      -- Task_Action --
-      -----------------
-
-      procedure Task_Action
-        (Protected_Object : in  Protected_Id;
-         Open_Entry       : out Entry_Index;
-         Exception_Raised : out Boolean;
-         Preference       : in  Entry_Index := No_Entry)
-      is
-         P : Protected_Agent_Record renames Agent_Pool (Protected_Object);
-
-         type Barrier_Eval_Function is access function
-           (O : Address; E : Entry_Index) return Boolean;
-
-         function To_Barrier_Eval_Function is
-           new Ada.Unchecked_Conversion
-             (Address, Barrier_Eval_Function);
-
-         Is_Barrier_Open : constant Barrier_Eval_Function :=
-                             To_Barrier_Eval_Function (P.Entry_Barriers);
-
-      begin
-         if Preference /= No_Entry then
-            if Is_Barrier_Open (P.Object_Record, Preference) then
-               Open_Entry := Preference;
-               Exception_Raised := False;
-               return;
-            end if;
-         end if;
-
-         --  Search queues and check to see if they are open
-
-         Search_For_Open_Queue : declare
-            Queue : Task_Id_With_No := P.Entry_Queues;
-         begin
-            while Queue /= No_Agent loop
-               if Is_Barrier_Open (P.Object_Record, Id_Of_Entry (Queue)) then
-                  Open_Entry := Id_Of_Entry (Queue);
-                  Exception_Raised := False;
-                  return;
-               end if;
-               Queue := Next_Agent (Queue);
-            end loop;
-         end Search_For_Open_Queue;
-
-         Open_Entry := No_Index;
-         Exception_Raised := False;
-
-      exception
-         when others =>
-            Exception_Raised := False;
-            return;
-      end Task_Action;
-
    begin
 
       --  This procedure operates in the context of the current agent.
@@ -301,6 +247,10 @@ package body Oak.Agent.Protected_Objects is
       end if;
 
    end Get_And_Remove_Next_Contending_Task;
+
+   -----------------------------------------------
+   -- Get_And_Remove_Next_Task_From_Entry_Queue --
+   -----------------------------------------------
 
    procedure Get_And_Remove_Next_Task_From_Entry_Queue
      (PO        : in Protected_Id;
@@ -601,6 +551,61 @@ package body Oak.Agent.Protected_Objects is
          end if;
       end if;
    end Remove_Task_From_Within_Protected_Object;
+
+   -----------------
+   -- Task_Action --
+   -----------------
+
+   procedure Task_Action
+     (Protected_Object : in  Protected_Id;
+      Open_Entry       : out Entry_Index;
+      Exception_Raised : out Boolean;
+      Preference       : in  Entry_Index := No_Entry)
+   is
+      P : Protected_Agent_Record renames Agent_Pool (Protected_Object);
+
+      type Barrier_Eval_Function is access function
+        (O : Address; E : Entry_Index) return Boolean;
+
+      function To_Barrier_Eval_Function is
+        new Ada.Unchecked_Conversion
+          (Address, Barrier_Eval_Function);
+
+      Is_Barrier_Open : constant Barrier_Eval_Function :=
+                          To_Barrier_Eval_Function (P.Entry_Barriers);
+
+   begin
+      if Preference /= No_Entry then
+         if Is_Barrier_Open (P.Object_Record, Preference) then
+            Open_Entry := Preference;
+            Exception_Raised := False;
+            return;
+         end if;
+      end if;
+
+      --  Search queues and check to see if they are open
+
+      Search_For_Open_Queue : declare
+         Queue : Task_Id_With_No := P.Entry_Queues;
+      begin
+         while Queue /= No_Agent loop
+            if Is_Barrier_Open (P.Object_Record, Id_Of_Entry (Queue)) then
+               Open_Entry := Id_Of_Entry (Queue);
+               Exception_Raised := False;
+               return;
+            end if;
+            Queue := Next_Agent (Queue);
+         end loop;
+      end Search_For_Open_Queue;
+
+      Open_Entry := No_Index;
+      Exception_Raised := False;
+
+   exception
+      when others =>
+         Exception_Raised := False;
+         return;
+   end Task_Action;
 
    ----------------------------------------------------------------
    -- Access to the protected agent from a protected access type --

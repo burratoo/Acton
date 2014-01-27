@@ -75,7 +75,7 @@ package Oak.Timers with Preelaborate is
 
    function Fill_Event_Timer_Data
      (Timer_Action     : in Ada.Cyclic_Tasks.Event_Response;
-      Handler_Priority : in Interrupt_Priority;
+      Handler_Priority : in Oak_Priority;
       Agent_To_Handle  : in Oak_Agent_Id;
       Handler          : in Ada.Cyclic_Tasks.Response_Handler := null)
       return Event_Timer_Data;
@@ -202,7 +202,7 @@ private
       Timer_Action     : Ada.Cyclic_Tasks.Event_Response;
       --  The action the timer will perform when it fires.
 
-      Handler_Priority : Interrupt_Priority;
+      Handler_Priority : Oak_Priority;
       --  The priority that the handler executes at. Restricted to the
       --  interrupt priority range because these are they only priorities that
       --  have an interrupt agent avaliable to run the handler.
@@ -284,11 +284,6 @@ private
                              return Oak_Agent_Id is
       (Element (Pool, Timer).Data.Agent_To_Handle);
 
-   function Earliest_Timer_To_Fire
-     (Above_Priority : in Any_Priority := Oak_Priority'First)
-      return Oak_Timer_Id is
-      (Find_Earliest_Item (Pool, Above_Priority));
-
    function Has_Timer_Fired (Timer : in Oak_Timer_Id) return Boolean is
       (Is_Active (Timer) and Element (Pool, Timer).Fire_Time <= Clock);
 
@@ -300,7 +295,7 @@ private
 
    function Fill_Event_Timer_Data
      (Timer_Action     : in Ada.Cyclic_Tasks.Event_Response;
-      Handler_Priority : in Interrupt_Priority;
+      Handler_Priority : in Oak_Priority;
       Agent_To_Handle  : in Oak_Agent_Id;
       Handler          : in Ada.Cyclic_Tasks.Response_Handler := null)
       return Event_Timer_Data is

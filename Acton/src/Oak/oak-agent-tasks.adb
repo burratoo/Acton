@@ -94,7 +94,10 @@ package body Oak.Agent.Tasks is
 
          case Budget_Response is
             when No_Response =>
-               null;
+               T.Budget_Action := Fill_Event_Timer_Data
+                 (Timer_Action     => Budget_Response,
+                  Handler_Priority => Oak_Priority'First,
+                  Agent_To_Handle  => Agent);
 
             when Handler =>
                T.Budget_Action := Fill_Event_Timer_Data
@@ -114,7 +117,7 @@ package body Oak.Agent.Tasks is
 
          case Deadline_Response is
             when No_Response =>
-               null;
+               T.Deadline_Timer := No_Timer;
 
             when Handler =>
                New_Event_Timer

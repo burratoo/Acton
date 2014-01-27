@@ -416,8 +416,8 @@ package body Oak.Core_Support_Package.Interrupts is
 
       Asm
         ("mfsprg0  r1" & ASCII.LF & ASCII.HT & -- load kernel stack ptr
-          "mfsprg1  r9" & ASCII.LF & ASCII.HT & -- kernel instruction addr
-          "mtsrr0   r9" & ASCII.LF & ASCII.HT &
+          --  "mfsprg1  r9" & ASCII.LF & ASCII.HT & -- kernel instruction addr
+          --  "mtsrr0   r9" & ASCII.LF & ASCII.HT &
           "rfi",                     --   switch to oak.
          Volatile => True);
    end In_Place_Context_Switch_To_Oak_Interrupt;

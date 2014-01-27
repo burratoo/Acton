@@ -42,6 +42,24 @@ package body Oak.Timers is
       Delete_Item (Pool, Timer);
    end Delete_Timer;
 
+   ----------------------------
+   -- Earliest_Timer_To_Fire --
+   ----------------------------
+
+   function Earliest_Timer_To_Fire
+     (Above_Priority : in Any_Priority := Oak_Priority'First)
+      return Oak_Timer_Id
+   is
+      Timer : constant Oak_Timer_Id :=
+                Find_Earliest_Item (Pool, Above_Priority);
+   begin
+      if Firing_Time (Timer) < Time_Last then
+         return Timer;
+      else
+         return No_Timer;
+      end if;
+   end Earliest_Timer_To_Fire;
+
    ---------------
    -- New_Timer --
    ---------------

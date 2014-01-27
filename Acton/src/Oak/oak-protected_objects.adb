@@ -70,7 +70,7 @@ package body Oak.Protected_Objects is
          Remove_Agent_From_Scheduler (Agent => Entering_Agent);
       end if;
 
-      if State (PO) = Inactive then
+      if Task_Within (PO) = No_Agent then
          Next_Agent_To_Run := No_Agent;
 
          if Subprogram_Kind = Protected_Entry then
@@ -135,11 +135,13 @@ package body Oak.Protected_Objects is
 
          if Next_Agent_To_Run /= No_Agent then
             Add_Task_To_Protected_Object (PO, T => Next_Agent_To_Run);
-            Set_State (For_Agent => Next_Agent_To_Run, State => Runnable);
 
-            --  Run protected agent
-            Set_State (For_Agent => PO, State => Runnable);
-            Add_Agent_To_Scheduler (PO);
+            if State (PO) = Inactive then
+               --  Run protected agent
+               Set_State (For_Agent => PO, State => Runnable);
+               Add_Agent_To_Scheduler (PO);
+            end if;
+
             Next_Agent_To_Run := PO;
          end if;
 
@@ -204,17 +206,22 @@ package body Oak.Protected_Objects is
               (Protected_Object => PO,
                Open_Entry       => Next_Entry,
                Exception_Raised => E);
-            Get_And_Remove_Next_Task_From_Entry_Queue
-              (PO        => PO,
-               Entry_Id  => Next_Entry,
-               Next_Task => Next_Agent_To_Run);
 
-            --  If there is a queued task to service, allow it to execute
-            --  inside the protected object.
+            if Next_Entry /= No_Index then
+               Get_And_Remove_Next_Task_From_Entry_Queue
+                 (PO        => PO,
+                  Entry_Id  => Next_Entry,
+                  Next_Task => Next_Agent_To_Run);
 
-            if Next_Agent_To_Run /= No_Agent then
-               Set_State (For_Agent => Next_Agent_To_Run, State => Runnable);
-               Add_Task_To_Protected_Object (PO => PO, T => Next_Agent_To_Run);
+               --  If there is a queued task to service, allow it to execute
+               --  inside the protected object.
+
+               if Next_Agent_To_Run /= No_Agent then
+                  Set_State
+                    (For_Agent => Next_Agent_To_Run, State => Runnable);
+                  Add_Task_To_Protected_Object
+                    (PO => PO, T => Next_Agent_To_Run);
+               end if;
             end if;
 
          end;

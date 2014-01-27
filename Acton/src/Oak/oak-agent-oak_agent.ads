@@ -153,6 +153,10 @@ package Oak.Agent.Oak_Agent with Preelaborate is
      with Inline;
    --  Returns the agent pointed to by the Agent's Next_Agent link.
 
+   function Next_Charge_Agent (Agent : in Oak_Agent_Id) return Oak_Agent_Id
+     with Inline;
+   --  Returns the agent pointed to by the Agent's Next_Charge_Agent link.
+
    function Normal_Priority
      (Agent : in Oak_Agent_Id) return System.Any_Priority
      with Pre => Has_Agent (Agent), Inline;
@@ -199,6 +203,11 @@ package Oak.Agent.Oak_Agent with Preelaborate is
      (For_Agent  : in Oak_Agent_Id;
       Next_Agent : in Oak_Agent_Id);
    --  Set the Next_Agent link for the Agent.
+
+   procedure Set_Next_Charge_Agent
+     (For_Agent  : in Oak_Agent_Id;
+      Next_Agent : in Oak_Agent_Id);
+   --  Set the Next_Charge_Agent link for the Agent.
 
    procedure Set_Remaining_Budget
      (For_Agent : in Oak_Agent_Id;
@@ -281,8 +290,11 @@ private
 
       Next_Agent             : Oak_Agent_Id;
       --  Used to allow agents to be placed on arbitary linked-lists. In Oak
-      --  these are used for entry queues and charge and activation lists
-      --  (noting that an agent can only be on one list at a time).
+      --  these are used for entry queues and activation lists (noting that an
+      --  agent can only be on one list at a time).
+
+      Next_Charge_Agent      : Oak_Agent_Id;
+      --  Used to link a charge list together.
 
       State                  : Agent_State;
       --  The state of the agent.
@@ -368,6 +380,9 @@ private
 
    function Next_Agent (Agent : in Oak_Agent_Id) return Oak_Agent_Id is
       (Agent_Pool (Agent).Next_Agent);
+
+   function Next_Charge_Agent (Agent : in Oak_Agent_Id) return Oak_Agent_Id is
+     (Agent_Pool (Agent).Next_Charge_Agent);
 
    function Normal_Priority
      (Agent : in Oak_Agent_Id) return System.Any_Priority is

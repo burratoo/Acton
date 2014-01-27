@@ -626,6 +626,9 @@ package body Oak.Storage.Time_Priority_Pool is
       end if;
 
       N (Node).In_Tree := False;
+      N (Node).Parent  := No_Node;
+      N (Node).Left    := No_Node;
+      N (Node).Right   := No_Node;
 
    end Remove_Node;
 

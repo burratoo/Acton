@@ -39,7 +39,7 @@ package body Oak.Core_Support_Package.Call_Stack.Ops is
       Asm
         --  Allocate room for GPR3 which is at the top of the register file.
         ("stwu %0,   -8(%0)" & ASCII.LF & ASCII.HT &
-         "stw  %2,    0(%0)" & ASCII.LF & ASCII.HT &
+         "stw  %2,    4(%0)" & ASCII.LF & ASCII.HT &
          --  Allocate room for the rest of the register file
          "stwu %0, -200(%0)" & ASCII.LF & ASCII.HT &
          "stwu %0,  -80(%0)" & ASCII.LF & ASCII.HT &

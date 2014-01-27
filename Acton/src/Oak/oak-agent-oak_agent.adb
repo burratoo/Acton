@@ -77,7 +77,7 @@ package body Oak.Agent.Oak_Agent is
                   Charge_Execution_Time (Agent, Exec_Time);
                end if;
          end case;
-         Agent := Agent_Pool (Agent).Next_Agent;
+         Agent := Agent_Pool (Agent).Next_Charge_Agent;
       end loop;
    end Charge_Execution_Time_To_List;
 
@@ -100,7 +100,7 @@ package body Oak.Agent.Oak_Agent is
    is
       Selected_Agent : Oak_Agent_Id := Charge_List;
       Agent          : Oak_Agent_Id :=
-                         Agent_Pool (Charge_List).Next_Agent;
+                         Agent_Pool (Charge_List).Next_Charge_Agent;
    begin
       while Agent /= No_Agent loop
          if Agent_Pool (Agent).Remaining_Budget
@@ -108,7 +108,7 @@ package body Oak.Agent.Oak_Agent is
             Selected_Agent := Agent;
          end if;
 
-         Agent := Agent_Pool (Agent).Next_Agent;
+         Agent := Agent_Pool (Agent).Next_Charge_Agent;
       end loop;
 
       return
@@ -190,6 +190,7 @@ package body Oak.Agent.Oak_Agent is
       end if;
 
       A.Next_Agent             := No_Agent;
+      A.Next_Charge_Agent      := No_Agent;
       A.State                  := Initial_State;
       A.Normal_Priority        := Normal_Priority;
       A.Scheduler_Agent        := Scheduler_Agent;
@@ -280,6 +281,17 @@ package body Oak.Agent.Oak_Agent is
    begin
       Agent_Pool (For_Agent).Next_Agent := Next_Agent;
    end Set_Next_Agent;
+
+   ---------------------------
+   -- Set_Next_Charge_Agent --
+   ---------------------------
+
+   procedure Set_Next_Charge_Agent
+     (For_Agent  : in Oak_Agent_Id;
+      Next_Agent : in Oak_Agent_Id) is
+   begin
+      Agent_Pool (For_Agent).Next_Charge_Agent := Next_Agent;
+   end Set_Next_Charge_Agent;
 
    --------------------------
    -- Set_Remaining_Budget --

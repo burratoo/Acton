@@ -192,7 +192,12 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
                Move_Agent_From_Runnable_To_Sleep_Queues : declare
                   Agent_Sid : constant Storage_Id := Queue_Head_Id;
                begin
-                  Queue_Head_Id := Queue_Head.Next;
+                  if Queue_Head_Id = Queue_Tail_Id then
+                     Queue_Head_Id := No_Node;
+                     Queue_Tail_Id := No_Node;
+                  else
+                     Queue_Head_Id := Queue_Head.Next;
+                  end if;
                   Insert_Into_Sleeping_Queue (Agent_Sid => Agent_Sid);
                end Move_Agent_From_Runnable_To_Sleep_Queues;
 
@@ -234,8 +239,6 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
 
          Node_Id         : Storage_Id        := Sleeping_Queue.Head;
          Prev_Id         : Storage_Id        := No_Node;
-         Current_Node    : Scheduler_Element renames Scheduler.Pool (Node_Id);
-         Current_Agent   : Oak_Agent_Id      renames Current_Node.Agent;
          Agent_Wake_Time : constant Time     := Wake_Time (Agent);
       begin
          if Sleeping_Queue.Head = No_Node then
@@ -243,16 +246,17 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
             Scheduler.Pool (Agent_Sid).Next := No_Node;
          else
             while Node_Id /= No_Node
-              and then Agent_Wake_Time > Wake_Time (Current_Agent)
+              and then Agent_Wake_Time >
+                Wake_Time (Scheduler.Pool (Node_Id).Agent)
             loop
                Prev_Id := Node_Id;
-               Node_Id := Current_Node.Next;
+               Node_Id := Scheduler.Pool (Node_Id).Next;
             end loop;
 
             Scheduler.Pool (Agent_Sid).Next := Node_Id;
 
             if Prev_Id /= No_Node then
-               Scheduler.Pool (Agent_Sid).Next := Agent_Sid;
+               Scheduler.Pool (Prev_Id).Next := Agent_Sid;
             else
                --  If Prev_Id is No_Node it means that the sleeping node is
                --  in front of the head node.
@@ -271,12 +275,11 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
          for Sleeping_Queue of Scheduler.Sleeping_Queues loop
             declare
                Node_Id      : Storage_Id    := Sleeping_Queue.Head;
-               Current_Node : Scheduler_Element renames
-                                Scheduler.Pool (Node_Id);
             begin
 
                while Node_Id /= No_Node
-                 and then Current_Time >= Wake_Time (Current_Node.Agent)
+                 and then Wake_Time (Scheduler.Pool (Node_Id).Agent) <=
+                   Current_Time
                loop
                   --  Remove Agent from sleeping queue...
 

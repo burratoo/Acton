@@ -265,8 +265,24 @@ package body Oak.Core is
                         Next_Task_To_Run => Next_Agent);
 
                   else
-                     Message := Message_Is_Bad;
-                     Next_Agent     := Current_Agent;
+                     Message    := Message_Is_Bad;
+                     Next_Agent := Current_Agent;
+                  end if;
+
+               when Activation_Successful =>
+                  --  Activation_Successful message only applies to task agents
+
+                  if Current_Agent in Task_Id then
+                     Set_State
+                       (For_Agent => Current_Agent,
+                        State     => Activation_Successful);
+                     Check_Sechduler_Agents_For_Next_Agent_To_Run
+                       (From_Scheduler_Agent =>
+                          Top_Level_Schedulers (My_Kernel_Id),
+                        Next_Agent_To_Run    => Next_Agent);
+                  else
+                     Message    := Message_Is_Bad;
+                     Next_Agent := Current_Agent;
                   end if;
 
                when Sleeping =>
@@ -589,7 +605,7 @@ package body Oak.Core is
             Budget_Expires := Clock + Remaining_Budget (Budget_Task);
 
             if Next_Timer = No_Timer
-              or else Budget_Expires < Firing_Time (Current_Timer)
+              or else Budget_Expires < Firing_Time (Next_Timer)
             then
                if Budget_Task in Task_Id then
                   Next_Timer := Kernel_Timer (My_Kernel_Id);

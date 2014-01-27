@@ -58,9 +58,9 @@ package Oak.Core_Support_Package.Task_Support with Preelaborate is
      (Message : in out Message_Access);
    --  Procedures that initiate the context switch.
 
-   procedure Context_Switch_Will_Be_To_Interrupted_Task;
-   procedure Context_Switch_Will_Be_To_Agent;
-   procedure Context_Switch_Will_Switch_In_Place;
+   procedure Context_Switch_Will_Be_To_Interrupted_Task with Inline_Always;
+   procedure Context_Switch_Will_Be_To_Agent with Inline_Always;
+   procedure Context_Switch_Will_Switch_In_Place with Inline_Always;
    --  Procedures that set up the appropriate interrupt handlers.
 
    procedure Set_Oak_Wake_Up_Timer (Wake_Up_At : Oak.Oak_Time.Time);

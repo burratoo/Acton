@@ -33,7 +33,7 @@ package body Oak.Agent.Interrupts is
 
    function To_Task_Id is
      new Ada.Unchecked_Conversion
-       (Task_Id, Ada.Task_Identification.Task_Id);
+       (Oak_Agent_Id, Ada.Task_Identification.Task_Id);
 
    ------------------------
    -- Interrupt_Run_Loop --
@@ -51,7 +51,6 @@ package body Oak.Agent.Interrupts is
             when External =>
                External_Interrupt_Handler (Agent_Pool (Agent).External_Id);
             when Timer_Action =>
-               null;
                Handler (Agent_Pool (Agent).Timer_To_Handle).all
                  (To_Task_Id
                     (Agent_To_Handle (Agent_Pool (Agent).Timer_To_Handle)));

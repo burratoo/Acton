@@ -37,7 +37,7 @@ package body Oak.Agent.Tasks.Activation is
       T := Next_Agent (Activator);
 
       while T /= No_Agent
-        and then (State (T) = Activation_Pending or State (T) = Terminated)
+        and then not (State (T) = Activation_Pending or State (T) = Terminated)
       loop
          T := Next_Agent (T);
       end loop;
@@ -157,6 +157,9 @@ package body Oak.Agent.Tasks.Activation is
       if Activation_List = No_Agent then
          raise Program_Error with "Activator has no tasks to activate!";
       end if;
+
+      --  Set the Activator's state to Activation_Pending
+      Set_State (For_Agent => Activator, State => Activation_Pending);
 
       --  Store activation list in the activator's next agent link.
       Set_Next_Agent (For_Agent => Activator, Next_Agent => Activation_List);

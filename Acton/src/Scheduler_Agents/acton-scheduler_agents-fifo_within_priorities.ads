@@ -63,7 +63,7 @@ private
                           (others => (No_Node, No_Node));
 
       Bulk_Free : Storage_Id := No_Node + 1;
-      Free_List : Storage_Id;
+      Free_List : Storage_Id := No_Node;
    end record;
 
 end Acton.Scheduler_Agents.FIFO_Within_Priorities;

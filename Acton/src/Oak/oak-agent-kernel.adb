@@ -45,7 +45,8 @@ package body Oak.Agent.Kernel is
    is
       K : Oak_Kernel_Record renames Agent_Pool (Oak_Kernel);
    begin
-      Set_Next_Agent (For_Agent => Agent, Next_Agent => K.Budgets_To_Charge);
+      Set_Next_Charge_Agent
+        (For_Agent => Agent, Next_Agent => K.Budgets_To_Charge);
       K.Budgets_To_Charge := Agent;
    end Add_Agent_To_Charge_List;
 
@@ -198,13 +199,13 @@ package body Oak.Agent.Kernel is
       if K.Budgets_To_Charge = Agent then
          --  The agent is at the head of the charge list.
 
-         K.Budgets_To_Charge := Next_Agent (Agent);
+         K.Budgets_To_Charge := Next_Charge_Agent (Agent);
 
       else
          --  The agent is further down the charge list.
          Find_And_Remove_Agent : declare
             Prev_A : Oak_Agent_Id := K.Budgets_To_Charge;
-            A      : Oak_Agent_Id := Next_Agent (K.Budgets_To_Charge);
+            A      : Oak_Agent_Id := Next_Charge_Agent (K.Budgets_To_Charge);
          begin
             while A /= Agent and then A /= No_Agent loop
                Prev_A := A;
@@ -213,7 +214,7 @@ package body Oak.Agent.Kernel is
 
             if A /= No_Agent then
                --  We have found the agent
-               Set_Next_Agent (Prev_A, Next_Agent (A));
+               Set_Next_Charge_Agent (Prev_A, Next_Agent (A));
             end if;
          end Find_And_Remove_Agent;
       end if;
@@ -221,7 +222,7 @@ package body Oak.Agent.Kernel is
       --  Clear the next agent link for the removed agent so we know that it
       --  is possibly not in a list.
 
-      Set_Next_Agent (For_Agent => Agent, Next_Agent => No_Agent);
+      Set_Next_Charge_Agent (For_Agent => Agent, Next_Agent => No_Agent);
 
    end Remove_Agent_From_Charge_List;
 

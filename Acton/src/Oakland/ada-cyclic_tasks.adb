@@ -11,7 +11,7 @@ package body Ada.Cyclic_Tasks is
 
    function To_Task_Handler is
      new Unchecked_Conversion
-       (Ada.Task_Identification.Task_Id, Oak.Agent.Task_Id);
+       (Ada.Task_Identification.Task_Id, Oak.Agent.Oak_Agent_Id);
 
    procedure Release_Task (T : in Ada.Task_Identification.Task_Id) is
       Message : Oak_Message :=

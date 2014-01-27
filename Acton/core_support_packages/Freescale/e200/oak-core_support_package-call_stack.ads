@@ -20,7 +20,7 @@ package Oak.Core_Support_Package.Call_Stack with Pure is
    Call_Stack_Size            : constant := 4 * 1024;
    Default_Call_Stack_Size    : constant := Call_Stack_Size;
    Main_Task_Call_Stack_Size  : constant := 4 * 1024;
-   Oak_Call_Stack_Size        : constant := 1 * 1024;
+   Oak_Call_Stack_Size        : constant := 2 * 1024;
    Interrupt_Stack_Size       : constant := 512;
 
    --  Call_Stack_Alignment in bytes
