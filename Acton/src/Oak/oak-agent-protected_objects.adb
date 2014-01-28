@@ -66,9 +66,7 @@ package body Oak.Agent.Protected_Objects is
       P : Protected_Agent_Record renames Agent_Pool (PO);
 
       Q, Prev_Q      : Task_Id_With_No;
-      Queue_Entry_Id : Entry_Index;
    begin
-      Set_Id_Of_Entry (T, Entry_Id);
       Set_Next_Queue  (T, No_Agent);
       Set_Next_Agent  (T, No_Agent);
 
@@ -77,13 +75,11 @@ package body Oak.Agent.Protected_Objects is
       if Q = No_Agent then
          P.Entry_Queues := T;
       else
-         Queue_Entry_Id := Id_Of_Entry (Q);
-         Prev_Q         := No_Agent;
+         Prev_Q := No_Agent;
 
-         while Q /= No_Agent and then Queue_Entry_Id /= Entry_Id loop
+         while Q /= No_Agent and then Id_Of_Entry (Q) /= Entry_Id loop
             Prev_Q := Q;
-            Q      := Next_Queue (For_Task => Q,
-                                  Entry_Id => Queue_Entry_Id);
+            Q      := Next_Queue (For_Task => Q);
          end loop;
 
          if Q = No_Agent then
@@ -93,7 +89,7 @@ package body Oak.Agent.Protected_Objects is
             Set_Next_Queue (For_Task   => Prev_Q,
                             Next_Queue => T);
 
-         elsif Queue_Entry_Id /= No_Entry then
+         elsif Id_Of_Entry (Q) /= No_Entry then
             --  There is a Task Agent representing the queue. Find the end of
             --  this queue.
 
@@ -262,7 +258,6 @@ package body Oak.Agent.Protected_Objects is
       Prev_Q         : Task_Id_With_No := No_Agent;
       Q              : Task_Id_With_No := P.Entry_Queues;
       New_Q          : Task_Id_With_No := P.Entry_Queues;
-      Queue_Entry_Id : Entry_Index;
 
    begin
       --  Find the queue.
@@ -270,12 +265,14 @@ package body Oak.Agent.Protected_Objects is
       --  has sent an index that is either not valid or points to a queue with
       --  no one on it.
 
-      Queue_Entry_Id := Id_Of_Entry (For_Task => Q);
-
-      while Q /= No_Agent and then Queue_Entry_Id /= Entry_Id loop
+      while Q /= No_Agent and then Id_Of_Entry (For_Task => Q) /= Entry_Id loop
          Prev_Q := Q;
          Q      := Next_Queue (Q);
       end loop;
+
+      if Q = No_Agent then
+         raise Program_Error;
+      end if;
 
       --  Pull the first task off the queue
 
@@ -285,24 +282,26 @@ package body Oak.Agent.Protected_Objects is
 
       New_Q := Next_Agent (Q);
 
-      if New_Q /= No_Agent then
+      if New_Q = No_Agent then
          --  The queue that Q belong to was empty, pick next queue. It does not
          --  matter if that queue is empty.
 
          New_Q := Next_Queue (Q);
+      else
+         --  The new queue head points to the same task as the old queue head
+         --  did.
+         Set_Next_Queue (For_Task   => New_Q,
+                         Next_Queue => Next_Queue (Q));
       end if;
 
-      --  The new queue head points to the same task as the old queue head did.
-
-      Set_Next_Queue (For_Task   => New_Q,
-                      Next_Queue => Next_Queue (Q));
+      --  Fix previous node's next queue pointer
 
       if P.Entry_Queues = Q then
          --  If Q was the first entry in the queue list, fix head reference.
          P.Entry_Queues := New_Q;
       else
          --  Otherwise fix the previous Q item reference.
-         Agent_Pool (Prev_Q).Entry_Queues := New_Q;
+         Set_Next_Queue (For_Task => Prev_Q, Next_Queue => New_Q);
       end if;
 
       --  Next_Task is simply Q.
@@ -594,7 +593,7 @@ package body Oak.Agent.Protected_Objects is
                Exception_Raised := False;
                return;
             end if;
-            Queue := Next_Agent (Queue);
+            Queue := Next_Queue (Queue);
          end loop;
       end Search_For_Open_Queue;
 
@@ -604,7 +603,7 @@ package body Oak.Agent.Protected_Objects is
    exception
       when others =>
          Exception_Raised := False;
-         return;
+         raise Program_Error;
    end Task_Action;
 
    ----------------------------------------------------------------

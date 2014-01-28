@@ -68,6 +68,7 @@ package body Oak.Protected_Objects is
 
       if not Resubmitted then
          Remove_Agent_From_Scheduler (Agent => Entering_Agent);
+         Set_Id_Of_Entry (Entering_Agent, Entry_Id);
       end if;
 
       if Task_Within (PO) = No_Agent then
@@ -104,10 +105,14 @@ package body Oak.Protected_Objects is
                         T        => Entering_Agent,
                         Entry_Id => Entry_Id);
 
-                     Get_And_Remove_Next_Task_From_Entry_Queue
-                       (PO        => PO,
-                        Entry_Id  => Open_Entry,
-                        Next_Task => Next_Agent_To_Run);
+                     if Open_Entry /= No_Entry then
+                        Get_And_Remove_Next_Task_From_Entry_Queue
+                          (PO        => PO,
+                           Entry_Id  => Open_Entry,
+                           Next_Task => Next_Agent_To_Run);
+                     else
+                        Next_Agent_To_Run := No_Agent;
+                     end if;
                   end if;
 
                else
