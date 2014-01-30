@@ -170,7 +170,7 @@ package body Oak.Core is
       Next_Agent     : Oak_Agent_Id := No_Agent;
       --  The next agent to run.
 
-      Next_Timer     : Oak_Timer_Id := No_Timer;
+      Next_Timer     : Oak_Timer_Id;
       --  The next firing timer.
 
       Message_Is_Bad : constant Oak_Message :=
@@ -234,8 +234,7 @@ package body Oak.Core is
             --  in a scheduler agent.
 
             Check_Sechduler_Agents_For_Next_Agent_To_Run
-              (From_Scheduler_Agent => Top_Level_Schedulers (My_Kernel_Id),
-               Next_Agent_To_Run    => Next_Agent);
+              (Next_Agent_To_Run => Next_Agent);
 
          when Agent_Request =>
             --  The task has yielded to tell or ask Oak something. The agent
@@ -277,9 +276,7 @@ package body Oak.Core is
                        (For_Agent => Current_Agent,
                         State     => Activation_Successful);
                      Check_Sechduler_Agents_For_Next_Agent_To_Run
-                       (From_Scheduler_Agent =>
-                          Top_Level_Schedulers (My_Kernel_Id),
-                        Next_Agent_To_Run    => Next_Agent);
+                        (Next_Agent_To_Run => Next_Agent);
                   else
                      Message    := Message_Is_Bad;
                      Next_Agent := Current_Agent;
@@ -342,8 +339,8 @@ package body Oak.Core is
                         Property_To_Update => Message.Property_To_Update,
                         Next_Task_To_Run   => Next_Agent);
                   else
-                     Message := Message_Is_Bad;
-                     Next_Agent     := Current_Agent;
+                     Message    := Message_Is_Bad;
+                     Next_Agent := Current_Agent;
                   end if;
 
                when Entering_PO =>
@@ -357,8 +354,8 @@ package body Oak.Core is
                         Entry_Id          => Message.Entry_Id_Enter,
                         Next_Agent_To_Run => Next_Agent);
                   else
-                     Message := Message_Is_Bad;
-                     Next_Agent     := Current_Agent;
+                     Message    := Message_Is_Bad;
+                     Next_Agent := Current_Agent;
                   end if;
 
                when Exiting_PO =>
@@ -402,13 +399,11 @@ package body Oak.Core is
                      end if;
 
                      Check_Sechduler_Agents_For_Next_Agent_To_Run
-                       (From_Scheduler_Agent =>
-                          Top_Level_Schedulers (My_Kernel_Id),
-                        Next_Agent_To_Run    => Next_Agent);
+                       (Next_Agent_To_Run => Next_Agent);
 
                   else
-                     Message := Message_Is_Bad;
-                     Next_Agent     := Current_Agent;
+                     Message    := Message_Is_Bad;
+                     Next_Agent := Current_Agent;
                   end if;
 
                when Adding_Agent =>
@@ -417,9 +412,7 @@ package body Oak.Core is
                   Set_State (Current_Agent, Runnable);
                   Add_Agent_To_Scheduler (Message.Agent_To_Add);
                   Check_Sechduler_Agents_For_Next_Agent_To_Run
-                    (From_Scheduler_Agent =>
-                        Top_Level_Schedulers (My_Kernel_Id),
-                     Next_Agent_To_Run    => Next_Agent);
+                    (Next_Agent_To_Run => Next_Agent);
                when others =>
                   null;
             end case;
@@ -503,9 +496,7 @@ package body Oak.Core is
 
                   when others =>
                      Check_Sechduler_Agents_For_Next_Agent_To_Run
-                       (From_Scheduler_Agent =>
-                           Top_Level_Schedulers (My_Kernel_Id),
-                        Next_Agent_To_Run    => Next_Agent);
+                       (Next_Agent_To_Run => Next_Agent);
                end case;
 
             end if;
@@ -538,9 +529,19 @@ package body Oak.Core is
            (Oak_Kernel => My_Kernel_Id,
             Priority   => Normal_Priority (Next_Agent));
 
-         --  Correct Next Agent. Needed to cover the case where a protected
-         --  agent has been selected which cannot be executed directly and for
-         --  an activator task which is activating child tasks.
+         --  Correct Next Agent. Needed to cover the case where a scheduler
+         --  agent, a protected or an activitor task has been selected.
+
+         --  If Next_Agent is a scheduler agent, find what agent it wishes to
+         --  run. Keep checking until a non scheduler agent is selected.
+
+         while Next_Agent in Scheduler_Id loop
+            Next_Agent := Agent_To_Run (Next_Agent);
+         end loop;
+
+         --  If the Next_Task is a protected agent, select the first task
+         --  within it. Otherwise if it is an activator call the
+         --  Continue_Activation subprogram to discover the task to run.
 
          if Next_Agent in Protected_Id then
             Next_Agent := Task_Within (Next_Agent);
@@ -565,7 +566,7 @@ package body Oak.Core is
 
          Next_Timer :=
            Earliest_Timer_To_Fire
-             (Above_Priority => Normal_Priority (Next_Agent));
+             (Above_Priority => Current_Priority (My_Kernel_Id));
 
          --  If the selected timer has fired, we service it now by setting the
          --  run reason to timer and run the loop again. Otherwise we exit and
@@ -595,7 +596,8 @@ package body Oak.Core is
       declare
          Budget_Task    : constant Oak_Agent_Id :=
                             Earliest_Expiring_Budget
-                              (Charge_List (My_Kernel_Id));
+                              (Charge_List (My_Kernel_Id),
+                               Current_Priority (My_Kernel_Id));
          Budget_Expires : Time;
       begin
          if Budget_Task /= No_Agent then
@@ -607,26 +609,24 @@ package body Oak.Core is
             if Next_Timer = No_Timer
               or else Budget_Expires < Firing_Time (Next_Timer)
             then
+               Next_Timer := Kernel_Timer (My_Kernel_Id);
                if Budget_Task in Task_Id then
-                  Next_Timer := Kernel_Timer (My_Kernel_Id);
                   Set_Event_Timer
                     (Timer       => Next_Timer,
                      Action_Data => Budget_Action (Budget_Task),
                      Fire_Time   => Budget_Expires);
 
                elsif Budget_Task in Scheduler_Id then
-                  Next_Timer := Timer_For_Scheduler_Agent (Budget_Task);
                   Update_Timer
                     (Timer    => Next_Timer,
                      New_Time => Budget_Expires);
                   Set_Timer_Scheduler_Action
                     (Timer            => Next_Timer,
+                     Scheduler        => Budget_Task,
                      Scheduler_Action => End_Cycle);
                else
                   raise Program_Error;
                end if;
-
-               Update_Timer (Next_Timer, New_Time => Budget_Expires);
             end if;
          end if;
       end;

@@ -40,7 +40,7 @@ package body Oak.Agent.Oak_Agent is
       --  Time_Span_Last since that signifies that the Remaining_Budget
       --  variable is not begining used.
 
-      if Agent.Remaining_Budget /= Time_Span_Last then
+      if Agent.Remaining_Budget < Time_Span_Last then
          Agent.Remaining_Budget := Agent.Remaining_Budget - Exec_Time;
       end if;
    end Charge_Execution_Time;
@@ -55,9 +55,13 @@ package body Oak.Agent.Oak_Agent is
       Current_Agent    : in Oak_Agent_Id;
       Current_Priority : in Oak_Priority)
    is
-      Agent : Oak_Agent_Id := List;
+      Agent   : Oak_Agent_Id := List;
    begin
-      while Agent /= No_Agent loop
+      --  The first node on the charge list can be the No_Node (since it is
+      --  also the sleep node), so the check for the terminating No_Node is
+      --  done at the bottom.
+
+      loop
          case Agent_Pool (Agent).When_To_Charge is
             when Only_While_Running =>
                if Agent = Current_Agent then
@@ -78,6 +82,7 @@ package body Oak.Agent.Oak_Agent is
                end if;
          end case;
          Agent := Agent_Pool (Agent).Next_Charge_Agent;
+         exit when Agent = No_Agent;
       end loop;
    end Charge_Execution_Time_To_List;
 
@@ -96,17 +101,29 @@ package body Oak.Agent.Oak_Agent is
    ------------------------------
 
    function Earliest_Expiring_Budget
-     (Charge_List : in Charge_List_Head) return Oak_Agent_Id
+     (Charge_List      : in Charge_List_Head;
+      Current_Priority : in Any_Priority)
+      return Oak_Agent_Id
    is
-      Selected_Agent : Oak_Agent_Id := Charge_List;
-      Agent          : Oak_Agent_Id :=
-                         Agent_Pool (Charge_List).Next_Charge_Agent;
+      Selected_Agent : Oak_Agent_Id := No_Agent;
+      Agent          : Oak_Agent_Id := Charge_List;
    begin
       while Agent /= No_Agent loop
-         if Agent_Pool (Agent).Remaining_Budget
-           < Agent_Pool (Selected_Agent).Remaining_Budget then
-            Selected_Agent := Agent;
-         end if;
+         declare
+            A : Oak_Agent_Record renames Agent_Pool (Agent);
+         begin
+            if (A.When_To_Charge = Only_While_Running
+                or else A.When_To_Charge = All_Priorities
+                or else (A.When_To_Charge = Same_Priority
+                         and then Current_Priority = A.Normal_Priority)
+                or else (A.When_To_Charge = Below_Priority
+                         and then Current_Priority <= A.Normal_Priority))
+              and then A.Remaining_Budget
+                < Agent_Pool (Selected_Agent).Remaining_Budget
+            then
+               Selected_Agent := Agent;
+            end if;
+         end;
 
          Agent := Agent_Pool (Agent).Next_Charge_Agent;
       end loop;

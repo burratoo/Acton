@@ -69,9 +69,8 @@ package Oak.Message with Preelaborate is
             Wake_Scheduler_At   : Oak_Time.Time;
             Keep_In_Charge_List : Boolean;
 
-         when Continue_Sleep =>
-
-            Remain_In_Charge_List : Boolean;
+         when Wake_Agent =>
+            Agent_To_Wake       : Oak_Agent_Id;
          when others =>
             null;
       end case;

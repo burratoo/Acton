@@ -209,19 +209,17 @@ package body Oak.Agent.Kernel is
          begin
             while A /= Agent and then A /= No_Agent loop
                Prev_A := A;
-               A      := Next_Agent (A);
+               A      := Next_Charge_Agent (A);
             end loop;
 
             if A /= No_Agent then
                --  We have found the agent
-               Set_Next_Charge_Agent (Prev_A, Next_Agent (A));
+               Set_Next_Charge_Agent (Prev_A, Next_Charge_Agent (A));
             end if;
          end Find_And_Remove_Agent;
       end if;
 
-      --  Clear the next agent link for the removed agent so we know that it
-      --  is possibly not in a list.
-
+      --  Clear the next agent link for the removed agent.
       Set_Next_Charge_Agent (For_Agent => Agent, Next_Agent => No_Agent);
 
    end Remove_Agent_From_Charge_List;

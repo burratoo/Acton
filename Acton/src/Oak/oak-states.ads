@@ -31,7 +31,7 @@ package Oak.States with Pure is
       Removing_Agent,               -- 28
       Scheduler_Agent_Done,         -- 29
       Not_Initialised,              -- 30
-      Continue_Sleep,               -- 31
+      Wake_Agent,                   -- 31
       No_Message,                   -- 32
       Invalid_Message);             -- 33
 

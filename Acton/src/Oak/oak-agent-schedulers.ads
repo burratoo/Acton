@@ -60,6 +60,10 @@ package Oak.Agent.Schedulers with Preelaborate is
    --  Returns how a No_Agent Agent_To_Run value is to be interpretated, either
    --  as a No_Agent or as a Sleep_Agent.
 
+   function Is_Scheduler_Active (Scheduler : in Scheduler_Id) return Boolean;
+   --  Returns true if the scheduler agent is active and is able to dispatch
+   --  tasks.
+
    function Lowest_Resposible_Priority
      (Agent : in Scheduler_Id)
       return Any_Priority;
@@ -100,9 +104,16 @@ package Oak.Agent.Schedulers with Preelaborate is
       To    : in Any_Priority);
    --  Stores the priority range that the Scheduler Agent is responisble for.
 
+   procedure Set_Is_Scheduler_Active
+     (Scheduler : in Scheduler_Id;
+      Active    : in Boolean);
+   --  Sets whether the scheduler agent is active and is able to dispatch
+   --  tasks or not.
+
    function Scheduler_Active_Till
      (Scheduler : in Scheduler_Id) return Active_Till;
-   --  Returns how long until the scheduler goes to sleep.
+   --  Returns the event that causes the scheduler agent to inactivate and go
+   --  to sleep.
 
    function Scheduler_Cycle_Period
      (Scheduler : in Scheduler_Id) return Oak_Time.Time_Span;
@@ -214,6 +225,9 @@ private
      (Agent : in Scheduler_Id)
       return No_Agent_Interpretation is
      (Agent_Pool (Agent).Interpret_No_Agent_As);
+
+   function Is_Scheduler_Active (Scheduler : in Scheduler_Id) return Boolean is
+     (Is_Agent_Interrupted (Scheduler));
 
    function Lowest_Resposible_Priority
      (Agent : in Scheduler_Id)

@@ -52,22 +52,17 @@ private
 
    Empty_Queue : constant Queue := (Head => No_Node, Tail => No_Node);
 
-   type Queues is
-     array (System.Any_Priority range <>) of Queue;
-
-   type Scheduler_Storage (Min, Max : Any_Priority) is record
+   type Scheduler_Storage is record
    --  Storage is currently very similar to the time priority pool when it
    --  comes to allocating from an array.
 
       Pool : Elements;
 
-      Runnable_Queues : Queues (Min .. Max) :=
-                          (others => (No_Node, No_Node));
-      Sleeping_Queues : Queues (Min .. Max) :=
-                          (others => (No_Node, No_Node));
+      Runnable_Queue : Queue := (No_Node, No_Node);
+      Sleeping_Queue : Queue := (No_Node, No_Node);
 
       Bulk_Free : Storage_Id := No_Node + 1;
-      Free_List : Storage_Id;
+      Free_List : Storage_Id := No_Node;
    end record;
 
 end Acton.Scheduler_Agents.Priority_Server;

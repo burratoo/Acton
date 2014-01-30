@@ -89,6 +89,8 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
 
       procedure Service_Agent (Message : in out Oak_Message);
 
+      procedure Wake_Agent (Agent : in Oak_Agent_Id);
+
       ----------------------------------------
       -- Add_Agent_To_End_Of_Runnable_Queue --
       ----------------------------------------
@@ -419,11 +421,52 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
                Add_Agent_To_Scheduler (Message.Agent_To_Add);
             when Removing_Agent =>
                Remove_Agent_From_Scheduler (Message.Agent_To_Remove);
+            when Wake_Agent =>
+               Wake_Agent (Message.Agent_To_Wake);
             when others =>
                null;
          end case;
          Select_Next_Task (Message);
       end Service_Agent;
+
+      ----------------
+      -- Wake_Agent --
+      ----------------
+
+      procedure Wake_Agent (Agent : Oak_Agent_Id)
+      is
+         P       : constant Any_Priority := Normal_Priority (Agent);
+         Node_Id : Storage_Id := Scheduler.Sleeping_Queues (P).Head;
+         Prev_N  : Storage_Id := No_Node;
+      begin
+         --  Find Agent's scheduler node.
+         while Node_Id /= No_Node
+           and then Scheduler.Pool (Node_Id).Agent /= Agent
+         loop
+            Prev_N  := Node_Id;
+            Node_Id := Scheduler.Pool (Node_Id).Next;
+         end loop;
+
+         pragma Assert (Node_Id /= No_Node);
+
+         --  Remove Node from sleeping queue
+
+         if Prev_N = No_Node then
+            Scheduler.Sleeping_Queues (P).Head :=
+              Scheduler.Pool (Node_Id).Next;
+         else
+            Scheduler.Pool (Prev_N).Next := Scheduler.Pool (Node_Id).Next;
+         end if;
+
+         Scheduler.Pool (Node_Id).Next := No_Node;
+
+         if Wake_Time (Agent) <= Clock then
+            Add_Agent_To_End_Of_Runnable_Queue (Node_Id);
+         else
+            Insert_Into_Sleeping_Queue (Node_Id);
+         end if;
+
+      end Wake_Agent;
 
       Message : Oak_Message := (Message_Type => Selecting_Next_Agent);
 

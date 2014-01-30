@@ -11,9 +11,7 @@
 
 with Oak.Oak_Time;
 
-with Oak.Agent.Kernel;    use Oak.Agent.Kernel;
 with Oak.Agent.Oak_Agent; use Oak.Agent.Oak_Agent;
-with Oak.Core;            use Oak.Core;
 with Oak.Scheduler;       use Oak.Scheduler;
 with Oak.States;          use Oak.States;
 
@@ -111,8 +109,7 @@ package body Oak.Agent.Tasks.Activation is
       --  scheduler.
 
       Check_Sechduler_Agents_For_Next_Agent_To_Run
-        (From_Scheduler_Agent => Top_Level_Schedulers (This_Oak_Kernel),
-         Next_Agent_To_Run    => Next_Task_To_Run);
+        (Next_Agent_To_Run => Next_Task_To_Run);
    end Finish_Activation;
 
    ---------------------------

@@ -159,7 +159,8 @@ package Oak.Timers with Preelaborate is
    --  TIMER KIND: EVENT_TIMER.
 
    procedure Set_Timer_Scheduler_Action
-     (Timer : in Oak_Timer_Id;
+     (Timer            : in Oak_Timer_Id;
+      Scheduler        : in Scheduler_Id;
       Scheduler_Action : in Scheduler_Timer_Action)
      with Pre => Timer_Kind (Timer) = Scheduler_Timer;
    --  Sets the scheduler action of the timer.

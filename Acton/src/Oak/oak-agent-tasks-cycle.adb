@@ -145,9 +145,7 @@ package body Oak.Agent.Tasks.Cycle is
                   Deactivate_Timer (T.Deadline_Timer);
 
                   Check_Sechduler_Agents_For_Next_Agent_To_Run
-                    (From_Scheduler_Agent =>
-                        Scheduler_Agent_For_Agent (For_Task),
-                     Next_Agent_To_Run    => Next_Agent_To_Run);
+                    (Next_Agent_To_Run => Next_Agent_To_Run);
             end case;
 
          when Normal =>
@@ -215,9 +213,7 @@ package body Oak.Agent.Tasks.Cycle is
 
          Add_Agent_To_Scheduler (Task_To_Release);
          Check_Sechduler_Agents_For_Next_Agent_To_Run
-           (From_Scheduler_Agent =>
-              Scheduler_Agent_For_Agent (Task_To_Release),
-            Next_Agent_To_Run    => Next_Agent_To_Run);
+            (Next_Agent_To_Run => Next_Agent_To_Run);
 
       else
          --  Make a note that the event have been raised in the target task.

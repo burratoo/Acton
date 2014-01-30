@@ -26,8 +26,7 @@ package Oak.Scheduler with Preelaborate is
    --  contains a reference to).
 
    procedure Check_Sechduler_Agents_For_Next_Agent_To_Run
-     (From_Scheduler_Agent : in  Scheduler_Id;
-      Next_Agent_To_Run    : out Oak_Agent_Id);
+     (Next_Agent_To_Run : out Oak_Agent_Id);
    --  Queries the system's scheduler agents for the next task to run. Does not
    --  run the scheduler agents themselves, instead it relies on the cached
    --  results of the last run. Checks the scheduler agents for the next agent

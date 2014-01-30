@@ -171,8 +171,7 @@ package body Oak.Protected_Objects is
          --  Object release point 2.
          --  Release Lock(PO);
          Check_Sechduler_Agents_For_Next_Agent_To_Run
-           (From_Scheduler_Agent => Scheduler_Agent_For_Agent (Entering_Agent),
-            Next_Agent_To_Run    => Next_Agent_To_Run);
+           (Next_Agent_To_Run => Next_Agent_To_Run);
       end if;
 
    end Process_Enter_Request;
@@ -260,8 +259,7 @@ package body Oak.Protected_Objects is
          --  Object release point 3.
          --  Release Agent (PO);
          Check_Sechduler_Agents_For_Next_Agent_To_Run
-           (From_Scheduler_Agent  => Scheduler_Agent_For_Agent (PO),
-            Next_Agent_To_Run     => Next_Agent_To_Run);
+           (Next_Agent_To_Run => Next_Agent_To_Run);
       end if;
    end Process_Exit_Request;
 

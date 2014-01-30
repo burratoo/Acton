@@ -12,7 +12,6 @@
 with Oak.Message;  use Oak.Message;
 with Oak.States;   use Oak.States;
 
-with Oak.Agent.Kernel;     use Oak.Agent.Kernel;
 with Oak.Agent.Oak_Agent;  use Oak.Agent.Oak_Agent;
 with Oak.Agent.Schedulers; use Oak.Agent.Schedulers;
 
@@ -69,10 +68,7 @@ package body Acton.Scheduler_Agents.Priority_Server is
 
    procedure Run_Loop is
 
-      Me : constant Scheduler_Id := Current_Agent (This_Oak_Kernel);
-
-      Scheduler : Scheduler_Storage (Lowest_Resposible_Priority (Me),
-                                     Highest_Resposible_Priority (Me));
+      Scheduler : Scheduler_Storage;
 
       Scheduler_Error1 : exception;
 
@@ -105,14 +101,12 @@ package body Acton.Scheduler_Agents.Priority_Server is
       procedure Add_Agent_To_End_Of_Runnable_Queue
         (Agent_Sid : in Storage_Id)
       is
-         Agent : constant Oak_Agent_Id := Scheduler.Pool (Agent_Sid).Agent;
-         P     : constant Any_Priority := Normal_Priority (Agent);
 
          Queue_Head_Id  : Storage_Id renames
-                            Scheduler.Runnable_Queues (P).Head;
+                            Scheduler.Runnable_Queue.Head;
 
          Queue_Tail_Id  : Storage_Id renames
-                            Scheduler.Runnable_Queues (P).Tail;
+                            Scheduler.Runnable_Queue.Tail;
 
          Queue_Tail     : Scheduler_Element renames
                             Scheduler.Pool (Queue_Tail_Id);
@@ -173,16 +167,14 @@ package body Acton.Scheduler_Agents.Priority_Server is
 
       procedure Agent_Changed (Agent : in Oak_Agent_Id)
       is
-         Agent_Priority : constant Any_Priority :=  Normal_Priority (Agent);
-
          Queue_Head_Id  : Storage_Id renames
-                            Scheduler.Runnable_Queues (Agent_Priority).Head;
+                            Scheduler.Runnable_Queue.Head;
 
          Queue_Head     : Scheduler_Element renames
                             Scheduler.Pool (Queue_Head_Id);
 
          Queue_Tail_Id  : Storage_Id renames
-                            Scheduler.Runnable_Queues (Agent_Priority).Tail;
+                            Scheduler.Runnable_Queue.Tail;
 
          Queue_Tail     : Scheduler_Element renames
                             Scheduler.Pool (Queue_Tail_Id);
@@ -243,8 +235,7 @@ package body Acton.Scheduler_Agents.Priority_Server is
          Agent : Oak_Agent_Id renames Scheduler.Pool (Agent_Sid).Agent;
 
          Sleeping_Queue : Queue renames
-                            Scheduler.Sleeping_Queues
-                              (Normal_Priority (Agent));
+                            Scheduler.Sleeping_Queue;
 
          Node_Id         : Storage_Id        := Sleeping_Queue.Head;
          Prev_Id         : Storage_Id        := No_Node;
@@ -279,29 +270,25 @@ package body Acton.Scheduler_Agents.Priority_Server is
       ----------------------
 
       procedure Move_Woken_Tasks is
-         Current_Time : constant Time := Clock;
+         Current_Time   : constant Time := Clock;
+         Sleeping_Queue : Queue renames
+                            Scheduler.Sleeping_Queue;
+         Node_Id        : Storage_Id    := Sleeping_Queue.Head;
       begin
-         for Sleeping_Queue of Scheduler.Sleeping_Queues loop
-            declare
-               Node_Id      : Storage_Id    := Sleeping_Queue.Head;
-            begin
+         while Node_Id /= No_Node
+           and then Wake_Time (Scheduler.Pool (Node_Id).Agent) <=
+             Current_Time
+         loop
+            --  Remove Agent from sleeping queue...
 
-               while Node_Id /= No_Node
-                 and then Wake_Time (Scheduler.Pool (Node_Id).Agent) <=
-                   Current_Time
-               loop
-                  --  Remove Agent from sleeping queue...
+            Sleeping_Queue.Head := Scheduler.Pool (Node_Id).Next;
 
-                  Sleeping_Queue.Head := Scheduler.Pool (Node_Id).Next;
+            --  ... and add it to its runnable queue.
 
-                  --  ... and add it to its runnable queue.
+            Add_Agent_To_End_Of_Runnable_Queue (Node_Id);
 
-                  Add_Agent_To_End_Of_Runnable_Queue (Node_Id);
+            Node_Id := Sleeping_Queue.Head;
 
-                  Node_Id := Sleeping_Queue.Head;
-
-               end loop;
-            end;
          end loop;
       end Move_Woken_Tasks;
 
@@ -317,17 +304,14 @@ package body Acton.Scheduler_Agents.Priority_Server is
          case State (Agent) is
             when Runnable | Entering_PO | Waiting_For_Event =>
                Remove_Agent_And_Deallocate_Storage : declare
-                  P : constant Any_Priority :=
-                        Normal_Priority (Agent);
-
                   Queue_Head_Id : Storage_Id renames
-                                    Scheduler.Runnable_Queues (P).Head;
+                                    Scheduler.Runnable_Queue.Head;
 
                   Queue_Head    : Scheduler_Element renames
                                     Scheduler.Pool (Queue_Head_Id);
 
                   Queue_Tail_Id  : Storage_Id renames
-                                     Scheduler.Runnable_Queues (P).Tail;
+                                     Scheduler.Runnable_Queue.Tail;
 
                   Old_Storage_Id : constant Storage_Id := Queue_Head_Id;
                begin
@@ -383,30 +367,24 @@ package body Acton.Scheduler_Agents.Priority_Server is
 
          --  Find next agent to run
 
-         for Queue of reverse Scheduler.Runnable_Queues loop
-            Selected_Agent := Scheduler.Pool (Queue.Head).Agent;
-            exit when Selected_Agent /= No_Agent;
-         end loop;
+         Selected_Agent :=
+           Scheduler.Pool (Scheduler.Runnable_Queue.Head).Agent;
 
          --  Find next time to wake up
 
-         for P in reverse Scheduler.Sleeping_Queues'Range loop
-            exit when P <= Normal_Priority (Selected_Agent);
+         if Scheduler.Sleeping_Queue.Head /= No_Node
+           and then Oak_Agent.Wake_Time
+             (Scheduler.Pool (Scheduler.Sleeping_Queue.Head).Agent) <=
+               Wake_Time
+         then
+            --  Test here against No_Agent short circuits the case where
+            --  the sleeping queue is empty, preventing the need to do the
+            --  64 bit memory fetch and comparision.
 
-            if Scheduler.Sleeping_Queues (P).Head /= No_Node
-              and then Oak_Agent.Wake_Time
-                (Scheduler.Pool (Scheduler.Sleeping_Queues (P).Head).Agent) <=
-              Wake_Time
-            then
-               --  Test here against No_Agent short circuits the case where
-               --  the sleeping queue is empty, preventing the need to do the
-               --  64 bit memory fetch and comparision.
-
-               Wake_Time :=
-                 Oak_Agent.Wake_Time
-                   (Scheduler.Pool (Scheduler.Sleeping_Queues (P).Head).Agent);
-            end if;
-         end loop;
+            Wake_Time :=
+              Oak_Agent.Wake_Time
+                (Scheduler.Pool (Scheduler.Sleeping_Queue.Head).Agent);
+         end if;
 
          Message :=
            (Message_Type        => Scheduler_Agent_Done,

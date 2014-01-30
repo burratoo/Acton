@@ -108,7 +108,9 @@ package Oak.Agent.Oak_Agent with Preelaborate is
    --  Deletes the agent specified and deallocates its storage.
 
    function Earliest_Expiring_Budget
-     (Charge_List : in Charge_List_Head) return Oak_Agent_Id;
+     (Charge_List      : in Charge_List_Head;
+      Current_Priority : in Any_Priority)
+      return Oak_Agent_Id;
    --  Returns the id of the agent that has the eariliest expiring budget.
    --  If the list is empty it will return No_Agent.
 
@@ -164,7 +166,7 @@ package Oak.Agent.Oak_Agent with Preelaborate is
 
    function Remaining_Budget
      (Agent : in Oak_Agent_Id) return Oak_Time.Time_Span
-     with Pre => Has_Agent (Agent), Inline;
+     with Pre => Has_Agent (Agent);
    --  Retrieves the amount of execution budget remaining for the agent
 
    procedure Replenish_Execution_Budget

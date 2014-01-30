@@ -192,6 +192,7 @@ package body Oak.Timers is
 
    procedure Set_Timer_Scheduler_Action
      (Timer            : in Oak_Timer_Id;
+      Scheduler        : in Scheduler_Id;
       Scheduler_Action : in Scheduler_Timer_Action)
    is
    begin
@@ -201,7 +202,7 @@ package body Oak.Timers is
          Contents => (Kind             => Scheduler_Timer,
                       Fire_Time        => Firing_Time (Timer),
                       Priority         => Priority (Timer),
-                      Scheduler        => Scheduler_Agent (Timer),
+                      Scheduler        => Scheduler,
                       Scheduler_Action => Scheduler_Action));
    end Set_Timer_Scheduler_Action;
 

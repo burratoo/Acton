@@ -21,8 +21,7 @@ package body Ada.Execution_Server.Priority_Server is
       CPU               : in System.Multiprocessors.CPU_Range :=
         System.Multiprocessors.Not_A_Specific_CPU)
    is
-      Message : Oak_Message := (Message_Type => Adding_Agent,
-                                Agent_To_Add => Server.Scheduler);
+      Message : Oak_Message;
    begin
       New_Scheduler_Agent
         (Agent             => Server.Scheduler,
@@ -33,6 +32,8 @@ package body Ada.Execution_Server.Priority_Server is
          Phase             => To_Oak_Time_Span (Phase),
          Relative_Deadline => To_Oak_Time_Span (Relative_Deadline),
          CPU               => CPU);
+      Message := (Message_Type => Adding_Agent,
+                  Agent_To_Add => Server.Scheduler);
       Yield_Processor_To_Kernel (With_Message => Message);
    end Add_Execution_Server;
 

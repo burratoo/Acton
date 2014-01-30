@@ -641,15 +641,12 @@ package body Oak.Storage.Time_Priority_Pool is
       Item_Id  : in Node_Location;
       Contents : in Element_Type)
    is
-      Node : Node_Type renames Pool.Nodes (Item_Id);
+      Node    : Node_Type renames Pool.Nodes (Item_Id);
+      Old_Key : constant Key_Type := Key (Node.Element);
    begin
       Node.Element := Contents;
       if In_Tree (Pool, Item_Id) then
-         declare
-            Old_Key : constant Key_Type := Key (Node.Element);
-         begin
-            Node_Has_Updated (Pool, Item_Id, Old_Key);
-         end;
+         Node_Has_Updated (Pool, Item_Id, Old_Key);
       end if;
    end Replace_Item;
 

@@ -41,8 +41,10 @@ package body Oak.Agent.Schedulers is
 
       if Scheduler_Agent = No_Agent then
          WT := Time_Zero;
+         Set_Is_Scheduler_Active (Agent, True);
       else
          WT := Core.Global_Start_Time + Cycle_Phase;
+         Set_Is_Scheduler_Active (Agent, False);
       end if;
 
       New_Agent
@@ -79,6 +81,14 @@ package body Oak.Agent.Schedulers is
             Fire_Time => Oak_Time.Time_Zero,
             Activate  => False);
 
+         S.Next_Run_Cycle := WT + Cycle_Period;
+         Set_Absolute_Deadline
+           (For_Agent => Agent,
+            Deadline  => WT + Relative_Deadline);
+         Set_Remaining_Budget
+           (For_Agent => Agent,
+            To_Amount => Execution_Budget);
+
       end Setup_Scheduler_Agent;
    end New_Scheduler_Agent;
 
@@ -93,6 +103,17 @@ package body Oak.Agent.Schedulers is
    begin
       Agent_Pool (For_Agent).Agent_To_Run := Agent_To_Run;
    end Set_Agent_To_Run;
+
+   -----------------------------
+   -- Set_Is_Scheduler_Active --
+   -----------------------------
+
+   procedure Set_Is_Scheduler_Active
+     (Scheduler : in Scheduler_Id;
+      Active    : in Boolean) is
+   begin
+      Set_Agent_Interrupted (Scheduler, Active);
+   end Set_Is_Scheduler_Active;
 
    -------------------------------
    -- Set_Next_Cycle_Start_Time --
