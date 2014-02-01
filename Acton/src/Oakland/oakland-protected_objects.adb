@@ -31,7 +31,7 @@ package body Oakland.Protected_Objects is
                                 Subprogram_Kind    => Subprogram_Kind,
                                 Entry_Id_Enter     => Entry_Id);
    begin
-      if State (PO) = Handling_Interrupt then
+      if Self in Interrupt_Id then
          return;
       else
          Yield_Processor_To_Kernel (With_Message => Message);
@@ -50,7 +50,7 @@ package body Oakland.Protected_Objects is
       Message : Oak_Message := (Message_Type  => Exiting_PO,
                                 PO_Exit       => PO);
    begin
-      if State (PO) = Handling_Interrupt then
+      if Self in Interrupt_Id then
          return;
       else
          Yield_Processor_To_Kernel (With_Message => Message);

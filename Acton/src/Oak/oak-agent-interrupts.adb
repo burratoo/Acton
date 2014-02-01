@@ -72,6 +72,7 @@ package body Oak.Agent.Interrupts is
       Current_Agent     : in  Interrupt_Id;
       Next_Agent_To_Run : out Oak_Agent_Id)
    is
+      pragma Unreferenced (Next_Agent_To_Run);
    begin
       Deactivate_Interrupt_Agent
         (Oak_Kernel => Kernel,

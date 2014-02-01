@@ -489,9 +489,6 @@ package body Oak.Core is
                         Activate_Interrupt_Agent
                           (Oak_Kernel => My_Kernel_Id,
                            Interrupt  => Next_Agent);
-                        Acquire_Protected_Object_For_Interrupt
-                          (Protected_Object_From_Access (
-                           Handler (Current_Timer)));
                      end Handle_Event;
 
                   when others =>

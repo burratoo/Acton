@@ -274,9 +274,10 @@ package body Oak.Protected_Objects is
      (PO                : in  Protected_Id;
       Next_Agent_To_Run : out Oak_Agent_Id) is
    begin
+      Next_Agent_To_Run := No_Agent;
+
       if Has_Entries (PO) then
          --  Service entries.
-
          declare
             E          : Boolean;
             Next_Entry : Entry_Index;
@@ -291,27 +292,24 @@ package body Oak.Protected_Objects is
                  (PO        => PO,
                   Entry_Id  => Next_Entry,
                   Next_Task => Next_Agent_To_Run);
-
-               --  If there is a queued task to service, allow it to execute
-               --  inside the protected object.
-
-               if Next_Agent_To_Run /= No_Agent then
-                  Set_State
-                    (For_Agent => Next_Agent_To_Run, State => Runnable);
-                  Add_Task_To_Protected_Object
-                    (PO => PO, T => Next_Agent_To_Run);
-
-                  --  The protected agent has serviced an interrupt handler
-                  --  then it will not be presence in a runnable queue.
-
-                  --  Run protected agent
-                  Set_State (For_Agent => PO, State => Runnable);
-                  Add_Agent_To_Scheduler (PO);
-               else
-                  Set_State (PO, Inactive);
-               end if;
             end if;
          end;
+      end if;
+
+      if Next_Agent_To_Run /= No_Agent then
+         Set_State
+           (For_Agent => Next_Agent_To_Run, State => Runnable);
+         Add_Task_To_Protected_Object
+           (PO => PO, T => Next_Agent_To_Run);
+
+         --  The protected agent has serviced an interrupt handler
+         --  then it will not be presence in a runnable queue.
+
+         --  Run protected agent
+         Set_State (For_Agent => PO, State => Runnable);
+         Add_Agent_To_Scheduler (PO);
+      else
+         Set_State (PO, Inactive);
       end if;
 
       --  If there is no agents to run inside the protected object, the
