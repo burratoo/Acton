@@ -1,3 +1,4 @@
+------------------------------------------------------------------------------
 --                                                                          --
 --                              OAK COMPONENTS                              --
 --                                                                          --
@@ -189,7 +190,9 @@ package body Oak.Protected_Objects is
 
       --  Make sure that the exiting task is actually inside the object.
 
-      if not Is_Task_Inside_Protect_Object (PO => PO, T =>  Exiting_Agent) then
+      if not Is_Task_Inside_Protect_Object
+        (PO => PO, T => Exiting_Agent)
+      then
          Set_State (Exiting_Agent, Exit_PO_Error);
          Next_Agent_To_Run := Exiting_Agent;
          return;
@@ -211,7 +214,7 @@ package body Oak.Protected_Objects is
                Open_Entry       => Next_Entry,
                Exception_Raised => E);
 
-            if Next_Entry /= No_Index then
+            if Next_Entry /= No_Entry then
                Get_And_Remove_Next_Task_From_Entry_Queue
                  (PO        => PO,
                   Entry_Id  => Next_Entry,
@@ -227,7 +230,6 @@ package body Oak.Protected_Objects is
                     (PO => PO, T => Next_Agent_To_Run);
                end if;
             end if;
-
          end;
       end if;
 
@@ -258,10 +260,68 @@ package body Oak.Protected_Objects is
 
          --  Object release point 3.
          --  Release Agent (PO);
+
          Check_Sechduler_Agents_For_Next_Agent_To_Run
            (Next_Agent_To_Run => Next_Agent_To_Run);
       end if;
    end Process_Exit_Request;
+
+   ----------------------------
+   -- Process_Interrupt_Exit --
+   ----------------------------
+
+   procedure Process_Interrupt_Exit
+     (PO                : in  Protected_Id;
+      Next_Agent_To_Run : out Oak_Agent_Id) is
+   begin
+      if Has_Entries (PO) then
+         --  Service entries.
+
+         declare
+            E          : Boolean;
+            Next_Entry : Entry_Index;
+         begin
+            Find_Open_Entry
+              (Protected_Object => PO,
+               Open_Entry       => Next_Entry,
+               Exception_Raised => E);
+
+            if Next_Entry /= No_Entry then
+               Get_And_Remove_Next_Task_From_Entry_Queue
+                 (PO        => PO,
+                  Entry_Id  => Next_Entry,
+                  Next_Task => Next_Agent_To_Run);
+
+               --  If there is a queued task to service, allow it to execute
+               --  inside the protected object.
+
+               if Next_Agent_To_Run /= No_Agent then
+                  Set_State
+                    (For_Agent => Next_Agent_To_Run, State => Runnable);
+                  Add_Task_To_Protected_Object
+                    (PO => PO, T => Next_Agent_To_Run);
+
+                  --  The protected agent has serviced an interrupt handler
+                  --  then it will not be presence in a runnable queue.
+
+                  --  Run protected agent
+                  Set_State (For_Agent => PO, State => Runnable);
+                  Add_Agent_To_Scheduler (PO);
+               else
+                  Set_State (PO, Inactive);
+               end if;
+            end if;
+         end;
+      end if;
+
+      --  If there is no agents to run inside the protected object, the
+      --  protected object is made inactive.
+
+      if Next_Agent_To_Run = No_Agent then
+         Check_Sechduler_Agents_For_Next_Agent_To_Run
+           (Next_Agent_To_Run => Next_Agent_To_Run);
+      end if;
+   end Process_Interrupt_Exit;
 
    --------------------------------------------
    -- Release_Protected_Object_For_Interrupt --

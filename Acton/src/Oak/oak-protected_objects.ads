@@ -33,10 +33,16 @@ package Oak.Protected_Objects with Preelaborate is
    --  part of its scheduler.
 
    procedure Process_Exit_Request
-     (Exiting_Agent     : in Task_Id;
+     (Exiting_Agent     : in  Task_Id;
       PO                : in  Protected_Id;
       Next_Agent_To_Run : out Oak_Agent_Id);
    --  Processess a task's exit request from the desired protected object.
+
+   procedure Process_Interrupt_Exit
+     (PO                : in  Protected_Id;
+      Next_Agent_To_Run : out Oak_Agent_Id);
+   --  Processess an interrupt's exit request from the desired protected
+   --  object.
 
    procedure Release_Protected_Object_For_Interrupt (PO : in Protected_Id);
    --  Releases the protected object that was possesed by an interrupt.

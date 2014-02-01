@@ -12,8 +12,10 @@
 with Ada.Unchecked_Conversion;
 with Ada.Task_Identification;
 
-with Oak.Agent.Kernel;    use Oak.Agent.Kernel;
-with Oak.Agent.Oak_Agent; use Oak.Agent.Oak_Agent;
+with Oak.Agent.Kernel;            use Oak.Agent.Kernel;
+with Oak.Agent.Oak_Agent;         use Oak.Agent.Oak_Agent;
+with Oak.Agent.Protected_Objects; use Oak.Agent.Protected_Objects;
+with Oak.Protected_Objects;       use Oak.Protected_Objects;
 
 with Oak.Core_Support_Package.Call_Stack;
 use Oak.Core_Support_Package.Call_Stack;
@@ -60,6 +62,39 @@ package body Oak.Agent.Interrupts is
            (Reason_For_Run => Agent_Request, Message => Exit_Message);
       end loop;
    end Interrupt_Run_Loop;
+
+   --------------------
+   -- Interrupt_Done --
+   --------------------
+
+   procedure Interrupt_Done
+     (Kernel            : in  Kernel_Id;
+      Current_Agent     : in  Interrupt_Id;
+      Next_Agent_To_Run : out Oak_Agent_Id)
+   is
+   begin
+      Deactivate_Interrupt_Agent
+        (Oak_Kernel => Kernel,
+         Interrupt  => Current_Agent);
+
+      --  Service any open entries
+
+      case Interrupt_Kind (Current_Agent) is
+         when Timer_Action =>
+            Process_Interrupt_Exit
+              (PO                =>
+                  Protected_Object_From_Access (
+                 Handler (Timer_To_Handle (Current_Agent))),
+               Next_Agent_To_Run => Next_Agent_To_Run);
+
+         when External =>
+            Process_Interrupt_Exit
+              (PO                =>
+                  Handler_Protected_Object
+                 (Agent_Pool (Current_Agent).External_Id),
+               Next_Agent_To_Run => Next_Agent_To_Run);
+      end case;
+   end Interrupt_Done;
 
    ------------------------
    -- New_Interupt_Agent --

@@ -388,19 +388,10 @@ package body Oak.Core is
                   --  Only applies to interrupt agents.
 
                   if Current_Agent in Interrupt_Id then
-                     Deactivate_Interrupt_Agent
-                       (Oak_Kernel => My_Kernel_Id,
-                        Interrupt  => Current_Agent);
-
-                     if Interrupt_Kind (Current_Agent) = Timer_Action then
-                        Release_Protected_Object_For_Interrupt
-                          (Protected_Object_From_Access (
-                           Handler (Timer_To_Handle (Current_Agent))));
-                     end if;
-
-                     Check_Sechduler_Agents_For_Next_Agent_To_Run
-                       (Next_Agent_To_Run => Next_Agent);
-
+                     Interrupt_Done
+                       (Kernel            => My_Kernel_Id,
+                        Current_Agent     => Current_Agent,
+                        Next_Agent_To_Run => Next_Agent);
                   else
                      Message    := Message_Is_Bad;
                      Next_Agent := Current_Agent;
@@ -470,6 +461,15 @@ package body Oak.Core is
 
                --  Need to deactivate the timer to stop it from firing again.
                Deactivate_Timer (Timer => Current_Timer);
+
+               --  Stops the execution timer from firing again
+               --  ??? Needed or is it a user problem?
+
+               if Current_Timer = Kernel_Timer (My_Kernel_Id) then
+                  Set_Remaining_Budget
+                    (For_Agent => Agent_To_Handle (Current_Timer),
+                     To_Amount => Time_Span_Last);
+               end if;
 
                --  Handle the different timer handler responses.
                --  ??? Should this move to Oak.Timers?

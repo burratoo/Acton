@@ -93,11 +93,6 @@ package Oak.Agent.Tasks with Preelaborate is
    function Next_Queue (For_Task : in Task_Id) return Task_Id_With_No;
    --  Returns the next entry queue denoted by the Next_Queue link.
 
-   function Next_Queue (For_Task : in Task_Id; Entry_Id : out Entry_Index)
-                        return Task_Id_With_No;
-   --  Returns the next entry queue denoted by the Next_Queue link together
-   --  with the Entry Id that the next queue is associated with.
-
    function Phase (T : in Task_Id) return Oak_Time.Time_Span
      with Pre => Has_Task (T), Inline;
    --  Return the phase of the task.

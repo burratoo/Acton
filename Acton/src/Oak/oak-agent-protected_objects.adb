@@ -162,8 +162,10 @@ package body Oak.Agent.Protected_Objects is
       Queue_Entry_Id := Id_Of_Entry (For_Task => Q);
 
       while Q /= No_Agent and then Queue_Entry_Id /= Entry_Id loop
-         Q := Next_Queue (For_Task => Q,
-                          Entry_Id => Queue_Entry_Id);
+         Q := Next_Queue (For_Task => Q);
+         if Q /= No_Agent then
+            Queue_Entry_Id := Id_Of_Entry (For_Task => Q);
+         end if;
       end loop;
 
       --  Count the number of tasks on the queue.

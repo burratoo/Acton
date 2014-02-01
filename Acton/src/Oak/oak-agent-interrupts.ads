@@ -37,6 +37,13 @@ package Oak.Agent.Interrupts with Preelaborate is
    -- Subprograms --
    -----------------
 
+   procedure Interrupt_Done
+     (Kernel            : in  Kernel_Id;
+      Current_Agent     : in  Interrupt_Id;
+      Next_Agent_To_Run : out Oak_Agent_Id);
+   --  Handles an interrupt agent's completion, including the servicing of any
+   --  open entries.
+
    function Interrupt_Kind (Agent : in Interrupt_Id) return Interrupt_Type;
    --  Returns the type of interrupt the Agent is handling.
 

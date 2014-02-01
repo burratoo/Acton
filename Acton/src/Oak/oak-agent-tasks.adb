@@ -144,25 +144,6 @@ package body Oak.Agent.Tasks is
       Chain := Agent;
    end New_Task_Agent;
 
-   ----------------
-   -- Next_Queue --
-   ----------------
-
-   function Next_Queue
-     (For_Task : in Task_Id; Entry_Id : out Entry_Index)
-      return Task_Id_With_No
-   is
-      T : Task_Agent_Record renames Agent_Pool (For_Task);
-   begin
-      if T.Next_Queue = No_Agent then
-         Entry_Id := No_Entry;
-      else
-         Entry_Id := Agent_Pool (T.Next_Queue).Id_Of_Entry;
-      end if;
-
-      return T.Next_Queue;
-   end Next_Queue;
-
    -----------------------
    -- Set_Cycle_Periood --
    -----------------------

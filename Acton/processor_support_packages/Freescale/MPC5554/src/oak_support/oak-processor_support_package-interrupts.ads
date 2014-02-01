@@ -3,6 +3,8 @@ with System; use System;
 with MPC5554; use MPC5554;
 with MPC5554.INTC; use MPC5554.INTC;
 
+with Oak.Agent; use Oak.Agent;
+
 package Oak.Processor_Support_Package.Interrupts with Preelaborate is
 
    subtype External_Interrupt_Id is MPC5554.INTC.INTC_ID_Type;
@@ -18,6 +20,9 @@ package Oak.Processor_Support_Package.Interrupts with Preelaborate is
    procedure Attach_Handler (Interrupt : External_Interrupt_Id;
                              Handler   : Parameterless_Handler;
                              Priority  : Interrupt_Priority);
+
+   function Handler_Protected_Object
+     (Interrupt : External_Interrupt_Id) return Protected_Id_With_No;
 
    function Current_Interrupt_Priority return Any_Priority;
    function Get_External_Interrupt_Id return External_Interrupt_Id;
