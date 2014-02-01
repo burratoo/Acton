@@ -84,6 +84,16 @@ package body Oak.Protected_Objects is
                Open_Entry       : Entry_Index;
                Exception_Raised : Boolean;
             begin
+               --  Add the entering task to its entry queue. Need to do this
+               --  before the queue check as its presence may effect the state
+               --  of the entry queue's barrier.
+
+               Set_State (Entering_Agent, Waiting_For_Protected_Object);
+               Add_Task_To_Entry_Queue
+                 (PO       => PO,
+                  T        => Entering_Agent,
+                  Entry_Id => Entry_Id);
+
                Find_Open_Entry
                  (Protected_Object => PO,
                   Open_Entry       => Open_Entry,
@@ -91,29 +101,13 @@ package body Oak.Protected_Objects is
                   Preference       => Entry_Id);
 
                if not Exception_Raised then
-                  if Open_Entry = Entry_Id then
-                     --  Entry is open, agent enters and runs.
-                     Next_Agent_To_Run := Entering_Agent;
-
+                  if Open_Entry /= No_Entry then
+                     Get_And_Remove_Next_Task_From_Entry_Queue
+                       (PO        => PO,
+                        Entry_Id  => Open_Entry,
+                        Next_Task => Next_Agent_To_Run);
                   else
-                     --  Entry is closed, agent is added to entry queue. If the
-                     --  Open_Entry points to another entry, dequeue the first
-                     --  task on that entry and run it.
-
-                     Set_State (Entering_Agent, Waiting_For_Protected_Object);
-                     Add_Task_To_Entry_Queue
-                       (PO       => PO,
-                        T        => Entering_Agent,
-                        Entry_Id => Entry_Id);
-
-                     if Open_Entry /= No_Entry then
-                        Get_And_Remove_Next_Task_From_Entry_Queue
-                          (PO        => PO,
-                           Entry_Id  => Open_Entry,
-                           Next_Task => Next_Agent_To_Run);
-                     else
-                        Next_Agent_To_Run := No_Agent;
-                     end if;
+                     Next_Agent_To_Run := No_Agent;
                   end if;
 
                else
@@ -141,6 +135,7 @@ package body Oak.Protected_Objects is
 
          if Next_Agent_To_Run /= No_Agent then
             Add_Task_To_Protected_Object (PO, T => Next_Agent_To_Run);
+            Set_State (Entering_Agent, Runnable);
 
             if State (PO) = Inactive then
                --  Run protected agent
