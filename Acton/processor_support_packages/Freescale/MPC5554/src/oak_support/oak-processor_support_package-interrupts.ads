@@ -3,24 +3,29 @@ with System; use System;
 with MPC5554; use MPC5554;
 with MPC5554.INTC; use MPC5554.INTC;
 
+with Oak.Agent; use Oak.Agent;
+
 package Oak.Processor_Support_Package.Interrupts with Preelaborate is
 
-   subtype Oak_Interrupt_Id is MPC5554.INTC.INTC_ID_Type;
+   subtype External_Interrupt_Id is MPC5554.INTC.INTC_ID_Type;
    Default_Interrupt_Priority : constant Interrupt_Priority :=
                                   Interrupt_Priority'Last;
 
    type Parameterless_Handler is access protected procedure;
 
-   procedure External_Interrupt_Handler (Interrupt_Id : Oak_Interrupt_Id);
+   procedure External_Interrupt_Handler (Interrupt_Id : External_Interrupt_Id);
    procedure Initialise_Interrupts;
    procedure Complete_Interrupt_Initialisation;
 
-   procedure Attach_Handler (Interrupt : Oak_Interrupt_Id;
+   procedure Attach_Handler (Interrupt : External_Interrupt_Id;
                              Handler   : Parameterless_Handler;
                              Priority  : Interrupt_Priority);
 
+   function Handler_Protected_Object
+     (Interrupt : External_Interrupt_Id) return Protected_Id_With_No;
+
    function Current_Interrupt_Priority return Any_Priority;
-   function External_Interrupt_Id return Oak_Interrupt_Id;
+   function Get_External_Interrupt_Id return External_Interrupt_Id;
 
    procedure Set_Hardware_Priority (P : Any_Priority);
    procedure Clear_Hardware_Priority;
@@ -54,7 +59,7 @@ private
 
    Default_Handler : constant Vector_Pair := (16#FFFF_FFFF#, 16#FFFF_FFFF#);
 
-   Programmed_Vector_Table   : array (Oak_Interrupt_Id) of Vector_Pair :=
+   Programmed_Vector_Table   : array (External_Interrupt_Id) of Vector_Pair :=
     ((16#FFFF_FFFF#, 16#FFFF_FFFF#), (16#FFFF_FFFF#, 16#FFFF_FFFF#),
      (16#FFFF_FFFF#, 16#FFFF_FFFF#), (16#FFFF_FFFF#, 16#FFFF_FFFF#),
      (16#FFFF_FFFF#, 16#FFFF_FFFF#), (16#FFFF_FFFF#, 16#FFFF_FFFF#),
@@ -213,6 +218,6 @@ private
    pragma Linker_Section (Programmed_Vector_Table, ".intc_vector_table");
    pragma Export (Assembly, Programmed_Vector_Table, "__OI_Vector_Table");
 
-   INTC_Vector_Table : array (Oak_Interrupt_Id) of Parameterless_Handler;
+   INTC_Vector_Table : array (External_Interrupt_Id) of Parameterless_Handler;
    pragma Import (Assembly, INTC_Vector_Table, "__OI_Vector_Table");
 end Oak.Processor_Support_Package.Interrupts;

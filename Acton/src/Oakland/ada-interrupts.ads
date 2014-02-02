@@ -5,7 +5,7 @@ with Oak.Processor_Support_Package.Interrupts;
 package Ada.Interrupts with Preelaborate is
 
    type Interrupt_Id is new
-     Oak.Processor_Support_Package.Interrupts.Oak_Interrupt_Id;
+     Oak.Processor_Support_Package.Interrupts.External_Interrupt_Id;
    type Parameterless_Handler is
      access protected procedure;
 

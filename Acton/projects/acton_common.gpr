@@ -1,5 +1,5 @@
 abstract project Acton_Common is
-   Source_Dirs       := ("../src", "../src/Oakland", "../src/GNARL", "../src/Oak", "../src/Scheduler_Agents", "../core_support_packages");
+   Source_Dirs       := ("../src", "../src/Oakland", "../src/GNARL", "../src/Oak", "../src/Scheduler_Agents", "../core_support_packages", "../project_support_package");
    Object_Dir        := "../obj/";
    Languages         := ("Ada", "Asm");
    Library_Name      := "acton";
@@ -15,13 +15,16 @@ abstract project Acton_Common is
                               "Oak.Core_Support_Package.Call_Stack",
                               "Oak.Core_Support_Package.Time",
                               "Oak.Interrupts",
-                         "Oak.Agent", "Oak.Agent.Tasks", "Oak.Agent.Tasks.Activation", "Oak.Agent.Tasks.Main_Task", "Oak.Agent.Protected_Objects", "Oak.Agent.Queue", "Oak.Agent.Schedulers",
+                         "Oak.Agent", "Oak.Agent.Storage", "Oak.Agent.Tasks", "Oak.Agent.Tasks.Activation", "Oak.Agent.Tasks.Main_Task", "Oak.Agent.Protected_Objects", "Oak.Agent.Schedulers", "Oak.Agent.Oak_Agent", "Oak.Agent.Kernel",
                          "Oak.Indices", "Oak.Message", "Oak.States",
                          "Oak.Oak_Time", "Oak.Oak_Time.Conversion",
-                              "Oak.Processor_Support_Package", "Oak.Processor_Support_Package.Interrupts", "Oak.Timers",
+                              "Oak.Processor_Support_Package", "Oak.Processor_Support_Package.Interrupts", "Oak.Timers", "Oak.Storage", "Oak.Storage.Time_Priority_Pool",
                          "System", "System.Assertions", "System.Exceptions_Debug", "System.Machine_Code", "System.Multiprocessors", "System.Standard_Library", "System.Storage_Elements", "System.Unsigned_Types",
 
-                         "Ada.Execution_Server.Priority_Server", "Acton.Scheduler_Agents.Priority_Server", "Ada.Execution_Server.Ops",
+                         "ISA",
+
+                         "Ada.Execution_Server.Priority_Server", "Acton.Scheduler_Agents.Priority_Server", "Ada.Execution_Server.Operations",
+                         "Oak.Project_Support_Package",
                              --  Only needed for their ali files
                          "Oak.Agent.Tasks.Cycle",
                          "Oak.Agent.Interrupts",
@@ -41,6 +44,8 @@ abstract project Acton_Common is
       for Default_Switches ("ada") use ("-s", "-m", "-j8", "-g");
    end Builder;
 
+   package Compiler is
+   end Compiler;
    --  package Linker is
    --   for Default_Switches ("ada") use ("-g", "-T", "linker/intflash.ld");
    --  end Linker;

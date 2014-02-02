@@ -1,18 +1,34 @@
-with Oak.Core;
-with Oak.Scheduler; use Oak.Scheduler;
+------------------------------------------------------------------------------
+--                                                                          --
+--                              OAK COMPONENTS                              --
+--                                                                          --
+--                         OAK.AGENT.TASKS.MAIN_TASK                        --
+--                                                                          --
+--                                 S p e c                                  --
+--                                                                          --
+--                 Copyright (C) 2012-2014, Patrick Bernardi                --
+------------------------------------------------------------------------------
+
+with Oak.Agent.Oak_Agent; use Oak.Agent.Oak_Agent;
+with Oak.Scheduler;       use Oak.Scheduler;
+with Oak.States;          use Oak.States;
 
 package body Oak.Agent.Tasks.Main_Task is
-   procedure Initialise_Main_Task
-     (Stack_Size      : in System.Storage_Elements.Storage_Count;
-      Name            : in String;
-      Normal_Priority : in Integer;
-      Run_Loop        : in Address)
+
+   ---------------------
+   -- Setup_Main_Task --
+   ---------------------
+
+   procedure Setup_Main_Task
+     (Stack_Size      : in  Storage_Count;
+      Name            : in  String;
+      Normal_Priority : in  Integer;
+      Run_Loop        : in  Address)
    is
-      Agent : constant access Task_Agent  := Core.Main_Task;
-      Current_Time : constant Time                      := Clock;
-      No_Chain : Activation_Chain := (Head => null);
+      No_Chain : Task_List := No_Agent;
+      Agent    : Task_Id;
    begin
-      Initialise_Task_Agent
+      New_Task_Agent
         (Agent             => Agent,
          Stack_Address     => Null_Address,
          Stack_Size        => Stack_Size,
@@ -24,19 +40,16 @@ package body Oak.Agent.Tasks.Main_Task is
          Cycle_Period      => Oak_Time.Time_Span_Last,
          Phase             => Oak_Time.Time_Span_Zero,
          Execution_Budget  => Oak_Time.Time_Span_Last,
-         Budget_Action     => Ada.Cyclic_Tasks.No_Response,
+         Budget_Response   => Ada.Cyclic_Tasks.No_Response,
          Budget_Handler    => null,
          Relative_Deadline => Oak_Time.Time_Span_Last,
-         Deadline_Action   => Ada.Cyclic_Tasks.No_Response,
+         Deadline_Response => Ada.Cyclic_Tasks.No_Response,
          Deadline_Handler  => null,
-         Scheduler_Agent   => null,
-         Chain             => No_Chain,
-         Elaborated        => null);
+         Chain             => No_Chain);
 
-      Agent.State           := Sleeping;
-      Agent.Next_Run_Cycle  := Current_Time;
-      Agent.Wake_Time       := Current_Time;
+      Set_State     (For_Agent => Agent, State => Sleeping);
+      Set_Wake_Time (For_Agent => Agent, Wake_Time => Clock);
 
       Add_Agent_To_Scheduler (Agent);
-   end Initialise_Main_Task;
+   end Setup_Main_Task;
 end Oak.Agent.Tasks.Main_Task;

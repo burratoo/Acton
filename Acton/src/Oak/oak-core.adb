@@ -1,20 +1,42 @@
-with Oak.Agent.Schedulers;   use Oak.Agent.Schedulers;
-with Oak.Agent.Tasks.Activation;
-with Oak.Agent.Tasks.Cycle; use Oak.Agent.Tasks.Cycle;
-with Oak.Agent.Protected_Objects; use Oak.Agent.Protected_Objects;
-with Oak.Core_Support_Package.Task_Support;
-use Oak.Core_Support_Package.Task_Support;
-with Oak.Interrupts; use Oak.Interrupts;
-with Oak.Protected_Objects;
-with Oak.Core_Support_Package.Interrupts;
+------------------------------------------------------------------------------
+--                                                                          --
+--                              OAK COMPONENTS                              --
+--                                                                          --
+--                                 OAK.CORE                                 --
+--                                                                          --
+--                                 B o d y                                  --
+--                                                                          --
+--                 Copyright (C) 2010-2014, Patrick Bernardi                --
+------------------------------------------------------------------------------
+
 with Ada.Cyclic_Tasks;
-with Oak.Core_Support_Package.Call_Stack;
-use Oak.Core_Support_Package.Call_Stack;
 with Oak.Processor_Support_Package.Interrupts;
 use Oak.Processor_Support_Package.Interrupts;
 
-with Oak.Message; use Oak.Message;
-with Oak.States;  use Oak.States;
+with Oak.Agent.Interrupts;        use Oak.Agent.Interrupts;
+with Oak.Agent.Kernel;            use Oak.Agent.Kernel;
+with Oak.Agent.Oak_Agent;         use Oak.Agent.Oak_Agent;
+with Oak.Agent.Protected_Objects; use Oak.Agent.Protected_Objects;
+with Oak.Agent.Schedulers;        use Oak.Agent.Schedulers;
+with Oak.Agent.Tasks;             use Oak.Agent.Tasks;
+with Oak.Agent.Tasks.Cycle;       use Oak.Agent.Tasks.Cycle;
+with Oak.Agent.Tasks.Activation;  use Oak.Agent.Tasks.Activation;
+
+with Oak.Interrupts;        use Oak.Interrupts;
+with Oak.Protected_Objects; use Oak.Protected_Objects;
+with Oak.Scheduler;         use Oak.Scheduler;
+with Oak.States;            use Oak.States;
+with Oak.Timers;            use Oak.Timers;
+
+with Oak.Core_Support_Package.Interrupts;
+with Oak.Core_Support_Package.Task_Support;
+use Oak.Core_Support_Package.Task_Support;
+
+with Oak.Processor_Support_Package; use Oak.Processor_Support_Package;
+with Oak.Core_Support_Package.Call_Stack;
+use Oak.Core_Support_Package.Call_Stack;
+
+with System; use System;
 
 package body Oak.Core is
 
@@ -23,39 +45,25 @@ package body Oak.Core is
    ----------------
 
    procedure Initialise is
+      Kid : Kernel_Id;
    begin
-      for Kernel_Agent of Processor_Kernels loop
-         Initialise_Agent
-           (Agent => Kernel_Agent'Access,
-            Name  => "Kernel",
-            Call_Stack_Size =>
-              Core_Support_Package.Call_Stack.Oak_Call_Stack_Size);
-
-         Kernel_Agent.Woken_By         := First_Run;
-         Kernel_Agent.Current_Priority := System.Any_Priority'First;
-         Kernel_Agent.Current_Agent    := Main_Task_OTCR'Access;
-
-         for P in Interrupt_Priority'Range loop
-            Initialise_Interrupt_Agent
-              (Agent    => Kernel_Agent.Interrupt_Agents (P)'Access,
-               Priority => P);
-         end loop;
-
-         for State of Kernel_Agent.Interrupt_States loop
-            State := Inactive;
-         end loop;
-
-         Initialise_Agent
-           (Agent              => Kernel_Agent.Sleep_Agent'Access,
-            Name               => "Sleep",
-            Call_Stack_Address => Null_Address,
-            Call_Stack_Size    => Sleep_Stack_Size,
-            Run_Loop           => Sleep_Agent'Address,
-            Run_Loop_Parameter => Null_Address,
-            Normal_Priority    => Priority'First,
-            Initial_State      => Runnable,
-            Wake_Time          => Time_Last);
+      Setup_Storage;
+      for Processor in Processors'Range loop
+         New_Kernel_Agent (Agent => Kid);
       end loop;
+
+      New_Agent
+        (Agent                => Agent.Sleep_Agent,
+         Name                 => "Sleep",
+         Call_Stack_Address   => Null_Address,
+         Call_Stack_Size      => Sleep_Stack_Size,
+         Run_Loop             => Sleep_Agent_Run_Loop'Address,
+         Run_Loop_Parameter   => Null_Address,
+         Normal_Priority      => Priority'First,
+         Initial_State        => Runnable,
+         Scheduler_Agent      => No_Agent,
+         Wake_Time            => Time_First,
+         When_To_Charge_Agent => Only_While_Running);
 
       Oak.Core_Support_Package.Interrupts.Set_Up_Interrupts;
       Oak.Core_Support_Package.Task_Support.Initialise_Task_Enviroment;
@@ -72,63 +80,132 @@ package body Oak.Core is
       Processor_Support_Package.Interrupts.Complete_Interrupt_Initialisation;
    end Complete_Initialisation;
 
-   -----------
-   -- Start --
-   -----------
+   ---------------------------
+   -- Request_Agent_Service --
+   ---------------------------
 
-   procedure Start is
+   --  Stores the pointer of the agent's outgoing message into a register
+   --  and then context is switched to the recieving agent which will pick it
+   --  up. The other agent will do likewise and we pick up its message location
+   --  and copy its contents into our current message store.
+
+   procedure Request_Agent_Service (Message : in out Oak_Message) is
+      Message_Pointer : Message_Access := Message'Unrestricted_Access;
    begin
-      --  We'll loop here for multiprocessors to load an individual copy of the
-      --  kernel onto each physical processor. Will require calling procesor
-      --  dependent code to launch the kernel on each processor.
-      Start_Oak_Instance
-        (Oak_Instance => Processor_Kernels (Processor_Kernels'First));
-   end Start;
+      Context_Switch_Save_Callee_Registers (Message_Pointer);
+      if Message_Pointer /= null then
+         Message := Message_Pointer.all;
+      end if;
+   end Request_Agent_Service;
 
-   ------------------------
-   -- Start_Oak_Instance --
-   ------------------------
+   -------------------------
+   -- Request_Oak_Service --
+   -------------------------
 
-   procedure Start_Oak_Instance (Oak_Instance : in out Oak_Data) is
+   procedure Request_Oak_Service
+     (Reason_For_Run : in Run_Reason;
+      Message        : in out Oak_Message)
+   is
+      pragma Unreferenced (Reason_For_Run, Message);
    begin
-      --  Set up Scheduler Agents and load tasks.
-
-      Oak_Instance.Woken_By := First_Run;
-
-      Run_Loop (Oak_Instance => Oak_Instance);
-   end Start_Oak_Instance;
+      Context_Switch_Save_Callee_Registers;
+   end Request_Oak_Service;
 
    --------------
    -- Run_Loop --
    --------------
 
-   procedure Run_Loop (Oak_Instance : in out Oak_Data) is
-      Active_Timer  : access Oak.Timers.Oak_Timer'Class;
-      Next_Agent    : Agent_Handler := null;
-      Charge_List   : access Oak_Agent'Class renames
-                        Oak_Instance.Budgets_To_Charge;
-      Current_Agent : not null access Oak_Agent'Class renames
-                        Oak_Instance.Current_Agent;
-      P             : Any_Priority;
-      Interrupt_Id  : Oak_Interrupt_Id;
+   --  This procedure should not use any callee save registers since they will
+   --  get trashed during the context switch.
 
-      Task_Message  : Oak_Message := (Message_Type => No_State);
+   procedure Run_Loop is
    begin
+      --  A block is used here so No_Message_Here does not sit forever unused
+      --  on Oak Kernel's stack.
+
+      declare
+         No_Message_Here : Oak_Message := (Message_Type => No_Message);
+      begin
+         Run_Oak
+           (Reason_For_Run => First_Run, Message => No_Message_Here);
+      end;
       loop
-      --  Actually the first step should be to mask the timer interrupt we use
-      --  to wake up so that the run loop isn't interrupted.
+         declare
+            Agent_Message   : Message_Access;
+            Reason_For_Run  : Run_Reason;
+         begin
+            Context_Switch_From_Oak
+              (Reason_For_Oak_To_Run => Reason_For_Run,
+               Message               => Agent_Message);
 
-      --  Then we should check to see if in between the wakeup timer going
-      --  off and the run-loop starting that a deadline may have been
-      --  missed. This means that we can act on the missed dealine much
-      --  quicker than if we had waited until the end of the run-loop to
-      --  check to see if any deadlines have been missed. That said, what is
-      --  the latency between the triggering of an interrupt and reaching
-      --  this point? Probably what we'll catch are deadlines that fall just
-      --  after a Scheduler Agent requesting servicing. We'll be talking
-      --  something very short here. Maybe we will need to test.
+            if Agent_Message /= null then
+               Run_Oak
+                 (Reason_For_Run => Reason_For_Run,
+                  Message        => Agent_Message.all);
+            end if;
+         end;
+      end loop;
+   end Run_Loop;
 
-      --  First step: Check to see why we have been activated.
+   -------------
+   -- Run_Oak --
+   -------------
+
+   --  Run_Oak exists seperate from Run_Loop for the simple reason that this
+   --  way there is no need to save any of Oak's registers.
+
+   procedure Run_Oak
+     (Reason_For_Run : in      Run_Reason;
+      Message        : in out  Oak_Message)
+   is
+      My_Kernel_Id   : constant Kernel_Id := This_Oak_Kernel;
+      --  The Id of this kernel.
+
+      Current_Agent  : Oak_Agent_Id := Kernel.Current_Agent (My_Kernel_Id);
+      --  The currently selected Agent.
+
+      Current_Timer  : Oak_Timer_Id := Kernel.Current_Timer (My_Kernel_Id);
+      --  The currently selected timer.
+
+      Next_Agent     : Oak_Agent_Id := No_Agent;
+      --  The next agent to run.
+
+      Next_Timer     : Oak_Timer_Id;
+      --  The next firing timer.
+
+      Message_Is_Bad : constant Oak_Message :=
+                         (Message_Type => Invalid_Message);
+      --  An invalid message.
+
+      Oak_Running_Because : Run_Reason := Reason_For_Run;
+      --  Variable to hold the run reason since will be updated if we find a
+      --  timer that can be serviced straight away.
+
+   begin
+      --  First thing is to calculate run-time statistics and remove the
+      --  current task from the charge list. Does not apply when this is the
+      --  first run.
+
+      if Reason_For_Run /= First_Run then
+         Update_Entry_Stats (Oak_Kernel => My_Kernel_Id);
+         Remove_Agent_From_Charge_List
+           (Oak_Kernel => My_Kernel_Id, Agent => Current_Agent);
+      end if;
+
+      --  Flag if the current agent was interrupted (affects how the context
+      --  switch back is handled.
+
+      case Oak_Running_Because is
+         when First_Run | Agent_Request =>
+            Set_Agent_Interrupted (Current_Agent, False);
+
+         when Timer | External_Interrupt =>
+            Set_Agent_Interrupted (Current_Agent);
+      end case;
+
+      loop
+
+      --  Check to see why we are running.
       --
       --  Activation of the run loop can be due to four (five?) things:
       --   1. Intial activation of the run loop,
@@ -147,250 +224,330 @@ package body Oak.Core is
       --  up.
       --  Better to record before sleep because we already know which of the
       --  three (really 2 options) has caused us to wake up.
-      --
 
-      --  Second Step: Beak into 2 code paths to handle normal scheduling
-      --  and
-      --  missed deadlines? Possible a good idea as it saves having two
-      --  large
-      --  blocks within an if-else statement.
-      --
-      --  What we expect to happen when we run the Run_Scheduler_Agents
-      --  subprogram:
-      --  Each scheduler agent is called one by one. Here they have the
-      --  opportunity to manage their queues and to nominate a task to run.
-      --  They should also set the time that they wish to be activated next.
-      --  On return, Oak's scheduler should have recorded which task should
-      --  run now, if there are any eligible tasks to run at all.
+         --  ????? Check to see if the above is valid and makes sense.
 
-         case Oak_Instance.Woken_By is
-            when First_Run =>
-               Check_Sechduler_Agents_For_Next_Task_To_Run
-                 (Scheduler_Info   => Oak_Instance.Scheduler,
-                  Next_Task_To_Run => Next_Agent);
-            when Task_Yield =>
-               case Task_Message.Message_Type is
-                  when Activation_Pending =>
-                     --  The activation pending state is handled specially
-                     --  outside of this block.
-                     null;
+         case Oak_Running_Because is
+         when First_Run =>
+            --  First time the kernel instance has run. Simply check for
+            --  the first task to run – which would have been already placed
+            --  in a scheduler agent.
 
-                  when Activation_Complete =>
-                     if Current_Agent.all in Task_Agent'Class then
-                        Agent.Tasks.Activation.Finish_Activation
-                          (Activator => Task_Agent (Current_Agent.all));
-                        Check_Sechduler_Agents_For_Next_Task_To_Run
-                          (Scheduler_Info   => Oak_Instance.Scheduler,
-                           Next_Task_To_Run => Next_Agent);
-                     end if;
+            Check_Sechduler_Agents_For_Next_Agent_To_Run
+              (Next_Agent_To_Run => Next_Agent);
 
-                  when Sleeping =>
-                     if Current_Agent.all in Task_Agent'Class then
-                        Current_Agent.Set_Wake_Time
-                          (WT => Task_Message.Wake_Up_At);
-                        Inform_Scheduler_Agent_Task_Has_Changed_State
-                          (Changed_Task     => Task_Handler (Current_Agent),
-                           Next_Task_To_Run => Next_Agent);
-                     end if;
+         when Agent_Request =>
+            --  The task has yielded to tell or ask Oak something. The agent
+            --  in question is stored in Current_Agent.
 
-                  when Setup_Cycles =>
-                     if Current_Agent.all in Task_Agent'Class then
-                        Setup_Cyclic_Section (Task_Agent (Current_Agent.all));
-                     end if;
+            case Message.Message_Type is
+               when Activation_Pending =>
+                  --  Only applies to task agents
 
-                  when New_Cycle =>
-                     if Current_Agent.all in Task_Agent'Class then
-                        New_Cycle
-                          (T                => Task_Handler (Current_Agent),
-                           Next_Task_To_Run => Next_Agent);
-                     end if;
-
-                  when Release_Task =>
-                     Release_Task
-                       (Task_To_Release  => Task_Message.Task_To_Release,
-                        Releasing_Task   => Current_Agent,
+                  if Current_Agent in Task_Id then
+                     Agent.Tasks.Activation.Start_Activation
+                       (Activator        => Current_Agent,
+                        Activation_List  => Message.Activation_List,
                         Next_Task_To_Run => Next_Agent);
 
-                  when Update_Task_Property =>
-                     declare
-                        Target_Task : constant access Task_Agent'Class :=
-                                        Task_Message.Update_Task;
-                     begin
-                        Target_Task.Update_Task_Property
-                          (Property_To_Update =>
-                             Task_Message.Property_To_Update,
-                           Next_Task_To_Run   => Next_Agent);
-                     end;
+                  else
+                     Message := Message_Is_Bad;
+                     Next_Agent     := Current_Agent;
+                  end if;
 
-                  when Entering_PO =>
+               when Activation_Complete =>
+                  --  Activation_Complete Message only applies to task agents.
+
+                  if Current_Agent in Task_Id then
+                     Agent.Tasks.Activation.Finish_Activation
+                       (Activator        => Current_Agent,
+                        Next_Task_To_Run => Next_Agent);
+
+                  else
+                     Message    := Message_Is_Bad;
+                     Next_Agent := Current_Agent;
+                  end if;
+
+               when Activation_Successful =>
+                  --  Activation_Successful message only applies to task agents
+
+                  if Current_Agent in Task_Id then
+                     Set_State
+                       (For_Agent => Current_Agent,
+                        State     => Activation_Successful);
+                     Check_Sechduler_Agents_For_Next_Agent_To_Run
+                        (Next_Agent_To_Run => Next_Agent);
+                  else
+                     Message    := Message_Is_Bad;
+                     Next_Agent := Current_Agent;
+                  end if;
+
+               when Sleeping =>
+                  --  Sleeping only applies to task agents.
+                  --  ??? Should we allow other agents to use this message?
+
+                  if Current_Agent in Task_Id then
+                     Set_State (Current_Agent, Sleeping);
+                     Set_Wake_Time (Current_Agent, Message.Wake_Up_At);
+                     Inform_Scheduler_Agent_Has_Changed_State
+                       (Changed_Agent     => Current_Agent,
+                        Next_Agent_To_Run => Next_Agent);
+                  else
+                     Message := Message_Is_Bad;
+                     Next_Agent     := Current_Agent;
+                  end if;
+
+               when Setup_Cycles =>
+                  --  Setup_Cycles only appies to task agents.
+
+                  if Current_Agent in Task_Id then
+                     Setup_Cyclic_Section
+                       (For_Task          => Current_Agent,
+                        Next_Agent_To_Run => Next_Agent);
+                  else
+                     Message    := Message_Is_Bad;
+                     Next_Agent := Current_Agent;
+                  end if;
+
+               when New_Cycle =>
+                  --  New_Cycles only appies to task agents.
+
+                  if Current_Agent in Task_Id then
+                     New_Cycle
+                       (For_Task          => Current_Agent,
+                        Next_Agent_To_Run => Next_Agent);
+                  else
+                     Message    := Message_Is_Bad;
+                     Next_Agent := Current_Agent;
+                  end if;
+
+               when Release_Task =>
+                  --  Applies to task and interrupt agents. No test needed
+                  --  since they are the only agents who run Oak.
+
+                  Release_Task
+                    (Task_To_Release   => Message.Task_To_Release,
+                     Releasing_Agent   => Current_Agent,
+                     Next_Agent_To_Run => Next_Agent);
+
+               when Update_Task_Property =>
+                  --  Applies only to task agents
+
+                  if Current_Agent in Task_Id then
+                     Update_Task_Property
+                       (For_Task           => Message.Update_Task,
+                        Property_To_Update => Message.Property_To_Update,
+                        Next_Task_To_Run   => Next_Agent);
+                  else
+                     Message    := Message_Is_Bad;
+                     Next_Agent := Current_Agent;
+                  end if;
+
+               when Entering_PO =>
+                  --  Applies only to task agents.
+
+                  if Current_Agent in Task_Id then
                      Protected_Objects.Process_Enter_Request
-                       (Scheduler_Info    => Oak_Instance.Scheduler,
-                        Entering_Agent    => Current_Agent,
-                        PO                => Task_Message.PO_Enter,
-                        Subprogram_Kind   => Task_Message.Subprogram_Kind,
-                        Entry_Id          => Task_Message.Entry_Id_Enter,
+                       (Entering_Agent    => Current_Agent,
+                        PO                => Message.PO_Enter,
+                        Subprogram_Kind   => Message.Subprogram_Kind,
+                        Entry_Id          => Message.Entry_Id_Enter,
                         Next_Agent_To_Run => Next_Agent);
+                  else
+                     Message    := Message_Is_Bad;
+                     Next_Agent := Current_Agent;
+                  end if;
 
-                  when Exiting_PO =>
+               when Exiting_PO =>
+                  --  Applies only to task agents.
+
+                  if Current_Agent in Task_Id then
                      Protected_Objects.Process_Exit_Request
-                       (Scheduler_Info    => Oak_Instance.Scheduler,
-                        Exiting_Agent     => Current_Agent,
-                        PO                => Task_Message.PO_Exit,
+                       (Exiting_Agent     => Current_Agent,
+                        PO                => Message.PO_Exit,
                         Next_Agent_To_Run => Next_Agent);
+                  else
+                     Message := Message_Is_Bad;
+                     Next_Agent     := Current_Agent;
+                  end if;
 
-                  when Attach_Interrupt_Handlers =>
-                     Interrupts.Attach_Handlers
-                       (Handlers          => Task_Message.Attach_Handlers,
-                        Handler_PO        => Task_Message.Attach_Handler_PO,
-                        Current_Agent     => Current_Task,
+               when Attach_Interrupt_Handler =>
+                  --  Applies only to task agents.
+
+                  if Current_Agent in Task_Id then
+                     Attach_Handler
+                       (Handler           => Message.Attach_Handler,
+                        Current_Agent     => Current_Agent,
                         Next_Agent_To_Run => Next_Agent);
+                  else
+                     Message := Message_Is_Bad;
+                     Next_Agent     := Current_Agent;
+                  end if;
 
-                  when Interrupt_Done =>
-                     if Current_Agent.all in Interrupt_Agent'Class then
-                        Oak_Instance.Interrupt_States
-                          (Next_Agent.Normal_Priority) := Inactive;
-                        if Interrupt_Agent (Next_Agent.all).Interrupt_Kind =
-                          Timer_Action
-                        then
-                           Oak.Protected_Objects.
-                             Release_Protected_Object_For_Interrupt
-                               (Protected_Object_From_Access
-                                  (Interrupt_Agent
-                                     (Next_Agent.all).Timer_To_Handle.Handler)
-                               );
-                        end if;
+               when Interrupt_Done =>
+                  --  Only applies to interrupt agents.
 
-                        Check_Sechduler_Agents_For_Next_Task_To_Run
-                          (Scheduler_Info   => Oak_Instance.Scheduler,
-                           Next_Task_To_Run => Next_Agent);
-                     end if;
+                  if Current_Agent in Interrupt_Id then
+                     Interrupt_Done
+                       (Kernel            => My_Kernel_Id,
+                        Current_Agent     => Current_Agent,
+                        Next_Agent_To_Run => Next_Agent);
+                  else
+                     Message    := Message_Is_Bad;
+                     Next_Agent := Current_Agent;
+                  end if;
 
-                  when Adding_Agent =>
-                     Current_Agent.Set_State (Runnable);
-                     Add_Agent_To_Scheduler
-                       (Current_Agent.Agent_Message.Agent_To_Add);
-                     Check_Sechduler_Agents_For_Next_Task_To_Run
-                       (Scheduler_Info   => Oak_Instance.Scheduler,
-                        Next_Task_To_Run => Next_Agent);
-                  when others =>
-                     null;
-               end case;
+               when Adding_Agent =>
+                  --  Only applies to task agents.
 
-            when External_Interrupt =>
-               Interrupt_Id := External_Interrupt_Id;
-               P := Current_Interrupt_Priority;
-               Next_Agent :=
-                 Oak_Instance.Interrupt_Agents (P)'Unchecked_Access;
-               Next_Agent.Set_State (Handling_Interrupt);
+                  Set_State (Current_Agent, Runnable);
+                  Add_Agent_To_Scheduler (Message.Agent_To_Add);
+                  Check_Sechduler_Agents_For_Next_Agent_To_Run
+                    (Next_Agent_To_Run => Next_Agent);
+               when others =>
+                  null;
+            end case;
+
+         when External_Interrupt =>
+            Handle_External_Interrupt : declare
+               Interrupt_Id : constant External_Interrupt_Id :=
+                                Get_External_Interrupt_Id;
+
+               P : constant Interrupt_Priority := Current_Interrupt_Priority;
+
+            begin
+               Next_Agent := Interrupt_For_Priority
+                 (Oak_Kernel => My_Kernel_Id, Priority   => P);
+               Set_State (Next_Agent, Handling_Interrupt);
                Set_Interrupt_Kind
-                 (Interrupt_Agent (Next_Agent.all), Kind => External);
+                 (For_Agent => Next_Agent, Kind => External);
                Set_External_Id
-                 (Interrupt_Agent (Next_Agent.all), Interrupt_Id);
-               Oak_Instance.Interrupt_States (P) := Active;
+                 (For_Agent => Next_Agent, Id => Interrupt_Id);
+               Activate_Interrupt_Agent
+                 (Oak_Kernel => My_Kernel_Id, Interrupt => Next_Agent);
+            end Handle_External_Interrupt;
 
-            when Timer =>
+         when Timer =>
 
+            if Current_Timer = No_Timer
+              or else not Has_Timer_Fired (Current_Timer)
+            then
                --  False alarm, go back to what we were doing. Occurs in cases
                --  where the size of the timer used is smaller that the size
                --  of the clock.
 
-               if Active_Timer = null
-                 or else Active_Timer.Firing_Time > Clock
-               then
-                  Next_Agent := Current_Agent;
+               Next_Agent := Current_Agent;
 
-               elsif Active_Timer.all in Timers.Scheduler_Timer then
-                  Run_The_Bloody_Scheduler_Agent_That_Wanted_To_Be_Woken
-                    (Agent       =>
-                       Timers.Scheduler_Timer
-                         (Active_Timer.all).Timer_Scheduler_Agent,
-                     Current_Agent    => Current_Agent,
-                     Next_Task_To_Run => Next_Agent);
+            elsif Timer_Kind (Current_Timer) = Scheduler_Timer then
+               --  A scheduler wants to run.
 
-               elsif Active_Timer.all in Timers.Action_Timer then
-                  Active_Timer.Remove_Timer;
+               case Scheduler_Action (Current_Timer) is
+                  when Service =>
+                     Run_The_Bloody_Scheduler_Agent_That_Wanted_To_Be_Woken
+                       (Scheduler         =>
+                           Scheduler_Agent (Timer => Current_Timer),
+                        Current_Agent     => Current_Agent,
+                        Next_Agent_To_Run => Next_Agent);
 
-                  --  Disable execution timer if fired. This is done by setting
-                  --  the property Remaining_Budget to Time_Span_Last.
+                  when End_Cycle =>
+                     New_Scheduler_Cycle
+                       (Scheduler         =>
+                           Scheduler_Agent (Timer => Current_Timer),
+                        Next_Agent_To_Run => Next_Agent);
+               end case;
 
-                  declare
-                     A : constant Agent_Handler :=
-                           Timers.Action_Timer'Class
-                             (Active_Timer.all).Agent_To_Handle;
-                  begin
-                     if A.Remaining_Budget <= Time_Span_Zero then
-                        A.Set_Remaining_Budget (Time_Span_Last);
-                     end if;
-                  end;
+            elsif Timer_Kind (Current_Timer) = Event_Timer then
+               --  An event timer wishes to run.
 
-                  case Timers.Action_Timer'Class
-                    (Active_Timer.all).Timer_Action is
-                     when Ada.Cyclic_Tasks.Handler =>
-                        P := Active_Timer.Priority;
-                        Next_Agent :=
-                          Oak_Instance.Interrupt_Agents (P)'Unchecked_Access;
-                        Next_Agent.Set_State (Handling_Interrupt);
-                        Set_Interrupt_Kind
-                          (Interrupt_Agent (Next_Agent.all),
-                           Kind => Timer_Action);
-                        Set_Timer_To_Handle
-                          (Interrupt_Agent (Next_Agent.all),
-                           Timers.Action_Timer (Active_Timer.all)'Access);
-                        Oak_Instance.Interrupt_States (P) := Active;
-                        Oak.Protected_Objects.
-                          Acquire_Protected_Object_For_Interrupt
-                            (Protected_Object_From_Access
-                              (Oak.Timers.Handler
-                                (Timers.Action_Timer (Active_Timer.all))));
-                     when others =>
-                        Check_Sechduler_Agents_For_Next_Task_To_Run
-                          (Scheduler_Info   => Oak_Instance.Scheduler,
-                           Next_Task_To_Run => Next_Agent);
-                  end case;
+               --  Need to deactivate the timer to stop it from firing again.
+               Deactivate_Timer (Timer => Current_Timer);
 
+               --  Stops the execution timer from firing again
+               --  ??? Needed or is it a user problem?
+
+               if Current_Timer = Kernel_Timer (My_Kernel_Id) then
+                  Set_Remaining_Budget
+                    (For_Agent => Agent_To_Handle (Current_Timer),
+                     To_Amount => Time_Span_Last);
                end if;
+
+               --  Handle the different timer handler responses.
+               --  ??? Should this move to Oak.Timers?
+
+               case Timer_Action (Current_Timer) is
+                  when Ada.Cyclic_Tasks.Handler =>
+                     Handle_Event : declare
+                        P : constant Any_Priority :=
+                              Timer_Priority (Current_Timer);
+                     begin
+                        Next_Agent := Interrupt_For_Priority
+                          (Oak_Kernel => My_Kernel_Id, Priority   => P);
+                        Set_State (Next_Agent, Handling_Interrupt);
+                        Set_Interrupt_Kind (Next_Agent, Kind => Timer_Action);
+                        Set_Timer_To_Handle
+                          (Agent => Next_Agent, Timer => Current_Timer);
+                        Activate_Interrupt_Agent
+                          (Oak_Kernel => My_Kernel_Id,
+                           Interrupt  => Next_Agent);
+                     end Handle_Event;
+
+                  when others =>
+                     Check_Sechduler_Agents_For_Next_Agent_To_Run
+                       (Next_Agent_To_Run => Next_Agent);
+               end case;
+
+            end if;
          end case;
 
-         --  Find any active interrupts
+         --  Check to see if any interrupt agents are active and have a
+         --  priority equal to and above the agent selected above.
 
-         P := Interrupt_Priority'Last;
-         for Interrupt_State of reverse Oak_Instance.Interrupt_States loop
-            if Interrupt_State = Active then
-               if (Next_Agent /= null and then
-                     P >= Next_Agent.Normal_Priority) or Next_Agent = null
-               then
-                  Next_Agent :=
-                    Oak_Instance.Interrupt_Agents (P)'Unchecked_Access;
-               end if;
+         Handle_Active_Interrupts : declare
+            Interrupt_Agent : constant Interrupt_Id_With_No :=
+                                Find_Top_Active_Interrupt (My_Kernel_Id);
+         begin
+            --  Select the interrupt agent if it has a priority equal to or
+            --  higher than the agent selected above. Note that it does not
+            --  matter if either Next_Agent or Interrut_Agent is No_Agent as it
+            --  maps to the sleep agent that has a value of Priority'First.
 
-               exit;
+            if Normal_Priority (Interrupt_Agent) >=
+              Normal_Priority (Next_Agent)
+            then
+               Next_Agent := Interrupt_Agent;
             end if;
+         end Handle_Active_Interrupts;
 
-            P := P - 1;
+         --  Set the current priority the core is running at now (which may not
+         --  correspond to the current agent's priority due to the correction
+         --  that follows).
+
+         Set_Current_Priority
+           (Oak_Kernel => My_Kernel_Id,
+            Priority   => Normal_Priority (Next_Agent));
+
+         --  Correct Next Agent. Needed to cover the case where a scheduler
+         --  agent, a protected or an activitor task has been selected.
+
+         --  If Next_Agent is a scheduler agent, find what agent it wishes to
+         --  run. Keep checking until a non scheduler agent is selected.
+
+         while Next_Agent in Scheduler_Id loop
+            Next_Agent := Agent_To_Run (Next_Agent);
          end loop;
 
-         --  Select Correct Agent
+         --  If the Next_Task is a protected agent, select the first task
+         --  within it. Otherwise if it is an activator call the
+         --  Continue_Activation subprogram to discover the task to run.
 
-         if Next_Agent /= null then
-            Oak_Instance.Current_Priority := Next_Agent.Normal_Priority;
+         if Next_Agent in Protected_Id then
+            Next_Agent := Task_Within (Next_Agent);
+         elsif State (Next_Agent) = Activation_Pending then
+            --  This call will select the correct task to run.
 
-            if Next_Agent.all in Protected_Agent'Class then
-               Next_Agent := Protected_Agent (Next_Agent.all).Task_Within;
-            elsif Next_Agent.State = Activation_Pending then
-               declare
-                  Activating_Task : constant Agent_Handler :=
-                     Agent.Tasks.Activation.Continue_Activation
-                       (Activator => Task_Handler (Next_Agent));
-               begin
-                  Next_Agent := (if Activating_Task /= null then
-                                    Activating_Task else Next_Agent);
-               end;
-            end if;
-         else
-            --  No task selected, so we choose the sleep agent
-
-            Oak_Instance.Current_Priority := Oak_Priority'First;
-            Next_Agent := Oak_Instance.Sleep_Agent'Unchecked_Access;
+            Continue_Activation
+              (Activator        => Next_Agent,
+               Next_Task_To_Run => Next_Agent);
          end if;
 
          ---------------
@@ -404,164 +561,151 @@ package body Oak.Core is
          --  than call a procedure.
          -------------------
 
-         Active_Timer :=
-           Oak_Timer_Store.Earliest_Timer_To_Fire
-             (Above_Priority => Oak_Instance.Current_Priority);
+         Next_Timer :=
+           Earliest_Timer_To_Fire
+             (Above_Priority => Current_Priority (My_Kernel_Id));
 
-         --  Execution timers are not placed under the control of the Timer
-         --  Manager since they are only relevant for the currently executing
-         --  task and only apply if the timer will fire before any timer
-         --  that is currently managed.
+         --  If the selected timer has fired, we service it now by setting the
+         --  run reason to timer and run the loop again. Otherwise we exit and
+         --  run the selected task.
 
-         Next_Agent.Add_Agent_To_Exec_Charge_List
-           (Agent_Handler (Charge_List));
+         exit when not Has_Timer_Fired (Next_Timer);
 
-         declare
-            Budget_Task    : constant access Oak_Agent'Class :=
-                               Earliest_Expiring_Budget (Charge_List);
-            Budget_Expires : Time;
-         begin
-            if Budget_Task /= null then
-               Budget_Expires := Clock + Budget_Task.Remaining_Budget;
-               if Active_Timer = null
-                 or else Budget_Expires < Active_Timer.Firing_Time
-               then
-                  if Budget_Task.all in Task_Agent'Class then
-                     Active_Timer := Task_Handler (Budget_Task).Budget_Timer;
+         --  Update current agent and current timer variables used by the loop.
+         --  No need to update the kernel data structure since these are not
+         --  referenced here.
 
-                  elsif Budget_Task.all in Scheduler_Agent'Class then
-                     Active_Timer :=
-                       Scheduler_Handler (Budget_Task).Scheduler_Timer;
-                  else
-                     raise Program_Error;
-                  end if;
+         Current_Timer := Next_Timer;
+         Current_Agent := Next_Agent;
+         Oak_Running_Because := Timer;
+      end loop;
 
-                  Active_Timer.Update_Timer (New_Time => Budget_Expires);
+      --  Execution timers do not live in the active timer store since they are
+      --  only relevant for the currently executing task and only apply if the
+      --  timer will fire before any timer that is currently managed. Because
+      --  of that, each kernel has a timer of their own which they fill in with
+      --  the details of the currently active execution timer.
+
+      Add_Agent_To_Charge_List
+        (Oak_Kernel => My_Kernel_Id,
+         Agent      => Next_Agent);
+
+      declare
+         Budget_Task    : constant Oak_Agent_Id :=
+                            Earliest_Expiring_Budget
+                              (Charge_List (My_Kernel_Id),
+                               Current_Priority (My_Kernel_Id));
+         Budget_Expires : Time;
+      begin
+         if Budget_Task /= No_Agent then
+            --  Earliest_Expiring_Budget only returns a non No_Agent only if
+            --  the remaining budget is less than Time_Span_Last.
+
+            Budget_Expires := Clock + Remaining_Budget (Budget_Task);
+
+            if Next_Timer = No_Timer
+              or else Budget_Expires < Firing_Time (Next_Timer)
+            then
+               Next_Timer := Kernel_Timer (My_Kernel_Id);
+               if Budget_Task in Task_Id then
+                  Set_Event_Timer
+                    (Timer       => Next_Timer,
+                     Action_Data => Budget_Action (Budget_Task),
+                     Fire_Time   => Budget_Expires);
+
+               elsif Budget_Task in Scheduler_Id then
+                  Update_Timer
+                    (Timer    => Next_Timer,
+                     New_Time => Budget_Expires);
+                  Set_Timer_Scheduler_Action
+                    (Timer            => Next_Timer,
+                     Scheduler        => Budget_Task,
+                     Scheduler_Action => End_Cycle);
+               else
+                  raise Program_Error;
                end if;
             end if;
-         end;
-
-         --  These called functions are responsible for enabling the sleep
-         --  timer.
-
-         if Active_Timer /= null then
-            Core_Support_Package.Task_Support.Set_Oak_Wake_Up_Timer
-              (Wake_Up_At => Active_Timer.Firing_Time);
          end if;
+      end;
 
-         --  Next_Agent becomes Current_Agent
+      --  These called functions are responsible for enabling the sleep
+      --  timer.
 
-         Current_Agent := Next_Agent;
+      if Next_Timer /= No_Timer then
+         Core_Support_Package.Task_Support.Set_Oak_Wake_Up_Timer
+           (Wake_Up_At => Firing_Time (Next_Timer));
+      end if;
 
-         --  Service any timers that may have fired
-         if Active_Timer /= null and then Active_Timer.Firing_Time < Clock then
-            Oak_Instance.Woken_By := Timer;
+      --  Store the value of Next_Agent and Next_Timer into the kernel
+      --  data structure.
 
-            --  Otherwise run the selected task
-         else
+      Set_Current_Agent (Oak_Kernel => My_Kernel_Id, Agent => Next_Agent);
+      Set_Current_Timer (Oak_Kernel => My_Kernel_Id, Timer => Next_Timer);
+      Set_Hardware_Priority (Current_Priority (Oak_Kernel => My_Kernel_Id));
 
-            Set_Hardware_Priority (Oak_Instance.Current_Priority);
+      if Is_Agent_Interrupted (Next_Agent) then
+         Context_Switch_Will_Be_To_Interrupted_Task;
+      else
+         Context_Switch_Will_Be_To_Agent;
+      end if;
 
-            --   Set MMU is applicable.
+      Update_Exit_Stats (Oak_Kernel => This_Oak_Kernel);
 
-            --  Switch registers and enable Wake Up Interrupt.
-            Context_Switch_To_Agent (Current_Agent);
+   end Run_Oak;
 
-            --  Clean up after task has return via a context switch and
-            --  determine the reason why the task did.
-            Task_Message := Current_Agent.Agent_Message;
+   -----------
+   -- Start --
+   -----------
 
-            case Current_Agent.Agent_Yield_Status is
-               when Voluntary =>
-                  --  If the task yielded voluntary update the task state
-                  --  with the state provided by the message the task sent as
-                  --  part of its yield.
-
-                  Oak_Instance.Woken_By := Task_Yield;
-                  Current_Agent.Set_State (State => Task_Message.Message_Type);
-
-               when Timer =>
-                  Current_Agent.Set_Agent_Yield_Status (Yielded  => Voluntary);
-                  Oak_Instance.Woken_By := Timer;
-
-               when Interrupt =>
-                  Current_Agent.Set_Agent_Yield_Status (Yielded  => Voluntary);
-                  Oak_Instance.Woken_By := External_Interrupt;
-
-            end case;
-         end if;
-
-         Current_Agent.Remove_Agent_From_Exec_Charge_List
-           (Agent_Handler (Charge_List));
-      end loop;
-   end Run_Loop;
-
-   procedure Add_Agent_To_Charge_List
-     (Oak_Instance : in out Oak_Data'Class;
-      Agent        : not null access Oak_Agent'Class) is
+   procedure Start is
    begin
-      Agent.Add_Agent_To_Exec_Charge_List (Oak_Instance.Budgets_To_Charge);
-   end Add_Agent_To_Charge_List;
+      --  We'll loop here for multiprocessors to load an individual copy of the
+      --  kernel onto each physical processor. Will require calling procesor
+      --  dependent code to launch the kernel on each processor.
+      Start_Oak_Kernel;
+   end Start;
 
-   procedure Context_Switch_To_Agent (Agent : not null access Oak_Agent'Class)
+   -----------------------
+   -- Start_Oak_Kernel --
+   -----------------------
+
+   procedure Start_Oak_Kernel is
+   begin
+      Run_Loop;
+   end Start_Oak_Kernel;
+
+   ------------------------
+   -- Update_Entry_Stats --
+   ------------------------
+
+   procedure Update_Entry_Stats (Oak_Kernel : in Kernel_Id)
    is
-      Charge_List : access Oak_Agent'Class renames
-                      Oak_Instance.Budgets_To_Charge;
-
-      procedure Charge_Exec_Time
-        (To             : not null access Oak_Agent'Class;
-         To_Charge_List : Boolean);
-
-      procedure Charge_Exec_Time
-        (To             : not null access Oak_Agent'Class;
-         To_Charge_List : Boolean)
-      is
-         Current_Time : constant Time      := Clock;
-         Charge_Time  : constant Time_Span :=
-                          Current_Time - Oak_Instance.Entry_Exit_Stamp;
-      begin
-         if To_Charge_List then
-            Charge_Execution_Time_To_List
-              (List             => To,
-               Exec_Time        => Charge_Time,
-               Current_Priority => Oak_Instance.Current_Priority);
-         else
-            Charge_Execution_Time
-              (To_Agent  => To.all,
-               Exec_Time => Charge_Time);
-         end if;
-
-         Oak_Instance.Entry_Exit_Stamp := Current_Time;
-      end Charge_Exec_Time;
+      Current_Time : constant Time := Clock;
+      Charge_Time  : constant Time_Span :=
+                       Current_Time - Entry_Exit_Stamp (Oak_Kernel);
    begin
-      Charge_Exec_Time (Oak_Instance, To_Charge_List => False);
-      Oak_Instance.Current_Agent := Agent;
-      Core_Support_Package.Task_Support.Context_Switch_To_Agent;
-      Charge_Exec_Time
-        (Charge_List, To_Charge_List => True);
-   end Context_Switch_To_Agent;
+      Charge_Execution_Time_To_List
+        (List             => Charge_List (Oak_Kernel),
+         Exec_Time        => Charge_Time,
+         Current_Agent    => Current_Agent (Oak_Kernel),
+         Current_Priority => Current_Priority (Oak_Kernel));
+      Set_Entry_Exit_Stamp (Oak_Kernel, Time => Current_Time);
+   end Update_Entry_Stats;
 
-   procedure Remove_Agent_From_Charge_List
-     (Oak_Instance : in out Oak_Data'Class;
-      Agent        : not null access Oak_Agent'Class) is
-   begin
-      Agent.Remove_Agent_From_Exec_Charge_List
-        (Oak_Instance.Budgets_To_Charge);
-   end Remove_Agent_From_Charge_List;
+   -----------------------
+   -- Update_Exit_Stats --
+   -----------------------
 
-   procedure Set_Current_Agent_Stack_Pointer (SP : Address) is
+   procedure Update_Exit_Stats (Oak_Kernel : in Kernel_Id)
+   is
+      Current_Time : constant Time := Clock;
+      Charge_Time  : constant Time_Span :=
+                       Current_Time - Entry_Exit_Stamp (Oak_Kernel);
    begin
-      Set_Stack_Pointer
-        (Agent           =>
-           Processor_Kernels (Processor.Proccessor_Id).Current_Agent.all,
-         Stack_Pointer => SP);
-   end Set_Current_Agent_Stack_Pointer;
-
-   procedure Set_Oak_Stack_Pointer (SP : Address) is
-   begin
-      Set_Stack_Pointer
-        (Agent         => Processor_Kernels (Processor.Proccessor_Id),
-         Stack_Pointer => SP);
-   end Set_Oak_Stack_Pointer;
+      Charge_Execution_Time
+        (To_Agent  => Oak_Kernel,
+         Exec_Time => Charge_Time);
+      Set_Entry_Exit_Stamp (Oak_Kernel, Time => Current_Time);
+   end Update_Exit_Stats;
 
 end Oak.Core;

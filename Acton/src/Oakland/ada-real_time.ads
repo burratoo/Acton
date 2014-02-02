@@ -1,3 +1,14 @@
+------------------------------------------------------------------------------
+--                                                                          --
+--                            OAKLAND COMPONENTS                            --
+--                                                                          --
+--                           ADA.REAL_TIME.DELAYS                           --
+--                                                                          --
+--                                 S p e c                                  --
+--                                                                          --
+--                 Copyright (C) 2011-2014, Patrick Bernardi                --
+------------------------------------------------------------------------------
+
 with Oak.Core_Support_Package.Time;
 
 package Ada.Real_Time is

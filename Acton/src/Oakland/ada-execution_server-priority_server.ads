@@ -4,7 +4,7 @@ with System;
 package Ada.Execution_Server.Priority_Server is
    type Priority_Server is new Execution_Server with private;
 
-   procedure Initialise_Execution_Server
+   procedure Add_Execution_Server
      (Server            : in out Priority_Server;
       Budget            : in Real_Time.Time_Span;
       Priority          : in System.Any_Priority;
@@ -15,9 +15,5 @@ package Ada.Execution_Server.Priority_Server is
         System.Multiprocessors.Not_A_Specific_CPU);
 
 private
-   type Priority_Server is new Execution_Server with record
-      Server_Object : aliased
-        Acton.Scheduler_Agents.Priority_Server.Priority_Server
-          (System.Any_Priority'First, System.Any_Priority'Last);
-   end record;
+   type Priority_Server is new Execution_Server with null record;
 end Ada.Execution_Server.Priority_Server;

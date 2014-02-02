@@ -1,26 +1,60 @@
-with Oak.States;                        use Oak.States;
+------------------------------------------------------------------------------
+--                                                                          --
+--                              OAK COMPONENTS                              --
+--                                                                          --
+--                           OAK.PROTECTED_OBJECTS                          --
+--                                                                          --
+--                                 B o d y                                  --
+--                                                                          --
+--                 Copyright (C) 2011-2014, Patrick Bernardi                --
+------------------------------------------------------------------------------
+
+with Oak.Agent.Oak_Agent;         use Oak.Agent.Oak_Agent;
+with Oak.Agent.Protected_Objects; use Oak.Agent.Protected_Objects;
+with Oak.Agent.Tasks;             use Oak.Agent.Tasks;
+
+with Oak.Scheduler; use Oak.Scheduler;
+with Oak.States;    use Oak.States;
 
 package body Oak.Protected_Objects is
 
-   procedure Process_Enter_Request
-     (Scheduler_Info   : in out Oak_Scheduler_Info;
-      Entering_Agent   : in Agent_Handler;
-      PO               : not null access Protected_Agent'Class;
-      Subprogram_Kind  : in Protected_Subprogram_Type;
-      Entry_Id         : in Entry_Index;
-      Next_Agent_To_Run : out Agent_Handler) is
+   --------------------------------------------
+   -- Acquire_Protected_Object_For_Interrupt --
+   --------------------------------------------
+
+   procedure Acquire_Protected_Object_For_Interrupt (PO : in Protected_Id) is
    begin
-      if PO.all not in Protected_Agent'Class or
-        (Subprogram_Kind = Protected_Entry and then
-           not PO.Is_Entry_Id_Valid (Entry_Id))
+      --  Need a Lock around this.
+      Set_State (For_Agent => PO, State => Handling_Interrupt);
+   end Acquire_Protected_Object_For_Interrupt;
+
+   ---------------------------
+   -- Process_Enter_Request --
+   ---------------------------
+
+   procedure Process_Enter_Request
+     (Entering_Agent    : in  Task_Id;
+      PO                : in  Protected_Id;
+      Subprogram_Kind   : in  Protected_Subprogram_Type;
+      Entry_Id          : in  Entry_Index;
+      Next_Agent_To_Run : out Oak_Agent_Id;
+      Resubmitted       : in  Boolean := False)
+   is
+   begin
+      --  Sanity check to make sure the entry id is valid.
+
+      if Subprogram_Kind = Protected_Entry and then
+           not Is_Entry_Id_Valid (PO, Entry_Id)
       then
-         Entering_Agent.Set_State (Enter_PO_Refused);
+         Set_State (For_Agent => Entering_Agent, State => Enter_PO_Refused);
          Next_Agent_To_Run := Entering_Agent;
          return;
       end if;
 
-      if Entering_Agent.Normal_Priority > PO.Normal_Priority then
-         Entering_Agent.Set_State (Enter_PO_Refused);
+      --  Check for ceiling protocol volation.
+
+      if Normal_Priority (Entering_Agent) > Normal_Priority (PO) then
+         Set_State (For_Agent => Entering_Agent, State => Enter_PO_Refused);
          Next_Agent_To_Run := Entering_Agent;
          return;
       end if;
@@ -33,147 +67,263 @@ package body Oak.Protected_Objects is
       --     3. Once the protected action is completed in Process_Exit_Request.
       --  Acquire_Lock  (PO);
 
-      Scheduler.Remove_Agent_From_Scheduler (Entering_Agent);
-
-      if PO.State = Inactive then
-         Next_Agent_To_Run := null;
-
-         declare begin
-            if Subprogram_Kind = Protected_Entry and then
-              not PO.Is_Barrier_Open (Entry_Id => Entry_Id) then
-               Entering_Agent.Set_State (Waiting_For_Protected_Object);
-               PO.Add_Task_To_Entry_Queue
-                 (T        => Entering_Agent,
-                  Entry_Id => Entry_Id);
-
-               --  We need to check the queues here in case a barrier has
-               --  changed as a result of it using the queue attribute.
-               --  We are not able to conditional this to only protected
-               --  objects that have barriers that use Count as the front
-               --  end does lend itself to achieve this.
-               PO.Get_And_Remove_Next_Task_From_Entry_Queues
-                 (Next_Task => Next_Agent_To_Run);
-
-            else
-               Next_Agent_To_Run := Entering_Agent;
-            end if;
-         exception
-            when Program_Error =>
-               Scheduler.Add_Agent_To_Scheduler (Entering_Agent);
-               --  Add call to check if we need to decativate the PO.
-               --  Add call to see if we need to remove the task from the
-               --  PO.
-               Entering_Agent.Set_State (Enter_PO_Refused);
-               Next_Agent_To_Run := Entering_Agent;
-               --  Object release point 1.
-               --  Release Lock (PO);
-               return;
-         end;
-
-         if Next_Agent_To_Run /= null then
-            PO.Add_Task_To_Protected_Object (Next_Agent_To_Run);
-            Next_Agent_To_Run.Set_State (State => Runnable);
-
-            --  Run protected agent
-            PO.Set_State (State => Runnable);
-            Scheduler.Add_Agent_To_Scheduler (PO);
-            Next_Agent_To_Run := Agent_Handler (PO);
-         end if;
-
-      elsif Subprogram_Kind = Protected_Function and
-               PO.Active_Subprogram_Kind = Protected_Function then
-         Entering_Agent.Set_State (Runnable);
-         PO.Add_Task_To_Protected_Object (Entering_Agent);
-         Next_Agent_To_Run := Agent_Handler (PO);
-      else
-         PO.Add_Contending_Task (Entering_Agent);
-         Next_Agent_To_Run := null;
+      if not Resubmitted then
+         Remove_Agent_From_Scheduler (Agent => Entering_Agent);
+         Set_Id_Of_Entry (Entering_Agent, Entry_Id);
       end if;
 
-      if Next_Agent_To_Run = null then
+      if Task_Within (PO) = No_Agent then
+         Next_Agent_To_Run := No_Agent;
+
+         if Subprogram_Kind = Protected_Entry then
+            --  Handle protected entry. Note that it only selects the next
+            --  task to run inside the protected object and the actual
+            --  placement inside the protected object occurs after this block.
+
+            Handle_Entry : declare
+               Open_Entry       : Entry_Index;
+               Exception_Raised : Boolean;
+            begin
+               --  Add the entering task to its entry queue. Need to do this
+               --  before the queue check as its presence may effect the state
+               --  of the entry queue's barrier.
+
+               Set_State (Entering_Agent, Waiting_For_Protected_Object);
+               Add_Task_To_Entry_Queue
+                 (PO       => PO,
+                  T        => Entering_Agent,
+                  Entry_Id => Entry_Id);
+
+               Find_Open_Entry
+                 (Protected_Object => PO,
+                  Open_Entry       => Open_Entry,
+                  Exception_Raised => Exception_Raised,
+                  Preference       => Entry_Id);
+
+               if not Exception_Raised then
+                  if Open_Entry /= No_Entry then
+                     Get_And_Remove_Next_Task_From_Entry_Queue
+                       (PO        => PO,
+                        Entry_Id  => Open_Entry,
+                        Next_Task => Next_Agent_To_Run);
+                  else
+                     Next_Agent_To_Run := No_Agent;
+                  end if;
+
+               else
+                  --  Exception has been raised and the queues are purged.
+                  --  - Return.
+
+                  --  Need to add the task back to its queue.
+                  Add_Agent_To_Scheduler (Entering_Agent);
+
+                  Set_State (Entering_Agent, State => Enter_PO_Refused);
+                  Next_Agent_To_Run := Entering_Agent;
+                  return;
+
+               end if;
+            end Handle_Entry;
+         else
+            --  Handle protected procedure or function. Only need to select
+            --  the next agent to run here since the code to place the agent
+            --  inside the protected object occurs below (because we need to
+            --  cover the situation where an entry becomes queued).
+
+            Next_Agent_To_Run := Entering_Agent;
+
+         end if;
+
+         if Next_Agent_To_Run /= No_Agent then
+            Add_Task_To_Protected_Object (PO, T => Next_Agent_To_Run);
+            Set_State (Entering_Agent, Runnable);
+
+            if State (PO) = Inactive then
+               --  Run protected agent
+               Set_State (For_Agent => PO, State => Runnable);
+               Add_Agent_To_Scheduler (PO);
+            end if;
+
+            Next_Agent_To_Run := PO;
+         end if;
+
+      elsif Subprogram_Kind = Protected_Function and then
+        Active_Subprogram_Kind (PO) = Protected_Function then
+         --  Another task is operating inside a protected function, so this
+         --  task is able to join as well.
+
+         Set_State (Entering_Agent, Runnable);
+         Add_Task_To_Protected_Object (PO, Entering_Agent);
+         Next_Agent_To_Run := PO;
+      else
+         --  Protected object is currently occupied by someone else.
+
+         Add_Contending_Task (PO, Entering_Agent);
+         Next_Agent_To_Run := No_Agent;
+      end if;
+
+      if Next_Agent_To_Run = No_Agent then
+         --  No active task inside the protected object so need to find a new
+         --  Agent to run.
          --  Object release point 2.
-         --  Inform the interrupt subsystem that we are releasing the object
-         --  since no task inside the protected object is able to run.
          --  Release Lock(PO);
-         Check_Sechduler_Agents_For_Next_Task_To_Run
-           (Scheduler_Info   => Scheduler_Info,
-            Next_Task_To_Run => Next_Agent_To_Run);
+         Check_Sechduler_Agents_For_Next_Agent_To_Run
+           (Next_Agent_To_Run => Next_Agent_To_Run);
       end if;
 
    end Process_Enter_Request;
 
+   --------------------------
+   -- Process_Exit_Request --
+   --------------------------
+
    procedure Process_Exit_Request
-     (Scheduler_Info    : in out Oak_Scheduler_Info;
-      Exiting_Agent     : not null access Oak_Agent'Class;
-      PO                : not null access Protected_Agent'Class;
-      Next_Agent_To_Run : out Agent_Handler) is
+     (Exiting_Agent     : in Task_Id;
+      PO                : in  Protected_Id;
+      Next_Agent_To_Run : out Oak_Agent_Id)
+   is
    begin
 
-      --  Lock Agent (PO)
+      --  Make sure that the exiting task is actually inside the object.
 
-      if not PO.Is_Task_Inside_Protect_Object (Exiting_Agent) then
-         Exiting_Agent.Set_State (Exit_PO_Error);
-         Next_Agent_To_Run := Agent_Handler (Exiting_Agent);
+      if not Is_Task_Inside_Protect_Object
+        (PO => PO, T => Exiting_Agent)
+      then
+         Set_State (Exiting_Agent, Exit_PO_Error);
+         Next_Agent_To_Run := Exiting_Agent;
          return;
       end if;
 
-      Exiting_Agent.Set_State (Runnable);
-      PO.Remove_Task_From_Protected_Object (Exiting_Agent);
-      Scheduler.Add_Agent_To_Scheduler (Exiting_Agent);
+      Set_State (Exiting_Agent, Runnable);
+      Remove_Task_From_Within_Protected_Object (PO, Exiting_Agent);
+      Add_Agent_To_Scheduler (Exiting_Agent);
 
-      PO.Get_And_Remove_Next_Task_From_Entry_Queues
-        (Next_Task => Next_Agent_To_Run);
+      if Has_Entries (PO) then
+         --  Service entries.
 
-      while Next_Agent_To_Run = null loop
-         --  Admit new contending taks.
-         PO.Get_And_Remove_Next_Contending_Task (Next_Agent_To_Run);
+         declare
+            E          : Boolean;
+            Next_Entry : Entry_Index;
+         begin
+            Find_Open_Entry
+              (Protected_Object => PO,
+               Open_Entry       => Next_Entry,
+               Exception_Raised => E);
 
-         exit when Next_Agent_To_Run = null;
+            if Next_Entry /= No_Entry then
+               Get_And_Remove_Next_Task_From_Entry_Queue
+                 (PO        => PO,
+                  Entry_Id  => Next_Entry,
+                  Next_Task => Next_Agent_To_Run);
+
+               --  If there is a queued task to service, allow it to execute
+               --  inside the protected object.
+
+               if Next_Agent_To_Run /= No_Agent then
+                  Set_State
+                    (For_Agent => Next_Agent_To_Run, State => Runnable);
+                  Add_Task_To_Protected_Object
+                    (PO => PO, T => Next_Agent_To_Run);
+               end if;
+            end if;
+         end;
+      end if;
+
+      while Next_Agent_To_Run = No_Agent loop
+         --  Admit new contending taks. Need to loop to cover the case where a
+         --  task may end up on an entry queue.
+
+         Get_And_Remove_Next_Contending_Task (PO, Next_Agent_To_Run);
+
+         --  Exit here when there are no more tasks in the contending queue.
+         exit when Next_Agent_To_Run = No_Agent;
 
          Process_Enter_Request
-           (Scheduler_Info   => Scheduler_Info,
-            Entering_Agent   => Next_Agent_To_Run,
-            PO               => PO,
-            Subprogram_Kind  => Exiting_Agent.Agent_Message.Subprogram_Kind,
-            Entry_Id         => Exiting_Agent.Agent_Message.Entry_Id_Enter,
-            Next_Agent_To_Run => Next_Agent_To_Run);
-
-         --  Release Agent
-         return;
+           (Entering_Agent    => Next_Agent_To_Run,
+            PO                => Protected_Agent_To_Access (Next_Agent_To_Run),
+            Subprogram_Kind   => Protected_Subprogram_Kind (Next_Agent_To_Run),
+            Entry_Id          => Id_Of_Entry (Next_Agent_To_Run),
+            Next_Agent_To_Run => Next_Agent_To_Run,
+            Resubmitted       => True);
       end loop;
 
-      if Next_Agent_To_Run = null then
-         --  Protected action ends. Remove protected agentfrom scheduler.
-         Scheduler.Remove_Agent_From_Scheduler (PO);
-         PO.Set_State (Inactive);
+      --  If there is no agents to run inside the protected object, the
+      --  protected object is made inactive.
+
+      if Next_Agent_To_Run = No_Agent then
+         Remove_Agent_From_Scheduler (PO);
+         Set_State (PO, Inactive);
 
          --  Object release point 3.
          --  Release Agent (PO);
-         Check_Sechduler_Agents_For_Next_Task_To_Run
-           (Scheduler_Info   => Scheduler_Info,
-            Next_Task_To_Run => Next_Agent_To_Run);
-      else
-         --  Protected action continues.
-         Next_Agent_To_Run.Set_State (Runnable);
-         PO.Add_Task_To_Protected_Object (Next_Agent_To_Run);
+
+         Check_Sechduler_Agents_For_Next_Agent_To_Run
+           (Next_Agent_To_Run => Next_Agent_To_Run);
       end if;
-      --  Release Agent.
    end Process_Exit_Request;
 
-   procedure Acquire_Protected_Object_For_Interrupt
-     (PO : not null access
-        Agent.Protected_Objects.Protected_Agent'Class) is
-   begin
-      --  Need a Lock around this.
-      PO.Set_State (Handling_Interrupt);
-   end Acquire_Protected_Object_For_Interrupt;
+   ----------------------------
+   -- Process_Interrupt_Exit --
+   ----------------------------
 
-   procedure Release_Protected_Object_For_Interrupt
-     (PO : not null access
-        Agent.Protected_Objects.Protected_Agent'Class) is
+   procedure Process_Interrupt_Exit
+     (PO                : in  Protected_Id;
+      Next_Agent_To_Run : out Oak_Agent_Id) is
+   begin
+      Next_Agent_To_Run := No_Agent;
+
+      if Has_Entries (PO) then
+         --  Service entries.
+         declare
+            E          : Boolean;
+            Next_Entry : Entry_Index;
+         begin
+            Find_Open_Entry
+              (Protected_Object => PO,
+               Open_Entry       => Next_Entry,
+               Exception_Raised => E);
+
+            if Next_Entry /= No_Entry then
+               Get_And_Remove_Next_Task_From_Entry_Queue
+                 (PO        => PO,
+                  Entry_Id  => Next_Entry,
+                  Next_Task => Next_Agent_To_Run);
+            end if;
+         end;
+      end if;
+
+      if Next_Agent_To_Run /= No_Agent then
+         Set_State
+           (For_Agent => Next_Agent_To_Run, State => Runnable);
+         Add_Task_To_Protected_Object
+           (PO => PO, T => Next_Agent_To_Run);
+
+         --  The protected agent has serviced an interrupt handler
+         --  then it will not be presence in a runnable queue.
+
+         --  Run protected agent
+         Set_State (For_Agent => PO, State => Runnable);
+         Add_Agent_To_Scheduler (PO);
+      else
+         Set_State (PO, Inactive);
+      end if;
+
+      --  If there is no agents to run inside the protected object, the
+      --  protected object is made inactive.
+
+      if Next_Agent_To_Run = No_Agent then
+         Check_Sechduler_Agents_For_Next_Agent_To_Run
+           (Next_Agent_To_Run => Next_Agent_To_Run);
+      end if;
+   end Process_Interrupt_Exit;
+
+   --------------------------------------------
+   -- Release_Protected_Object_For_Interrupt --
+   --------------------------------------------
+
+   procedure Release_Protected_Object_For_Interrupt (PO : in Protected_Id) is
    begin
       --  Need a lock around this.
-      PO.Set_State (Inactive);
+      Set_State (PO, Inactive);
    end Release_Protected_Object_For_Interrupt;
 
 end Oak.Protected_Objects;

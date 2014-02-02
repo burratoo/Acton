@@ -1,224 +1,234 @@
-with Oak.Agent.Schedulers;
-with Oak.Agent.Tasks;
-with Oak.Core;
+------------------------------------------------------------------------------
+--                                                                          --
+--                              OAK COMPONENTS                              --
+--                                                                          --
+--                                OAK.TIMERS                                --
+--                                                                          --
+--                                 B o d y                                  --
+--                                                                          --
+--                 Copyright (C) 2011-2014, Patrick Bernardi                --
+------------------------------------------------------------------------------
 
 package body Oak.Timers is
 
-   procedure Timer_Updated (Timer : not null access Oak_Timer'Class);
+   --------------------
+   -- Activate_Timer --
+   --------------------
 
-   procedure Add_Timer
-     (Timer      : not null access Oak_Timer'Class;
-      Timer_Info : not null access Oak_Timer_Info)
-   is
-      T             : access Oak_Timer'Class;
-      Start_Of_List : constant access Oak_Timer'Class
-        := Timer_Info.Timers (Timer.Priority);
+   procedure Activate_Timer (Timer : in Oak_Timer_Id) is
    begin
-      Timer.Timer_Manager := Timer_Info;
-
-      if Start_Of_List = null then
-         Timer_Info.Timers (Timer.Priority) := Timer;
-         Timer.Next_Timer                   := Timer;
-         Timer.Previous_Timer               := Timer;
-      else
-         T := Start_Of_List;
-
-         while Timer.Fire_Time > T.Fire_Time loop
-            T := T.Next_Timer;
-            exit when T = Start_Of_List;
-         end loop;
-
-         Timer.Previous_Timer             := T.Previous_Timer;
-         Timer.Next_Timer                 := T;
-         Timer.Previous_Timer.Next_Timer  := Timer;
-         Timer.Next_Timer.Previous_Timer  := Timer;
-
-         if Timer.Fire_Time < Start_Of_List.Fire_Time then
-            Timer_Info.Timers (Timer.Priority) := Timer;
-         end if;
+      if not In_Tree (Pool => Pool, Item_Id => Timer) then
+         Insert_Node (Pool, Timer);
       end if;
-   end Add_Timer;
+   end Activate_Timer;
 
-   procedure Add_Timer_To_Current_Processor
-     (Timer : not null access Oak_Timer'Class) is
+   ----------------------
+   -- Deactivate_Timer --
+   ----------------------
+
+   procedure Deactivate_Timer (Timer : in Oak_Timer_Id) is
    begin
-      Timer.Add_Timer (Core.Oak_Timer_Store);
-   end Add_Timer_To_Current_Processor;
+      if In_Tree (Pool => Pool, Item_Id => Timer) then
+         Remove_Node (Pool, Timer);
+      end if;
+   end Deactivate_Timer;
+
+   ------------------
+   -- Delete_Timer --
+   ------------------
+
+   procedure Delete_Timer (Timer : in Oak_Timer_Id) is
+   begin
+      Delete_Item (Pool, Timer);
+   end Delete_Timer;
+
+   ----------------------------
+   -- Earliest_Timer_To_Fire --
+   ----------------------------
 
    function Earliest_Timer_To_Fire
-     (Timer_Info     : Oak_Timer_Info;
-      Above_Priority : Any_Priority := Interrupt_Priority'First - 1)
-      return access Oak_Timer'Class
+     (Above_Priority : in Any_Priority := Oak_Priority'First)
+      return Oak_Timer_Id
    is
-      P     : Oak_Priority := Oak_Priority'Last;
-      T     : access Oak_Timer'Class := null;
+      Timer : constant Oak_Timer_Id :=
+                Find_Earliest_Item (Pool, Above_Priority);
    begin
-      for Timer of reverse Timer_Info.Timers loop
-         if Timer /= null then
-            if T = null then
-               T := Timer;
-            elsif Timer.Fire_Time < T.Fire_Time then
-               T := Timer;
-            end if;
-         end if;
-
-         P := P - 1;
-         exit when P = Above_Priority;
-      end loop;
-      return T;
+      if Firing_Time (Timer) < Time_Last then
+         return Timer;
+      else
+         return No_Timer;
+      end if;
    end Earliest_Timer_To_Fire;
 
-   procedure Remove_Timer (Timer : not null access Oak_Timer'Class) is
+   ---------------
+   -- New_Timer --
+   ---------------
+
+   procedure New_Timer
+     (Timer     : out Oak_Timer_Id;
+      Priority  : in  Oak_Priority;
+      Fire_Time : in  Oak_Time.Time := Time_Last;
+      Activate  : in  Boolean := False)
+   is
+      New_Timer : constant Oak_Timer :=
+                    (Fire_Time => Fire_Time,
+                     Priority  => Priority,
+                     Kind      => Empty_Timer);
    begin
-      if Timer.Timer_Manager = null then
-         return;
-      end if;
+      New_Item
+        (Pool        => Pool,
+         Item        => New_Timer,
+         Item_Id     => Timer,
+         Add_To_Tree => Activate);
+   end New_Timer;
 
-      if Timer.Timer_Manager.Timers (Timer.Priority) = Timer then
-         if Timer = Timer.Next_Timer then
-            Timer.Timer_Manager.Timers (Timer.Priority) := null;
-         else
-            Timer.Timer_Manager.Timers (Timer.Priority) := Timer.Next_Timer;
-         end if;
-      end if;
-
-      Timer.Timer_Manager := null;
-      Timer.Previous_Timer.Next_Timer := Timer.Next_Timer;
-      Timer.Next_Timer.Previous_Timer := Timer.Previous_Timer;
-   end Remove_Timer;
-
-   procedure Set_Timer
-     (Timer     : in out Oak_Timer;
-      Fire_Time : in Oak_Time.Time;
-      Priority  : in Oak_Priority) is
+   procedure New_Event_Timer
+     (Timer       : out Oak_Timer_Id;
+      Priority    : in  Oak_Priority;
+      Action_Data : in  Event_Timer_Data;
+      Fire_Time   : in  Oak_Time.Time := Time_Last;
+      Activate    : in  Boolean := False)
+   is
+      New_Timer : constant Oak_Timer :=
+                    (Fire_Time => Fire_Time,
+                     Priority  => Priority,
+                     Kind      => Event_Timer,
+                     Data      => Action_Data);
    begin
-      Timer.Fire_Time := Fire_Time;
+      New_Item
+        (Pool        => Pool,
+         Item        => New_Timer,
+         Item_Id     => Timer,
+         Add_To_Tree => Activate);
+   end New_Event_Timer;
 
-      if not Timer.Is_Armed then
-         Timer.Priority := Priority;
-      else
-         if Timer.Priority = Priority then
-            Timer.Timer_Updated;
-         else
-            declare
-               Manager : constant access Oak_Timer_Info := Timer.Timer_Manager;
-            begin
-               Timer.Remove_Timer;
-               Timer.Priority := Priority;
-               Timer.Add_Timer (Manager);
-            end;
-         end if;
-      end if;
+   procedure New_Event_Timer
+     (Timer        : out Oak_Timer_Id;
+      Priority     : in  Oak_Priority;
+      Timer_Action : in  Ada.Cyclic_Tasks.Event_Response;
+      Agent        : in  Oak_Agent_Id;
+      Handler      : in  Ada.Cyclic_Tasks.Response_Handler := null;
+      Fire_Time    : in  Oak_Time.Time := Time_Last;
+      Activate     : in  Boolean := False)
+   is
 
-   end Set_Timer;
-
-   procedure Set_Timer
-     (Timer           : in out Action_Timer;
-      Fire_Time       : in Oak_Time.Time := Oak_Time.Time_Last;
-      Priority        : in Oak_Priority;
-      Timer_Action    : in Ada.Cyclic_Tasks.Event_Response;
-      Handler         : in Ada.Cyclic_Tasks.Response_Handler;
-      Agent_To_Handle : access Oak.Agent.Tasks.Task_Agent'Class) is
+      New_Timer : constant Oak_Timer :=
+                    (Fire_Time => Fire_Time,
+                     Priority  => Priority,
+                     Kind      => Event_Timer,
+                     Data      =>
+                       (Timer_Action     => Timer_Action,
+                        Handler_Priority => Priority,
+                        Agent_To_Handle  => Agent,
+                        Handler          => Handler));
    begin
-      Timer.Set_Timer (Fire_Time, Priority);
-      Timer.Timer_Action      := Timer_Action;
-      Timer.Handler           := Handler;
-      Timer.Agent_To_Handle   := Agent_To_Handle;
-   end Set_Timer;
+      New_Item
+        (Pool        => Pool,
+         Item        => New_Timer,
+         Item_Id     => Timer,
+         Add_To_Tree => Activate);
+   end New_Event_Timer;
 
-   procedure Set_Timer
-     (Timer     : in out Scheduler_Timer;
-      Fire_Time : in Oak_Time.Time := Oak_Time.Time_Last;
-      Priority  : in Oak_Priority;
-      Scheduler : not null access Oak.Agent.Schedulers.Scheduler_Agent'Class)
+   procedure New_Scheduler_Timer
+     (Timer     : out Oak_Timer_Id;
+      Priority  : in  Oak_Priority;
+      Scheduler : in  Scheduler_Id;
+      Fire_Time : in  Oak_Time.Time := Time_Last;
+      Activate  : in  Boolean := False)
+   is
+      New_Timer : constant Oak_Timer :=
+                    (Fire_Time        => Fire_Time,
+                     Priority         => Priority,
+                     Kind             => Scheduler_Timer,
+                     Scheduler        => Scheduler,
+                     Scheduler_Action => Service);
+   begin
+      New_Item
+        (Pool        => Pool,
+         Item        => New_Timer,
+         Item_Id     => Timer,
+         Add_To_Tree => Activate);
+   end New_Scheduler_Timer;
+
+   ---------------------
+   -- Set_Event_Timer --
+   ---------------------
+
+   procedure Set_Event_Timer
+     (Timer       : in Oak_Timer_Id;
+      Action_Data : in  Event_Timer_Data;
+      Fire_Time   : in  Oak_Time.Time) is
+   begin
+      Replace_Item
+        (Pool     => Pool,
+         Item_Id  => Timer,
+         Contents => (Kind       => Event_Timer,
+                      Fire_Time  => Fire_Time,
+                      Priority   => Action_Data.Handler_Priority,
+                      Data       => Action_Data));
+   end Set_Event_Timer;
+
+   --------------------------
+   -- Set_Timer_Event_Data --
+   --------------------------
+
+   procedure Set_Timer_Event_Data
+     (Timer : in Oak_Timer_Id;
+      Data  : Event_Timer_Data)
    is
    begin
-      Timer.Set_Timer (Fire_Time, Priority);
-      Timer.Scheduler        := Scheduler;
-   end Set_Timer;
+      Replace_Item
+        (Pool     => Pool,
+         Item_Id  => Timer,
+         Contents => (Kind       => Event_Timer,
+                      Fire_Time  => Firing_Time (Timer),
+                      Priority   => Priority (Timer),
+                      Data       => Data));
+   end Set_Timer_Event_Data;
 
-   procedure Timer_Updated (Timer : not null access Oak_Timer'Class) is
+   --------------------------------
+   -- Set_Timer_Scheduler_Action --
+   --------------------------------
+
+   procedure Set_Timer_Scheduler_Action
+     (Timer            : in Oak_Timer_Id;
+      Scheduler        : in Scheduler_Id;
+      Scheduler_Action : in Scheduler_Timer_Action)
+   is
    begin
-      if not Timer.Is_Armed then
-         return;
-      end if;
+      Replace_Item
+        (Pool     => Pool,
+         Item_Id  => Timer,
+         Contents => (Kind             => Scheduler_Timer,
+                      Fire_Time        => Firing_Time (Timer),
+                      Priority         => Priority (Timer),
+                      Scheduler        => Scheduler,
+                      Scheduler_Action => Scheduler_Action));
+   end Set_Timer_Scheduler_Action;
 
-      declare
-         T             : not null access Oak_Timer'Class := Timer;
-         Start_Of_List : not null access Oak_Timer'Class renames
-                           Timer.Timer_Manager.Timers (Timer.Priority);
-      begin
-         if Timer /= Start_Of_List.Previous_Timer
-           and then Timer.Fire_Time > Timer.Next_Timer.Fire_Time
-         then
-            --  Remove timer from current position
-
-            Timer.Previous_Timer.Next_Timer := Timer.Next_Timer;
-            Timer.Next_Timer.Previous_Timer := Timer.Previous_Timer;
-
-            if Timer = Start_Of_List then
-               Start_Of_List := Timer.Next_Timer;
-            end if;
-
-            T := Timer.Next_Timer;
-
-            --  Find new position for the timer
-
-            while Timer.Fire_Time > T.Fire_Time loop
-               T := T.Next_Timer;
-               exit when T = Start_Of_List;
-            end loop;
-
-            Timer.Previous_Timer             := T.Previous_Timer;
-            Timer.Next_Timer                 := T;
-            Timer.Previous_Timer.Next_Timer  := Timer;
-            Timer.Next_Timer.Previous_Timer  := Timer;
-
-         elsif Timer /= Start_Of_List
-           and then Timer.Fire_Time < Timer.Previous_Timer.Fire_Time then
-            --  Remove timer from current position
-
-            Timer.Previous_Timer.Next_Timer := Timer.Next_Timer;
-            Timer.Next_Timer.Previous_Timer := Timer.Previous_Timer;
-
-            --  Find new position for the timer
-            T := Timer.Previous_Timer;
-
-            while Timer.Fire_Time < T.Fire_Time loop
-               T := T.Previous_Timer;
-               exit when T = Start_Of_List.Previous_Timer;
-            end loop;
-
-            Timer.Previous_Timer             := T;
-            Timer.Next_Timer                 := T.Next_Timer;
-            Timer.Previous_Timer.Next_Timer  := Timer;
-            Timer.Next_Timer.Previous_Timer  := Timer;
-
-            if Timer.Fire_Time < Start_Of_List.Fire_Time then
-               Start_Of_List := Timer;
-            end if;
-
-         end if;
-      end;
-   end Timer_Updated;
+   ------------------
+   -- Update_Timer --
+   ------------------
 
    procedure Update_Timer
-     (Timer    : in out Oak_Timer'Class;
-      New_Time : in Oak_Time.Time) is
+     (Timer    : in Oak_Timer_Id;
+      New_Time : in Oak_Time.Time)
+   is
+      procedure Set_Timer (T : in out Oak_Timer; Time : in Oak_Time.Time)
+        with Inline;
+
+      procedure Update_Timer is new Generic_Update_Time (Set_Timer);
+
+      ---------------
+      -- Set_Timer --
+      ---------------
+
+      procedure Set_Timer (T : in out Oak_Timer; Time : in Oak_Time.Time) is
+      begin
+         T.Fire_Time := Time;
+      end Set_Timer;
+
    begin
-      Timer.Fire_Time := New_Time;
-      Timer_Updated (Timer'Unchecked_Access);
+      Update_Timer (Pool, Timer, New_Time);
    end Update_Timer;
-
-   procedure Delay_Timer
-     (Timer    : in out Oak_Timer'Class;
-      Delay_By : in Oak_Time.Time_Span) is
-   begin
-      Timer.Fire_Time := Timer.Fire_Time + Delay_By;
-      Timer_Updated (Timer'Unchecked_Access);
-   end Delay_Timer;
-
-   function Agent_To_Handle (Timer : in out Action_Timer'Class)
-     return Oak.Agent.Agent_Handler is (Timer.Agent_To_Handle);
-
 end Oak.Timers;

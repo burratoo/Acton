@@ -2,18 +2,21 @@
 --                                                                          --
 --                            OAKLAND COMPONENTS                            --
 --                                                                          --
---                           ADA.EXECUTION_SERVER                           --
+--                      ADA.EXECUTION_SERVER.OPERATIONS                     --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                 Copyright (C) 2013-2014, Patrick Bernardi                --
+--                 Copyright (C) 2014-2014, Patrick Bernardi                --
 ------------------------------------------------------------------------------
 
-package body Ada.Execution_Server is
+package Ada.Execution_Server.Operations is
+   function Scheduler_Id_For_Server
+     (Server : in Execution_Server'Class)
+      return Oak.Agent.Scheduler_Id_With_No;
 
-   procedure Remove_Execution_Server (Server : in out Execution_Server) is
-   begin
-      raise Program_Error;
---        Remove_Agent_From_Scheduler (Server.Server_Object'Unchecked_Access);
-   end Remove_Execution_Server;
-end Ada.Execution_Server;
+private
+   function Scheduler_Id_For_Server
+     (Server : in Execution_Server'Class)
+      return Oak.Agent.Scheduler_Id_With_No is (Server.Scheduler);
+
+end Ada.Execution_Server.Operations;

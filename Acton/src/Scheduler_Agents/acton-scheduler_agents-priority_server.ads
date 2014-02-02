@@ -1,41 +1,68 @@
-with Oak.Agent;              use Oak.Agent;
-with Oak.Agent.Schedulers;   use Oak.Agent.Schedulers;
-with Oak.Oak_Time;           use Oak.Oak_Time;
+------------------------------------------------------------------------------
+--                                                                          --
+--                           ACTON SCHEDULER AGENT                          --
+--                                                                          --
+--                  ACTON.SCHEDULER_AGENTS.PRIORITY_SERVER                  --
+--                                                                          --
+--                                 S p e c                                  --
+--                                                                          --
+--                 Copyright (C) 2013-2014, Patrick Bernardi                --
+------------------------------------------------------------------------------
+
+with Oak.Agent;    use Oak.Agent;
+with Oak.Oak_Time; use Oak.Oak_Time;
+
 with System;                 use System;
 with System.Multiprocessors; use System.Multiprocessors;
 
 package Acton.Scheduler_Agents.Priority_Server with Preelaborate is
-   type Priority_Server is new Scheduler_Agent with private
-     with Preelaborable_Initialization;
 
-   procedure Initialise_Scheduler_Agent
-     (Agent : in out Priority_Server);
-
-   procedure Initialise_Scheduler_Agent
-     (Agent             : in out Priority_Server;
-      Budget            : in Time_Span;
-      Priority          : in Any_Priority;
-      Period            : in Time_Span;
-      Phase             : in Time_Span;
-      Relative_Deadline : in Time_Span;
-      CPU               : in CPU_Range);
-
-   procedure Run_Loop (Self : in out Priority_Server) with No_Return;
+   procedure New_Scheduler_Agent
+     (Agent             : out Scheduler_Id;
+      Min_Priority      : in  Any_Priority;
+      Max_Priority      : in  Any_Priority;
+      Budget            : in  Time_Span;
+      Period            : in  Time_Span;
+      Phase             : in  Time_Span;
+      Relative_Deadline : in  Time_Span;
+      CPU               : in  CPU_Range);
 
    Stack_Size : constant := 1 * 1024;
    Agent_Name : constant String := "Priority_Server";
 
 private
-   type Priority_Server is new Scheduler_Agent with record
-      Runnable_Queue        : access Oak_Agent'Class;
-      Sleeping_Queue        : access Oak_Agent'Class;
 
-      Period                : Time_Span;
-      Phase                 : Time_Span;
-      Relative_Deadline     : Time_Span;
-      Execution_Budget      : Time_Span;
+   Max_Schedulable_Agents : constant := 10;
 
-      Next_Wake_Time        : Time;
+   type Storage_Id is mod Max_Schedulable_Agents + 1;
+
+   No_Node : constant Storage_Id := Storage_Id'First;
+
+   type Scheduler_Element is record
+      Agent : Oak_Agent_Id;
+      Next  : Storage_Id;
+   end record;
+
+   type Elements is array (Storage_Id)
+     of Scheduler_Element;
+
+   type Queue is record
+      Head, Tail : Storage_Id;
+   end record;
+
+   Empty_Queue : constant Queue := (Head => No_Node, Tail => No_Node);
+
+   type Scheduler_Storage is record
+   --  Storage is currently very similar to the time priority pool when it
+   --  comes to allocating from an array.
+
+      Pool : Elements;
+
+      Runnable_Queue : Queue := (No_Node, No_Node);
+      Sleeping_Queue : Queue := (No_Node, No_Node);
+
+      Bulk_Free : Storage_Id := No_Node + 1;
+      Free_List : Storage_Id := No_Node;
    end record;
 
 end Acton.Scheduler_Agents.Priority_Server;

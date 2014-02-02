@@ -16,7 +16,9 @@ project Acton_MPC5554 is
                         "MPC5554.Flash", "MPC5554.INTC",
                         "MPC5554.PBRIDGE", "MPC5554.SIU",
                                 "MPC5554.XBAR",
-                               "Oakland.Maths.Arithmetic_64");
+                                "Oakland.Maths.Arithmetic_64",
+
+                               "ISA.Power", "ISA.Power.e200", "ISA.Power.e200.z6", "ISA.Power.e200.z6.HID", "ISA.Power.e200.Timer_Registers", "ISA.Power.e200.Processor_Control_Registers");
 
    --  IDE
    Target          := "powerpc-burratoo-acton-";
@@ -47,9 +49,11 @@ project Acton_MPC5554 is
 
    package Builder renames Acton_Common.Builder;
 
-   package Compiler is
+   package Compiler extends Acton_Common.Compiler Is
       for Default_Switches ("ada") use Acton_Common.Ada_Switches & Target_Ada_Switches;
       for Default_Switches ("asm") use Acton_Common.Asm_Switches & Target_Asm_Switches;
+      for Switches ("oak-core_support_package-interrupts.adb") use Compiler'Default_Switches ("ada") & "-falign-functions=16";
+--        for Switches ("oak.core") use Compiler'Default_Switches ("ada") & "-fno-inline-functions-called-once";
    end Compiler;
 
    --  package Linker is

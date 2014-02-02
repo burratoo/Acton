@@ -1,3 +1,15 @@
+------------------------------------------------------------------------------
+--                                                                          --
+--                         OAK CORE SUPPORT PACKAGE                         --
+--                              FREESCALE e200                              --
+--                                                                          --
+--                   OAK.CORE_SUPPORT_PACKAGE.CALL_STACK                    --
+--                                                                          --
+--                                 S p e c                                  --
+--                                                                          --
+--                 Copyright (C) 2010-2014, Patrick Bernardi                --
+------------------------------------------------------------------------------
+
 with System.Storage_Elements;
 
 package Oak.Core_Support_Package.Call_Stack with Pure is
@@ -8,7 +20,7 @@ package Oak.Core_Support_Package.Call_Stack with Pure is
    Call_Stack_Size            : constant := 4 * 1024;
    Default_Call_Stack_Size    : constant := Call_Stack_Size;
    Main_Task_Call_Stack_Size  : constant := 4 * 1024;
-   Oak_Call_Stack_Size        : constant := 1 * 1024;
+   Oak_Call_Stack_Size        : constant := 2 * 1024;
    Interrupt_Stack_Size       : constant := 512;
 
    --  Call_Stack_Alignment in bytes
@@ -16,10 +28,7 @@ package Oak.Core_Support_Package.Call_Stack with Pure is
 
    Minimum_Call_Stack_Size    : constant := 1 * 1024;
 
-   Task_Registers_Save_Size   : constant := 296;
-   Kernel_Registers_Save_Size : constant := 152;
-
-   Sleep_Stack_Size           : constant := 2 * Task_Registers_Save_Size;
+   Sleep_Stack_Size           : constant := 288;
 
    --  Warning! This is not a real variable. It is defined in the linker script
    --  and as such does not have any data storage allocated for it. Instead

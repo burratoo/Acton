@@ -1,22 +1,32 @@
-with System; use System;
+--                                                                          --
+--                              OAK COMPONENTS                              --
+--                                                                          --
+--                              OAK.INTERRUPTS                              --
+--                                                                          --
+--                                 B o d y                                  --
+--                                                                          --
+--                 Copyright (C) 2012-2014, Patrick Bernardi                --
+------------------------------------------------------------------------------
+
+with Oak.Agent.Oak_Agent;         use Oak.Agent.Oak_Agent;
+with Oak.Agent.Protected_Objects; use Oak.Agent.Protected_Objects;
 
 package body Oak.Interrupts is
 
-   procedure Attach_Handlers
-     (Handlers          : access Interrupt_Handler_Array;
-      Handler_PO        : access Protected_Agent'Class;
-      Current_Agent     : in Agent_Handler;
-      Next_Agent_To_Run : out Agent_Handler)
+   procedure Attach_Handler
+     (Handler           : in  Interrupt_Handler_Pair;
+      Current_Agent     : in  Task_Id;
+      Next_Agent_To_Run : out Oak_Agent_Id)
    is
-      P : constant Interrupt_Priority := Handler_PO.Normal_Priority;
    begin
-      for Handler of Handlers.all loop
          Oak.Processor_Support_Package.Interrupts.Attach_Handler
            (Interrupt => Handler.Interrupt,
             Handler   => Handler.Handler,
-            Priority  => P);
-      end loop;
+            Priority  =>
+              Normal_Priority
+                (Protected_Object_From_Access
+                     (Parameterless_Access (Handler.Handler))));
       Next_Agent_To_Run := Current_Agent;
-   end Attach_Handlers;
+   end Attach_Handler;
 
 end Oak.Interrupts;

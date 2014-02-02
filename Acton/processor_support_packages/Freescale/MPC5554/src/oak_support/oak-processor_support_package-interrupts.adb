@@ -1,18 +1,20 @@
 with MPC5554.Flash;
 with Oak.Core_Support_Package.Interrupts;
+with Oak.Agent.Protected_Objects; use Oak.Agent.Protected_Objects;
 
 package body Oak.Processor_Support_Package.Interrupts is
 
-   procedure External_Interrupt_Handler (Interrupt_Id : Oak_Interrupt_Id) is
+   procedure External_Interrupt_Handler (Interrupt_Id : External_Interrupt_Id)
+   is
    begin
       INTC_Vector_Table (Interrupt_Id).all;
       End_Of_Interrupt_Register := End_Interrupt;
    end External_Interrupt_Handler;
 
-   function External_Interrupt_Id return Oak_Interrupt_Id is
+   function Get_External_Interrupt_Id return External_Interrupt_Id is
    begin
       return Interrupt_Acknowledge_Component.Interrupt_Vector;
-   end External_Interrupt_Id;
+   end Get_External_Interrupt_Id;
 
    procedure Initialise_Interrupts is
       use MPC5554.Flash;
@@ -54,7 +56,7 @@ package body Oak.Processor_Support_Package.Interrupts is
       Completed_Flash_Programming;
    end Complete_Interrupt_Initialisation;
 
-   procedure Attach_Handler (Interrupt : Oak_Interrupt_Id;
+   procedure Attach_Handler (Interrupt : External_Interrupt_Id;
                              Handler   : Parameterless_Handler;
                              Priority  : Interrupt_Priority)
    is
@@ -97,5 +99,12 @@ package body Oak.Processor_Support_Package.Interrupts is
    begin
       Current_Priority_Register := MPC5554_Interrupt_Priority'First;
    end Clear_Hardware_Priority;
+
+   function Handler_Protected_Object
+     (Interrupt : External_Interrupt_Id) return Protected_Id_With_No is
+   begin
+      return Protected_Object_From_Access
+        (Parameterless_Access (INTC_Vector_Table (Interrupt)));
+   end Handler_Protected_Object;
 
 end Oak.Processor_Support_Package.Interrupts;
