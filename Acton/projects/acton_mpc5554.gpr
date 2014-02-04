@@ -27,7 +27,7 @@ project Acton_MPC5554 is
    Target_Debugger_Command := Target & "gdb";
 
    --  Builder Switches
-   Target_Ada_Switches := Acton_Common.Ada_Switches & "-Wa,-mregnames";
+   Target_Ada_Switches := Acton_Common.Ada_Switches & ("-Wa,-mregnames");
    Target_Asm_Switches := Acton_Common.Asm_Switches & "-mregnames";
 
 

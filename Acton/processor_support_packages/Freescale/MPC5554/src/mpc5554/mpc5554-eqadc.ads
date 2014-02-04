@@ -251,6 +251,9 @@ package MPC5554.eQADC with Preelaborate is
    ----------------------------------------------------------------------------
    --  eQADC Registers
    ----------------------------------------------------------------------------
+
+   pragma Warnings (Off, "*alignment*");
+
    Module_Control_Register : Module_Configuration_Type;
    for Module_Control_Register'Address use
      System'To_Address (eQADC_Base_Address + MCR_Offset_Address);

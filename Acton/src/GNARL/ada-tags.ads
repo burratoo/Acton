@@ -45,14 +45,14 @@ package Ada.Tags is
 
    No_Tag : constant Tag;
 
-   --  function Expanded_Name (T : Tag) return String;
-
-   --  function Wide_Expanded_Name (T : Tag) return Wide_String;
-   --  pragma Ada_05 (Wide_Expanded_Name);
-
-   --  function Wide_Wide_Expanded_Name (T : Tag) return Wide_Wide_String;
-   --  pragma Ada_05 (Wide_Wide_Expanded_Name);
-
+--     function Expanded_Name (T : Tag) return String;
+--
+--     function Wide_Expanded_Name (T : Tag) return Wide_String;
+--     pragma Ada_05 (Wide_Expanded_Name);
+--
+--     function Wide_Wide_Expanded_Name (T : Tag) return Wide_Wide_String;
+--     pragma Ada_05 (Wide_Wide_Expanded_Name);
+--
 --     function External_Tag (T : Tag) return String;
 
    function Internal_Tag (External : String) return Tag;

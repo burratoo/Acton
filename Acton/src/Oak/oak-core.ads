@@ -16,7 +16,7 @@
 with Oak.Agent;    use Oak.Agent;
 with Oak.Message;  use Oak.Message;
 with Oak.Oak_Time; use Oak.Oak_Time;
-
+with Oak.States;   use Oak.States;
 package Oak.Core with Preelaborate is
 
    -----------
@@ -88,10 +88,13 @@ package Oak.Core with Preelaborate is
 private
    Global_Start_Time_Offset : Time_Span
      with Import, Convention => Ada,
-          External_Name => "_global_start_phase";
+     External_Name => "_global_start_phase";
+
+   No_Message_Here : aliased Oak_Message := (Message_Type => No_Message);
 
    function This_Oak_Kernel return Kernel_Id is
      (Kernel_Id'First);
    --  In theory on a multiprocessor machine we would query the processor to
    --  find out what its id is.
+
 end Oak.Core;

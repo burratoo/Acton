@@ -32,7 +32,7 @@
 --  This unit provides the basic support for controlled (finalizable) types
 
 package System.Finalization_Root is
-   pragma Pure;
+   pragma Preelaborate;
 
    --  The base for types Controlled and Limited_Controlled declared in Ada.
    --  Finalization.

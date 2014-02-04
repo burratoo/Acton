@@ -165,6 +165,9 @@ package Oak.Timers with Preelaborate is
      with Pre => Timer_Kind (Timer) = Scheduler_Timer;
    --  Sets the scheduler action of the timer.
 
+   procedure Setup_Timers;
+   --  Sets up the timers pool.
+
    function Timer_Action (Timer : in Oak_Timer_Id)
      return Ada.Cyclic_Tasks.Event_Response
      with Inline, Pre => Timer_Kind (Timer) = Event_Timer;

@@ -94,7 +94,7 @@ package MPC5554.SIU with Preelaborate is
       Slew_Rate_Control        : SRC_Type;
       Weak_Pullup_Down_Enable  : Enable_Type;
       Weak_Pullup_Down_Select  : WPS_Type;
-   end record;
+   end record with Size => 16;
 
    --  GPIO Registers
    type GPIO_Pin_State_Type is (Low, High) with Size => GPIO_Register_Size;
@@ -112,7 +112,7 @@ package MPC5554.SIU with Preelaborate is
       Engineering_Clock_Division_Factor : ENGDIV_Type;
       External_Bus_Tap_Select           : EBTS_Type;
       External_Bus_Division_Factor      : EBDF_Type;
-   end record;
+   end record with Size => Standard'Word_Size;
 
    ----------------------------------------------------------------------------
    --  Hardware Respresentations
@@ -200,42 +200,43 @@ package MPC5554.SIU with Preelaborate is
    --  SIU Registers
    ----------------------------------------------------------------------------
 
-   External_Interrupt_State_Register : IRQ_Occured_Type;
-   for External_Interrupt_State_Register'Address use
-     System'To_Address (SIU_Base_Address + EISR_Offset_Address);
+   External_Interrupt_State_Register : IRQ_Occured_Type
+     with Address =>
+       System'To_Address (SIU_Base_Address + EISR_Offset_Address);
 
-   DMA_Interrupt_Request_Enable_Register : IRQ_Enable_Type;
-   for DMA_Interrupt_Request_Enable_Register'Address use
-     System'To_Address (SIU_Base_Address + DIRER_Offset_Address);
+   DMA_Interrupt_Request_Enable_Register : IRQ_Enable_Type
+     with Address =>
+       System'To_Address (SIU_Base_Address + DIRER_Offset_Address);
 
-   IRQ_Rising_Edge_Event_Enable_Register : IRQ_Enable_Type;
-   for IRQ_Rising_Edge_Event_Enable_Register'Address use
-     System'To_Address (SIU_Base_Address + IREER_Offset_Address);
+   IRQ_Rising_Edge_Event_Enable_Register : IRQ_Enable_Type
+     with Address =>
+       System'To_Address (SIU_Base_Address + IREER_Offset_Address);
 
-   IRQ_Falling_Edge_Event_Enable_Register : IRQ_Enable_Type;
-   for IRQ_Falling_Edge_Event_Enable_Register'Address use
-     System'To_Address (SIU_Base_Address + IFEER_Offset_Address);
+   IRQ_Falling_Edge_Event_Enable_Register : IRQ_Enable_Type
+     with Address =>
+       System'To_Address (SIU_Base_Address + IFEER_Offset_Address);
 
+   pragma Warnings (Off, "*alignment*");
    Pad_Configuration_Register_Array :
-     array (Pad_ID_Type) of aliased Pad_Configuration_Type;
-   for Pad_Configuration_Register_Array'Address use
-     System'To_Address (SIU_Base_Address + Pad_Configuration_Offset_Address);
+     array (Pad_ID_Type) of aliased Pad_Configuration_Type
+     with Address =>
+       System'To_Address (SIU_Base_Address + Pad_Configuration_Offset_Address);
    type Pad_Configuration_Pointer is access all Pad_Configuration_Type;
 
    GPO_Data_Register_Array :
-     array (GPIO_ID_Type) of aliased GPO_Data_Register_Type;
-   for GPO_Data_Register_Array'Address use
-     System'To_Address (SIU_Base_Address + GPO_Offset_Address);
+     array (GPIO_ID_Type) of aliased GPO_Data_Register_Type
+     with Address =>
+       System'To_Address (SIU_Base_Address + GPO_Offset_Address);
    type GPO_Data_Register_Pointer is access all GPO_Data_Register_Type;
 
    GPI_Data_Register_Array :
-     array (GPIO_ID_Type) of aliased GPI_Data_Register_Type;
-   for GPI_Data_Register_Array'Address use
-     System'To_Address (SIU_Base_Address + GPI_Offset_Address);
+     array (GPIO_ID_Type) of aliased GPI_Data_Register_Type
+     with Address =>
+       System'To_Address (SIU_Base_Address + GPI_Offset_Address);
    type GPI_Data_Register_Pointer is access all GPI_Data_Register_Type;
 
-   External_Clock_Control_Register : External_Clock_Control_Type;
-   for External_Clock_Control_Register'Address use
-     System'To_Address (SIU_Base_Address + ECCR_Offset_Address);
+   External_Clock_Control_Register : External_Clock_Control_Type
+     with Address =>
+       System'To_Address (SIU_Base_Address + ECCR_Offset_Address);
 
 end MPC5554.SIU;

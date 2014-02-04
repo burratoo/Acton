@@ -111,8 +111,9 @@ package body Oak.Protected_Objects is
                   end if;
 
                else
-                  --  Exception has been raised and the queues are purged.
-                  --  - Return.
+                  --  Exception has been raised, the queues are purged.
+                  Purge_Entry_Queues
+                    (PO, New_Task_State => Enter_PO_Refused);
 
                   --  Need to add the task back to its queue.
                   Add_Agent_To_Scheduler (Entering_Agent);
@@ -209,6 +210,12 @@ package body Oak.Protected_Objects is
                Open_Entry       => Next_Entry,
                Exception_Raised => E);
 
+            if E then
+               Purge_Entry_Queues
+                 (PO, New_Task_State => Enter_PO_Refused);
+               Next_Entry := No_Entry;
+            end if;
+
             if Next_Entry /= No_Entry then
                Get_And_Remove_Next_Task_From_Entry_Queue
                  (PO        => PO,
@@ -281,6 +288,12 @@ package body Oak.Protected_Objects is
               (Protected_Object => PO,
                Open_Entry       => Next_Entry,
                Exception_Raised => E);
+
+            if E then
+               Purge_Entry_Queues
+                 (PO, New_Task_State => Enter_PO_Refused);
+               Next_Entry := No_Entry;
+            end if;
 
             if Next_Entry /= No_Entry then
                Get_And_Remove_Next_Task_From_Entry_Queue

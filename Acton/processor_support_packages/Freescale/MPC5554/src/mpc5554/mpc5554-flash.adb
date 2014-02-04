@@ -44,13 +44,16 @@ package body MPC5554.Flash is
    is
       MCR : Module_Configuration_Type := Module_Configuration_Register;
 
-      P_Destination : access protected procedure;
-
+      pragma Warnings (Off, "*alignment*");
+      P_Destination : access protected procedure
+        with Address => Destination,
+        Convention => Ada,
+        Import;
       --  It would be preferable to use Address_To_Access_Conversions instead
       --  of the Address clause but that would require a new type. Import
       --  declaration is needed since we are overlapping memory.
-      for P_Destination'Address use Destination;
-      pragma Import (Ada, P_Destination);
+      pragma Warnings (On, "*alignment*");
+
    begin
       Do_Not_Clear_Error_States (MCR);
       MCR.Program := Executing;

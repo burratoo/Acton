@@ -680,6 +680,8 @@ Channel_31 : Service_Type;
    for Shared_Data_Memory_8'Address use Shared_Data_Memory_32'Address;
    pragma Import (Ada, Shared_Data_Memory_8);
 
+   pragma Warnings (Off, "*alignment*");
+
    Shared_Data_Extended_Memory_32 : array (Shared_Data_Offset) of Integer_32;
    for Shared_Data_Extended_Memory_32'Address use
      System'To_Address (eTPU_Base_Address + SDM_SPE_Mirror_Offset_Address);

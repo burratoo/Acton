@@ -36,13 +36,19 @@ package body Oak.Core_Support_Package.Task_Support is
       Asm ("sc", Volatile => True);
    end Context_Switch;
 
+   -----------------------------
+   -- Context_Switch_From_Oak --
+   ------------------------------
+
    procedure Context_Switch_From_Oak
      (Reason_For_Oak_To_Run : out    Run_Reason;
-      Message               : out Message_Access) is
+      Message               : out Message_Access)
+   is
    begin
       Asm ("sc",
            Outputs  => (Run_Reason'Asm_Output ("=r", Reason_For_Oak_To_Run),
                         Message_Access'Asm_Output ("=r", Message)),
+           Clobber  => "r30",
            Volatile => True);
    end Context_Switch_From_Oak;
 

@@ -207,6 +207,20 @@ package body Oak.Timers is
    end Set_Timer_Scheduler_Action;
 
    ------------------
+   -- Setup_Timers --
+   ------------------
+
+   procedure Setup_Timers is
+   begin
+      Replace_Item
+        (Pool     => Pool,
+         Item_Id  => No_Timer,
+         Contents => (Kind      => Empty_Timer,
+                      Fire_Time => Time_Last,
+                      Priority  => Oak_Priority'First));
+   end Setup_Timers;
+
+   ------------------
    -- Update_Timer --
    ------------------
 

@@ -1,3 +1,5 @@
+--  From llvm I think.
+
 with Interfaces; use Interfaces;
 with Ada.Unchecked_Conversion;
 
@@ -94,19 +96,19 @@ package body Oakland.Maths.Arithmetic_64 is
       A_Double_Word_Bits : constant Unsigned_32 := Unsigned_32'Size;
 
    begin
-      --  Special cases where X is unkown and K /= 0
+      --  Special cases where X is unknown and K /= 0
 
       if Ahi = 0 then
          if Bhi = 0 then
             --  case:   0 X
-            --        ÷ 0 X
+            --        Ã· 0 X
 
             Remaind (0 & (Alo rem Blo));
             return (0 & (Alo / Blo));
          end if;
 
          --  case:   0 X
-         --        ÷ K X
+         --        Ã· K X
 
          Remaind (0 & Alo);
          return 0;
@@ -117,21 +119,20 @@ package body Oakland.Maths.Arithmetic_64 is
       if Blo = 0 then
          if Bhi = 0 then
             --  case:   K X
-            --        ÷ 0 0
+            --        Ã· 0 0
 
-            Remaind (0 & (Ahi rem Blo));
-            return (0 & (Ahi / Blo));
+            raise Constraint_Error;
          end if;
 
          if Alo = 0 then
             --  case:   K 0
-            --        ÷ K 0
+            --        Ã· K 0
             Remaind ((Ahi rem Bhi) & 0);
             return ((Ahi / Bhi) & 0);
          end if;
 
          --  case:   K K
-         --        ÷ K 0
+         --        Ã· K 0
 
          --  case B is a power of 2
          if B mod 2 = 0 then
@@ -159,7 +160,7 @@ package body Oakland.Maths.Arithmetic_64 is
 
          if Bhi = 0 then
             --  case:   K K
-            --        ÷ 0 K
+            --        Ã· 0 K
 
             --  case B is a power of 2
             if B mod 2 = 0 then
@@ -180,7 +181,7 @@ package body Oakland.Maths.Arithmetic_64 is
 
          else
             --  case:   K X
-            --        ÷ K K
+            --        Ã· K K
 
             SR := Count_Leading_Zeros (Bhi) - Count_Leading_Zeros (Ahi);
 

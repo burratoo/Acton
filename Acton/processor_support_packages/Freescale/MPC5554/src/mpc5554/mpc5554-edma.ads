@@ -213,6 +213,8 @@ Channel_Group_1_Priority, Channel_Group_0_Priority : Group_Priority_Type;
    --  SIU Registers
    ----------------------------------------------------------------------------
 
+   pragma Warnings (Off, "*alignment*");
+
    Control_Register : Control_Type;
    for Control_Register'Address use
      System'To_Address (eDMA_Base_Address + CR_Offset_Address);

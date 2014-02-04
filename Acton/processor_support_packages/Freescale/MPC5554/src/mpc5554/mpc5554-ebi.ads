@@ -176,6 +176,8 @@ package MPC5554.EBI with Preelaborate is
    --  EBI Registers
    ----------------------------------------------------------------------------
 
+   pragma Warnings (Off, "*alignment*");
+
    Module_Configuration_Register : Module_Configuration_Type;
    for Module_Configuration_Register'Address use
      System'To_Address (EBI_Base_Address + MCR_Offset_Address);

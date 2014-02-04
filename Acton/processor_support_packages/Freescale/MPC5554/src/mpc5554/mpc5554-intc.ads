@@ -63,33 +63,34 @@ package MPC5554.INTC with Preelaborate is
    ----------------------------------------------------------------------------
    --  INTC Registers
    ----------------------------------------------------------------------------
-   Module_Config_Register : Module_Config_Type;
-   for Module_Config_Register'Address use
-     System'To_Address (INTC_Base_Address);
+   Module_Config_Register : Module_Config_Type
+     with Address =>
+       System'To_Address (INTC_Base_Address);
 
-   Current_Priority_Register : MPC5554_Interrupt_Priority;
-   for Current_Priority_Register'Size use 32;
-   for Current_Priority_Register'Address use
-     System'To_Address (INTC_Base_Address + CPR_Offset_Address);
+   Current_Priority_Register : MPC5554_Interrupt_Priority
+     with Size => 32,
+       Address =>
+       System'To_Address (INTC_Base_Address + CPR_Offset_Address);
 
-   Interrupt_Acknowledge_Register : System.Address;
-   for Interrupt_Acknowledge_Register'Size use 32;
-   for Interrupt_Acknowledge_Register'Address use
-     System'To_Address (INTC_Base_Address + Interrupt_Acknowledge_Addresss);
+   Interrupt_Acknowledge_Register : System.Address
+     with Size => 32,
+       Address =>
+       System'To_Address (INTC_Base_Address + Interrupt_Acknowledge_Addresss);
 
-   Interrupt_Acknowledge_Component : Interrupt_Acknowledge_Type;
-   for Interrupt_Acknowledge_Component'Size use 32;
-   for Interrupt_Acknowledge_Component'Address use
-     System'To_Address (INTC_Base_Address + Interrupt_Acknowledge_Addresss);
+   Interrupt_Acknowledge_Component : Interrupt_Acknowledge_Type
+     with Size => 32,
+       Address =>
+       System'To_Address (INTC_Base_Address + Interrupt_Acknowledge_Addresss);
 
-   End_Of_Interrupt_Register      : End_Interrupt_Type;
-   for End_Of_Interrupt_Register'Size use 32;
-   for End_Of_Interrupt_Register'Address use
-     System'To_Address (INTC_Base_Address + End_Of_Interrupt_Address);
+   End_Of_Interrupt_Register      : End_Interrupt_Type
+     with Size => 32,
+       Address =>
+       System'To_Address (INTC_Base_Address + End_Of_Interrupt_Address);
 
+   pragma Warnings (Off, "*alignment*");
    Priority_Select_Register_Array :
-     array (INTC_ID_Type) of aliased MPC5554_Interrupt_Priority;
-   for Priority_Select_Register_Array'Address use
-     System'To_Address (INTC_Base_Address + Priority_Select_Offset_Address);
+     array (INTC_ID_Type) of aliased MPC5554_Interrupt_Priority
+     with Address =>
+       System'To_Address (INTC_Base_Address + Priority_Select_Offset_Address);
    type Priority_Select_Pointer is access all MPC5554_Interrupt_Priority;
 end MPC5554.INTC;

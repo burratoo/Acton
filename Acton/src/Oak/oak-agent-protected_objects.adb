@@ -210,11 +210,6 @@ package body Oak.Agent.Protected_Objects is
          Preference       => Preference);
 
       Context_Switch;
-
-      if Exception_Raised then
-         Purge_Entry_Queues
-           (Protected_Object, New_Task_State => Enter_PO_Refused);
-      end if;
    end Find_Open_Entry;
 
    -----------------------------------------

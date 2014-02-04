@@ -267,6 +267,7 @@ package MPC5554.DSPI with Preelaborate is
    end record;
 
    pragma Warnings (Off, "*component of*padded*");
+   pragma Warnings (Off, "*alignment*");
 
    type Module_Type is array (DSPI_Module_ID) of DSPI_Module_Type
      with Component_Size => 4000;

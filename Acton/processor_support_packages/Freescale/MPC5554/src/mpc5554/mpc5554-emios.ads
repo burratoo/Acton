@@ -253,6 +253,8 @@ package MPC5554.eMIOS with Preelaborate is
    --  eMIOS Registers
    ----------------------------------------------------------------------------
 
+   pragma Warnings (Off, "*alignment*");
+
    Module_Configuration_Register : Module_Configuration_Type;
    for Module_Configuration_Register'Address use
      System'To_Address (EMIOS_Base_Address);
