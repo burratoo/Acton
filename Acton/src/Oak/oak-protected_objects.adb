@@ -115,10 +115,6 @@ package body Oak.Protected_Objects is
                   Purge_Entry_Queues
                     (PO, New_Task_State => Enter_PO_Refused);
 
-                  --  Need to add the task back to its queue.
-                  Add_Agent_To_Scheduler (Entering_Agent);
-
-                  Set_State (Entering_Agent, State => Enter_PO_Refused);
                   Next_Agent_To_Run := Entering_Agent;
                   return;
 
