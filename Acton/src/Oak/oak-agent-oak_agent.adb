@@ -220,6 +220,7 @@ package body Oak.Agent.Oak_Agent is
       A.Execution_Cycles       := Natural'First;
       A.Scheduler_Agent        := Scheduler_Agent;
       A.When_To_Charge         := When_To_Charge_Agent;
+
       if Agent in Task_Id then
          A.Agent_Interrupted := True;
       else
@@ -249,6 +250,17 @@ package body Oak.Agent.Oak_Agent is
    begin
       Agent_Pool (For_Agent).Absolute_Deadline := Deadline;
    end Set_Absolute_Deadline;
+
+   -------------------------------
+   -- Set_Agent_Message_Address --
+   -------------------------------
+
+   procedure Set_Agent_Message_Address
+     (For_Agent       : in Oak_Agent_Id;
+      Message_Address : in Address) is
+   begin
+      Agent_Pool (For_Agent).Agent_Message_Address := Message_Address;
+   end Set_Agent_Message_Address;
 
    --------------------------------
    -- Set_Current_Execution_Time --

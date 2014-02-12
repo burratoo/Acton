@@ -62,8 +62,7 @@ package body Oak.Agent.Tasks.Activation is
 
                Purge_Activation_List
                  (Activator        => Activator,
-                  Activation_List  => Next_Agent (Activator),
-                  Next_Task_To_Run => Next_Task_To_Run);
+                  Activation_List  => Next_Agent (Activator));
 
             when others =>
                --  Should never get here.
@@ -77,10 +76,9 @@ package body Oak.Agent.Tasks.Activation is
    -----------------------
 
    procedure Finish_Activation
-     (Activator        : in Task_Id;
-      Next_Task_To_Run : out Task_Id)
+     (Activator : in Task_Id)
    is
-      T, Prev_T : Task_Id_With_No := Next_Agent (Activator);
+      T : Task_Id_With_No := Next_Agent (Activator);
       --  Note that the activation list head lives in the Next_Agent field of
       --  the Activator.
    begin
@@ -88,28 +86,18 @@ package body Oak.Agent.Tasks.Activation is
       --  tasks will have been activated.
 
       while T /= No_Agent loop
-         Set_State (For_Agent => T, State => Runnable);
+         Set_State (For_Agent => T, State => Sleeping);
          Set_Wake_Time (For_Agent => T, Wake_Time => Oak_Time.Clock);
          Set_Next_Deadline_For_Task (T, Using => Wake_Up_Time);
 
-         Add_Agent_To_Scheduler (T);
-
-         Prev_T := T;
          T := Next_Agent (T);
-
-         Set_Next_Agent (For_Agent =>  Prev_T, Next_Agent => No_Agent);
       end loop;
+
+      Add_Agents_To_Scheduler (Next_Agent (Activator));
 
       --  The activator can now continue.
 
       Set_State (For_Agent => Activator, State => Runnable);
-
-      --  Need to check from top scheduler agent since an activator task may
-      --  activate children task who may be managed by a higher priority
-      --  scheduler.
-
-      Check_Sechduler_Agents_For_Next_Agent_To_Run
-        (Next_Agent_To_Run => Next_Task_To_Run);
    end Finish_Activation;
 
    ---------------------------
@@ -118,8 +106,7 @@ package body Oak.Agent.Tasks.Activation is
 
    procedure Purge_Activation_List
      (Activator        : in Task_Id;
-      Activation_List  : in Task_List;
-      Next_Task_To_Run : out Task_Id)
+      Activation_List  : in Task_List)
    is
       T        : Task_Id_With_No := Activation_List;
       Delete_T : Task_Id;
@@ -137,7 +124,6 @@ package body Oak.Agent.Tasks.Activation is
       end loop;
 
       Set_State (For_Agent => Activator, State => Activation_Failed);
-      Next_Task_To_Run := Activator;
    end Purge_Activation_List;
 
    ----------------------
@@ -146,8 +132,7 @@ package body Oak.Agent.Tasks.Activation is
 
    procedure Start_Activation
      (Activator        : in Task_Id;
-      Activation_List  : in Task_List;
-      Next_Task_To_Run : out Task_Id) is
+      Activation_List  : in Task_List) is
    begin
       --  Possibly redundant check to make sure that the Activator has tasks to
       --  activate
@@ -160,8 +145,6 @@ package body Oak.Agent.Tasks.Activation is
 
       --  Store activation list in the activator's next agent link.
       Set_Next_Agent (For_Agent => Activator, Next_Agent => Activation_List);
-
-      Next_Task_To_Run := Activator;
    end Start_Activation;
 
 end Oak.Agent.Tasks.Activation;

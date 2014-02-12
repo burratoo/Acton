@@ -68,11 +68,8 @@ package body Oak.Agent.Interrupts is
    --------------------
 
    procedure Interrupt_Done
-     (Kernel            : in  Kernel_Id;
-      Current_Agent     : in  Interrupt_Id;
-      Next_Agent_To_Run : out Oak_Agent_Id)
-   is
-      pragma Unreferenced (Next_Agent_To_Run);
+     (Kernel        : in Kernel_Id;
+      Current_Agent : in Interrupt_Id) is
    begin
       Deactivate_Interrupt_Agent
         (Oak_Kernel => Kernel,
@@ -85,15 +82,13 @@ package body Oak.Agent.Interrupts is
             Process_Interrupt_Exit
               (PO                =>
                   Protected_Object_From_Access (
-                 Handler (Timer_To_Handle (Current_Agent))),
-               Next_Agent_To_Run => Next_Agent_To_Run);
+                 Handler (Timer_To_Handle (Current_Agent))));
 
          when External =>
             Process_Interrupt_Exit
               (PO                =>
                   Handler_Protected_Object
-                 (Agent_Pool (Current_Agent).External_Id),
-               Next_Agent_To_Run => Next_Agent_To_Run);
+                 (Agent_Pool (Current_Agent).External_Id));
       end case;
    end Interrupt_Done;
 

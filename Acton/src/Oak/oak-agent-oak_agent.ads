@@ -82,6 +82,10 @@ package Oak.Agent.Oak_Agent with Preelaborate is
      (For_Agent : in Oak_Agent_Id) return Oak_Time.Time;
    --  The absolute deadline of the agent.
 
+   function Agent_Message_Address
+     (For_Agent : in Oak_Agent_Id) return Address;
+   --  The address of the Oak Message that the agent sent to Oak.
+
    procedure Charge_Execution_Time
      (To_Agent  : in Oak_Agent_Id;
       Exec_Time : in Oak_Time.Time_Span)
@@ -182,8 +186,13 @@ package Oak.Agent.Oak_Agent with Preelaborate is
 
    procedure Set_Agent_Interrupted
      (For_Agent : in Oak_Agent_Id;
-      Value     : Boolean := True);
+      Value     : in Boolean := True);
    --  Sets whether the agent was interrupted.
+
+   procedure Set_Agent_Message_Address
+     (For_Agent       : in Oak_Agent_Id;
+      Message_Address : in Address);
+   --  Sets the address of the Agent's Oak Message location.
 
    procedure Set_Absolute_Deadline
      (For_Agent : in Oak_Agent_Id;
@@ -301,11 +310,11 @@ private
       State                  : Agent_State;
       --  The state of the agent.
 
-      Normal_Priority        : Any_Priority;
-      --  The priority of the agent under normal conditions.
-
       Scheduler_Agent        : Scheduler_Id_With_No;
       --  The Scheduler Agent responsible for scheduling the agent.
+
+      Normal_Priority        : Any_Priority;
+      --  The priority of the agent under normal conditions.
 
       Wake_Time              : Oak_Time.Time;
       --  The time that the agent is eligable to move from a sleeping state
@@ -341,6 +350,10 @@ private
       --  whether a full register restor is needed when the context is switched
       --  back to the task.
 
+      Agent_Message_Address  : Address;
+      --  Address of the agent's Oak_Message that is used when it requested
+      --  something from Oak.
+
    end record;
 
    package Oak_Agent_Pool is new Oak.Agent.Storage
@@ -355,7 +368,11 @@ private
 
    function Absolute_Deadline
      (For_Agent : in Oak_Agent_Id) return Oak_Time.Time is
-      (Agent_Pool (For_Agent).Absolute_Deadline);
+     (Agent_Pool (For_Agent).Absolute_Deadline);
+
+   function Agent_Message_Address
+     (For_Agent : in Oak_Agent_Id) return Address is
+     (Agent_Pool (For_Agent).Agent_Message_Address);
 
    function Current_Execution_Time
      (For_Agent : in Oak_Agent_Id)

@@ -28,12 +28,14 @@ package Oak.States with Pure is
       Agent_State_Change,           -- 25
       Selecting_Next_Agent,         -- 26
       Adding_Agent,                 -- 27
-      Removing_Agent,               -- 28
-      Scheduler_Agent_Done,         -- 29
-      Not_Initialised,              -- 30
-      Wake_Agent,                   -- 31
-      No_Message,                   -- 32
-      Invalid_Message);             -- 33
+      Adding_Agents,                -- 28
+      Removing_Agent,               -- 29
+      Scheduler_Agent_Done,         -- 30
+      Initialising_Agents,          -- 31
+      Not_Initialised,              -- 32
+      Wake_Agent,                   -- 33
+      No_Message,                   -- 34
+      Invalid_Message);             -- 35
 
    subtype Waiting is Agent_State range
      Waiting_For_Event .. Waiting_For_Protected_Object;

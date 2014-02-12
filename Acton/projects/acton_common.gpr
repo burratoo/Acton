@@ -9,7 +9,7 @@ abstract project Acton_Common is
    Library_Interface := ("Oakland", "Oakland.Interrupts", "Oakland.Tasks", "Oakland.Protected_Objects",
                          "Acton", "Acton.Scheduler_Agents", "Acton.Scheduler_Agents.FIFO_Within_Priorities",
                          "Ada", "Ada.Cyclic_Tasks", "Ada.Exceptions", "Ada.Execution_Server", "Ada.Interrupts", "Ada.Real_Time", "Ada.Real_Time.Delays", "Ada.Tags", "Ada.Task_Identification", "Ada.Unchecked_Conversion",
-                         "Interfaces", "Oak", "Oak.Core", "Oak.Memory",
+                         "Interfaces", "Oak", "Oak.Memory",
                               "Oak.Memory.Call_Stack",
                               "Oak.Core_Support_Package",
                               "Oak.Core_Support_Package.Call_Stack",
@@ -25,15 +25,17 @@ abstract project Acton_Common is
 
                          "Ada.Execution_Server.Priority_Server", "Acton.Scheduler_Agents.Priority_Server", "Ada.Execution_Server.Operations",
                          "Oak.Project_Support_Package",
-                             --  Only needed for their ali files
-                         "Oak.Agent.Tasks.Cycle",
-                         "Oak.Agent.Interrupts",
                          "Oak.Memory.Call_Stack.Ops",
-                              "Oak.Core_Support_Package.Processor",
-                              "Oak.Core_Support_Package.Interrupts",
-                              "Oak.Core_Support_Package.Task_Support",
-                              "Oak.Protected_Objects",
-                         "Oak.Scheduler");
+                         --  Only needed for their ali files
+                         "Oak.Core", "Interfaces.C",
+                         "Oak.Agent.Interrupts",
+                         "Oak.Agent.Tasks.Cycle",
+                         "Oak.Core_Support_Package.Interrupts",
+                         "Oak.Core_Support_Package.Task_Support",
+                         "Oak.Memory.Ops",
+                         "Oak.Protected_Objects",
+                         "Oak.Scheduler"
+);
 
    Ada_Switches := ("-gnatwa.Xl", "-g", "-gnatn", "-gnatg", "-O2",  "-ffunction-sections", "-fdata-sections");
    Asm_Switches := ();

@@ -146,8 +146,7 @@ package Oak.Agent.Tasks with Preelaborate is
 
    procedure Update_Task_Property
      (For_Task           : in Task_Id;
-      Property_To_Update : in Task_Property;
-      Next_Task_To_Run   : out Oak_Agent_Id)
+      Property_To_Update : in Task_Property)
      with Pre => Has_Task (For_Task);
    --  Update a properity of the task.
 

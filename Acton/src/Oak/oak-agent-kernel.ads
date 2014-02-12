@@ -15,6 +15,7 @@
 
 with Oak.Agent.Storage;
 
+with Oak.Message;   use Oak.Message;
 with Oak.Oak_Time;  use Oak.Oak_Time;
 with Oak.Timers;    use Oak.Timers;
 
@@ -69,6 +70,14 @@ package Oak.Agent.Kernel with Preelaborate is
       return Interrupt_Id_With_No;
    --  Returns the top active interrupt agent that is handling an interrupt.
 
+   procedure Flush_Scheduler_Ops_Stack (Oak_Kernel : in Kernel_Id);
+
+   function Has_Scheduler_Operations_Pending
+     (Oak_Kernel : in Kernel_Id)
+      return Boolean;
+   --  Returns true if there are Scheduler operations on the scheduler ops
+   --  stack.
+
    function Interrupt_For_Priority
      (Oak_Kernel : in Kernel_Id;
       Priority   : in Interrupt_Priority)
@@ -79,6 +88,18 @@ package Oak.Agent.Kernel with Preelaborate is
    function Kernel_Timer (Oak_Kernel : in Kernel_Id) return Oak_Timer_Id
      with Inline;
    --  Return the timer assocated with this kernel.
+
+   procedure Pop_Scheduler_Op
+     (Oak_Kernel : in  Kernel_Id;
+      Scheduler  : out Scheduler_Id;
+      Operation  : out Oak_Message);
+   --  Pop a scheduler operation onto the kernel's scheduler operation stack.
+
+   procedure Push_Scheduler_Op
+     (Oak_Kernel : in Kernel_Id;
+      Scheduler  : in Scheduler_Id;
+      Operation  : in Oak_Message);
+   --  Push a scheduler operation onto the kernel's scheduler operation stack.
 
    procedure New_Kernel_Agent
      (Agent  : out Kernel_Id);
@@ -135,6 +156,15 @@ private
    --  An array of ids belonging to Interrupt Agents that are responsible for
    --  handling interrupt for the System.Interrrupt_Priority range.
 
+   type Scheduler_Op_Record is record
+      Scheduler_Agent : Scheduler_Id_With_No;
+      Operation       : Oak_Message;
+   end record;
+
+   type Scheduler_Op_Id is mod 2;
+
+   type Scheduler_Ops_Stack is array (Scheduler_Op_Id) of Scheduler_Op_Record;
+
    type Oak_Kernel_Record is record
       Current_Agent      : Oak_Agent_Id;
       --  The currently selected agent (that will run or has run).
@@ -168,6 +198,8 @@ private
       Budgets_To_Charge  : Charge_List_Head;
       --  A list of agent budgets to charge for the preceding use of the
       --  processor.
+
+      Scheduler_Ops : Scheduler_Ops_Stack;
    end record;
 
    --------------------------
@@ -199,6 +231,12 @@ private
    function Entry_Exit_Stamp (Oak_Kernel : in Kernel_Id)
                               return Oak_Time.Time is
       (Agent_Pool (Oak_Kernel).Entry_Exit_Stamp);
+
+   function Has_Scheduler_Operations_Pending
+     (Oak_Kernel : in Kernel_Id)
+      return Boolean is
+     (Agent_Pool (Oak_Kernel).Scheduler_Ops
+      (Scheduler_Op_Id'First).Scheduler_Agent /= No_Agent);
 
    function Interrupt_For_Priority
      (Oak_Kernel : in Kernel_Id;

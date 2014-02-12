@@ -58,6 +58,9 @@ package Oak.Message with Preelaborate is
          when Adding_Agent =>
             Agent_To_Add        : Oak_Agent_Id;
 
+         when Adding_Agents =>
+            Agents_To_Add       : Oak_Agent_Id;
+
          when Removing_Agent =>
             Agent_To_Remove     : Oak_Agent_Id;
 
@@ -67,7 +70,9 @@ package Oak.Message with Preelaborate is
          when Scheduler_Agent_Done =>
             Next_Agent          : Oak_Agent_Id;
             Wake_Scheduler_At   : Oak_Time.Time;
-            Keep_In_Charge_List : Boolean;
+
+         when Initialising_Agents =>
+            Agents_To_Init      : Oak_Agent_Id;
 
          when Wake_Agent =>
             Agent_To_Wake       : Oak_Agent_Id;

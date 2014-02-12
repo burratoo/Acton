@@ -25,8 +25,13 @@ package Oak.Scheduler with Preelaborate is
    --  Adds the specified Agent to its scheduler agent (which the Agent
    --  contains a reference to).
 
+   procedure Add_Agents_To_Scheduler (Agents : in Oak_Agent_Id);
+   --  Adds a list of Agents to their respective scheduler agents. List is
+   --  linked through agents' Next_Agent link.
+
    procedure Check_Sechduler_Agents_For_Next_Agent_To_Run
-     (Next_Agent_To_Run : out Oak_Agent_Id);
+     (Next_Agent_To_Run : out Oak_Agent_Id;
+      Top_Priority      : out Any_Priority);
    --  Queries the system's scheduler agents for the next task to run. Does not
    --  run the scheduler agents themselves, instead it relies on the cached
    --  results of the last run. Checks the scheduler agents for the next agent
@@ -41,42 +46,25 @@ package Oak.Scheduler with Preelaborate is
    --  Finds the scheduler agent responsible for the givin Ada priority.
 
    procedure Inform_Scheduler_Agent_Has_Changed_State
-     (Changed_Agent     : in  Oak_Agent_Id;
-      Next_Agent_To_Run : out Oak_Agent_Id);
+     (Changed_Agent : in Oak_Agent_Id);
    --  Notifies the scheduler responsible for the given task that the task has
    --  changed state.
 
-   procedure New_Scheduler_Cycle
-     (Scheduler         : in  Scheduler_Id;
-      Next_Agent_To_Run : out Oak_Agent_Id);
+   procedure New_Scheduler_Cycle (Scheduler : in Scheduler_Id);
    --  Starts a new cycle for the scheduler agent.
+
+   procedure Post_Run_Scheduler_Agent
+     (Agent   : in Scheduler_Id;
+      Message : in Oak_Message);
+   --  Perform kernel-level scheduler operations as a result of running a
+   --  scheduler agent.
 
    procedure Remove_Agent_From_Scheduler (Agent : in Oak_Agent_Id);
    --  Removes the agent from its scheduler.
 
    procedure Run_The_Bloody_Scheduler_Agent_That_Wanted_To_Be_Woken
-     (Scheduler         : in  Scheduler_Id;
-      Current_Agent     : in  Oak_Agent_Id;
-      Next_Agent_To_Run : out Oak_Agent_Id);
+     (Scheduler : in Scheduler_Id);
    --  Runs the scheduler that requested to be run through a Scheduler Timer.
 
-   procedure Switch_To_Scheduler_Agent
-     (Scheduler_Agent : in     Scheduler_Id;
-      Message         : in out Oak_Message);
-   --  Switch to the specified scheduler agent.
-
 private
-
-   procedure Run_Scheduler_Agent
-     (Agent  : in Scheduler_Id;
-      Reason : in Oak_Message);
-   --  Run the specified scheduler agent, passing it the given Oak_Message.
-
-   procedure Run_Scheduler_Agent
-     (Agent             : in  Scheduler_Id;
-      Reason            : in  Oak_Message;
-      Next_Agent_To_Run : out Oak_Agent_Id);
-   --  Like above, except it returns the next agent to run as a result of
-   --  runing the scheduler agent.
-
 end Oak.Scheduler;

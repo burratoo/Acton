@@ -302,7 +302,8 @@ package body Acton.Scheduler_Agents.Priority_Server is
          --  The state of the agent determines which queue it is on.
 
          case State (Agent) is
-            when Runnable | Entering_PO | Waiting_For_Event =>
+            when Runnable | Entering_PO | Waiting_For_Event | Inactive |
+                 Waiting_For_Protected_Object =>
                Remove_Agent_And_Deallocate_Storage : declare
                   Queue_Head_Id : Storage_Id renames
                                     Scheduler.Runnable_Queue.Head;
@@ -389,8 +390,7 @@ package body Acton.Scheduler_Agents.Priority_Server is
          Message :=
            (Message_Type        => Scheduler_Agent_Done,
             Next_Agent          => Selected_Agent,
-            Wake_Scheduler_At   => Wake_Time,
-            Keep_In_Charge_List => False);
+            Wake_Scheduler_At   => Wake_Time);
       end Select_Next_Task;
 
       -------------------
@@ -420,7 +420,9 @@ package body Acton.Scheduler_Agents.Priority_Server is
 
       loop
          Service_Agent (Message);
-         Request_Agent_Service (Message);
+         Request_Oak_Service
+           (Reason_For_Run => Agent_Request,
+            Message        => Message);
       end loop;
    end Run_Loop;
 

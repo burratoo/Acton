@@ -48,9 +48,6 @@ package Oak.Core with Preelaborate is
    --  have completed initialisation. This includes after setting up the top
    --  level scheduler agents and the main task.
 
-   procedure Request_Agent_Service (Message : in out Oak_Message);
-   --  Called by Oak to request a service from the kernel's Current_Agent.
-
    procedure Request_Oak_Service
      (Reason_For_Run : in     Run_Reason;
       Message        : in out Oak_Message) with Inline => False;
@@ -60,12 +57,7 @@ package Oak.Core with Preelaborate is
    procedure Run_Loop with No_Return;
    --  The Oak kernel's run loop that performs the kernel's operations.
 
-   procedure Run_Oak
-     (Reason_For_Run : in     Run_Reason;
-      Message        : in out Oak_Message);
-   --  Run Oak once to handle the reason for why Oak needs to run.
-
-   function This_Oak_Kernel return Kernel_Id with Inline_Always;
+   function This_Oak_Kernel return Kernel_Id;
    --  Return the id of the current Oak_Kernel. This needs to be inlined since
    --  it is called from within interrupt handlers where we want to avoid
    --  calling subprograms as it messes with the agent's stack.
@@ -92,8 +84,7 @@ private
 
    No_Message_Here : aliased Oak_Message := (Message_Type => No_Message);
 
-   function This_Oak_Kernel return Kernel_Id is
-     (Kernel_Id'First);
+   function This_Oak_Kernel return Kernel_Id is (Kernel_Id'First);
    --  In theory on a multiprocessor machine we would query the processor to
    --  find out what its id is.
 

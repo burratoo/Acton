@@ -48,9 +48,20 @@ package body Oak.Core_Support_Package.Task_Support is
       Asm ("sc",
            Outputs  => (Run_Reason'Asm_Output ("=r", Reason_For_Oak_To_Run),
                         Message_Access'Asm_Output ("=r", Message)),
-           Clobber  => "r30",
            Volatile => True);
    end Context_Switch_From_Oak;
+
+   procedure Context_Switch_From_OakN
+     (Reason_For_Oak_To_Run : out    Run_Reason;
+      Message               : out Message_Access) is
+   begin
+      Asm ("sc",
+           Outputs  => (Run_Reason'Asm_Output ("=r", Reason_For_Oak_To_Run),
+                        Message_Access'Asm_Output ("=r", Message)),
+           Clobber  => "r14, r15, r16, r17, r18, r19, r20, r21, r22, r23, r24,"
+           & " r25, r26, r27, r28, r29, r30, r31, cc, ctr, lr",
+           Volatile => True);
+   end Context_Switch_From_OakN;
 
    ------------------------------------------
    -- Context_Switch_Save_Callee_Registers --
@@ -59,16 +70,6 @@ package body Oak.Core_Support_Package.Task_Support is
    procedure Context_Switch_Save_Callee_Registers is
    begin
       Asm ("sc", Volatile => True,
-           Clobber => "r14, r15, r16, r17, r18, r19, r20, r21, r22, r23, r24, "
-           & "r25, r26, r27, r28, r29, r30, r31, cc, ctr, lr");
-   end Context_Switch_Save_Callee_Registers;
-
-   procedure Context_Switch_Save_Callee_Registers
-     (Message : in out Message_Access) is
-   begin
-      Asm ("sc",
-           Volatile => True,
-           Outputs => Message_Access'Asm_Output ("=r", Message),
            Clobber => "r14, r15, r16, r17, r18, r19, r20, r21, r22, r23, r24, "
            & "r25, r26, r27, r28, r29, r30, r31, cc, ctr, lr");
    end Context_Switch_Save_Callee_Registers;

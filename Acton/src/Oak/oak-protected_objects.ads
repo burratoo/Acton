@@ -20,12 +20,11 @@ package Oak.Protected_Objects with Preelaborate is
    --  priority of the protected object.
 
    procedure Process_Enter_Request
-     (Entering_Agent    : in  Task_Id;
-      PO                : in  Protected_Id;
-      Subprogram_Kind   : in  Protected_Subprogram_Type;
-      Entry_Id          : in  Entry_Index;
-      Next_Agent_To_Run : out Oak_Agent_Id;
-      Resubmitted       : in  Boolean := False);
+     (Entering_Agent  : in Task_Id;
+      PO              : in Protected_Id;
+      Subprogram_Kind : in Protected_Subprogram_Type;
+      Entry_Id        : in Entry_Index;
+      Resubmitted     : in Boolean := False);
    --  Processess a task's entry request to the desired protected object.
    --  If Resubmitted is false it means that this is the first enter request,
    --  and the entering task is removed from its scheduler. If true, it means
@@ -33,14 +32,11 @@ package Oak.Protected_Objects with Preelaborate is
    --  part of its scheduler.
 
    procedure Process_Exit_Request
-     (Exiting_Agent     : in  Task_Id;
-      PO                : in  Protected_Id;
-      Next_Agent_To_Run : out Oak_Agent_Id);
+     (Exiting_Agent : in Task_Id;
+      PO            : in Protected_Id);
    --  Processess a task's exit request from the desired protected object.
 
-   procedure Process_Interrupt_Exit
-     (PO                : in  Protected_Id;
-      Next_Agent_To_Run : out Oak_Agent_Id);
+   procedure Process_Interrupt_Exit (PO : in Protected_Id);
    --  Processess an interrupt's exit request from the desired protected
    --  object.
 

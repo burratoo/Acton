@@ -243,8 +243,7 @@ package body Oak.Agent.Tasks is
 
    procedure Update_Task_Property
      (For_Task           : in Task_Id;
-      Property_To_Update : in Task_Property;
-      Next_Task_To_Run   : out Oak_Agent_Id)
+      Property_To_Update : in Task_Property)
    is
       T : Task_Agent_Record renames Agent_Pool (For_Task);
    begin
@@ -256,9 +255,7 @@ package body Oak.Agent.Tasks is
             T.Relative_Deadline := Property_To_Update.Deadline_Span;
       end case;
 
-      Inform_Scheduler_Agent_Has_Changed_State
-        (Changed_Agent     => For_Task,
-         Next_Agent_To_Run => Next_Task_To_Run);
+      Inform_Scheduler_Agent_Has_Changed_State (Changed_Agent => For_Task);
    end Update_Task_Property;
 
 end Oak.Agent.Tasks;
