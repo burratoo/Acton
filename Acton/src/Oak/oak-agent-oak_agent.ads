@@ -37,7 +37,7 @@ package Oak.Agent.Oak_Agent with Preelaborate is
    --  The name of the Agent. Uses a fixed string to make storage easier.
 
    type Charge_Occurrence is
-     (Only_While_Running, Same_Priority, All_Priorities, Below_Priority);
+     (Only_While_Running, Same_Priority, All_Priorities, At_Or_Below_Priority);
    --  When to charge an Agent which is on a charge list. Priority is
    --  referenced to the Agent's priority when compared to the current priority
    --  of the Oak Instance. So for Below_Priority, an Agent will be charged

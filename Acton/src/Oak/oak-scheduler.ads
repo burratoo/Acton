@@ -66,5 +66,4 @@ package Oak.Scheduler with Preelaborate is
      (Scheduler : in Scheduler_Id);
    --  Runs the scheduler that requested to be run through a Scheduler Timer.
 
-private
 end Oak.Scheduler;

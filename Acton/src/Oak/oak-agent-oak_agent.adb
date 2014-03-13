@@ -76,7 +76,7 @@ package body Oak.Agent.Oak_Agent is
             when All_Priorities =>
                Charge_Execution_Time (Agent, Exec_Time);
 
-            when Below_Priority =>
+            when At_Or_Below_Priority =>
                if Current_Priority <= Agent_Pool (Agent).Normal_Priority then
                   Charge_Execution_Time (Agent, Exec_Time);
                end if;
@@ -116,7 +116,7 @@ package body Oak.Agent.Oak_Agent is
                 or else A.When_To_Charge = All_Priorities
                 or else (A.When_To_Charge = Same_Priority
                          and then Current_Priority = A.Normal_Priority)
-                or else (A.When_To_Charge = Below_Priority
+                or else (A.When_To_Charge = At_Or_Below_Priority
                          and then Current_Priority <= A.Normal_Priority))
               and then A.Remaining_Budget
                 < Agent_Pool (Selected_Agent).Remaining_Budget

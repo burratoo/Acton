@@ -148,7 +148,7 @@ private
    -------------------
 
    type Scheduler_Agent_Record is record
-   --  Scheduler Agent Components
+      --  Core Scheduler Agent Components
 
       Lowest_Priority   : Any_Priority;
       --  The lowest priority that the Agent is responsible for.

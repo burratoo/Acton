@@ -238,7 +238,6 @@ private
       Priority  : Oak_Priority;
       --  The priority of the scheduler timer.
 
-      --   While all timers have a priority attach to them
       case Kind is
          when Empty_Timer =>
             null;

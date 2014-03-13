@@ -28,54 +28,55 @@ package Oak.Message with Preelaborate is
    type Oak_Message (Message_Type : Agent_State := No_Message) is record
       case Message_Type is
          when Activation_Pending =>
-            Activation_List         : Task_List;
+            Activation_List : Task_List;
 
          when Sleeping =>
             Wake_Up_At              : Oak_Time.Time;
             Remove_From_Charge_List : Boolean;
 
          when Update_Task_Property =>
-            Update_Task             : Task_Id;
-            Property_To_Update      : Task_Property;
+            Update_Task         : Task_Id;
+            Property_To_Update  : Task_Property;
 
          when Release_Task =>
-            Task_To_Release   : Task_Id;
+            Task_To_Release : Task_Id;
 
          when Entering_PO =>
-            PO_Enter          : Protected_Id;
-            Subprogram_Kind   : Protected_Subprogram_Type;
-            Entry_Id_Enter    : Indices.Entry_Index;
+            PO_Enter        : Protected_Id;
+            Subprogram_Kind : Protected_Subprogram_Type;
+            Entry_Id_Enter  : Indices.Entry_Index;
 
          when Exiting_PO =>
-            PO_Exit           : Protected_Id;
+            PO_Exit : Protected_Id;
 
          when Attach_Interrupt_Handler =>
-            Attach_Handler    : Interrupt_Handler_Pair;
+            Attach_Handler : Interrupt_Handler_Pair;
 
          when Selecting_Next_Agent =>
             null;
 
          when Adding_Agent =>
-            Agent_To_Add        : Oak_Agent_Id;
+            Agent_To_Add : Oak_Agent_Id;
 
          when Adding_Agents =>
-            Agents_To_Add       : Oak_Agent_Id;
+            Agents_To_Add : Oak_Agent_Id;
 
          when Removing_Agent =>
-            Agent_To_Remove     : Oak_Agent_Id;
+            Agent_To_Remove : Oak_Agent_Id;
 
          when Agent_State_Change =>
-            Agent_That_Changed  : Oak_Agent_Id;
+            Agent_That_Changed : Oak_Agent_Id;
 
          when Scheduler_Agent_Done =>
-            Next_Agent          : Oak_Agent_Id;
-            Wake_Scheduler_At   : Oak_Time.Time;
+            Next_Agent        : Oak_Agent_Id;
+            Wake_Scheduler_At : Oak_Time.Time;
 
          when Initialising_Agents =>
-            Agents_To_Init      : Oak_Agent_Id;
+            Agents_To_Init : Oak_Agent_Id;
 
          when Wake_Agent =>
-            Agent_To_Wake       : Oak_Agent_Id;
+            Agent_To_Wake : Oak_Agent_Id;
+
          when others =>
             null;
       end case;

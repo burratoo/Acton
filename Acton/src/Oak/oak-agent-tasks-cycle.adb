@@ -89,12 +89,16 @@ package body Oak.Agent.Tasks.Cycle is
       --  notify their scheduler agents on what has happen to them.
 
       case T.Cycle_Behaviour is
-         when Periodic =>
+         when Periodic | Normal =>
             --  At this point a periodic task has been placed into a sleeping
             --  state with a wake up time set to the start of its next cycle.
             --  All that remains is to calcuate the task's next deadline
             --  (which can be determined now since we know the time the next
             --  cycle is due to start).
+
+            --  A normal task is released straight away. Note that placing it
+            --  into a sleep state above should mean the scheduler agent should
+            --  place the task at the end of its runnable queue.
 
             Set_Next_Deadline_For_Task (For_Task, Using => Wake_Up_Time);
 
@@ -135,19 +139,10 @@ package body Oak.Agent.Tasks.Cycle is
                   --  event, it is removed from its scheduler agent. Its state
                   --  is set to Waiting_For_Event.
 
-                  Set_State (For_Task, Waiting_For_Event);
+                  Set_State (For_Task, R);
                   Remove_Agent_From_Scheduler (For_Task);
                   Deactivate_Timer (T.Deadline_Timer);
             end case;
-
-         when Normal =>
-            --  A normal task is released straight away. Note that placing it
-            --  into a sleep state above should mean the scheduler agent should
-            --  place the task at the end of its runnable queue.
-
-            Set_Next_Deadline_For_Task (For_Task, Using => Clock_Time);
-            Inform_Scheduler_Agent_Has_Changed_State
-              (Changed_Agent => For_Task);
       end case;
    end New_Cycle;
 

@@ -52,7 +52,7 @@ package body Acton.Scheduler_Agents.Priority_Server is
          Highest_Priority      => Min_Priority,
          Scheduler_Agent       =>
            Find_Scheduler_For_System_Priority (Min_Priority, CPU),
-         When_To_Charge_Agent  => Below_Priority,
+         When_To_Charge_Agent  => At_Or_Below_Priority,
          Interpret_No_Agent_As => As_Is,
          Charge_While_No_Agent => True,
          Agent_Active_Till     => Budget_Exhaustion,

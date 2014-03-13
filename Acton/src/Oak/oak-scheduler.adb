@@ -228,6 +228,21 @@ package body Oak.Scheduler is
       Agent_Prior_State := State (Message.Next_Agent);
       Set_State (Message.Next_Agent, Runnable);
 
+      --  The scheduler agent is placed back on the charge list
+      --  if its when charge state is not Only_While_Running or
+      --  if the scheduler agent does not want to be charged
+      --  while it has the No_Agent selected.
+
+      if When_To_Charge (SA) /= Only_While_Running
+        and then Is_Scheduler_Active (SA)
+        and then not (Message.Next_Agent = No_Agent
+                      and then not Charge_While_No_Agent (SA))
+      then
+         Add_Agent_To_Charge_List
+           (Oak_Kernel => My_Kernel_Id,
+            Agent      => SA);
+      end if;
+
       --  From here it depends on whether the scheduler agent was
       --  sleeping or runnable.
 
@@ -269,18 +284,6 @@ package body Oak.Scheduler is
                      Scheduler        => SA,
                      Scheduler_Action => End_Cycle);
                end if;
-            end if;
-
-            --  The scheduler agent is placed back on the charge list if the
-            --  scheduler agent request it to be done.
-
-            if When_To_Charge (SA) /= Only_While_Running
-              and then not (Message.Next_Agent = No_Agent
-                            and then not Charge_While_No_Agent (SA))
-            then
-               Add_Agent_To_Charge_List
-                 (Oak_Kernel => My_Kernel_Id,
-                  Agent      => SA);
             end if;
 
             --  Handle the case where the selected agent is itself
@@ -351,21 +354,6 @@ package body Oak.Scheduler is
             --  The scheduler agent was in a sleeping state when it
             --  was run.
 
-            --  The scheduler agent is placed back on the charge list
-            --  if its when charge state is not Only_While_Running or
-            --  if the scheduler agent does not want to be charged
-            --  while it has the No_Agent selected.
-
-            if When_To_Charge (SA) /= Only_While_Running
-              and then Is_Scheduler_Active (SA)
-              and then not (Message.Next_Agent = No_Agent
-                            and then not Charge_While_No_Agent (SA))
-            then
-               Add_Agent_To_Charge_List
-                 (Oak_Kernel => My_Kernel_Id,
-                  Agent      => SA);
-            end if;
-
             --  A sleeping scheduler agent can be in two states based
             --  on whether the it is active or not. If active, the
             --  scheduler agent will wake up and be moved back on to
@@ -375,7 +363,8 @@ package body Oak.Scheduler is
             --  agent to run while sleep enables the kernel to add
             --  and remove tasks at ease.
 
-            if Is_Scheduler_Active (SA) then
+            if Is_Scheduler_Active (SA)
+              and then Message.Next_Agent /= No_Agent then
                Set_State (For_Agent => SA, State => Sleeping);
                Set_Wake_Time
                  (For_Agent => SA,
