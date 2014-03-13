@@ -17,6 +17,7 @@ with Oak.Agent.Interrupts;        use Oak.Agent.Interrupts;
 with Oak.Agent.Kernel;            use Oak.Agent.Kernel;
 with Oak.Agent.Oak_Agent;         use Oak.Agent.Oak_Agent;
 with Oak.Agent.Protected_Objects; use Oak.Agent.Protected_Objects;
+with Oak.Agent.Schedulers;        use Oak.Agent.Schedulers;
 with Oak.Agent.Tasks;             use Oak.Agent.Tasks;
 with Oak.Agent.Tasks.Cycle;       use Oak.Agent.Tasks.Cycle;
 with Oak.Agent.Tasks.Activation;  use Oak.Agent.Tasks.Activation;
@@ -456,32 +457,24 @@ package body Oak.Core is
                null;
 
             elsif Timer_Kind (Current_Timer) = Scheduler_Timer then
-               --  A scheduler wants to run.
+               --  A scheduler needs handling.
 
-               case Scheduler_Action (Current_Timer) is
-                  when Service =>
-                     Run_The_Bloody_Scheduler_Agent_That_Wanted_To_Be_Woken
-                       (Scheduler_Agent (Timer => Current_Timer));
-
-                  when End_Cycle =>
-                     New_Scheduler_Cycle
-                       (Scheduler => Scheduler_Agent (Timer => Current_Timer));
-               end case;
+               Service_Scheduler_Agent_Timer
+                 (Scheduler_Agent (Timer => Current_Timer));
 
             elsif Timer_Kind (Current_Timer) = Event_Timer then
                --  An event timer wishes to run.
 
                --  Need to deactivate the timer to stop it from firing again.
+               --  Note that this does not stop timers associated with
+               --  execution budgets from firing again.
+
                Deactivate_Timer (Timer => Current_Timer);
 
-               --  Stops the execution timer from firing again
-               --  ??? Needed or is it a user problem?
-
-               if Current_Timer = Kernel_Timer (My_Kernel_Id) then
-                  Set_Remaining_Budget
-                    (For_Agent => Agent_To_Handle (Current_Timer),
-                     To_Amount => Time_Span_Last);
-               end if;
+               --  HACK: To shut up execution budgets for now
+               Set_Remaining_Budget
+                 (For_Agent => Agent_To_Handle (Current_Timer),
+                  To_Amount => Time_Span_Last);
 
                --  Handle the different timer handler responses.
                --  ??? Should this move to Oak.Timers?
@@ -681,24 +674,17 @@ package body Oak.Core is
                if Next_Timer = No_Timer
                  or else Budget_Expires < Firing_Time (Next_Timer)
                then
-                  Next_Timer := Kernel_Timer (My_Kernel_Id);
                   if Budget_Task in Task_Id then
-                     Set_Event_Timer
-                       (Timer       => Next_Timer,
-                        Action_Data => Budget_Action (Budget_Task),
-                        Fire_Time   => Budget_Expires);
-
+                     Next_Timer := Budget_Timer (Budget_Task);
                   elsif Budget_Task in Scheduler_Id then
-                     Update_Timer
-                       (Timer    => Next_Timer,
-                        New_Time => Budget_Expires);
-                     Set_Timer_Scheduler_Action
-                       (Timer            => Next_Timer,
-                        Scheduler        => Budget_Task,
-                        Scheduler_Action => End_Cycle);
+                     Next_Timer := Timer_For_Scheduler_Agent (Budget_Task);
                   else
                      raise Program_Error;
                   end if;
+
+                  Update_Timer
+                    (Timer    => Next_Timer,
+                     New_Time => Budget_Expires);
                end if;
             end if;
          end;

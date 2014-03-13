@@ -156,10 +156,6 @@ package body Oak.Scheduler is
       Set_Next_Cycle_Start_Time
         (Scheduler  => Scheduler,
          Start_Time => New_Wake_Time + Scheduler_Cycle_Period (Scheduler));
-      Set_Timer_Scheduler_Action
-        (Timer            => Timer_For_Scheduler_Agent (Scheduler),
-         Scheduler        => Scheduler,
-         Scheduler_Action => Service);
 
       if RD < Time_Span_Last then
          Set_Absolute_Deadline (Scheduler, New_Wake_Time + RD);
@@ -186,22 +182,9 @@ package body Oak.Scheduler is
 
    end New_Scheduler_Cycle;
 
-   ---------------------------------
-   -- Remove_Agent_From_Scheduler --
-   ---------------------------------
-
-   procedure Remove_Agent_From_Scheduler (Agent : in Oak_Agent_Id) is
-   begin
-      Push_Scheduler_Op
-        (Oak_Kernel => This_Oak_Kernel,
-         Scheduler  => Scheduler_Agent_For_Agent (Agent),
-         Operation  => (Message_Type    => Removing_Agent,
-                        Agent_To_Remove => Agent));
-   end Remove_Agent_From_Scheduler;
-
-   -------------------------
-   -- Run_Scheduler_Agent --
-   -------------------------
+   ------------------------------
+   -- Post_Run_Scheduler_Agent --
+   ------------------------------
 
    procedure Post_Run_Scheduler_Agent
      (Agent   : in Scheduler_Id;
@@ -263,27 +246,12 @@ package body Oak.Scheduler is
             --  Fix up the scheduler timer if it is being used to
             --  detect the passing of a scheduler agent's deadline.
 
-            if Scheduler_Active_Till (SA) = Deadline then
-               if Message.Wake_Scheduler_At <
-                 Absolute_Deadline (SA) then
-                  Update_Timer
-                    (Timer    => Timer_For_Scheduler_Agent (SA),
-                     New_Time => Message.Wake_Scheduler_At);
-                  Set_Timer_Scheduler_Action
-                    (Timer            =>
-                       Timer_For_Scheduler_Agent (SA),
-                     Scheduler        => SA,
-                     Scheduler_Action => Service);
-               else
-                  Update_Timer
-                    (Timer    => Timer_For_Scheduler_Agent (SA),
-                     New_Time => Absolute_Deadline (SA));
-                  Set_Timer_Scheduler_Action
-                    (Timer            =>
-                       Timer_For_Scheduler_Agent (SA),
-                     Scheduler        => SA,
-                     Scheduler_Action => End_Cycle);
-               end if;
+            if Scheduler_Active_Till (SA) = Deadline and then
+              Absolute_Deadline (SA) <= Message.Wake_Scheduler_At
+            then
+               Update_Timer
+                 (Timer    => Timer_For_Scheduler_Agent (SA),
+                  New_Time => Message.Wake_Scheduler_At);
             end if;
 
             --  Handle the case where the selected agent is itself
@@ -337,8 +305,9 @@ package body Oak.Scheduler is
                --  when needed (infact, the timer may interfer with
                --  its operation).
 
-               if Scheduler_Action (Timer_For_Scheduler_Agent (SA))
-                 /= End_Cycle then
+               if Firing_Time (Timer_For_Scheduler_Agent (SA))
+                 = Wake_Time (SA)
+               then
                   Deactivate_Timer (Timer_For_Scheduler_Agent (SA));
                end if;
 
@@ -364,7 +333,8 @@ package body Oak.Scheduler is
             --  and remove tasks at ease.
 
             if Is_Scheduler_Active (SA)
-              and then Message.Next_Agent /= No_Agent then
+              and then Message.Next_Agent /= No_Agent
+            then
                Set_State (For_Agent => SA, State => Sleeping);
                Set_Wake_Time
                  (For_Agent => SA,
@@ -374,6 +344,7 @@ package body Oak.Scheduler is
                   Scheduler  => Scheduler_Agent_For_Agent (SA),
                   Operation  => (Message_Type  => Wake_Agent,
                                  Agent_To_Wake => SA));
+
             else
                Update_Timer
                  (Timer    => Timer_For_Scheduler_Agent (SA),
@@ -386,22 +357,45 @@ package body Oak.Scheduler is
       end case;
    end Post_Run_Scheduler_Agent;
 
-   ------------------------------------------------------------
-   -- Run_The_Bloody_Scheduler_Agent_That_Wanted_To_Be_Woken --
-   ------------------------------------------------------------
+   ---------------------------------
+   -- Remove_Agent_From_Scheduler --
+   ---------------------------------
 
-   --  Note that we check from the highest priority agent down
-   --  as a higher priority agent may wake up in between the
-   --  wake up alarm and the lower priority agent actually
-   --  running
-
-   procedure Run_The_Bloody_Scheduler_Agent_That_Wanted_To_Be_Woken
-     (Scheduler : in Scheduler_Id) is
+   procedure Remove_Agent_From_Scheduler (Agent : in Oak_Agent_Id) is
    begin
       Push_Scheduler_Op
         (Oak_Kernel => This_Oak_Kernel,
-         Scheduler  => Scheduler,
-         Operation  => (Message_Type => Selecting_Next_Agent));
-   end Run_The_Bloody_Scheduler_Agent_That_Wanted_To_Be_Woken;
+         Scheduler  => Scheduler_Agent_For_Agent (Agent),
+         Operation  => (Message_Type    => Removing_Agent,
+                        Agent_To_Remove => Agent));
+   end Remove_Agent_From_Scheduler;
+
+   -----------------------------------
+   -- Service_Scheduler_Agent_Timer --
+   -----------------------------------
+
+   procedure Service_Scheduler_Agent_Timer
+     (Scheduler : in Scheduler_Id) is
+   begin
+      --  In the first instance the timer is being used to signal that the
+      --  scheduler agent wants to run.
+
+      if Scheduler_Active_Till (Scheduler) = Always_Active
+        or else (Scheduler_Active_Till (Scheduler) = Deadline and then
+                 Absolute_Deadline (Scheduler) > Clock)
+        or else (Scheduler_Active_Till (Scheduler) = Budget_Exhaustion and then
+                 Remaining_Budget (Scheduler) > Time_Span_Zero)
+      then
+         Push_Scheduler_Op
+           (Oak_Kernel => This_Oak_Kernel,
+            Scheduler  => Scheduler,
+            Operation  => (Message_Type => Selecting_Next_Agent));
+
+      else
+         --  A new scheduler cycle has started
+         New_Scheduler_Cycle (Scheduler);
+      end if;
+
+   end Service_Scheduler_Agent_Timer;
 
 end Oak.Scheduler;

@@ -139,7 +139,7 @@ package body Oak.Agent.Tasks.Cycle is
                   --  event, it is removed from its scheduler agent. Its state
                   --  is set to Waiting_For_Event.
 
-                  Set_State (For_Task, R);
+                  Set_State (For_Task, Waiting_For_Event);
                   Remove_Agent_From_Scheduler (For_Task);
                   Deactivate_Timer (T.Deadline_Timer);
             end case;

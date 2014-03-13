@@ -183,10 +183,6 @@ package body Oak.Agent.Kernel is
          K.Interrupt_States  := (others => Inactive);
          K.Budgets_To_Charge := No_Agent;
 
-         New_Timer
-           (Timer     => K.Kernel_Timer,
-            Priority  => Any_Priority'Last);
-
          for P in K.Interrupt_Agents'Range loop
             New_Interrupt_Agent
               (Agent    => K.Interrupt_Agents (P),

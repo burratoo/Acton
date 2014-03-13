@@ -43,7 +43,7 @@ package Oak.Agent.Tasks with Preelaborate is
    -- Subprograms --
    -----------------
 
-   function Budget_Action (T : in Task_Id) return Event_Timer_Data
+   function Budget_Timer (T : in Task_Id) return Oak_Timer_Id
      with Pre => Has_Task (T);
    --  Return the action details for an execution budget exhaustion event.
 
@@ -184,7 +184,7 @@ private
       Relative_Deadline : Oak_Time.Time_Span;
       --  The wall time that the task has to complete each cycle.
 
-      Budget_Action     : Event_Timer_Data;
+      Budget_Timer      : Oak_Timer_Id;
       --  The data associated with the task's execution budget exhaustion
       --  action.
 
@@ -239,8 +239,8 @@ private
    -- Function Expressions --
    --------------------------
 
-   function Budget_Action (T : in Task_Id) return Event_Timer_Data is
-      (Agent_Pool (T).Budget_Action);
+   function Budget_Timer (T : in Task_Id) return Oak_Timer_Id is
+      (Agent_Pool (T).Budget_Timer);
 
    function Cycle_Period (T : in Task_Id) return Oak_Time.Time_Span is
       (Agent_Pool (T).Cycle_Period);

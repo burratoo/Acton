@@ -51,11 +51,11 @@ package Oak.Agent.Kernel with Preelaborate is
    --  to be inlined since it is called from within interrupt handlers where we
    --  want to avoid calling subprograms as it messes with the agent's stack.
 
-   function Current_Priority (Oak_Kernel : in Kernel_Id) return Any_Priority;
-   --  Returns the current priority that the kernel is running at.
-
    function Current_Timer (Oak_Kernel : in Kernel_Id) return Oak_Timer_Id;
    --  Return the currently active timer.
+
+   function Current_Priority (Oak_Kernel : in Kernel_Id) return Any_Priority;
+   --  Returns the current priority that the kernel is running at.
 
    procedure Deactivate_Interrupt_Agent
      (Oak_Kernel : in Kernel_Id;
@@ -84,10 +84,6 @@ package Oak.Agent.Kernel with Preelaborate is
      return Interrupt_Id;
    --  Returns the Id of the interrupt agent responsible for handling
    --  interrupts at the given priority.
-
-   function Kernel_Timer (Oak_Kernel : in Kernel_Id) return Oak_Timer_Id
-     with Inline;
-   --  Return the timer assocated with this kernel.
 
    procedure Pop_Scheduler_Op
      (Oak_Kernel : in  Kernel_Id;
@@ -176,9 +172,6 @@ private
       Current_Timer      : Oak_Timer_Id;
       --  The current active timer.
 
-      Kernel_Timer       : Oak_Timer_Id;
-      --  A timer specific to the this kernel.
-
       Schedulers         : Scheduler_Id_With_No;
       --  The top-level scheduler agents assigned to the kernel. Forms the
       --  kernel's task priority space.
@@ -226,7 +219,7 @@ private
       (Agent_Pool (Oak_Kernel).Current_Priority);
 
    function Current_Timer (Oak_Kernel : in Kernel_Id) return Oak_Timer_Id is
-      (Agent_Pool (Oak_Kernel).Current_Timer);
+     (Agent_Pool (Oak_Kernel).Current_Timer);
 
    function Entry_Exit_Stamp (Oak_Kernel : in Kernel_Id)
                               return Oak_Time.Time is
@@ -243,9 +236,6 @@ private
       Priority   : in Interrupt_Priority)
       return Interrupt_Id is
       (Agent_Pool (Oak_Kernel).Interrupt_Agents (Priority));
-
-   function Kernel_Timer (Oak_Kernel : in Kernel_Id) return Oak_Timer_Id is
-     (Agent_Pool (Oak_Kernel).Kernel_Timer);
 
    function Top_Level_Schedulers
      (Oak_Kernel : in Kernel_Id)

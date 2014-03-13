@@ -62,7 +62,7 @@ package Oak.Scheduler with Preelaborate is
    procedure Remove_Agent_From_Scheduler (Agent : in Oak_Agent_Id);
    --  Removes the agent from its scheduler.
 
-   procedure Run_The_Bloody_Scheduler_Agent_That_Wanted_To_Be_Woken
+   procedure Service_Scheduler_Agent_Timer
      (Scheduler : in Scheduler_Id);
    --  Runs the scheduler that requested to be run through a Scheduler Timer.
 
