@@ -34,14 +34,6 @@ package Oak.Timers with Preelaborate is
    type Oak_Timer_Kind is (Empty_Timer, Scheduler_Timer, Event_Timer);
    --  Oak Timers come in three forms.
 
-   type Event_Timer_Data is private;
-   --  Type used to house data for an Action Timer.
-
-   type Scheduler_Timer_Action is (Service, End_Cycle);
-   --  The type to use to signal what action Oak should do in response to the
-   --  scheduler timer. Service runs the scheduler agent, while End_Cycle
-   --  ends the agent's current cycle and puts the agent to sleep.
-
    -----------------
    -- Subprograms --
    -----------------
@@ -73,14 +65,6 @@ package Oak.Timers with Preelaborate is
       return Oak_Timer_Id;
    --  Returns the timer that will fire first the is above the given priority.
 
-   function Fill_Event_Timer_Data
-     (Timer_Action     : in Ada.Cyclic_Tasks.Event_Response;
-      Handler_Priority : in Oak_Priority;
-      Agent_To_Handle  : in Oak_Agent_Id;
-      Handler          : in Ada.Cyclic_Tasks.Response_Handler := null)
-      return Event_Timer_Data;
-   --  Fills in an Event_Timer_Data record.
-
    function Firing_Time (Timer : in Oak_Timer_Id) return Oak_Time.Time
      with Inline;
    --  Returns the time that the given timer will fire.
@@ -108,14 +92,6 @@ package Oak.Timers with Preelaborate is
    --  Create a new generic timer.
 
    procedure New_Event_Timer
-     (Timer       : out Oak_Timer_Id;
-      Priority    : in  Oak_Priority;
-      Action_Data : in  Event_Timer_Data;
-      Fire_Time   : in  Oak_Time.Time := Time_Last;
-      Activate    : in  Boolean := False);
-   --  Creates a new Action Timer from an Action Timer record
-
-   procedure New_Event_Timer
      (Timer        : out Oak_Timer_Id;
       Priority     : in  Oak_Priority;
       Timer_Action : in  Ada.Cyclic_Tasks.Event_Response;
@@ -138,32 +114,6 @@ package Oak.Timers with Preelaborate is
      with Pre => Timer_Kind (Timer) = Scheduler_Timer;
    --  Returns the scheduler attached to a scheduler timer.
    --  TIMER KIND: SCHEDULER_TIMER.
-
-   function Scheduler_Action
-     (Timer : in Oak_Timer_Id)
-      return Scheduler_Timer_Action
-     with Pre => Timer_Kind (Timer) = Scheduler_Timer;
-   --  Returns the action that the timer will perform when it fires..
-   --  TIMER KIND: SCHEDULER_TIMER.
-
-   procedure Set_Event_Timer
-     (Timer       : in Oak_Timer_Id;
-      Action_Data : in  Event_Timer_Data;
-      Fire_Time   : in  Oak_Time.Time);
-   --  Replaces the contents of an existing event timer.
-
-   procedure Set_Timer_Event_Data
-     (Timer : in Oak_Timer_Id;
-      Data  : in Event_Timer_Data);
-   --  Sets the timing event data provided by the corresponding record;
-   --  TIMER KIND: EVENT_TIMER.
-
-   procedure Set_Timer_Scheduler_Action
-     (Timer            : in Oak_Timer_Id;
-      Scheduler        : in Scheduler_Id;
-      Scheduler_Action : in Scheduler_Timer_Action)
-     with Pre => Timer_Kind (Timer) = Scheduler_Timer;
-   --  Sets the scheduler action of the timer.
 
    procedure Setup_Timers;
    --  Sets up the timers pool.
@@ -195,37 +145,6 @@ private
    type Oak_Timer_Id is mod Max_Timers;
    --  The type that represents each Oak_Timer in the system.
 
-   type Event_Timer_Data is record
-   --  This record holds the data specific to the Action Timer. It is held in
-   --  a seperate record so that we do not have to fill part of the Oak Timer
-   --  storage pool with execution budget related timers for each task agent.
-   --  This is a problem since the storage pool used here is an ordered set
-   --  and we do not want to waste time balancing the internal tree with timers
-   --  that do not need to be ordered (since these timers are only ever active
-   --  when their task run). Instead, each Oak Instance holds a single timer
-   --  for the active execution timer. Each Task Agent then contains a copy of
-   --  this record, which the Oak Instance will access as need to fill the
-   --  relavent details for its timer. By using this record it simplifies
-   --  storing and moving the data as needed, as oppose to copying its
-   --  components individually.
-
-      Timer_Action     : Ada.Cyclic_Tasks.Event_Response;
-      --  The action the timer will perform when it fires.
-
-      Handler_Priority : Oak_Priority;
-      --  The priority that the handler executes at. Restricted to the
-      --  interrupt priority range because these are they only priorities that
-      --  have an interrupt agent avaliable to run the handler.
-
-      Agent_To_Handle  : Oak_Agent_Id;
-      --  The Agent associated with this timer.
-
-      Handler          : Ada.Cyclic_Tasks.Response_Handler;
-      --  If the action of the timer is to call a handler it will call this
-      --  one.
-
-   end record;
-
    type Oak_Timer (Kind : Oak_Timer_Kind := Event_Timer) is record
    --  Oak Timer is a variant record to support the three different types of
    --  Oak Timers. The sizes are fairly similar, with the smallest - Scheduler
@@ -238,7 +157,6 @@ private
       Priority  : Oak_Priority;
       --  The priority of the scheduler timer.
 
-      --   While all timers have a priority attach to them
       case Kind is
          when Empty_Timer =>
             null;
@@ -247,13 +165,16 @@ private
             Scheduler : Scheduler_Id;
             --  The scheduler that will run when the timer fires.
 
-            Scheduler_Action : Scheduler_Timer_Action;
-            --  The action Oak will take when the scheduler timer fires.
-
          when Event_Timer =>
-            Data      : Event_Timer_Data;
-            --  The data associated with the Action Timer. See the type
-            --  definition above for more details.
+            Timer_Action     : Ada.Cyclic_Tasks.Event_Response;
+            --  The action the timer will perform when it fires.
+
+            Agent_To_Handle  : Oak_Agent_Id;
+            --  The Agent associated with this timer.
+
+            Event_Handler    : Ada.Cyclic_Tasks.Response_Handler;
+            --  If the action of the timer is to call a handler it will call
+            --  this one.
       end case;
    end record;
 
@@ -292,7 +213,7 @@ private
 
    function Agent_To_Handle (Timer : in Oak_Timer_Id)
                              return Oak_Agent_Id is
-      (Element (Pool, Timer).Data.Agent_To_Handle);
+      (Element (Pool, Timer).Agent_To_Handle);
 
    function Has_Timer_Fired (Timer : in Oak_Timer_Id) return Boolean is
       (Element (Pool, Timer).Fire_Time <= Clock);
@@ -303,17 +224,6 @@ private
    function Is_Valid (Timer : in Oak_Timer_Id) return Boolean is
       (Has_Element (Pool, Timer));
 
-   function Fill_Event_Timer_Data
-     (Timer_Action     : in Ada.Cyclic_Tasks.Event_Response;
-      Handler_Priority : in Oak_Priority;
-      Agent_To_Handle  : in Oak_Agent_Id;
-      Handler          : in Ada.Cyclic_Tasks.Response_Handler := null)
-      return Event_Timer_Data is
-     ((Timer_Action     => Timer_Action,
-       Handler_Priority => Handler_Priority,
-       Agent_To_Handle  => Agent_To_Handle,
-       Handler          => Handler));
-
    function Firing_Time (Timer : in Oak_Timer) return Oak_Time.Time is
      (Timer.Fire_Time);
 
@@ -322,20 +232,15 @@ private
 
    function Handler (Timer : in Oak_Timer_Id)
                      return Ada.Cyclic_Tasks.Response_Handler is
-     (Element (Pool, Timer).Data.Handler);
+     (Element (Pool, Timer).Event_Handler);
 
    function Scheduler_Agent (Timer : in Oak_Timer_Id)
                              return Scheduler_Id is
       (Element (Pool, Timer).Scheduler);
 
-   function Scheduler_Action
-     (Timer : in Oak_Timer_Id)
-      return Scheduler_Timer_Action is
-     (Element (Pool, Timer).Scheduler_Action);
-
    function Timer_Action (Timer : in Oak_Timer_Id)
                           return Ada.Cyclic_Tasks.Event_Response is
-      (Element (Pool, Timer).Data.Timer_Action);
+      (Element (Pool, Timer).Timer_Action);
 
    function Timer_Kind (Timer : in Oak_Timer_Id) return Oak_Timer_Kind is
      (Element (Pool, Timer).Kind);

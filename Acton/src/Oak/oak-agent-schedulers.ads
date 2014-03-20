@@ -148,7 +148,7 @@ private
    -------------------
 
    type Scheduler_Agent_Record is record
-   --  Scheduler Agent Components
+      --  Core Scheduler Agent Components
 
       Lowest_Priority   : Any_Priority;
       --  The lowest priority that the Agent is responsible for.
@@ -177,6 +177,10 @@ private
       --  Whether the scheduler agent runs till the expiry of its deadline or
       --  budget. This allows the user to allow the scheduler agent to run
       --  against actual processor usage or the wall clock.
+
+      Scheduler_Active  : Boolean;
+      --  Specifies whether the agent is active – that is able to dispatch
+      --  agents – or not.
 
       Next_Run_Cycle    : Oak_Time.Time;
       --  The time of the next run cycle is meant to commence for periodic
@@ -227,7 +231,7 @@ private
      (Agent_Pool (Agent).Interpret_No_Agent_As);
 
    function Is_Scheduler_Active (Scheduler : in Scheduler_Id) return Boolean is
-     (Is_Agent_Interrupted (Scheduler));
+     (Agent_Pool (Scheduler).Scheduler_Active);
 
    function Lowest_Resposible_Priority
      (Agent : in Scheduler_Id)

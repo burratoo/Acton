@@ -112,7 +112,7 @@ package body Oak.Agent.Schedulers is
      (Scheduler : in Scheduler_Id;
       Active    : in Boolean) is
    begin
-      Set_Agent_Interrupted (Scheduler, Active);
+      Agent_Pool (Scheduler).Scheduler_Active := Active;
    end Set_Is_Scheduler_Active;
 
    -------------------------------

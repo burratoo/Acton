@@ -33,13 +33,13 @@ package body Oak.Protected_Objects is
    ---------------------------
 
    procedure Process_Enter_Request
-     (Entering_Agent    : in  Task_Id;
-      PO                : in  Protected_Id;
-      Subprogram_Kind   : in  Protected_Subprogram_Type;
-      Entry_Id          : in  Entry_Index;
-      Next_Agent_To_Run : out Oak_Agent_Id;
-      Resubmitted       : in  Boolean := False)
+     (Entering_Agent  : in Task_Id;
+      PO              : in Protected_Id;
+      Subprogram_Kind : in Protected_Subprogram_Type;
+      Entry_Id        : in Entry_Index;
+      Resubmitted     : in Boolean := False)
    is
+      Agent_That_Is_Entering : Task_Id_With_No;
    begin
       --  Sanity check to make sure the entry id is valid.
 
@@ -47,7 +47,6 @@ package body Oak.Protected_Objects is
            not Is_Entry_Id_Valid (PO, Entry_Id)
       then
          Set_State (For_Agent => Entering_Agent, State => Enter_PO_Refused);
-         Next_Agent_To_Run := Entering_Agent;
          return;
       end if;
 
@@ -55,7 +54,6 @@ package body Oak.Protected_Objects is
 
       if Normal_Priority (Entering_Agent) > Normal_Priority (PO) then
          Set_State (For_Agent => Entering_Agent, State => Enter_PO_Refused);
-         Next_Agent_To_Run := Entering_Agent;
          return;
       end if;
 
@@ -73,7 +71,7 @@ package body Oak.Protected_Objects is
       end if;
 
       if Task_Within (PO) = No_Agent then
-         Next_Agent_To_Run := No_Agent;
+         Agent_That_Is_Entering := No_Agent;
 
          if Subprogram_Kind = Protected_Entry then
             --  Handle protected entry. Note that it only selects the next
@@ -105,17 +103,15 @@ package body Oak.Protected_Objects is
                      Get_And_Remove_Next_Task_From_Entry_Queue
                        (PO        => PO,
                         Entry_Id  => Open_Entry,
-                        Next_Task => Next_Agent_To_Run);
+                        Next_Task => Agent_That_Is_Entering);
                   else
-                     Next_Agent_To_Run := No_Agent;
+                     Agent_That_Is_Entering := No_Agent;
                   end if;
 
                else
                   --  Exception has been raised, the queues are purged.
                   Purge_Entry_Queues
                     (PO, New_Task_State => Enter_PO_Refused);
-
-                  Next_Agent_To_Run := Entering_Agent;
                   return;
 
                end if;
@@ -126,12 +122,12 @@ package body Oak.Protected_Objects is
             --  inside the protected object occurs below (because we need to
             --  cover the situation where an entry becomes queued).
 
-            Next_Agent_To_Run := Entering_Agent;
+            Agent_That_Is_Entering := Entering_Agent;
 
          end if;
 
-         if Next_Agent_To_Run /= No_Agent then
-            Add_Task_To_Protected_Object (PO, T => Next_Agent_To_Run);
+         if Agent_That_Is_Entering /= No_Agent then
+            Add_Task_To_Protected_Object (PO, T => Agent_That_Is_Entering);
             Set_State (Entering_Agent, Runnable);
 
             if State (PO) = Inactive then
@@ -139,8 +135,6 @@ package body Oak.Protected_Objects is
                Set_State (For_Agent => PO, State => Runnable);
                Add_Agent_To_Scheduler (PO);
             end if;
-
-            Next_Agent_To_Run := PO;
          end if;
 
       elsif Subprogram_Kind = Protected_Function and then
@@ -150,23 +144,11 @@ package body Oak.Protected_Objects is
 
          Set_State (Entering_Agent, Runnable);
          Add_Task_To_Protected_Object (PO, Entering_Agent);
-         Next_Agent_To_Run := PO;
       else
          --  Protected object is currently occupied by someone else.
 
          Add_Contending_Task (PO, Entering_Agent);
-         Next_Agent_To_Run := No_Agent;
       end if;
-
-      if Next_Agent_To_Run = No_Agent then
-         --  No active task inside the protected object so need to find a new
-         --  Agent to run.
-         --  Object release point 2.
-         --  Release Lock(PO);
-         Check_Sechduler_Agents_For_Next_Agent_To_Run
-           (Next_Agent_To_Run => Next_Agent_To_Run);
-      end if;
-
    end Process_Enter_Request;
 
    --------------------------
@@ -175,18 +157,16 @@ package body Oak.Protected_Objects is
 
    procedure Process_Exit_Request
      (Exiting_Agent     : in Task_Id;
-      PO                : in  Protected_Id;
-      Next_Agent_To_Run : out Oak_Agent_Id)
+      PO                : in  Protected_Id)
    is
+      Agent_That_Is_Entering : Task_Id_With_No := No_Agent;
    begin
-
       --  Make sure that the exiting task is actually inside the object.
 
       if not Is_Task_Inside_Protect_Object
         (PO => PO, T => Exiting_Agent)
       then
          Set_State (Exiting_Agent, Exit_PO_Error);
-         Next_Agent_To_Run := Exiting_Agent;
          return;
       end if;
 
@@ -216,51 +196,49 @@ package body Oak.Protected_Objects is
                Get_And_Remove_Next_Task_From_Entry_Queue
                  (PO        => PO,
                   Entry_Id  => Next_Entry,
-                  Next_Task => Next_Agent_To_Run);
+                  Next_Task => Agent_That_Is_Entering);
 
                --  If there is a queued task to service, allow it to execute
                --  inside the protected object.
 
-               if Next_Agent_To_Run /= No_Agent then
+               if Agent_That_Is_Entering /= No_Agent then
                   Set_State
-                    (For_Agent => Next_Agent_To_Run, State => Runnable);
+                    (For_Agent => Agent_That_Is_Entering, State => Runnable);
                   Add_Task_To_Protected_Object
-                    (PO => PO, T => Next_Agent_To_Run);
+                    (PO => PO, T => Agent_That_Is_Entering);
                end if;
             end if;
          end;
       end if;
 
-      while Next_Agent_To_Run = No_Agent loop
+      while Agent_That_Is_Entering = No_Agent loop
          --  Admit new contending taks. Need to loop to cover the case where a
          --  task may end up on an entry queue.
 
-         Get_And_Remove_Next_Contending_Task (PO, Next_Agent_To_Run);
+         Get_And_Remove_Next_Contending_Task (PO, Agent_That_Is_Entering);
 
          --  Exit here when there are no more tasks in the contending queue.
-         exit when Next_Agent_To_Run = No_Agent;
+         exit when Agent_That_Is_Entering = No_Agent;
 
          Process_Enter_Request
-           (Entering_Agent    => Next_Agent_To_Run,
-            PO                => Protected_Agent_To_Access (Next_Agent_To_Run),
-            Subprogram_Kind   => Protected_Subprogram_Kind (Next_Agent_To_Run),
-            Entry_Id          => Id_Of_Entry (Next_Agent_To_Run),
-            Next_Agent_To_Run => Next_Agent_To_Run,
+           (Entering_Agent    => Agent_That_Is_Entering,
+            PO                =>
+              Protected_Agent_To_Access (Agent_That_Is_Entering),
+            Subprogram_Kind   =>
+              Protected_Subprogram_Kind (Agent_That_Is_Entering),
+            Entry_Id          => Id_Of_Entry (Agent_That_Is_Entering),
             Resubmitted       => True);
       end loop;
 
       --  If there is no agents to run inside the protected object, the
       --  protected object is made inactive.
 
-      if Next_Agent_To_Run = No_Agent then
+      if Agent_That_Is_Entering = No_Agent then
          Remove_Agent_From_Scheduler (PO);
          Set_State (PO, Inactive);
 
          --  Object release point 3.
          --  Release Agent (PO);
-
-         Check_Sechduler_Agents_For_Next_Agent_To_Run
-           (Next_Agent_To_Run => Next_Agent_To_Run);
       end if;
    end Process_Exit_Request;
 
@@ -268,12 +246,9 @@ package body Oak.Protected_Objects is
    -- Process_Interrupt_Exit --
    ----------------------------
 
-   procedure Process_Interrupt_Exit
-     (PO                : in  Protected_Id;
-      Next_Agent_To_Run : out Oak_Agent_Id) is
+   procedure Process_Interrupt_Exit (PO : in  Protected_Id) is
+      Agent_That_Is_Entering : Task_Id_With_No := No_Agent;
    begin
-      Next_Agent_To_Run := No_Agent;
-
       if Has_Entries (PO) then
          --  Service entries.
          declare
@@ -295,16 +270,16 @@ package body Oak.Protected_Objects is
                Get_And_Remove_Next_Task_From_Entry_Queue
                  (PO        => PO,
                   Entry_Id  => Next_Entry,
-                  Next_Task => Next_Agent_To_Run);
+                  Next_Task => Agent_That_Is_Entering);
             end if;
          end;
       end if;
 
-      if Next_Agent_To_Run /= No_Agent then
+      if Agent_That_Is_Entering /= No_Agent then
          Set_State
-           (For_Agent => Next_Agent_To_Run, State => Runnable);
+           (For_Agent => Agent_That_Is_Entering, State => Runnable);
          Add_Task_To_Protected_Object
-           (PO => PO, T => Next_Agent_To_Run);
+           (PO => PO, T => Agent_That_Is_Entering);
 
          --  The protected agent has serviced an interrupt handler
          --  then it will not be presence in a runnable queue.
@@ -314,14 +289,6 @@ package body Oak.Protected_Objects is
          Add_Agent_To_Scheduler (PO);
       else
          Set_State (PO, Inactive);
-      end if;
-
-      --  If there is no agents to run inside the protected object, the
-      --  protected object is made inactive.
-
-      if Next_Agent_To_Run = No_Agent then
-         Check_Sechduler_Agents_For_Next_Agent_To_Run
-           (Next_Agent_To_Run => Next_Agent_To_Run);
       end if;
    end Process_Interrupt_Exit;
 

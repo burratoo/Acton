@@ -94,25 +94,24 @@ package body Oak.Agent.Tasks is
 
          case Budget_Response is
             when No_Response =>
-               T.Budget_Action := Fill_Event_Timer_Data
-                 (Timer_Action     => Budget_Response,
-                  Handler_Priority => Oak_Priority'First,
-                  Agent_To_Handle  => Agent);
+               T.Budget_Timer := No_Timer;
 
             when Handler =>
-               T.Budget_Action := Fill_Event_Timer_Data
-                 (Timer_Action     => Handler,
-                  Handler_Priority =>
-                     Oak_Agent.Normal_Priority
-                    (Protected_Object_From_Access (Budget_Handler)),
-                  Agent_To_Handle  => Agent,
-                  Handler          => Budget_Handler);
+               New_Event_Timer
+                 (Timer        => T.Budget_Timer,
+                  Priority     =>
+                     Oak_Agent.Normal_Priority (Protected_Object_From_Access
+                    (Budget_Handler)),
+                  Timer_Action => Handler,
+                  Agent        => Agent,
+                  Handler      => Budget_Handler);
 
             when Abort_Cycle | Abort_And_Raise_Exception =>
-               T.Budget_Action := Fill_Event_Timer_Data
-                 (Timer_Action     => Budget_Response,
-                  Handler_Priority => P + 1,
-                  Agent_To_Handle  => Agent);
+               New_Event_Timer
+                 (Timer        => T.Budget_Timer,
+                  Priority     => P + 1,
+                  Timer_Action => Budget_Response,
+                  Agent        => Agent);
          end case;
 
          case Deadline_Response is
@@ -134,8 +133,7 @@ package body Oak.Agent.Tasks is
                  (Timer        => T.Deadline_Timer,
                   Priority     => P + 1,
                   Timer_Action => Deadline_Response,
-                  Agent        => Agent,
-                  Handler      => Deadline_Handler);
+                  Agent        => Agent);
          end case;
       end Setup_Task;
 
@@ -243,8 +241,7 @@ package body Oak.Agent.Tasks is
 
    procedure Update_Task_Property
      (For_Task           : in Task_Id;
-      Property_To_Update : in Task_Property;
-      Next_Task_To_Run   : out Oak_Agent_Id)
+      Property_To_Update : in Task_Property)
    is
       T : Task_Agent_Record renames Agent_Pool (For_Task);
    begin
@@ -256,9 +253,7 @@ package body Oak.Agent.Tasks is
             T.Relative_Deadline := Property_To_Update.Deadline_Span;
       end case;
 
-      Inform_Scheduler_Agent_Has_Changed_State
-        (Changed_Agent     => For_Task,
-         Next_Agent_To_Run => Next_Task_To_Run);
+      Inform_Scheduler_Agent_Has_Changed_State (Changed_Agent => For_Task);
    end Update_Task_Property;
 
 end Oak.Agent.Tasks;

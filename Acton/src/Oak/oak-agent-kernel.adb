@@ -17,8 +17,6 @@ with Oak.Core_Support_Package.Call_Stack;
 use Oak.Core_Support_Package.Call_Stack;
 
 with Oak.States;  use Oak.States;
-with Oak.Message; use Oak.Message;
-with Oak.Scheduler; use Oak.Scheduler;
 
 package body Oak.Agent.Kernel is
 
@@ -65,6 +63,7 @@ package body Oak.Agent.Kernel is
       if K.Schedulers = No_Agent then
          --  No entry in the table.
          K.Schedulers := Scheduler;
+         Set_Next_Agent (Scheduler, No_Agent);
 
       elsif Lowest_Resposible_Priority (Scheduler) >
         Highest_Resposible_Priority (K.Schedulers)
@@ -97,13 +96,10 @@ package body Oak.Agent.Kernel is
       --  Initialise the scheduler agent if needed
 
       if State (Scheduler) = Not_Initialised then
-         declare
-            Message : Oak_Message := (Message_Type => No_Message);
-         begin
-            Switch_To_Scheduler_Agent
-              (Scheduler_Agent => Scheduler,
-               Message         => Message);
-         end;
+         Push_Scheduler_Op
+           (Oak_Kernel => Oak_Kernel,
+            Scheduler  => Scheduler,
+            Operation  => (Message_Type => No_Message));
       end if;
 
       Set_State (Scheduler, Runnable);
@@ -145,6 +141,19 @@ package body Oak.Agent.Kernel is
       return No_Agent;
    end Find_Top_Active_Interrupt;
 
+   -------------------------------
+   -- Flush_Scheduler_Ops_Stack --
+   -------------------------------
+
+   procedure Flush_Scheduler_Ops_Stack (Oak_Kernel : in Kernel_Id)
+   is
+      K : Oak_Kernel_Record renames Agent_Pool (Oak_Kernel);
+   begin
+      for E of K.Scheduler_Ops loop
+         E.Scheduler_Agent := No_Agent;
+      end loop;
+   end Flush_Scheduler_Ops_Stack;
+
    ----------------------
    -- New_Kernel_Agent --
    ----------------------
@@ -174,10 +183,6 @@ package body Oak.Agent.Kernel is
          K.Interrupt_States  := (others => Inactive);
          K.Budgets_To_Charge := No_Agent;
 
-         New_Timer
-           (Timer     => K.Kernel_Timer,
-            Priority  => Any_Priority'Last);
-
          for P in K.Interrupt_Agents'Range loop
             New_Interrupt_Agent
               (Agent    => K.Interrupt_Agents (P),
@@ -185,6 +190,65 @@ package body Oak.Agent.Kernel is
          end loop;
       end Setup_Kernel_Agent;
    end New_Kernel_Agent;
+
+   ----------------------
+   -- Pop_Scheduler_Op --
+   ----------------------
+
+   procedure Pop_Scheduler_Op
+     (Oak_Kernel : in  Kernel_Id;
+      Scheduler  : out Scheduler_Id;
+      Operation  : out Oak_Message)
+   is
+      K           : Oak_Kernel_Record renames Agent_Pool (Oak_Kernel);
+      Slot_Number : Scheduler_Op_Id;
+   begin
+      --  Note that we optimise Push_ and Pop_Scheduler_Op since there are only
+      --  two slots in the stack.
+
+      if K.Scheduler_Ops (Scheduler_Op_Id'Last).Scheduler_Agent /=
+        No_Agent
+      then
+         Slot_Number := Scheduler_Op_Id'Last;
+      else
+         Slot_Number := Scheduler_Op_Id'First;
+         pragma Assert
+           (K.Scheduler_Ops (Slot_Number).Scheduler_Agent /= No_Agent);
+      end if;
+
+      Scheduler := K.Scheduler_Ops (Slot_Number).Scheduler_Agent;
+      Operation := K.Scheduler_Ops (Slot_Number).Operation;
+      K.Scheduler_Ops (Slot_Number).Scheduler_Agent := No_Agent;
+   end Pop_Scheduler_Op;
+
+   -----------------------
+   -- Push_Scheduler_Op --
+   -----------------------
+
+   procedure Push_Scheduler_Op
+     (Oak_Kernel : in Kernel_Id;
+      Scheduler  : in Scheduler_Id;
+      Operation  : in Oak_Message)
+   is
+      K           : Oak_Kernel_Record renames Agent_Pool (Oak_Kernel);
+      Slot_Number : Scheduler_Op_Id;
+   begin
+      --  Note that we optimise Push_ and Pop_Scheduler_Op since there are only
+      --  two slots in the stack.
+
+      if K.Scheduler_Ops (Scheduler_Op_Id'First).Scheduler_Agent =
+        No_Agent
+      then
+         Slot_Number := Scheduler_Op_Id'First;
+      else
+         Slot_Number := Scheduler_Op_Id'Last;
+         pragma Assert
+           (K.Scheduler_Ops (Slot_Number).Scheduler_Agent = No_Agent);
+      end if;
+
+      K.Scheduler_Ops (Slot_Number).Scheduler_Agent := Scheduler;
+      K.Scheduler_Ops (Slot_Number).Operation       := Operation;
+   end Push_Scheduler_Op;
 
    -----------------------------------
    -- Remove_Agent_From_Charge_List --

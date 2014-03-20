@@ -33,11 +33,10 @@ package Oak.Project_Support_Package with Pure is
    --  agents. Each of these agents contains an Oak Agent as their general
    --  data structure.
 
-   Max_Timers            : constant := Max_Kernel_Agents
-                             + Max_Task_Agents + Max_Scheduler_Agents;
+   Max_Timers            : constant := 2 * Max_Task_Agents +
+                                        Max_Scheduler_Agents;
    --  The maximum number of Oak Timers used in the system. At the bare minimum
-   --  each oak instance, scheduler agent and task agent need at least on timer
-   --  each.
+   --  each scheduler agent needs one timer and task agent need two timers.
 
    Max_Task_Name_Length  : constant := 80;
    --  The length of a task name. Set to an appropriate value for the system.

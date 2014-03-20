@@ -54,9 +54,10 @@ package Oak.Core_Support_Package.Task_Support with Preelaborate is
    procedure Context_Switch_From_Oak
      (Reason_For_Oak_To_Run : out    Run_Reason;
       Message               : out Message_Access) with Inline_Always;
+   procedure Context_Switch_From_OakN
+     (Reason_For_Oak_To_Run : out    Run_Reason;
+      Message               : out Message_Access);
    procedure Context_Switch_Save_Callee_Registers with Inline_Always;
-   procedure Context_Switch_Save_Callee_Registers
-     (Message : in out Message_Access);
    --  Procedures that initiate the context switch.
 
    procedure Context_Switch_Will_Be_To_Interrupted_Task with Inline_Always;
