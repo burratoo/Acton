@@ -15,13 +15,13 @@ package body Oak.Interrupts is
 
    procedure Attach_Handler (Handler : in Interrupt_Handler_Pair) is
    begin
-         Oak.Processor_Support_Package.Interrupts.Attach_Handler
-           (Interrupt => Handler.Interrupt,
-            Handler   => Handler.Handler,
-            Priority  =>
-              Normal_Priority
-                (Protected_Object_From_Access
-                     (Parameterless_Access (Handler.Handler))));
+      Oak.Processor_Support_Package.Interrupts.Attach_Handler
+        (Interrupt => Handler.Interrupt,
+         Handler   => Handler.Handler,
+         Priority  =>
+           Normal_Priority
+             (Protected_Object_From_Access
+                  (Parameterless_Access (Handler.Handler))));
    end Attach_Handler;
 
 end Oak.Interrupts;
