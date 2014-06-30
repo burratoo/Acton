@@ -17,7 +17,8 @@ package Oak.Interrupts with Preelaborate is
 
    type Interrupt_Handler_Pair is record
       Interrupt : External_Interrupt_Id;
-      Handler   : Parameterless_Handler;
+      Handler   :
+      Oak.Processor_Support_Package.Interrupts.Parameterless_Handler;
    end record;
    --  A type used to map an external interrupt id with its associated handler.
 

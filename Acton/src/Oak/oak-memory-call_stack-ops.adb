@@ -12,6 +12,10 @@
 with Oak.Core_Support_Package.Call_Stack.Ops;
 use Oak.Core_Support_Package.Call_Stack.Ops;
 
+with Oak.Agent.Oak_Agent; use Oak.Agent.Oak_Agent;
+with Oak.Agent.Kernel;    use Oak.Agent.Kernel;
+with Oak.Core;            use Oak.Core;
+
 package body Oak.Memory.Call_Stack.Ops is
 
    --------------------
@@ -25,6 +29,13 @@ package body Oak.Memory.Call_Stack.Ops is
    is
       Size : Storage_Elements.Storage_Count := Size_In_Elements;
    begin
+      --  Check to ensure that the stack end doesn't go pass the end of the
+      --  stack space
+
+      if Stack_Pool_Bottom - Size < Stack_Pointer_End'Address then
+         raise Storage_Error;
+      end if;
+
       if (Size mod CSP_Stack.Call_Stack_Allignment) /= 0 then
          Size := (Size / CSP_Stack.Call_Stack_Allignment + 1) *
                  CSP_Stack.Call_Stack_Allignment;
@@ -78,4 +89,10 @@ package body Oak.Memory.Call_Stack.Ops is
          Start_Instruction => Start_Instruction,
          Task_Value_Record => Task_Value_Record);
    end Initialise_Call_Stack;
+
+   function Get_Secondary_Stack_Location return Address is
+   begin
+      return Stack (Current_Agent (This_Oak_Kernel)).Bottom;
+   end Get_Secondary_Stack_Location;
+
 end Oak.Memory.Call_Stack.Ops;

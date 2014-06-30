@@ -12,8 +12,9 @@
 with Oak.Agent.Kernel;    use Oak.Agent.Kernel;
 with Oak.Agent.Oak_Agent; use Oak.Agent.Oak_Agent;
 
-with Oak.Core;    use Oak.Core;
-with Oak.States;  use Oak.States;
+with Oak.Core;     use Oak.Core;
+with Oak.States;   use Oak.States;
+with Oak.Oak_Time; use Oak.Oak_Time;
 
 package body Oakland.Tasks is
 

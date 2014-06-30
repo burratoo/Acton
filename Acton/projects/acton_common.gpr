@@ -20,7 +20,8 @@ abstract project Acton_Common is
                          "Oak.Oak_Time", "Oak.Oak_Time.Conversion",
                               "Oak.Processor_Support_Package", "Oak.Processor_Support_Package.Interrupts", "Oak.Timers", "Oak.Storage", "Oak.Storage.Time_Priority_Pool",
                          "System", "System.Assertions", "System.Exceptions_Debug", "System.Machine_Code", "System.Multiprocessors", "System.Standard_Library", "System.Storage_Elements", "System.Unsigned_Types",
-
+                         "System.Address_To_Access_Conversions",
+                         "System.Secondary_Stack",
                          "ISA",
 
                          "Ada.Execution_Server.Priority_Server", "Acton.Scheduler_Agents.Priority_Server", "Ada.Execution_Server.Operations",
@@ -38,7 +39,7 @@ abstract project Acton_Common is
 );
 
    Ada_Switches := ("-gnatwa.Xl", "-g", "-gnatn", "-gnatg", "-O2",  "-ffunction-sections", "-fdata-sections");
-   Asm_Switches := ();
+   Asm_Switches := ("-g");
 
    Documentation_Dir := "../doc/";
 

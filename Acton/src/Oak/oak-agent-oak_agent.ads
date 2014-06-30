@@ -252,6 +252,10 @@ package Oak.Agent.Oak_Agent with Preelaborate is
      with Pre => Has_Agent (For_Agent);
    --  Set the wake time of the agent.
 
+   function Stack
+     (Agent : in Oak_Agent_Id) return Call_Stack_Handler;
+   --  Get the call stack handler for the agent.
+
    function Stack_Pointer
      (Agent : in Oak_Agent_Id)
       return System.Address
@@ -414,6 +418,10 @@ private
    function Scheduler_Agent_For_Agent
      (Agent : in Oak_Agent_Id) return Scheduler_Id_With_No is
      (Agent_Pool (Agent).Scheduler_Agent);
+
+   function Stack
+     (Agent : in Oak_Agent_Id) return Call_Stack_Handler is
+     (Agent_Pool (Agent).Call_Stack);
 
    function Stack_Pointer
      (Agent : in Oak_Agent_Id) return System.Address is

@@ -13,8 +13,9 @@
 
 with Ada.Cyclic_Tasks; use Ada.Cyclic_Tasks;
 
+with Oak.Oak_Time;
+
 with Oak.Agent;                   use Oak.Agent;
-with Oak.Oak_Time;                use Oak.Oak_Time;
 with Oak.Project_Support_Package; use Oak.Project_Support_Package;
 with Oak.Storage.Time_Priority_Pool;
 
@@ -87,7 +88,7 @@ package Oak.Timers with Preelaborate is
    procedure New_Timer
      (Timer     : out Oak_Timer_Id;
       Priority  : in  Oak_Priority;
-      Fire_Time : in  Oak_Time.Time := Time_Last;
+      Fire_Time : in  Oak_Time.Time := Oak_Time.Time_Last;
       Activate  : in  Boolean := False);
    --  Create a new generic timer.
 
@@ -97,7 +98,7 @@ package Oak.Timers with Preelaborate is
       Timer_Action : in  Ada.Cyclic_Tasks.Event_Response;
       Agent        : in  Oak_Agent_Id;
       Handler      : in  Ada.Cyclic_Tasks.Response_Handler := null;
-      Fire_Time    : in  Oak_Time.Time := Time_Last;
+      Fire_Time    : in  Oak_Time.Time := Oak_Time.Time_Last;
       Activate     : in  Boolean := False);
    --  Creates a new Action Timer from its componenets.
 
@@ -105,7 +106,7 @@ package Oak.Timers with Preelaborate is
      (Timer     : out Oak_Timer_Id;
       Priority  : in  Oak_Priority;
       Scheduler : in  Scheduler_Id;
-      Fire_Time : in  Oak_Time.Time := Time_Last;
+      Fire_Time : in  Oak_Time.Time := Oak_Time.Time_Last;
       Activate  : in  Boolean := False);
    --  Create a new Scheduler Timer.
 
@@ -151,7 +152,7 @@ private
    --  Timer – used less frequently that the other two so not much space is
    --  wasted.
 
-      Fire_Time : Time;
+      Fire_Time : Oak_Time.Time;
       --  The time the timer will fire.
 
       Priority  : Oak_Priority;
@@ -207,6 +208,7 @@ private
    --------------------------
    -- Function Expressions --
    --------------------------
+   use Oak_Time;
 
    function "<" (Left, Right : in Oak_Timer) return Boolean is
      (Left.Fire_Time < Right.Fire_Time);
