@@ -17,7 +17,9 @@ package body Oak.Processor_Support_Package.Interrupts is
    end External_Interrupt_Handler;
 
    function Get_External_Interrupt_Id return External_Interrupt_Id is
+      A : Address with Unreferenced;
    begin
+      A := Interrupt_Vector_Register;
       return Interrupt_Status_Register.Current_Interrupt;
    end Get_External_Interrupt_Id;
 
@@ -49,12 +51,13 @@ package body Oak.Processor_Support_Package.Interrupts is
       Interrupt_Id : constant External_Interrupt_Id :=
                        Interrupt_Status_Register.Current_Interrupt;
    begin
-      --  The first priority of the interrupt hardware is mapped to
-      --  Priority'Last - the priority level that comes before
-      --  Interrupt_Priority'First.
+      --  On the AT91SAM7S there is only one interrupt priority level
+      --  available since we cannot mask the hardware interrupts based on
+      --  priority.
 
-      return Any_Priority (Source_Mode_Register (Interrupt_Id).Priority_Level)
-        + Priority'Last;
+      return
+        (if Source_Mode_Register (Interrupt_Id).Priority_Level > 0
+         then Interrupt_Priority'Last else Priority'Last);
    end Current_Interrupt_Priority;
 
    procedure Set_Hardware_Priority (P : Any_Priority) is null;

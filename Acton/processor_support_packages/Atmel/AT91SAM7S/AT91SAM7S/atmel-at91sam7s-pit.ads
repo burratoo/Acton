@@ -6,7 +6,7 @@ package Atmel.AT91SAM7S.PIT with Preelaborate is
    -- PIT Memory Addresses --
    --------------------------
 
-   PIT_Base_Address    : constant := 16#FFFF_F000#;
+   PIT_Base_Address    : constant := 16#FFFF_FD30#;
    MR_Offset_Address   : constant := 16#0#;
    SR_Offset_Address   : constant := 16#4#;
    PIVR_Offset_Address : constant := 16#8#;

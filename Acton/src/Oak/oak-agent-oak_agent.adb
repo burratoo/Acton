@@ -189,7 +189,10 @@ package body Oak.Agent.Oak_Agent is
               (Stack             => A.Call_Stack,
                Start_Instruction => Run_Loop,
                Task_Value_Record => Run_Loop_Parameter);
-         else
+         elsif Agent not in Kernel_Id then
+            --  Kernel agents do not have to have their call stacks
+            --  initialised here
+
             Initialise_Call_Stack
               (Stack             => A.Call_Stack,
                Start_Instruction => Run_Loop);

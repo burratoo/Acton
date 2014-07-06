@@ -52,6 +52,8 @@ package ISA.ARM.ARM7TDMI with Pure is
 
    function Current_Program_Status_Register return Status_Type
      with Inline_Always;
+   function Saved_Program_Status_Register return Status_Type
+     with Inline_Always;
    procedure Set_Current_Program_Status_Register (New_Value : in Status_Type)
      with Inline_Always;
 

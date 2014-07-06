@@ -17,6 +17,7 @@ with Oak.Agent;    use Oak.Agent;
 with Oak.Message;  use Oak.Message;
 with Oak.Oak_Time; use Oak.Oak_Time;
 with Oak.States;   use Oak.States;
+
 package Oak.Core with Preelaborate is
 
    -----------
@@ -57,7 +58,7 @@ package Oak.Core with Preelaborate is
    procedure Run_Loop with No_Return;
    --  The Oak kernel's run loop that performs the kernel's operations.
 
-   function This_Oak_Kernel return Kernel_Id;
+   function This_Oak_Kernel return Kernel_Id with Inline_Always;
    --  Return the id of the current Oak_Kernel. This needs to be inlined since
    --  it is called from within interrupt handlers where we want to avoid
    --  calling subprograms as it messes with the agent's stack.

@@ -27,6 +27,19 @@ package body ISA.ARM.ARM7TDMI is
       return CPSR;
    end Current_Program_Status_Register;
 
+   -------------------------------------
+   -- Saved_Program_Status_Register --
+   -------------------------------------
+
+   function Saved_Program_Status_Register return Status_Type is
+      SPSR : Status_Type;
+   begin
+      Asm ("mrs %0, spsr",
+           Outputs => Status_Type'Asm_Output ("=r", SPSR),
+           Volatile => True);
+      return SPSR;
+   end Saved_Program_Status_Register;
+
    -----------------------------------------
    -- Set_Current_Program_Status_Register --
    -----------------------------------------

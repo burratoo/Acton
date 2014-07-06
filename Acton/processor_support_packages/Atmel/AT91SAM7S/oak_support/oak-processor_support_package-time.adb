@@ -23,24 +23,16 @@ package body Oak.Processor_Support_Package.Time is
         (P_SYSC => Enable, others => No_Change);
 
       Interrupt_Enable_Command_Register.Interrupt :=
-        (P_SYSC => Enable,
+        (P_FIQ  => Enable,
+         P_SYSC => Enable,
          others => No_Change);
 
    end Initialise_Clock;
 
    procedure Update_Alarm (To : in Oak.Core_Support_Package.Time.Oak_Time) is
    begin
-      Alarm_Time := To;
-   end Update_Alarm;
-
-   procedure Enable_Alarm is
-   begin
+      Alarm_Time  := To;
       Alarm_Armed := True;
-   end Enable_Alarm;
-
-   procedure Disable_Alarm is
-   begin
-      Alarm_Armed := False;
-   end Disable_Alarm;
+   end Update_Alarm;
 
 end Oak.Processor_Support_Package.Time;

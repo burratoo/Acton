@@ -22,8 +22,6 @@ package Oak.Core_Support_Package.Interrupts with Preelaborate is
    --  Only modify these across all variants
 
    procedure Set_Up_Interrupts;
-   procedure Disable_Oak_Wake_Up_Interrupt with Inline_Always;
-   procedure Enable_Oak_Wake_Up_Interrupt with Inline_Always;
 
    --  May customise this section with the appropriate linker section
    procedure Decrementer_Interrupt;

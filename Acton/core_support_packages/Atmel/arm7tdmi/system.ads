@@ -123,14 +123,17 @@ package System is
 
    --  ??? need comments explaining the values below
 
-   Max_Priority           : constant Positive := 25;
+   Max_Priority           : constant Positive := 29;
    Max_Interrupt_Priority : constant Positive := 30;
+   --  Interrupt priority has a range of one since while the AT91SAM7S has
+   --  hardware support for nested interrupts and interrupt priority levels,
+   --  these priority levels cannot be masked by software.
 
    --  Need to provide the range in numbers to make the binder happy.
    --  Don't change the spacing of Any_Priority subtype definition!
 
    subtype Any_Priority       is Integer      range   0 .. 30;
-   subtype Priority           is Any_Priority range   0 .. 25;
+   subtype Priority           is Any_Priority range   0 .. 29;
    subtype Interrupt_Priority is Any_Priority range
      Priority'Last + 1 .. Any_Priority'Last;
 

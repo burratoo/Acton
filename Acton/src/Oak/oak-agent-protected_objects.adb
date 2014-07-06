@@ -343,9 +343,17 @@ package body Oak.Agent.Protected_Objects is
 
       Setup_Oak_Agent : declare
          SA : Scheduler_Id_With_No;
+         P  : Any_Priority;
       begin
-         SA := Scheduler.Find_Scheduler_For_System_Priority
-           (Ceiling_Priority, 1);
+         if Ceiling_Priority in Any_Priority then
+            P := System.Any_Priority (Ceiling_Priority);
+         elsif Ceiling_Priority = Unspecified_Priority then
+            P := Interrupt_Priority'First;
+         else
+            raise Program_Error with "Priority out of range";
+         end if;
+
+         SA := Scheduler.Find_Scheduler_For_System_Priority (P, 1);
 
          New_Agent
            (Agent              => Agent,
@@ -354,7 +362,7 @@ package body Oak.Agent.Protected_Objects is
             Call_Stack_Size    => 0,
             Run_Loop           => Null_Address,
             Run_Loop_Parameter => Null_Address,
-            Normal_Priority    => Ceiling_Priority,
+            Normal_Priority    => P,
             Initial_State      => Inactive,
             Scheduler_Agent    => SA,
             Wake_Time          => Time_First);

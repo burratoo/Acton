@@ -21,25 +21,49 @@ with Oak.Core;    use Oak.Core;
 with Oak.Processor_Support_Package.Interrupts;
 with Oak.Processor_Support_Package.Time;
 
-with System.Machine_Code; use System.Machine_Code;
+with System.Machine_Code;     use System.Machine_Code;
+with System.Storage_Elements; use System.Storage_Elements;
 
 --  Note that the full context save for a non-kernel agent looks like this:
 --
---  ----------- ---
---  |   r0    |
---  |    |    |
---  |   r14   | 17 x 4 bytes = 68 bytes
---  |   LR    |
---  |   SPSR  |
---  ----------- ---
+--                   ----------- ---
+--                   |   r14^  |  |
+--                   |    |    |  | 15 x 4 bytes = 60 bytes
+--  Stack.Pointer -> |   r0^   |  -
+--                   |   LR    |
+--                   |   SPSR  |
+--                   ----------- ---
 
---  While the kernel agent and a voluntary agent yield only stores:
+--  While a voluntary agent yield only stores:
 --
---  -----------
---  |   SP    |
---  |   LR    |
---  |   SPSR  |
---  -----------
+--                   -----------
+--                   |   LR^   |
+--                   |   SP^   |
+--  Stack.Pointer -> |   FP^   |
+--                   |   LR    |
+--                   |   SPSR  |
+--                   -----------
+
+--  The kernel is simply:
+--
+--                   -----------
+--  Stack.Pointer -> |   SP^   |
+--                   |   LR    |
+--                   |   SPSR  |
+--                   -----------
+--
+--  Note that Stack.Pointer does not move since the addressing modes for the
+--  STM and LDM instructions enable the ablitity to move data above and below
+--  the address. This is useful as the there are only two load/store operations
+--  for each agent during a context switch (the registers in the User Mode
+--  and the register in the interrupt mode). The Stack.Pointer for the running
+--  agent is stored the sp registers for the IRQ and FIQ modes so their
+--  handlers can safely and easily store the interrupted agent's register to
+--  its stack.
+
+--  The nop assembly instructions after each stm and ldm instructions that
+--  touch the user mode registers is needed for ARM versions less than ARMv6,
+--  see the ARM Architecture Reference Manual for the reason.
 
 package body Oak.Core_Support_Package.Interrupts is
 
@@ -68,6 +92,9 @@ package body Oak.Core_Support_Package.Interrupts is
       Asm ("mov r0, sp", Volatile => True);
 
       Task_Stack_Pointer := Stack_Pointer (This_Oak_Kernel);
+      Task_Stack_Pointer := Task_Stack_Pointer - 8;
+      Set_Stack_Pointer (For_Agent => This_Oak_Kernel,
+                         Stack_Pointer => Task_Stack_Pointer);
 
       Asm ("mov sp, %0",
            Inputs => Address'Asm_Input ("r", Task_Stack_Pointer),
@@ -93,10 +120,10 @@ package body Oak.Core_Support_Package.Interrupts is
    begin
       --  Entered in FIQ Mod
 
-      --  Push r0 onto the interrupted agent's stack and load the reason
-      --  for Oak to run into r0 which Oak will later pull out.
+      --  Push interrupted agent's registers onto its call stack and load the
+      --  reason for Oak to run into r0 which Oak will later pull out.
       Asm
-        ("stm sp, {r0}" & ASCII.LF & ASCII.HT &
+        ("stm sp, {r0 - lr}^" & ASCII.LF & ASCII.HT &
          "mov r0, %0",
          Inputs   => Run_Reason'Asm_Input ("i", Timer),
          Volatile => True);
@@ -118,11 +145,11 @@ package body Oak.Core_Support_Package.Interrupts is
 
       Switch_To_IRQ_Mode;
 
-      --  Push r0 onto the interrupted agent's stack and load the reason
-      --  for Oak to run into r0 which Oak will later pull out.
+      --  Push interrupted agent's registers onto its call stack and load the
+      --  reason for Oak to run into r0 which Oak will later pull out.
       Asm
-        ("stm sp, {r0}" & ASCII.LF & ASCII.HT &
-           "mov r0, %0",
+        ("stm sp, {r0 - lr}^" & ASCII.LF & ASCII.HT &
+         "mov r0, %0",
            Inputs   => Run_Reason'Asm_Input ("i", External_Interrupt),
          Volatile => True);
       Full_Context_Switch_To_Oak;
@@ -152,47 +179,36 @@ package body Oak.Core_Support_Package.Interrupts is
       --  pointing to the kernel's register store.
 
       Asm ("stm sp, {sp}^", Volatile => True);
+      Asm ("nop", Volatile => True);
 
       --  Store the kernel's instruction pointer (currently in lr_svc) and its
       --  SPSR onto its stack
 
       Asm ("mrs r0, spsr", Volatile => True);
-      Asm ("stm sp, {r0, lr}", Volatile => True);
+      Asm ("stmdb sp, {r0, lr}", Volatile => True);
 
-      --  Store the kernel's stack pointer and load the current agent's
+      --  Load the current agent's register store
 
-      Asm ("mov %0, sp",
-           Outputs => Address'Asm_Output ("=r", Task_Stack_Pointer),
-           Volatile => True);
-
-      Set_Stack_Pointer (This_Oak_Kernel, Task_Stack_Pointer);
       Task_Stack_Pointer := Stack_Pointer (Current_Agent (This_Oak_Kernel));
-
-      --  Move the task's stack pointer into sp
-
       Asm ("mov sp, %0",
            Inputs => Address'Asm_Input ("r", Task_Stack_Pointer),
            Volatile => True);
 
       --  Install sp into FIQ and IRQ modes
-
-      --  First calculate the value sp will have after registers have been
-      --  popped off. Note that there are 17 * 4 bytes on the stack. r0 is the
-      --  scratch register used to hold this value.
-
-      Asm ("add r0, sp, #68", Volatile => True);
+      Asm ("mov r5, sp",  Volatile => True);
       Switch_To_IRQ_Mode;
-      Asm ("mov sp, r0",  Volatile => True);
+      Asm ("mov sp, r5",  Volatile => True);
       Switch_To_FIQ_Mode;
-      Asm ("mov sp, r0",  Volatile => True);
-      Switch_To_System_Mode;
+      Asm ("mov sp, r5",  Volatile => True);
+      Switch_To_Supervisor_Mode;
 
       --  Restore task's registers
-      Asm ("ldm sp, {r0, lr}", Volatile => True);
-      Asm ("msr spsr_cxsf, r0", Volatile => True);
+      Asm ("ldmdb sp, {r0, lr}", Volatile => True);
+      Asm ("msr spsr_all, r0", Volatile => True);
       Asm ("ldm sp, {r0 - lr}^", Volatile => True);
+      Asm ("nop", Volatile => True);
 
-      Asm ("subs pc, r14,#4", Volatile => True);
+      Asm ("subs pc, lr,#4", Volatile => True);
       --  This return sequence is used since the agent was originally
       --  interrupted by an IRQ or FIQ.
 
@@ -207,35 +223,40 @@ package body Oak.Core_Support_Package.Interrupts is
    begin
 
       --  Entered in IRQ or FIQ Mode. Do not enter using SWI.
+      --  Note that the the agent's register must be saved by the caller
+      --  procedure; this allows r4 to be set by these procedures so Oak
+      --  can know why it is running. Don't use r0, this is used by Oak to
+      --  figure out why it was run.
 
       --  This is the spot where we store the agent's registers. Note that
       --  r1 has already been saved.
 
-      Asm ("stm sp, {r1 - lr}^", Volatile => True);
-      Asm ("mrs r0, spsr", Volatile => True);
-      Asm ("stm sp, {r0, lr}", Volatile => True);
+      Asm ("mrs r4, spsr", Volatile => True);
+      Asm ("stmdb sp, {r4, lr}", Volatile => True);
 
-      --  Store the interrupt agent's stack pointer and load the kernel's
-
-      Asm ("mov %0, sp",
-           Outputs => Address'Asm_Output ("=r", Task_Stack_Pointer),
-           Volatile => True);
-
-      Set_Stack_Pointer (Current_Agent (This_Oak_Kernel), Task_Stack_Pointer);
       Task_Stack_Pointer := Stack_Pointer (This_Oak_Kernel);
-
-      --  Move the task's stack pointer into sp and restore task's registers
-
-      Asm ("mov sp, %0",
+      --  Sneakily, this line should be removed by the compiler.
+      Asm ("mov r3, %0",
            Inputs => Address'Asm_Input ("r", Task_Stack_Pointer),
            Volatile => True);
-      Asm ("ldm sp, {r0, lr}", Volatile => True);
-      Asm ("msr spsr_cxsf, r0", Volatile => True);
-      Asm ("ldm sp, {sp}^", Volatile => True);
 
-      Asm ("subs pc, r14, #4", Volatile => True);
-      --  This return sequence is used since the agent was originally
-      --  interrupted by an IRQ or FIQ.
+      --  Install Oak's stack register store into Supervisor Mode first then
+      --  enter IRQ mode (could have been FIQ, but it doesn't matter here.
+
+      Switch_To_Supervisor_Mode;
+      Asm ("mov sp, r3",  Volatile => True);
+      Switch_To_FIQ_Mode;
+
+      --  Move the task's stack pointer into sp and restore Oak's registers
+
+      Asm ("mov sp, r3", Volatile => True);
+      Asm ("ldmdb sp, {r4, lr}", Volatile => True);
+      Asm ("msr spsr_all, r4", Volatile => True);
+      Asm ("ldm sp, {sp}^", Volatile => True);
+      Asm ("nop", Volatile => True);
+
+      Asm ("movs pc, lr", Volatile => True);
+      --  This return sequence is used since Oak was entered via SWI.
 
    end Full_Context_Switch_To_Oak;
 
@@ -247,7 +268,7 @@ package body Oak.Core_Support_Package.Interrupts is
    begin
       --  Just return since there is no point doing an in-place switch on this
       --  ARM.
-      Asm ("subs pc, lr", Volatile => True);
+      Asm ("movs pc, lr", Volatile => True);
    end In_Place_Context_Switch_To_Agent_Interrupt;
 
    ----------------------------------------------
@@ -257,7 +278,7 @@ package body Oak.Core_Support_Package.Interrupts is
    procedure In_Place_Context_Switch_To_Oak_Interrupt is
    begin
       --  See above.
-      Asm ("subs pc, lr", Volatile => True);
+      Asm ("movs pc, lr", Volatile => True);
    end In_Place_Context_Switch_To_Oak_Interrupt;
 
    -----------------------------------------------
@@ -285,31 +306,27 @@ package body Oak.Core_Support_Package.Interrupts is
       --  pointing to the kernel's register store.
 
       Asm ("stm sp, {sp}^", Volatile => True);
+      Asm ("nop", Volatile => True);
 
       --  Store the kernel's instruction pointer (currently in lr_svc) and its
       --  SPSR onto its stack
 
-      Asm ("mrs r0, spsr", Volatile => True);
-      Asm ("stm sp, {r0, lr}", Volatile => True);
+      Asm ("mrs r4, spsr", Volatile => True);
+      Asm ("stmdb sp, {r4, lr}", Volatile => True);
 
-      --  Store the kernel's stack pointer and load the current agent's
-
-      Asm ("mov %0, sp",
-           Outputs => Address'Asm_Output ("=r", Task_Stack_Pointer),
-           Volatile => True);
-
-      Set_Stack_Pointer (This_Oak_Kernel, Task_Stack_Pointer);
+      --  Load the current agent's register store address
       Task_Stack_Pointer := Stack_Pointer (Current_Agent (This_Oak_Kernel));
 
       --  Move the task's stack pointer into sp and restore task's registers.
-      --  Note that only the task's sp is restored.
+      --  Note that only the task's sp, fp and lr is restored.
 
       Asm ("mov sp, %0",
            Inputs => Address'Asm_Input ("r", Task_Stack_Pointer),
            Volatile => True);
-      Asm ("ldm sp, {r0, lr}", Volatile => True);
-      Asm ("msr spsr_cxsf, r0", Volatile => True);
-      Asm ("ldm sp, {sp}^", Volatile => True);
+      Asm ("ldmdb sp, {r4, lr}", Volatile => True);
+      Asm ("msr spsr_all, r4", Volatile => True);
+      Asm ("ldm sp, {fp, sp, lr}^", Volatile => True);
+      Asm ("nop", Volatile => True);
 
       --  Install sp into FIQ and IRQ modes. Unlike for the full context switch
       --  this can be done after the register restore since the callee saved
@@ -318,22 +335,35 @@ package body Oak.Core_Support_Package.Interrupts is
       --  Move sp into an accessible register.
       Asm ("mov r5, sp", Volatile => True);
 
-      if Current_Agent (This_Oak_Kernel) in Scheduler_Id then
-         --  If the agent being switched to is a scheduler agent then it can
-         --  only be interrupted by by an FIQ source. So we only install the
-         --  FIQ mode and update its SPSR.
-         Asm ("msr spsr_c, #0x50", Volatile => True);
-      else
+      --  Install the register store address into IRQ and FIQ modes. This
+      --  allows the handlers to store the agent's registers without having
+      --  to mess around with trying to load the register store address and
+      --  trying to safely store the registers.
+
+      --  If the agent being switched to is not a task agent or the system
+      --  is operating in an interrupt priority, the switched to agent can
+      --  only be interrupted by by an FIQ source. So we only install the
+      --  FIQ mode and update its SPSR. This is because masking interrupts
+      --  is an all or nothing affair on the AT91SAM7. FIQ is kept active so
+      --  the timer can keep ticking.
+
+      if Current_Agent (This_Oak_Kernel) = Sleep_Agent
+        or else (Current_Agent (This_Oak_Kernel) in Task_Id
+                 and then Current_Priority (This_Oak_Kernel)
+                 not in Interrupt_Priority)
+      then
          Switch_To_IRQ_Mode;
          Asm ("mov sp, r5",  Volatile => True);
+      else
+         Asm ("msr spsr_c, #0x90", Volatile => True);
       end if;
 
       Switch_To_FIQ_Mode;
       Asm ("mov sp, r5",  Volatile => True);
-      Switch_To_System_Mode;
+      Switch_To_Supervisor_Mode;
 
       --  Return
-      Asm ("subs pc, lr", Volatile => True);
+      Asm ("movs pc, lr", Volatile => True);
       --  Since the kernel entered via a SWI
    end Request_Context_Switch_To_Agent_Interrupt;
 
@@ -354,22 +384,18 @@ package body Oak.Core_Support_Package.Interrupts is
       Switch_To_Supervisor_Mode;
 
       --  This is the spot where we store the agent's registers. Note that
-      --  only the stack register is saved.
+      --  only the fp, sp and lr are saved.
 
-      Asm ("stm sp, {sp}^", Volatile => True);
-      Asm ("mrs r0, spsr", Volatile => True);
-      Asm ("stm sp, {r0, lr}", Volatile => True);
+      Asm ("stm sp, {fp, sp, lr}^", Volatile => True);
+      Asm ("nop", Volatile => True);
+      Asm ("mrs r4, spsr", Volatile => True);
+      Asm ("stmdb sp, {r4, lr}", Volatile => True);
 
-      --  Store the interrupt agent's stack pointer and load the kernel's
+      --  Load the kernel's register store
 
-      Asm ("mov %0, sp",
-           Outputs => Address'Asm_Output ("=r", Task_Stack_Pointer),
-           Volatile => True);
-
-      Set_Stack_Pointer (Current_Agent (This_Oak_Kernel), Task_Stack_Pointer);
       Task_Stack_Pointer := Stack_Pointer (This_Oak_Kernel);
 
-      --  Move the task's stack pointer into sp
+      --  Move the kernel's stack pointer into sp
 
       Asm ("mov sp, %0",
            Inputs => Address'Asm_Input ("r", Task_Stack_Pointer),
@@ -377,31 +403,13 @@ package body Oak.Core_Support_Package.Interrupts is
 
       --  Restore task's registers
 
-      Asm ("ldm sp, {r0, lr}", Volatile => True);
-      Asm ("msr spsr_cxsf, r0", Volatile => True);
+      Asm ("ldmdb sp, {r4, lr}", Volatile => True);
+      Asm ("msr spsr_cxsf, r4", Volatile => True);
       Asm ("ldm sp, {sp}^", Volatile => True);
-
+      Asm ("nop", Volatile => True);
       --  Return
-      Asm ("subs pc, lr", Volatile => True);
+      Asm ("movs pc, lr", Volatile => True);
       --  Since the kernel entered via a SWI
    end Request_Context_Switch_To_Oak_Interrupt;
-
-   -----------------------------------
-   -- Disable_Oak_Wake_Up_Interrupt --
-   -----------------------------------
-
-   procedure Disable_Oak_Wake_Up_Interrupt is
-   begin
-      Oak.Processor_Support_Package.Time.Disable_Alarm;
-   end Disable_Oak_Wake_Up_Interrupt;
-
-   ----------------------------------
-   -- Enable_Oak_Wake_Up_Interrupt --
-   ----------------------------------
-
-   procedure Enable_Oak_Wake_Up_Interrupt is
-   begin
-      Oak.Processor_Support_Package.Time.Disable_Alarm;
-   end Enable_Oak_Wake_Up_Interrupt;
 
 end Oak.Core_Support_Package.Interrupts;

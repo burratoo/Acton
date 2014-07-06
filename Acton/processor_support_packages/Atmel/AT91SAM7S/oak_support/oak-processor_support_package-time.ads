@@ -7,9 +7,6 @@ package Oak.Processor_Support_Package.Time with Preelaborate is
 
    procedure Update_Alarm (To : in Oak.Core_Support_Package.Time.Oak_Time);
 
-   procedure Enable_Alarm;
-   procedure Disable_Alarm;
-
 private
 
    function Get_Clock return Oak_Time

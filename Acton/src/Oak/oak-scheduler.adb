@@ -23,8 +23,7 @@ package body Oak.Scheduler is
    -- Add_Agent_To_Scheduler --
    ----------------------------
 
-   procedure Add_Agent_To_Scheduler (Agent : in Oak_Agent_Id)
-   is
+   procedure Add_Agent_To_Scheduler (Agent : in Oak_Agent_Id) is
    begin
       --  If a scheduler agent is schedulable, it must have its scheduler agent
       --  recorded.

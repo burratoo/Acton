@@ -18,11 +18,11 @@ project Acton_AT91SAM7S is
                                 "Atmel.AT91SAM7S.PIO",
                                 "Atmel.AT91SAM7S.PIT",
                                 "Atmel.AT91SAM7S.PMC",
-                                "Atmel.AT91SAM7S.SPI",
+--                                  "Atmel.AT91SAM7S.SPI",
                                 "Atmel.AT91SAM7S.SSC",
                                 "Atmel.AT91SAM7S.TC",
-                                "Atmel.AT91SAM7S.TWI",
-                                "Atmel.AT91SAM7S.USART",
+--                                  "Atmel.AT91SAM7S.TWI",
+--                                  "Atmel.AT91SAM7S.USART",
                                 "Oakland.Maths.Arithmetic_64"
 
                                );
@@ -59,7 +59,7 @@ project Acton_AT91SAM7S is
    package Compiler extends Acton_Common.Compiler Is
       for Default_Switches ("ada") use Acton_Common.Ada_Switches & Target_Ada_Switches;
       for Default_Switches ("asm") use Acton_Common.Asm_Switches & Target_Asm_Switches;
-      for Switches ("oak-processor_support_package-time-interrupt.adb") use Compiler'Default_Switches ("ada") & ("-ffixed-r0", "-ffixed-r1", "-ffixed-r2", "-ffixed-r3", "-ffixed-r4", "-ffixed-r5", "-ffixed-r6", "-ffixed-r7", "-ffixed-lr");
+      for Switches ("oak-processor_support_package-time-interrupt.adb") use Compiler'Default_Switches ("ada") & ("-O2", "-ffixed-r0", "-ffixed-r1", "-ffixed-r2", "-ffixed-r3", "-ffixed-r4", "-ffixed-r5", "-ffixed-r6", "-ffixed-r7", "-ffixed-lr");
    end Compiler;
 
    --  package Linker is
