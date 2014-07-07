@@ -140,7 +140,7 @@ package body Oak.Agent.Oak_Agent is
 
    procedure Increment_Execution_Cycle_Count
      (For_Agent : in Oak_Agent_Id;
-      By        : in Natural)
+      By        : in Natural := 1)
    is
       A : Oak_Agent_Record renames Agent_Pool (For_Agent);
    begin

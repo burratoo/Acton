@@ -11,7 +11,6 @@ package body Oak.Processor_Support_Package.Time.Interrupt is
    procedure Update_Clock is
       Ack       : Address with Unreferenced;
       PIT_Value : Timer_Value_Type with Unreferenced;
-
    begin
       Internal_Clock := Internal_Clock + 1;
 
@@ -22,19 +21,17 @@ package body Oak.Processor_Support_Package.Time.Interrupt is
         (P_FIQ => True, P_SYSC => True, others => False);
       End_Of_Interrupt_Command_Register := 1;
 
-      if not Saved_Program_Status_Register.IRQ_Disable
-        and then Alarm_Armed
-        and then Internal_Clock > Alarm_Time
+      if Alarm_Armed and then Internal_Clock > Alarm_Time
+        and then not Saved_Program_Status_Register.IRQ_Disable
       then
          --  Branch via instruction rather than procedure call to ensure
          --  bl instruction is not used
          Alarm_Armed := False;
          Asm ("b oak__core_support_package__interrupts__decrementer_interrupt",
               Volatile => True);
-      else
-         --  Return from interrupt
-         Asm ("subs pc, r14, #4", Volatile => True);
       end if;
+      --  Return from interrupt
+      Asm ("subs pc, r14, #4", Volatile => True);
    end Update_Clock;
 
 end Oak.Processor_Support_Package.Time.Interrupt;

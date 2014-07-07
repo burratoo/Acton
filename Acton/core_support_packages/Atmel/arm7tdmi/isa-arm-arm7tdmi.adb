@@ -69,8 +69,8 @@ package body ISA.ARM.ARM7TDMI is
 
    procedure Switch_To_System_Mode is
    begin
-      Asm ("msr cpsr_c, #0xDF", Volatile => True);
-      --  Interrupts disabled, System Mode
+      Asm ("msr cpsr_c, #0x9F", Volatile => True);
+      --  IRQ disabled, FIQ Enabled System Mode
    end Switch_To_System_Mode;
 
    -------------------------------

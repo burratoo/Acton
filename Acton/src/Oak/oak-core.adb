@@ -772,6 +772,7 @@ package body Oak.Core is
       Charge_Execution_Time
         (To_Agent  => Oak_Kernel,
          Exec_Time => Charge_Time);
+      Increment_Execution_Cycle_Count (Oak_Kernel);
       Set_Entry_Exit_Stamp (Oak_Kernel, Time => Current_Time);
    end Update_Exit_Stats;
 

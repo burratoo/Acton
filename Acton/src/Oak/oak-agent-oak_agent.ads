@@ -120,7 +120,7 @@ package Oak.Agent.Oak_Agent with Preelaborate is
 
    procedure Increment_Execution_Cycle_Count
      (For_Agent : in Oak_Agent_Id;
-      By        : in Natural)
+      By        : in Natural := 1)
      with Inline;
    --  Increments the agent's execution cycle count by the specified amount.
 
