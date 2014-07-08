@@ -201,6 +201,29 @@ package body Oak.Core is
 
       Message_Is_Bad : constant Oak_Message :=
                          (Message_Type => Invalid_Message);
+
+      procedure Handle_External_Interrupt;
+
+      procedure Handle_External_Interrupt is
+         Id : constant External_Interrupt_Id :=
+                Get_External_Interrupt_Id;
+
+         P               : constant Interrupt_Priority :=
+                             Current_Interrupt_Priority;
+         Interrupt_Agent : constant Interrupt_Id :=
+                             Interrupt_For_Priority
+                               (Oak_Kernel => My_Kernel_Id,
+                                Priority   => P);
+      begin
+         Set_State (Interrupt_Agent, Handling_Interrupt);
+         Set_Interrupt_Kind
+           (For_Agent => Interrupt_Agent, Kind => External);
+         Set_External_Id
+           (For_Agent => Interrupt_Agent, Id => Id);
+         Activate_Interrupt_Agent
+           (Oak_Kernel => My_Kernel_Id, Interrupt => Interrupt_Agent);
+      end Handle_External_Interrupt;
+
    begin
       Message_To_Agent := (Message_Type => No_Message);
 
@@ -426,24 +449,7 @@ package body Oak.Core is
             end case;
 
          when External_Interrupt =>
-            Handle_External_Interrupt : declare
-               Id : constant External_Interrupt_Id :=
-                      Get_External_Interrupt_Id;
-
-               P : constant Interrupt_Priority := Current_Interrupt_Priority;
-               Interrupt_Agent : constant Interrupt_Id :=
-                                   Interrupt_For_Priority
-                                     (Oak_Kernel => My_Kernel_Id,
-                                      Priority   => P);
-            begin
-               Set_State (Interrupt_Agent, Handling_Interrupt);
-               Set_Interrupt_Kind
-                 (For_Agent => Interrupt_Agent, Kind => External);
-               Set_External_Id
-                 (For_Agent => Interrupt_Agent, Id => Id);
-               Activate_Interrupt_Agent
-                 (Oak_Kernel => My_Kernel_Id, Interrupt => Interrupt_Agent);
-            end Handle_External_Interrupt;
+            Handle_External_Interrupt;
 
          when Timer =>
 
@@ -579,6 +585,16 @@ package body Oak.Core is
          Next_Timer := No_Timer;
 
       else
+         --  Check to see if there are any pending external interrupts to
+         --  save switching unnecessarily to another agent and then imediately
+         --  back through here again.
+
+         if Has_Outstanding_Interrupts then
+            Handle_External_Interrupt;
+         end if;
+
+         --  Pick next agent to run
+
          declare
             P               : Any_Priority;
             Interrupt_Agent : constant Interrupt_Id_With_No :=

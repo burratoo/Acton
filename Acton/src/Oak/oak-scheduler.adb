@@ -207,8 +207,12 @@ package body Oak.Scheduler is
       --  agent cannot do it itself). Note the sleep agent is alway runnable
       --  and is equivilent to No_Agent, hence no test needs to be done here.
 
-      Agent_Prior_State := State (Message.Next_Agent);
-      Set_State (Message.Next_Agent, Runnable);
+      if State (Message.Next_Agent) = Sleeping then
+         Agent_Prior_State := Sleeping;
+         Set_State (Message.Next_Agent, Runnable);
+      else
+         Agent_Prior_State := Runnable;
+      end if;
 
       --  The scheduler agent is placed back on the charge list
       --  if its when charge state is not Only_While_Running or

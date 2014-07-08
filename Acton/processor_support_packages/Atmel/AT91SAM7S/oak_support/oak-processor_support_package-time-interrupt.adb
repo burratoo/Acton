@@ -12,14 +12,14 @@ package body Oak.Processor_Support_Package.Time.Interrupt is
       Ack       : Address with Unreferenced;
       PIT_Value : Timer_Value_Type with Unreferenced;
    begin
-      Internal_Clock := Internal_Clock + 1;
-
       Ack := Interrupt_Vector_Register; -- Acknowledge interrupt
       PIT_Value := Periodic_Interval_Timer_Value_Register;
 
       Interrupt_Clear_Command_Register.Clear_Interrupt :=
         (P_FIQ => True, P_SYSC => True, others => False);
       End_Of_Interrupt_Command_Register := 1;
+
+      Internal_Clock := Internal_Clock + 1;
 
       if Alarm_Armed and then Internal_Clock > Alarm_Time
         and then not Saved_Program_Status_Register.IRQ_Disable

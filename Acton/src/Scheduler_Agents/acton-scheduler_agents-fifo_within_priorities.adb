@@ -187,7 +187,7 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
          pragma Assert (Agent = Queue_Head.Agent);
 
          case State (Agent) is
-            when Sleep =>
+            when Sleeping =>
                --  Remove agent from its runnable queue and insert it into the
                --  sleep queue.
 

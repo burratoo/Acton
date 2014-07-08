@@ -81,6 +81,11 @@ package body Oak.Agent.Oak_Agent is
                   Charge_Execution_Time (Agent, Exec_Time);
                end if;
          end case;
+
+         if Agent in Scheduler_Id then
+            Increment_Execution_Cycle_Count (Agent);
+         end if;
+
          Agent := Agent_Pool (Agent).Next_Charge_Agent;
          exit when Agent = No_Agent;
       end loop;

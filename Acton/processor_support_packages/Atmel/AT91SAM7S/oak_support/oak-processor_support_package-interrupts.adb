@@ -71,4 +71,9 @@ package body Oak.Processor_Support_Package.Interrupts is
         (Parameterless_Access (AIC_Vector_Table (Interrupt)));
    end Handler_Protected_Object;
 
+   function Has_Outstanding_Interrupts return Boolean is
+   begin
+      return Core_Interrupt_Status_Register.NIRQ = Active;
+   end Has_Outstanding_Interrupts;
+
 end Oak.Processor_Support_Package.Interrupts;

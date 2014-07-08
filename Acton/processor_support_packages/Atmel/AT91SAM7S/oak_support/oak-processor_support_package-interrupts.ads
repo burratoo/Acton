@@ -29,6 +29,8 @@ package Oak.Processor_Support_Package.Interrupts with Preelaborate is
    procedure Set_Hardware_Priority (P : Any_Priority);
    procedure Clear_Hardware_Priority;
 
+   function Has_Outstanding_Interrupts return Boolean;
+
 private
    AIC_Vector_Table : array (External_Interrupt_Id) of Parameterless_Handler :=
                         (others => null);

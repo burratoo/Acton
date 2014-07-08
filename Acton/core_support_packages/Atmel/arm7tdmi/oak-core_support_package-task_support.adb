@@ -62,7 +62,7 @@ package body Oak.Core_Support_Package.Task_Support is
    procedure Context_Switch_Save_Callee_Registers is
    begin
       Asm ("swi 0", Volatile => True,
-           Clobber => "r4, r5, r6, r7, r8, r9, r10"); -- , r11");
+           Clobber => "r4, r5, r6, r7, r8, r9, r10, r12"); -- , r11");
    end Context_Switch_Save_Callee_Registers;
 
    ------------------------------------------------

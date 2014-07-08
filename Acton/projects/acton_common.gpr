@@ -38,7 +38,7 @@ abstract project Acton_Common is
                          "Oak.Scheduler"
 );
 
-   Ada_Switches := ("-gnatwa.Xl", "-g", "-O2", "-gnatn", "-gnatg",  "-ffunction-sections", "-fdata-sections");
+   Ada_Switches := ("-gnatwa.Xl", "-g", "-O2", "-gnatn", "-gnatg",  "-ffunction-sections", "-fdata-sections", "-gnatp");
    Asm_Switches := ("-g");
 
    Documentation_Dir := "../doc/";

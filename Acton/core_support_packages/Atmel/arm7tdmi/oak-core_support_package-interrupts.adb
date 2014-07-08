@@ -352,6 +352,7 @@ package body Oak.Core_Support_Package.Interrupts is
                  and then Current_Priority (This_Oak_Kernel)
                  not in Interrupt_Priority)
       then
+         Asm ("msr spsr_c, #0x10", Volatile => True);
          Switch_To_IRQ_Mode;
          Asm ("mov sp, r5",  Volatile => True);
       else

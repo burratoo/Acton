@@ -8,7 +8,6 @@ package Oak.States with Pure is
       Running,                      -- 5
       Runnable,                     -- 6
       Sleeping,                     -- 7
-      Sleeping_And_Waiting,         -- 8
       Waiting_For_Event,            -- 9
       Waiting_For_Protected_Object, -- 10
       Inactive,                     -- 11
@@ -39,9 +38,6 @@ package Oak.States with Pure is
 
    subtype Waiting is Agent_State range
      Waiting_For_Event .. Waiting_For_Protected_Object;
-
-   subtype Sleep is Agent_State range
-     Sleeping .. Sleeping_And_Waiting;
 
    subtype Interrupt_States is Agent_State range
      Handling_Interrupt .. Interrupt_Done;
