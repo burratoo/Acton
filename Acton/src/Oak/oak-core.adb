@@ -585,24 +585,28 @@ package body Oak.Core is
          Next_Timer := No_Timer;
 
       else
-         --  Check to see if there are any pending external interrupts to
-         --  save switching unnecessarily to another agent and then imediately
-         --  back through here again.
-
-         if Has_Outstanding_Interrupts then
-            Handle_External_Interrupt;
-         end if;
 
          --  Pick next agent to run
 
          declare
             P               : Any_Priority;
-            Interrupt_Agent : constant Interrupt_Id_With_No :=
+            Interrupt_Agent : Interrupt_Id_With_No :=
                                 Find_Top_Active_Interrupt (My_Kernel_Id);
          begin
             Check_Sechduler_Agents_For_Next_Agent_To_Run
               (Next_Agent_To_Run => Next_Agent,
                Top_Priority      => P);
+
+            --  Check to see if there are any pending external interrupts to
+            --  save switching unnecessarily to another agent and then
+            --  imediately back through here again.
+
+            if Has_Outstanding_Interrupts
+              (Above_Priority => Normal_Priority (Interrupt_Agent))
+            then
+               Handle_External_Interrupt;
+               Interrupt_Agent := Find_Top_Active_Interrupt (My_Kernel_Id);
+            end if;
 
             --  Check to see if any interrupt agents are active and have a
             --  priority equal to and above the agent selected above.

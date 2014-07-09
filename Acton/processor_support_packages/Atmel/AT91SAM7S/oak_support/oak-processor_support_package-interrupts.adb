@@ -71,9 +71,11 @@ package body Oak.Processor_Support_Package.Interrupts is
         (Parameterless_Access (AIC_Vector_Table (Interrupt)));
    end Handler_Protected_Object;
 
-   function Has_Outstanding_Interrupts return Boolean is
+   function Has_Outstanding_Interrupts (Above_Priority : Any_Priority)
+                                        return Boolean is
    begin
-      return Core_Interrupt_Status_Register.NIRQ = Active;
+      return Core_Interrupt_Status_Register.NIRQ  = Active
+        and Above_Priority = 0;
    end Has_Outstanding_Interrupts;
 
 end Oak.Processor_Support_Package.Interrupts;

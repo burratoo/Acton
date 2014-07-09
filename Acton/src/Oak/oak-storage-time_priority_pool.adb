@@ -10,6 +10,7 @@
 ------------------------------------------------------------------------------
 
 package body Oak.Storage.Time_Priority_Pool is
+   pragma Suppress (All_Checks);
 
    --  ???? TODO: Need to write some code to verify this actually works. Spark
    --  should help.

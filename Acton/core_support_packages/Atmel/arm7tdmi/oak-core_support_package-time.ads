@@ -8,12 +8,12 @@ package Oak.Core_Support_Package.Time with Pure is
 
    --     type Oak_Time_Span is new Oak_Time; for Oak_Time_Span'Size use 32;
 
-   Oak_Time_Unit      : constant := 1 / 1E3;
+   Oak_Time_Unit      : constant := 1 / 1E4;
    Oak_Time_Span_Unit : constant := 1;
 
    Oak_Tick : constant := 1;
 
-   Ticks_Per_Second : constant := 10_00;
+   Ticks_Per_Second : constant := 10_000;
 
    function Get_Clock return Oak_Time
      with Import,
