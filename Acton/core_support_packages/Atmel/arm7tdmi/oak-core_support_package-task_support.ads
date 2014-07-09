@@ -43,6 +43,9 @@ package Oak.Core_Support_Package.Task_Support with Preelaborate is
    procedure Context_Switch_Will_Switch_In_Place with Inline_Always;
    --  Procedures that set up the appropriate interrupt handlers.
 
+   procedure Enter_Barrier_Function with Inline_Always;
+   procedure Exit_Barrier_Function with Inline_Always;
+
    procedure Set_Oak_Wake_Up_Timer (Wake_Up_At : Oak.Oak_Time.Time);
 
    procedure Sleep_Agent_Run_Loop;

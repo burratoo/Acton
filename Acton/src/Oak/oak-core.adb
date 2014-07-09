@@ -590,37 +590,45 @@ package body Oak.Core is
 
          declare
             P               : Any_Priority;
-            Interrupt_Agent : Interrupt_Id_With_No :=
+            Interrupt_Agent : constant Interrupt_Id_With_No :=
                                 Find_Top_Active_Interrupt (My_Kernel_Id);
+            Protected_Agent : constant Protected_Id_With_No :=
+                                Next_Protected_Agent_To_Run (My_Kernel_Id);
          begin
             Check_Sechduler_Agents_For_Next_Agent_To_Run
               (Next_Agent_To_Run => Next_Agent,
                Top_Priority      => P);
 
-            --  Check to see if there are any pending external interrupts to
-            --  save switching unnecessarily to another agent and then
-            --  imediately back through here again.
-
-            if Has_Outstanding_Interrupts
-              (Above_Priority => Normal_Priority (Interrupt_Agent))
-            then
-               Handle_External_Interrupt;
-               Interrupt_Agent := Find_Top_Active_Interrupt (My_Kernel_Id);
-            end if;
-
-            --  Check to see if any interrupt agents are active and have a
-            --  priority equal to and above the agent selected above.
+            --  Check to see if any interrupt or protected agents are active
+            --  and have a priority equal to and above the agent selected
+            --  above.
 
             --  Select the interrupt agent if it has a priority equal to or
             --  higher than the agent selected above. Note that it does not
             --  matter if either Next_Agent or Interrut_Agent is No_Agent as
             --  it maps to the sleep agent that has a value of
-            --  Priority'First.
+            --  Priority'First. Same applies to protected agents
+
+            if Normal_Priority (Protected_Agent) >= P then
+               P := Normal_Priority (Protected_Agent);
+               Next_Agent := Protected_Agent;
+            end if;
 
             if Normal_Priority (Interrupt_Agent) >= P then
                P := Normal_Priority (Interrupt_Agent);
                Next_Agent := Interrupt_Agent;
             end if;
+
+            --  Check to see if there are any pending external interrupts to
+            --  save switching unnecessarily to another agent and then
+            --  imediately back through here again.
+
+--              if Has_Outstanding_Interrupts
+--                (Above_Priority => Normal_Priority (Next_Agent))
+--              then
+--                 Handle_External_Interrupt;
+--                 Next_Agent := Find_Top_Active_Interrupt (My_Kernel_Id);
+--              end if;
 
             --  Set the current priority the core is running at now (which may
             --  not correspond to the current agent's priority due to the

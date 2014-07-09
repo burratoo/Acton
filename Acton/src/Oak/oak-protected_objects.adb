@@ -10,11 +10,13 @@
 ------------------------------------------------------------------------------
 
 with Oak.Agent.Oak_Agent;         use Oak.Agent.Oak_Agent;
+with Oak.Agent.Kernel;            use Oak.Agent.Kernel;
 with Oak.Agent.Protected_Objects; use Oak.Agent.Protected_Objects;
 with Oak.Agent.Tasks;             use Oak.Agent.Tasks;
 
-with Oak.Scheduler; use Oak.Scheduler;
+with Oak.Core;      use Oak.Core;
 with Oak.States;    use Oak.States;
+with Oak.Scheduler; use Oak.Scheduler;
 
 package body Oak.Protected_Objects is
 
@@ -66,6 +68,8 @@ package body Oak.Protected_Objects is
       --  Acquire_Lock  (PO);
 
       if not Resubmitted then
+         --  FIXME! Not sure if this is needed. Maybe able to mask it in the
+         --  future?
          Remove_Agent_From_Scheduler (Agent => Entering_Agent);
          Set_Id_Of_Entry (Entering_Agent, Entry_Id);
       end if;
@@ -133,7 +137,7 @@ package body Oak.Protected_Objects is
             if State (PO) = Inactive then
                --  Run protected agent
                Set_State (For_Agent => PO, State => Runnable);
-               Add_Agent_To_Scheduler (PO);
+               Add_Protected_Agent_To_Kernel (This_Oak_Kernel, PO);
             end if;
          end if;
 
@@ -172,6 +176,8 @@ package body Oak.Protected_Objects is
 
       Set_State (Exiting_Agent, Runnable);
       Remove_Task_From_Within_Protected_Object (PO, Exiting_Agent);
+
+      --  FIXME! Currently we do not remove agents from schedulers.
       Add_Agent_To_Scheduler (Exiting_Agent);
 
       if Has_Entries (PO) then
@@ -234,7 +240,10 @@ package body Oak.Protected_Objects is
       --  protected object is made inactive.
 
       if Agent_That_Is_Entering = No_Agent then
-         Remove_Agent_From_Scheduler (PO);
+         --  FIXME! PO are never added to the scheduler in the first place in
+         --  this implementation
+         --  Remove_Agent_From_Scheduler (PO);
+         Remove_Protected_Agent_From_Kernel (This_Oak_Kernel, PO);
          Set_State (PO, Inactive);
 
          --  Object release point 3.
@@ -286,7 +295,11 @@ package body Oak.Protected_Objects is
 
          --  Run protected agent
          Set_State (For_Agent => PO, State => Runnable);
-         Add_Agent_To_Scheduler (PO);
+
+         --  FIXME! This implementation does not scheduler agents to the
+         --  scheduler
+         --  Add_Agent_To_Scheduler (PO);
+         Add_Protected_Agent_To_Kernel (This_Oak_Kernel, PO);
       else
          Set_State (PO, Inactive);
       end if;

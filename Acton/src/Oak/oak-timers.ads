@@ -17,7 +17,7 @@ with Oak.Oak_Time;
 
 with Oak.Agent;                   use Oak.Agent;
 with Oak.Project_Support_Package; use Oak.Project_Support_Package;
-with Oak.Storage.Unsorted_Pool;
+with Oak.Storage.Time_Priority_Pool;
 
 with System; use System;
 
@@ -190,7 +190,7 @@ private
    function Timer_Priority (Timer : in Oak_Timer) return Oak_Priority
      with Inline;
 
-   package Storage is new Oak.Storage.Unsorted_Pool
+   package Storage is new Oak.Storage.Time_Priority_Pool
      (Element_Type  => Oak_Timer,
       Key_Type      => Oak_Time.Time,
       Node_Location => Oak_Timer_Id,

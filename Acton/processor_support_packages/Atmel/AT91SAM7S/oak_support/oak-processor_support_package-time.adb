@@ -21,6 +21,11 @@ package body Oak.Processor_Support_Package.Time is
 
       Fast_Forcing_Enable_Register.Interrupt :=
         (P_SYSC => Enable, others => No_Change);
+
+      Interrupt_Enable_Command_Register.Interrupt :=
+        (P_FIQ  => Enable,
+         P_SYSC => Enable,
+         others => No_Change);
    end Initialise_Clock;
 
    procedure Update_Alarm (To : in Oak.Core_Support_Package.Time.Oak_Time) is

@@ -146,7 +146,7 @@ package Atmel.AT91SAM7S.AIC with Preelaborate is
      with Address => System'To_Address (AIC_Base_Address + IVR_Offset_Address);
 
    FIQ_Vector_Register : Address
-     with Address => System'To_Address (AIC_Base_Address + IVR_Offset_Address);
+     with Address => System'To_Address (AIC_Base_Address + FVR_Offset_Address);
 
    Interrupt_Status_Register : Interrupt_Status_Type
      with Address => System'To_Address (AIC_Base_Address + ISR_Offset_Address);
@@ -167,7 +167,7 @@ package Atmel.AT91SAM7S.AIC with Preelaborate is
 
    Interrupt_Disable_Command_Register : Interrupt_Disable_No_Change_Type
      with Address => System'To_Address
-       (AIC_Base_Address + IECR_Offset_Address);
+       (AIC_Base_Address + IDCR_Offset_Address);
 
    Interrupt_Clear_Command_Register : Interrupt_Clear_Type
      with Address => System'To_Address
@@ -175,7 +175,7 @@ package Atmel.AT91SAM7S.AIC with Preelaborate is
 
    Interrupt_Set_Command_Register : Interrupt_Set_Type
      with Address => System'To_Address
-       (AIC_Base_Address + ICCR_Offset_Address);
+       (AIC_Base_Address + ISCR_Offset_Address);
 
    End_Of_Interrupt_Command_Register : Unsigned_32
      with Address => System'To_Address

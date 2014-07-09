@@ -132,6 +132,19 @@ package Oak.Agent.Kernel with Preelaborate is
       Time       : in Oak_Time.Time);
    --  Set the time for the kernel's Entry/Exit time stamp.
 
+   --  Protected object handling code
+
+   procedure Add_Protected_Agent_To_Kernel
+     (Oak_Kernel : in Kernel_Id;
+      Agent      : in Protected_Id);
+
+   procedure Remove_Protected_Agent_From_Kernel
+     (Oak_Kernel : in Kernel_Id;
+      Agent      : in Protected_Id);
+
+   function Next_Protected_Agent_To_Run
+     (Oak_Kernel : in Kernel_Id) return Protected_Id_With_No;
+
 private
 
    -------------------
@@ -178,6 +191,9 @@ private
 
       Entry_Exit_Stamp   : Oak_Time.Time;
       --  The time the kernel entered/exited its run loop.
+
+      Active_Protected_Agents : Protected_Id_With_No;
+      --  List of active protected agents sorted by priority.
 
       Interrupt_Agents   : Interrupt_Ids;
       --  An array of interrupt agents that handle interrupts, with an

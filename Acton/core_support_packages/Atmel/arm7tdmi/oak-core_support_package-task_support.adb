@@ -95,6 +95,27 @@ package body Oak.Core_Support_Package.Task_Support is
       SWI_Return_Vector := In_Place_Context_Switch_To_Oak_Interrupt'Address;
    end Context_Switch_Will_Switch_In_Place;
 
+   ----------------------------
+   -- Enter_Barrier_Function --
+   ----------------------------
+
+   procedure Enter_Barrier_Function is
+   begin
+      null;
+      --        Context_Switch_Will_Switch_In_Place;
+      --        Context_Switch_Save_Callee_Registers;
+   end Enter_Barrier_Function;
+
+   ---------------------------
+   -- Exit_Barrier_Function --
+   ---------------------------
+
+   procedure Exit_Barrier_Function is
+   begin
+      null;
+      --        Context_Switch;
+   end Exit_Barrier_Function;
+
    ---------------------------
    -- Set_Oak_Wake_Up_Timer --
    ---------------------------

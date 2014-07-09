@@ -177,11 +177,12 @@ package body Oak.Agent.Kernel is
       Setup_Kernel_Agent : declare
          K : Oak_Kernel_Record renames Agent_Pool (Agent);
       begin
-         K.Schedulers        := No_Agent;
-         K.Current_Agent     := No_Agent;
-         K.Entry_Exit_Stamp  := Clock;
-         K.Interrupt_States  := (others => Inactive);
-         K.Budgets_To_Charge := No_Agent;
+         K.Schedulers              := No_Agent;
+         K.Current_Agent           := No_Agent;
+         K.Entry_Exit_Stamp        := Clock;
+         K.Active_Protected_Agents := No_Agent;
+         K.Interrupt_States        := (others => Inactive);
+         K.Budgets_To_Charge       := No_Agent;
 
          for P in K.Interrupt_Agents'Range loop
             New_Interrupt_Agent
@@ -329,5 +330,61 @@ package body Oak.Agent.Kernel is
    begin
       Agent_Pool (Oak_Kernel).Entry_Exit_Stamp := Time;
    end Set_Entry_Exit_Stamp;
+
+   procedure Add_Protected_Agent_To_Kernel
+     (Oak_Kernel : in Kernel_Id;
+      Agent      : in Protected_Id)
+   is
+      Prev_A : Protected_Id_With_No := No_Agent;
+      A      : Protected_Id_With_No :=
+                     Agent_Pool (Oak_Kernel).Active_Protected_Agents;
+   begin
+      if A = No_Agent then
+         Agent_Pool (Oak_Kernel).Active_Protected_Agents := Agent;
+         Set_Next_Agent (Agent, No_Agent);
+      else
+         while Normal_Priority (Agent) < Normal_Priority (A) loop
+            Prev_A := A;
+            A      := Next_Agent (A);
+         end loop;
+
+         if Prev_A = No_Agent then
+            Agent_Pool (Oak_Kernel).Active_Protected_Agents := Agent;
+         else
+            Set_Next_Agent (Prev_A, Agent);
+         end if;
+
+         Set_Next_Agent (Agent, A);
+      end if;
+   end Add_Protected_Agent_To_Kernel;
+
+   procedure Remove_Protected_Agent_From_Kernel
+     (Oak_Kernel : in Kernel_Id;
+      Agent      : in Protected_Id)
+   is
+      Prev_A : Protected_Id_With_No := No_Agent;
+      A      : Protected_Id_With_No :=
+                 Agent_Pool (Oak_Kernel).Active_Protected_Agents;
+   begin
+      if A = Agent then
+         Agent_Pool (Oak_Kernel).Active_Protected_Agents :=
+           Next_Agent (Agent);
+      else
+         while A /= Agent and A /= No_Agent loop
+            Prev_A := A;
+            A      := Next_Agent (A);
+         end loop;
+
+         if A /= No_Agent then
+            Set_Next_Agent (Prev_A, Next_Agent (A));
+         end if;
+      end if;
+   end Remove_Protected_Agent_From_Kernel;
+
+   function Next_Protected_Agent_To_Run
+     (Oak_Kernel : in Kernel_Id) return Protected_Id_With_No is
+   begin
+      return Agent_Pool (Oak_Kernel).Active_Protected_Agents;
+   end Next_Protected_Agent_To_Run;
 
 end Oak.Agent.Kernel;

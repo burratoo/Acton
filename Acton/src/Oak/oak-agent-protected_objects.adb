@@ -19,7 +19,6 @@ with Oak.Scheduler;               use Oak.Scheduler;
 
 with Oak.Processor_Support_Package; use Oak.Processor_Support_Package;
 with Oak.Core_Support_Package.Task_Support;
-use  Oak.Core_Support_Package.Task_Support;
 
 package body Oak.Agent.Protected_Objects is
 
@@ -200,16 +199,15 @@ package body Oak.Agent.Protected_Objects is
       --  Switching across requires the callee registers to be saved since we
       --  cannot trust the agent not to damage them.
 
-      Context_Switch_Will_Switch_In_Place;
-      Context_Switch_Save_Callee_Registers;
+      Oak.Core_Support_Package.Task_Support.Enter_Barrier_Function;
 
       Task_Action
-        (Protected_Object => Protected_Object,
-         Open_Entry       => Open_Entry,
-         Exception_Raised => Exception_Raised,
-         Preference       => Preference);
+          (Protected_Object => Protected_Object,
+           Open_Entry       => Open_Entry,
+           Exception_Raised => Exception_Raised,
+           Preference       => Preference);
 
-      Context_Switch;
+      Oak.Core_Support_Package.Task_Support.Exit_Barrier_Function;
    end Find_Open_Entry;
 
    -----------------------------------------
