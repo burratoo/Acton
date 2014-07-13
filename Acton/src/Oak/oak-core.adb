@@ -277,10 +277,18 @@ package body Oak.Core is
          when First_Run =>
             --  First time the kernel instance has run. Initialise Scheduler
             --  Agents.
+            Flush_Scheduler_Ops_Stack (Oak_Kernel => My_Kernel_Id);
+
+            Push_Scheduler_Op
+              (Oak_Kernel => My_Kernel_Id,
+               Scheduler  => Top_Level_Schedulers (My_Kernel_Id),
+               Operation  => (Message_Type   => Initialising_Agents,
+                              Agents_To_Init =>
+                                 Top_Level_Schedulers (My_Kernel_Id)));
+
             declare
                Master_Task   : constant Task_Id     := Task_Id'First;
             begin
-               Flush_Scheduler_Ops_Stack (Oak_Kernel => My_Kernel_Id);
                pragma Warnings (Off, "*True*");
                if My_Kernel_Id = 1 then
                   Push_Scheduler_Op
@@ -291,13 +299,6 @@ package body Oak.Core is
                end if;
                pragma Warnings (On, "*True*");
             end;
-
-            Push_Scheduler_Op
-              (Oak_Kernel => My_Kernel_Id,
-               Scheduler  => Top_Level_Schedulers (My_Kernel_Id),
-               Operation  => (Message_Type   => Initialising_Agents,
-                              Agents_To_Init =>
-                                 Top_Level_Schedulers (My_Kernel_Id)));
 
          when Agent_Request =>
             --  The task has yielded to tell or ask Oak something. The agent
@@ -516,7 +517,7 @@ package body Oak.Core is
       --  Pick a next Agent to run
 
       if Has_Scheduler_Operations_Pending (My_Kernel_Id) then
-         Pop_Scheduler_Op
+         Pull_Scheduler_Op
            (Oak_Kernel => My_Kernel_Id,
             Scheduler  => Next_Agent,
             Operation  => Message_To_Agent);
@@ -592,8 +593,8 @@ package body Oak.Core is
             P               : Any_Priority;
             Interrupt_Agent : constant Interrupt_Id_With_No :=
                                 Find_Top_Active_Interrupt (My_Kernel_Id);
-            Protected_Agent : constant Protected_Id_With_No :=
-                                Next_Protected_Agent_To_Run (My_Kernel_Id);
+--              Protected_Agent : constant Protected_Id_With_No :=
+--                                  Next_Protected_Agent_To_Run (My_Kernel_Id);
          begin
             Check_Sechduler_Agents_For_Next_Agent_To_Run
               (Next_Agent_To_Run => Next_Agent,
@@ -607,12 +608,7 @@ package body Oak.Core is
             --  higher than the agent selected above. Note that it does not
             --  matter if either Next_Agent or Interrut_Agent is No_Agent as
             --  it maps to the sleep agent that has a value of
-            --  Priority'First. Same applies to protected agents
-
-            if Normal_Priority (Protected_Agent) >= P then
-               P := Normal_Priority (Protected_Agent);
-               Next_Agent := Protected_Agent;
-            end if;
+            --  Priority'First.
 
             if Normal_Priority (Interrupt_Agent) >= P then
                P := Normal_Priority (Interrupt_Agent);

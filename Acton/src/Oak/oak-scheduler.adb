@@ -25,6 +25,17 @@ package body Oak.Scheduler is
 
    procedure Add_Agent_To_Scheduler (Agent : in Oak_Agent_Id) is
    begin
+      --  Initialise the the scheduler agent first before it is added to its
+      --  scheduler agent ??? Do I really need to do this???
+
+      if Agent in Scheduler_Id and then State (Agent) = Not_Initialised then
+         Push_Scheduler_Op
+           (Oak_Kernel => This_Oak_Kernel,
+            Scheduler  => Agent,
+            Operation  => (Message_Type => No_Message));
+         Set_State (Agent, Sleeping);
+      end if;
+
       --  If a scheduler agent is schedulable, it must have its scheduler agent
       --  recorded.
 
@@ -38,16 +49,6 @@ package body Oak.Scheduler is
          Operation  => (Message_Type => Adding_Agent,
                         Agent_To_Add => Agent));
 
-      --  Initialise the the scheduler agent first before it is added to its
-      --  scheduler agent ??? Do I really need to do this???
-
-      if Agent in Scheduler_Id and then State (Agent) = Not_Initialised then
-         Push_Scheduler_Op
-           (Oak_Kernel => This_Oak_Kernel,
-            Scheduler  => Agent,
-            Operation  => (Message_Type => No_Message));
-         Set_State (Agent, Sleeping);
-      end if;
    end Add_Agent_To_Scheduler;
 
    -----------------------------

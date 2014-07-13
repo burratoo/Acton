@@ -85,7 +85,7 @@ package Oak.Agent.Kernel with Preelaborate is
    --  Returns the Id of the interrupt agent responsible for handling
    --  interrupts at the given priority.
 
-   procedure Pop_Scheduler_Op
+   procedure Pull_Scheduler_Op
      (Oak_Kernel : in  Kernel_Id;
       Scheduler  : out Scheduler_Id;
       Operation  : out Oak_Message);
@@ -208,7 +208,7 @@ private
       --  A list of agent budgets to charge for the preceding use of the
       --  processor.
 
-      Scheduler_Ops : Scheduler_Ops_Stack;
+      Scheduler_Ops      : Scheduler_Ops_Stack;
    end record;
 
    --------------------------
@@ -245,7 +245,9 @@ private
      (Oak_Kernel : in Kernel_Id)
       return Boolean is
      (Agent_Pool (Oak_Kernel).Scheduler_Ops
-      (Scheduler_Op_Id'First).Scheduler_Agent /= No_Agent);
+      (Scheduler_Op_Id'First).Scheduler_Agent /= No_Agent or
+          Agent_Pool (Oak_Kernel).Scheduler_Ops
+      (Scheduler_Op_Id'Last).Scheduler_Agent /= No_Agent);
 
    function Interrupt_For_Priority
      (Oak_Kernel : in Kernel_Id;

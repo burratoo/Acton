@@ -192,11 +192,11 @@ package body Oak.Agent.Kernel is
       end Setup_Kernel_Agent;
    end New_Kernel_Agent;
 
-   ----------------------
-   -- Pop_Scheduler_Op --
-   ----------------------
+   -----------------------
+   -- Pull_Scheduler_Op --
+   -----------------------
 
-   procedure Pop_Scheduler_Op
+   procedure Pull_Scheduler_Op
      (Oak_Kernel : in  Kernel_Id;
       Scheduler  : out Scheduler_Id;
       Operation  : out Oak_Message)
@@ -207,12 +207,12 @@ package body Oak.Agent.Kernel is
       --  Note that we optimise Push_ and Pop_Scheduler_Op since there are only
       --  two slots in the stack.
 
-      if K.Scheduler_Ops (Scheduler_Op_Id'Last).Scheduler_Agent /=
+      if K.Scheduler_Ops (Scheduler_Op_Id'First).Scheduler_Agent /=
         No_Agent
       then
-         Slot_Number := Scheduler_Op_Id'Last;
-      else
          Slot_Number := Scheduler_Op_Id'First;
+      else
+         Slot_Number := Scheduler_Op_Id'Last;
          pragma Assert
            (K.Scheduler_Ops (Slot_Number).Scheduler_Agent /= No_Agent);
       end if;
@@ -220,7 +220,7 @@ package body Oak.Agent.Kernel is
       Scheduler := K.Scheduler_Ops (Slot_Number).Scheduler_Agent;
       Operation := K.Scheduler_Ops (Slot_Number).Operation;
       K.Scheduler_Ops (Slot_Number).Scheduler_Agent := No_Agent;
-   end Pop_Scheduler_Op;
+   end Pull_Scheduler_Op;
 
    -----------------------
    -- Push_Scheduler_Op --
