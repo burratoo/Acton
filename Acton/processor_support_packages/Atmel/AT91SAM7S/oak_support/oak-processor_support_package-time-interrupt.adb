@@ -19,6 +19,12 @@ package body Oak.Processor_Support_Package.Time.Interrupt is
 
       Internal_Clock := Internal_Clock + 1;
 
+      if Internal_Clock = 200_000 then
+         loop
+            null;
+         end loop;
+      end if;
+
       if Alarm_Armed and then Internal_Clock > Alarm_Time
         and then not Saved_Program_Status_Register.IRQ_Disable
       then

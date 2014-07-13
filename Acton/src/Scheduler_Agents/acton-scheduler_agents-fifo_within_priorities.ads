@@ -16,7 +16,7 @@ with System;              use System;
 with Oak.Project_Support_Package; use Oak.Project_Support_Package;
 
 with Oak.Storage.Priority_Queue;
-with Oak.Storage.Binary_Heap;
+with Oak.Storage.Time_Priority_Queue;
 
 --  with Oak.Project_Support_Package; use Oak.Project_Support_Package;
 
@@ -40,7 +40,7 @@ private
      with Inline;
    function Priority_Greater_Equal (Left, Right : in Oak_Agent_Id)
                                       return Boolean with Inline;
-   function Wake_Greater_Than (Left, Right : in Oak_Agent_Id) return Boolean
+   function Wake_Less_Than (Left, Right : in Oak_Agent_Id) return Boolean
      with Inline;
 
    package Priority_Queue is new Oak.Storage.Priority_Queue
@@ -52,11 +52,13 @@ private
 
    use Priority_Queue;
 
-   package Time_Queue is new Oak.Storage.Binary_Heap
-     (Item_Type                    => Oak_Agent_Id,
-      No_Item                      => No_Agent,
-      Size                         => Max_Task_Agents + Max_Scheduler_Agents,
-      ">"                          => Wake_Greater_Than);
+   package Time_Queue is new Oak.Storage.Time_Priority_Queue
+     (Item_Type     => Oak_Agent_Id,
+      Index_Type    => Internal_Agent_Id,
+      Priority_Type => Oak_Priority,
+      No_Item       => No_Agent,
+      "<"           => Wake_Less_Than,
+      Priority      => Normal_Priority);
 
    use Time_Queue;
 
