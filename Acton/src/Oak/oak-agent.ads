@@ -80,20 +80,20 @@ package Oak.Agent with Pure is
    Kernel_Id_Low_Bound  : constant := Oak_Agent_Id'Succ (Sleep_Agent);
    Kernel_Id_High_Bound : constant := Oak_Agent_Id'First + Max_Kernel_Agents;
 
-   Scheduler_Id_Low_Bound  : constant :=
-                               Kernel_Id_High_Bound + 1;
-   Scheduler_Id_High_Bound : constant :=
-                               Kernel_Id_High_Bound + Max_Scheduler_Agents;
-
    Interrupt_Id_Low_Bound  : constant :=
-                               Scheduler_Id_High_Bound + 1;
+                               Kernel_Id_High_Bound + 1;
    Interrupt_Id_High_Bound : constant :=
-                               Scheduler_Id_High_Bound + Max_Interrupt_Agents;
+                               Kernel_Id_High_Bound + Max_Interrupt_Agents;
+
+   Scheduler_Id_Low_Bound  : constant :=
+                               Interrupt_Id_High_Bound + 1;
+   Scheduler_Id_High_Bound : constant :=
+                               Interrupt_Id_High_Bound + Max_Scheduler_Agents;
 
    Task_Id_Low_Bound       : constant :=
-                               Interrupt_Id_High_Bound + 1;
+                               Scheduler_Id_High_Bound + 1;
    Task_Id_High_Bound      : constant :=
-                               Interrupt_Id_High_Bound + Max_Task_Agents;
+                               Scheduler_Id_High_Bound + Max_Task_Agents;
 
    Protected_Id_Low_Bound  : constant :=
                                Task_Id_High_Bound + 1;
@@ -105,11 +105,11 @@ package Oak.Agent with Pure is
    subtype Kernel_Id                is Oak_Agent_Id
      range Kernel_Id_Low_Bound        .. Kernel_Id_High_Bound;
 
-   subtype Scheduler_Id             is Oak_Agent_Id
-     range Scheduler_Id_Low_Bound     .. Scheduler_Id_High_Bound;
-
    subtype Interrupt_Id             is Oak_Agent_Id
      range Interrupt_Id_Low_Bound     .. Interrupt_Id_High_Bound;
+
+   subtype Scheduler_Id             is Oak_Agent_Id
+   range Scheduler_Id_Low_Bound     .. Scheduler_Id_High_Bound;
 
    subtype Task_Id                  is Oak_Agent_Id
      range Task_Id_Low_Bound          .. Task_Id_High_Bound;
@@ -128,11 +128,11 @@ package Oak.Agent with Pure is
    subtype Kernel_Id_With_No is Oak_Agent_Id
      with Static_Predicate => Kernel_Id_With_No in No_Agent | Kernel_Id;
 
-   subtype Scheduler_Id_With_No is Oak_Agent_Id
-     with Static_Predicate => Scheduler_Id_With_No in No_Agent | Scheduler_Id;
-
    subtype Interrupt_Id_With_No is Oak_Agent_Id
      with Static_Predicate => Interrupt_Id_With_No in No_Agent | Interrupt_Id;
+
+   subtype Scheduler_Id_With_No is Oak_Agent_Id
+   with Static_Predicate => Scheduler_Id_With_No in No_Agent | Scheduler_Id;
 
    subtype Task_Id_With_No is Oak_Agent_Id
      with Static_Predicate => Task_Id_With_No in No_Agent | Task_Id;

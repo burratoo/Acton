@@ -623,12 +623,12 @@ package body Oak.Core is
             --  save switching unnecessarily to another agent and then
             --  imediately back through here again.
 
---              if Has_Outstanding_Interrupts
---                (Above_Priority => Normal_Priority (Next_Agent))
---              then
---                 Handle_External_Interrupt;
---                 Next_Agent := Find_Top_Active_Interrupt (My_Kernel_Id);
---              end if;
+            if Has_Outstanding_Interrupts
+              (Above_Priority => Normal_Priority (Next_Agent))
+            then
+               Handle_External_Interrupt;
+               Next_Agent := Find_Top_Active_Interrupt (My_Kernel_Id);
+            end if;
 
             --  Set the current priority the core is running at now (which may
             --  not correspond to the current agent's priority due to the

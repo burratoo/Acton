@@ -2,15 +2,15 @@
 --                                                                          --
 --                              OAK COMPONENTS                              --
 --                                                                          --
---                      OAK.STORAGE.TIME_PRIORITY_POOL                      --
+--                        OAK.STORAGE.PRIORITY_QUEUE                        --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
 --                 Copyright (C) 2013-2014, Patrick Bernardi                --
 ------------------------------------------------------------------------------
 
-package body Oak.Storage.Time_Priority_Pool is
-   pragma Suppress (All_Checks);
+package body Oak.Storage.Priority_Queue is
+--     pragma Suppress (All_Checks);
 
    --  ???? TODO: Need to write some code to verify this actually works. Spark
    --  should help.
@@ -20,33 +20,29 @@ package body Oak.Storage.Time_Priority_Pool is
    -----------------------
 
    procedure Allocate_Node
-     (Pool     : in out Pool_Type;
-      New_Node : out Node_Location);
+     (Queue    : in out Queue_Type;
+      New_Node : out Index_Type);
    --  Allocate storage for a node.
 
    procedure Deallocate_Node
-     (Pool    : in out Pool_Type;
-      Node_Id : in Node_Location);
-   --  Deallocate a node from the storage pool. The node to be deallocated must
-   --  already be removed from the tree. TODO: add function to search tree for
-   --  node as a precondition.
+     (Queue   : in out Queue_Type;
+      Node_Id : in Index_Type);
+   --  Deallocate a node from the storage Queue. The node to be deallocated
+   --  must already be removed from the tree. TODO: add function to search tree
+   --  for node as a precondition.
 
-   function Max_Priority_For_Subtree
-     (Pool : in Pool_Type; Subtree : in Node_Location)
-      return Priority_Type;
-   --  Calculates the maximum priority that a node in the subtree possesses.
+   procedure Insert_Node (Queue       : in out Queue_Type;
+                          Node        : in Index_Type;
+                          Add_To_Head : in Boolean);
+   --  Insert a node in to the storage Queue tree.
 
-   procedure Node_Has_Updated
-     (Pool    : in out Pool_Type;
-      Node_Id : in Node_Location;
-      Old_Key : in Key_Type);
-   --  Checks to see if the node is in the right position in the tree after
-   --  the time associated with the node has been updated.
+   procedure Remove_Node (Queue : in out Queue_Type; Node : in Index_Type);
+   --  Removes the node from the Queue tree. Does not deallocate the node.
 
-   procedure Rotate_Left  (Pool    : in out Pool_Type;
-                           Node_Id : in Node_Location);
-   procedure Rotate_Right (Pool    : in out Pool_Type;
-                           Node_Id : in Node_Location);
+   procedure Rotate_Left  (Queue   : in out Queue_Type;
+                           Node_Id : in Index_Type);
+   procedure Rotate_Right (Queue   : in out Queue_Type;
+                           Node_Id : in Index_Type);
    --  Red-Black Tree procedures. Rotates the subtree head defined by the
    --  Node_Id left (right) such that it becomes the left (right) child of its
    --  right (left) child which itself becomes the new head node for the
@@ -57,14 +53,14 @@ package body Oak.Storage.Time_Priority_Pool is
    -------------------
 
    procedure Allocate_Node
-     (Pool     : in out Pool_Type;
-      New_Node : out Node_Location) is
+     (Queue    : in out Queue_Type;
+      New_Node : out Index_Type) is
    begin
       --  Unallocated nodes live in one of two places. The first is in the bulk
       --  free store which is the group of unallocated nodes at the right end
       --  of the storage array (assuming that node are allocated from the array
-      --  left to right. When a pool is first initialised all the nodes but the
-      --  No_Node node are part of the bulk free store.
+      --  left to right. When a Queue is first initialised all the nodes but
+      --  the No_Node node are part of the bulk free store.
       --
       --  The second group of unallocated nodes live on the free list. Nodes
       --  are added to the free list when they are unallocated and they are not
@@ -84,23 +80,23 @@ package body Oak.Storage.Time_Priority_Pool is
       --       Free_list                            Bulk_Free
       --
 
-      if Pool.Free_List = No_Node then
+      if Queue.Free_List = No_Node then
          --  The free list is empty so we allocate a node from the bulk free
          --  store.
 
-         if Pool.Bulk_Free = No_Node then
-            --  No more room in the pool!
-            raise Pool_Capacity_Error with "No room in the pool!";
+         if Queue.Bulk_Free = No_Node then
+            --  No more room in the Queue!
+            raise Queue_Capacity_Error with "No room in the Queue!";
          end if;
 
-         New_Node       := Pool.Bulk_Free;
-         Pool.Bulk_Free := Pool.Bulk_Free + 1;
+         New_Node        := Queue.Bulk_Free;
+         Queue.Bulk_Free := Queue.Bulk_Free + 1;
 
       else
          --  Extract a node from the free list.
 
-         New_Node := Pool.Free_List;
-         Pool.Free_List := Pool.Nodes (Pool.Free_List).Right;
+         New_Node := Queue.Free_List;
+         Queue.Free_List := Queue.Nodes (Queue.Free_List).Right;
       end if;
 
    end Allocate_Node;
@@ -110,175 +106,141 @@ package body Oak.Storage.Time_Priority_Pool is
    ---------------------
 
    procedure Deallocate_Node
-     (Pool    : in out Pool_Type;
-      Node_Id : in Node_Location) is
+     (Queue   : in out Queue_Type;
+      Node_Id : in Index_Type) is
    begin
       --  See the Allocate_Node procedure above for a description of how free
       --  nodes are stored.
 
-      if Node_Id + 1 = Pool.Bulk_Free then
+      if Node_Id + 1 = Queue.Bulk_Free then
          --  The next node is adjacent to the bulk free store, so we move the
          --  node inside it.
 
-         Pool.Nodes (Node_Id).Has_Element := False;
-         Pool.Bulk_Free := Node_Id;
+         Queue.Bulk_Free := Node_Id;
 
       else
          --  Add the node to the free list.
 
-         Pool.Nodes (Node_Id).Right := Pool.Free_List;
-         Pool.Free_List := Node_Id;
+         Queue.Nodes (Node_Id).Right := Queue.Free_List;
+         Queue.Free_List := Node_Id;
 
       end if;
    end Deallocate_Node;
 
-   -----------------
-   -- Delete_Item --
-   -----------------
+   ------------------
+   -- Enqueue_Item --
+   ------------------
 
-   procedure Delete_Item
-     (Pool    : in out Pool_Type;
-      Item_Id : in Node_Location) is
+   procedure Enqueue_Item (To_Queue    : in out Queue_Type;
+                           Item        : in Item_Type;
+                           Add_To_Head : in Boolean := False)
+   is
+      Node : Index_Type;
    begin
-      if In_Tree (Pool, Item_Id) then
-         Remove_Node (Pool, Item_Id);
+      if Is_Queue_Full (To_Queue) then
+         --  No more room in the Queue!
+         raise Queue_Capacity_Error with "No room in the Queue!";
       end if;
 
-      Deallocate_Node (Pool, Item_Id);
-   end Delete_Item;
+      Allocate_Node (Queue => To_Queue, New_Node => Node);
 
-   -----------------------
-   -- Find_Earlest_Item --
-   -----------------------
+      To_Queue.Nodes (Node) := (Colour => Black,
+                                Parent => No_Node,
+                                Left   => No_Node,
+                                Right  => No_Node,
+                                Item   => Item);
 
-   function Find_Earliest_Item
-     (In_Pool        : in Pool_Type;
-      Above_Priority : in Priority_Type := Priority_Type'First)
-      return Node_Location
-   is
-      N                : Node_Array renames In_Pool.Nodes;
+      Insert_Node (Queue       => To_Queue,
+                   Node        => Node,
+                   Add_To_Head => Add_To_Head);
 
-      Current_Node     : Node_Location := In_Pool.Root;
-      Selected_Node    : Node_Location;
+   end Enqueue_Item;
 
+   -------------------
+   -- Head_Of_Queue --
+   -------------------
+
+   function Head_Of_Queue (From_Queue : in out Queue_Type) return Item_Type is
+      Node : Index_Type := From_Queue.Root;
+      N    : Node_Array renames From_Queue.Nodes;
    begin
-      while Current_Node /= No_Node loop
-         --  The current node has been selected as having a priority above the
-         --  requested priority.
+      if not From_Queue.First_Node_Valid then
+         while N (Node).Left /= No_Node loop
+            Node := N (Node).Left;
+         end loop;
 
-         Selected_Node := Current_Node;
-
-         --  Try to find an earlier node that satisfies the requested priority.
-
-         if N (Current_Node).Left_Priority > Above_Priority then
-            --  There is an eariler node that statisfies the priority.
-
-            Current_Node     := N (Current_Node).Left;
-
-         elsif Priority (N (Current_Node).Element) > Above_Priority then
-            --  This node is the earliest node that satisfies the priority
-            --  requirement.
-
-            Current_Node := No_Node;
-
-         elsif N (Current_Node).Right_Priority > Above_Priority then
-            --  The eariliest node that satisfies the priority requiement
-            --  exists on the right side of the node (i.e. the earliest node
-            --  that satisfies the priority requirement occurs after this
-            --  node).
-
-            Current_Node     := N (Current_Node).Right;
-
-         else
-            --  This means we are at a node where neither it or its children
-            --  can satisfy the priority requirement. The only time this should
-            --  occur is the root node.
-
-            pragma Assert (Current_Node = In_Pool.Root);
-
-            Current_Node  := No_Node;
-            Selected_Node := No_Node;
-
-         end if;
-      end loop;
-
-      return Selected_Node;
-   end Find_Earliest_Item;
-
-   -------------------------
-   -- Generic_Update_Time --
-   -------------------------
-
-   procedure Generic_Update_Time
-     (Pool    : in out Pool_Type;
-      Item_Id : in Node_Location;
-      Time    : in Oak_Time.Time)
-   is
-      Element : Element_Type renames Pool.Nodes (Item_Id).Element;
-      Old_Key : constant Key_Type := Key (Element => Element);
-   begin
-      Set_Time (Element, Time);
-      if In_Tree (Pool, Item_Id) then
-         Node_Has_Updated (Pool, Item_Id, Old_Key);
+         From_Queue.First_Node := Node;
+         From_Queue.First_Node_Valid := True;
       end if;
 
-   end Generic_Update_Time;
+      return
+        (if From_Queue.First_Node /= No_Node
+         then N (From_Queue.First_Node).Item else No_Item);
+   end Head_Of_Queue;
 
    -----------------
    -- Insert_Node --
    -----------------
 
-   procedure Insert_Node (Pool : in out Pool_Type; Node : in Node_Location) is
-      N                : Node_Array renames Pool.Nodes;
-      Current_Node     : Node_Location := Pool.Root;
-      Parent_Node      : Node_Location := No_Node;
-      Grandparent_Node : Node_Location;
-      Uncle_Node       : Node_Location;
-
-      Node_Priority    : constant Priority_Type := Priority (N (Node).Element);
+   procedure Insert_Node (Queue       : in out Queue_Type;
+                          Node        : in Index_Type;
+                          Add_To_Head : in Boolean)
+   is
+      N                : Node_Array renames Queue.Nodes;
+      Current_Node     : Index_Type := Queue.Root;
+      Parent_Node      : Index_Type := No_Node;
+      Grandparent_Node : Index_Type;
+      Uncle_Node       : Index_Type;
 
    begin
       --  Insert the node as a leaf in the appropriate spot.
 
-      while Current_Node /= No_Node loop
-         Parent_Node := Current_Node;
+      if Add_To_Head then
+         while Current_Node /= No_Node loop
+            Parent_Node := Current_Node;
 
-         if N (Node).Element < N (Current_Node).Element then
-            if Node_Priority > N (Current_Node).Left_Priority then
-               --  Update priority references on the way down.
-               N (Current_Node).Left_Priority := Node_Priority;
+            if N (Node).Item >= N (Current_Node).Item then
+               Current_Node := N (Current_Node).Left;
+            else
+               Current_Node := N (Current_Node).Right;
             end if;
+         end loop;
 
-            Current_Node := N (Current_Node).Left;
+         N (Node).Parent := Parent_Node;
 
+         if Parent_Node = No_Node then
+            Queue.Root := Node;
+         elsif N (Node).Item >= N (Parent_Node).Item then
+            N (Parent_Node).Left := Node;
          else
-            if Node_Priority > N (Current_Node).Right_Priority then
-               --  Update priority references on the way down.
-               N (Current_Node).Right_Priority := Node_Priority;
-            end if;
-
-            Current_Node := N (Current_Node).Right;
+            N (Parent_Node).Right := Node;
          end if;
-      end loop;
-
-      N (Node).Parent := Parent_Node;
-
-      if Parent_Node = No_Node then
-         Pool.Root := Node;
-      elsif N (Node).Element < N (Parent_Node).Element then
-         N (Parent_Node).Left := Node;
       else
-         N (Parent_Node).Right := Node;
-      end if;
+         while Current_Node /= No_Node loop
+            Parent_Node := Current_Node;
 
+            if N (Node).Item > N (Current_Node).Item then
+               Current_Node := N (Current_Node).Left;
+            else
+               Current_Node := N (Current_Node).Right;
+            end if;
+         end loop;
+
+         N (Node).Parent := Parent_Node;
+
+         if Parent_Node = No_Node then
+            Queue.Root := Node;
+         elsif N (Node).Item > N (Parent_Node).Item then
+            N (Parent_Node).Left := Node;
+         else
+            N (Parent_Node).Right := Node;
+         end if;
+      end if;
       --  Set Node properties
 
       N (Node).Left   := No_Node;
       N (Node).Right  := No_Node;
       N (Node).Colour := Red;
-
-      N (Node).Left_Priority  := First_Priority;
-      N (Node).Right_Priority := First_Priority;
 
       --  Repair tree due to insertion
 
@@ -301,7 +263,7 @@ package body Oak.Storage.Time_Priority_Pool is
             else
                if Current_Node = N (Parent_Node).Right then
                   Current_Node := Parent_Node;
-                  Rotate_Left (Pool, Current_Node);
+                  Rotate_Left (Queue, Current_Node);
                end if;
 
                Parent_Node      := N (Current_Node).Parent;
@@ -309,7 +271,7 @@ package body Oak.Storage.Time_Priority_Pool is
 
                N (Parent_Node).Colour      := Black;
                N (Grandparent_Node).Colour := Red;
-               Rotate_Right (Pool, Grandparent_Node);
+               Rotate_Right (Queue, Grandparent_Node);
 
             end if;
 
@@ -328,7 +290,7 @@ package body Oak.Storage.Time_Priority_Pool is
             else
                if Current_Node = N (Parent_Node).Left then
                   Current_Node := Parent_Node;
-                  Rotate_Right (Pool, Current_Node);
+                  Rotate_Right (Queue, Current_Node);
                end if;
 
                Parent_Node      := N (Current_Node).Parent;
@@ -336,113 +298,46 @@ package body Oak.Storage.Time_Priority_Pool is
 
                N (Parent_Node).Colour      := Black;
                N (Grandparent_Node).Colour := Red;
-               Rotate_Left (Pool, Grandparent_Node);
+               Rotate_Left (Queue, Grandparent_Node);
 
             end if;
          end if;
       end loop;
 
-      N (Pool.Root).Colour := Black;
-      N (Node).In_Tree     := True;
+      N (Queue.Root).Colour := Black;
+
+      N (No_Node).Parent := No_Node;
+      N (No_Node).Left   := No_Node;
+      N (No_Node).Right  := No_Node;
+
+      Queue.First_Node_Valid := False;
    end Insert_Node;
-
-   ------------------------------
-   -- Max_Priority_For_Subtree --
-   ------------------------------
-
-   function Max_Priority_For_Subtree
-     (Pool : in Pool_Type; Subtree : in Node_Location) return Priority_Type
-   is
-      N            : Node_Array renames Pool.Nodes;
-      Max_Priority : Priority_Type;
-   begin
-      Max_Priority :=  Priority_Type'Max
-          (Priority (N (Subtree).Element), N (Subtree).Left_Priority);
-      Max_Priority :=
-        Priority_Type'Max
-          (Max_Priority, N (Subtree).Right_Priority);
-      return Max_Priority;
-   end Max_Priority_For_Subtree;
-
-   --------------
-   -- New_Item --
-   --------------
-
-   procedure New_Item
-     (Pool        : in out Pool_Type;
-      Item        : in Element_Type;
-      Item_Id     : out Node_Location;
-      Add_To_Tree : in Boolean := True) is
-   begin
-      if Is_Pool_Full (Pool) then
-         --  No more room in the pool!
-         raise Pool_Capacity_Error with "No room in the pool!";
-      end if;
-
-      Allocate_Node
-        (Pool     => Pool,
-         New_Node => Item_Id);
-
-      Pool.Nodes (Item_Id) := (Colour         => Black,
-                               Has_Element    => True,
-                               In_Tree        => False,
-                               Parent         => No_Node,
-                               Left           => No_Node,
-                               Right          => No_Node,
-                               Left_Priority  => First_Priority,
-                               Right_Priority => First_Priority,
-                               Element        => Item);
-
-      if Add_To_Tree then
-         Insert_Node
-           (Pool => Pool,
-            Node => Item_Id);
-      end if;
-   end New_Item;
 
    -----------------
    -- Remove_Node --
    -----------------
 
-   procedure Remove_Node (Pool : in out Pool_Type; Node : in Node_Location)
+   procedure Remove_Node (Queue : in out Queue_Type; Node : in Index_Type)
    is
-      N : Node_Array renames Pool.Nodes;
+      N : Node_Array renames Queue.Nodes;
 
-      procedure Fixup        (X                : in out Node_Location;
+      procedure Fixup        (X                : in out Index_Type;
                               Repair_Structure : in     Boolean);
-      function  Minimum_Node (X    : in     Node_Location)
-                              return Node_Location;
-      procedure Transplant   (X, Y : in     Node_Location);
+      function  Minimum_Node (X    : in     Index_Type)
+                              return Index_Type;
+      procedure Transplant   (X, Y : in     Index_Type);
 
       -----------
       -- Fixup --
       -----------
 
-      procedure Fixup (X : in out Node_Location; Repair_Structure : Boolean) is
-         Sibling             : Node_Location;
+      procedure Fixup (X : in out Index_Type; Repair_Structure : Boolean) is
+         Sibling             : Index_Type;
          Structure_Repaired  : Boolean := not Repair_Structure;
       begin
-         --  While there can exist a point where we no longer need to repair
-         --  the tree, the same cannot be said for the priority references,
-         --  particularly when a transplant has occured. Thus we still need
-         --  to work our way to the root node.
-
-         while X /= Pool.Root loop
+         while X /= Queue.Root and then N (X).Colour = Black loop
             if X = N (N (X).Parent).Left then
                --  X is a left child
-
-               --  Fix up priority references
-
-               declare
-                  Parent : Node_Type renames N (N (X).Parent);
-               begin
-                  if X = No_Node then
-                     Parent.Left_Priority := First_Priority;
-                  else
-                     Parent.Left_Priority :=
-                       Max_Priority_For_Subtree (Pool, X);
-                  end if;
-               end;
 
                --  Fix up tree structure
 
@@ -452,7 +347,7 @@ package body Oak.Storage.Time_Priority_Pool is
                   if N (Sibling).Colour = Red then
                      N (Sibling).Colour      := Black;
                      N (N (X).Parent).Colour := Red;
-                     Rotate_Left (Pool, N (X).Parent);
+                     Rotate_Left (Queue, N (X).Parent);
                      Sibling := N (N (X).Parent).Right;
                   end if;
 
@@ -465,7 +360,7 @@ package body Oak.Storage.Time_Priority_Pool is
                      if N (N (Sibling).Right).Colour = Black then
                         N (N (Sibling).Left).Colour := Black;
                         N (Sibling).Colour          := Red;
-                        Rotate_Right (Pool, Sibling);
+                        Rotate_Right (Queue, Sibling);
                         Sibling := N (N (X).Parent).Right;
                      end if;
 
@@ -473,7 +368,7 @@ package body Oak.Storage.Time_Priority_Pool is
                      N (N (X).Parent).Colour      := Black;
                      N (N (Sibling).Right).Colour := Black;
 
-                     Rotate_Left (Pool, N (X).Parent);
+                     Rotate_Left (Queue, N (X).Parent);
 
                      Structure_Repaired := True;
                   end if;
@@ -484,19 +379,6 @@ package body Oak.Storage.Time_Priority_Pool is
 
                pragma Assert (X = N (N (X).Parent).Right);
 
-               --  Fix up priority references
-
-               declare
-                  Parent : Node_Type renames N (N (X).Parent);
-               begin
-                  if X = No_Node then
-                     Parent.Right_Priority := First_Priority;
-                  else
-                     Parent.Right_Priority :=
-                       Max_Priority_For_Subtree (Pool, X);
-                  end if;
-               end;
-
                --  Fix up tree structure
 
                if not Structure_Repaired then
@@ -506,7 +388,7 @@ package body Oak.Storage.Time_Priority_Pool is
                   if N (Sibling).Colour = Red then
                      N (Sibling).Colour      := Black;
                      N (N (X).Parent).Colour := Red;
-                     Rotate_Right (Pool, N (X).Parent);
+                     Rotate_Right (Queue, N (X).Parent);
                      Sibling := N (N (X).Parent).Left;
                   end if;
 
@@ -519,7 +401,7 @@ package body Oak.Storage.Time_Priority_Pool is
                      if N (N (Sibling).Left).Colour = Black then
                         N (N (Sibling).Right).Colour := Black;
                         N (Sibling).Colour          := Red;
-                        Rotate_Left (Pool, Sibling);
+                        Rotate_Left (Queue, Sibling);
                         Sibling := N (N (X).Parent).Left;
                      end if;
 
@@ -527,7 +409,7 @@ package body Oak.Storage.Time_Priority_Pool is
                      N (N (X).Parent).Colour     := Black;
                      N (N (Sibling).Left).Colour := Black;
 
-                     Rotate_Right (Pool, N (X).Parent);
+                     Rotate_Right (Queue, N (X).Parent);
 
                      Structure_Repaired := True;
                   end if;
@@ -556,8 +438,8 @@ package body Oak.Storage.Time_Priority_Pool is
       -- Minimum_Node --
       ------------------
 
-      function Minimum_Node (X : in Node_Location) return Node_Location is
-         Min : Node_Location := X;
+      function Minimum_Node (X : in Index_Type) return Index_Type is
+         Min : Index_Type := X;
       begin
          while N (Min).Left /= No_Node loop
             Min := N (Min).Left;
@@ -570,10 +452,10 @@ package body Oak.Storage.Time_Priority_Pool is
       -- Transplant --
       ----------------
 
-      procedure Transplant (X, Y : in Node_Location) is
+      procedure Transplant (X, Y : in Index_Type) is
       begin
          if N (X).Parent = No_Node then
-            Pool.Root := Y;
+            Queue.Root := Y;
          elsif X = N (N (X).Parent).Left then
             N (N (X).Parent).Left := Y;
          else
@@ -583,10 +465,10 @@ package body Oak.Storage.Time_Priority_Pool is
          N (Y).Parent := N (X).Parent;
       end Transplant;
 
-      Replacement_Node : Node_Location;
+      Replacement_Node : Index_Type;
       --  Node that replaces Node when it is removed from the tree.
 
-      Fill_Node        : Node_Location;
+      Fill_Node        : Index_Type;
       --  The node that fills the spot of the replacement node or the deleted
       --  node.
 
@@ -615,13 +497,11 @@ package body Oak.Storage.Time_Priority_Pool is
          else
             Transplant (Replacement_Node, N (Replacement_Node).Right);
             N (Replacement_Node).Right            := N (Node).Right;
-            N (Replacement_Node).Right_Priority   := N (Node).Right_Priority;
             N (N (Replacement_Node).Right).Parent := Replacement_Node;
          end if;
 
          Transplant (Node, Replacement_Node);
          N (Replacement_Node).Left            := N (Node).Left;
-         N (Replacement_Node).Left_Priority   := N (Node).Left_Priority;
          N (N (Replacement_Node).Left).Parent := Replacement_Node;
          N (Replacement_Node).Colour          := N (Node).Colour;
       end if;
@@ -632,61 +512,64 @@ package body Oak.Storage.Time_Priority_Pool is
          Fixup (Fill_Node, Repair_Structure => False);
       end if;
 
-      N (Node).In_Tree := False;
-      N (Node).Parent  := No_Node;
-      N (Node).Left    := No_Node;
-      N (Node).Right   := No_Node;
+      N (Node).Parent := No_Node;
+      N (Node).Left   := No_Node;
+      N (Node).Right  := No_Node;
+      N (Node).Item   := No_Item;
 
    end Remove_Node;
 
-   ------------------
-   -- Replace_Item --
-   ------------------
+   -----------------------
+   -- Remove_Queue_Head --
+   -----------------------
 
-   procedure Replace_Item
-     (Pool     : in out Pool_Type;
-      Item_Id  : in Node_Location;
-      Contents : in Element_Type)
-   is
-      Node    : Node_Type renames Pool.Nodes (Item_Id);
-      Old_Key : constant Key_Type := Key (Node.Element);
+   procedure Remove_Queue_Head (From_Queue : in out Queue_Type;
+                                Item       : out Item_Type) is
+      N : Node_Array renames From_Queue.Nodes;
+
+      Item_Id : Index_Type := From_Queue.Root;
    begin
-      Node.Element := Contents;
-      if In_Tree (Pool, Item_Id) then
-         Node_Has_Updated (Pool, Item_Id, Old_Key);
+      if From_Queue.Root = 0
+        and then From_Queue.Bulk_Free /= 1
+        and then From_Queue.Free_List = 0
+      then
+         raise Program_Error;
       end if;
-   end Replace_Item;
 
-   ----------------------
-   -- Node_Has_Updated --
-   ----------------------
+      while N (Item_Id).Left /= No_Node loop
+         Item_Id := N (Item_Id).Left;
+      end loop;
 
-   procedure Node_Has_Updated
-     (Pool    : in out Pool_Type;
-      Node_Id : in Node_Location;
-      Old_Key : in Key_Type)
-   is
-      Node : Node_Type renames Pool.Nodes (Node_Id);
-   begin
-      if Key (Node.Element) = Old_Key then
-         return;
+      if Item_Id /= No_Node then
+         Item := N (Item_Id).Item;
+
+         Remove_Node (From_Queue, Item_Id);
+         Deallocate_Node (From_Queue, Item_Id);
       else
-         Remove_Node (Pool, Node_Id);
-         Insert_Node (Pool, Node_Id);
+         Item := No_Item;
       end if;
-   end Node_Has_Updated;
+
+      if From_Queue.Root = 0
+        and then From_Queue.Bulk_Free /= 1
+        and then From_Queue.Free_List = 0
+      then
+         raise Program_Error;
+      end if;
+
+      From_Queue.First_Node_Valid := False;
+   end Remove_Queue_Head;
 
    -----------------
    -- Rotate_Left --
    -----------------
 
    procedure Rotate_Left
-     (Pool    : in out Pool_Type;
-      Node_Id : in Node_Location)
+     (Queue   : in out Queue_Type;
+      Node_Id : in Index_Type)
    is
-      N        : Node_Array renames Pool.Nodes;
-      Old_Head : constant Node_Location := Node_Id;
-      New_Head : constant Node_Location := N (Old_Head).Right;
+      N        : Node_Array renames Queue.Nodes;
+      Old_Head : constant Index_Type := Node_Id;
+      New_Head : constant Index_Type := N (Old_Head).Right;
 
    begin
       --  The procedure takes this tree headed by Old_Head:
@@ -717,7 +600,7 @@ package body Oak.Storage.Time_Priority_Pool is
       N (New_Head).Parent := N (Old_Head).Parent;
 
       if N (Old_Head).Parent = No_Node then
-         Pool.Root := New_Head;
+         Queue.Root := New_Head;
 
       elsif Old_Head = N (N (Old_Head).Parent).Left then
          N (N (Old_Head).Parent).Left := New_Head;
@@ -729,15 +612,6 @@ package body Oak.Storage.Time_Priority_Pool is
 
       N (New_Head).Left   := Old_Head;
       N (Old_Head).Parent := New_Head;
-
-      --  Update priority branches
-
-      N (Old_Head).Right_Priority := N (New_Head).Left_Priority;
-
-      --  New_Head's left priority is the maximum of Old_Head's priority and
-      --  Old_Head's left and right priorities.
-
-      N (New_Head).Left_Priority := Max_Priority_For_Subtree (Pool, Old_Head);
    end Rotate_Left;
 
    ------------------
@@ -764,12 +638,12 @@ package body Oak.Storage.Time_Priority_Pool is
    --
 
    procedure Rotate_Right
-     (Pool    : in out Pool_Type;
-      Node_Id : in Node_Location)
+     (Queue    : in out Queue_Type;
+      Node_Id : in Index_Type)
    is
-      N        : Node_Array renames Pool.Nodes;
-      Old_Head : constant Node_Location := Node_Id;
-      New_Head : constant Node_Location := N (Old_Head).Left;
+      N        : Node_Array renames Queue.Nodes;
+      Old_Head : constant Index_Type := Node_Id;
+      New_Head : constant Index_Type := N (Old_Head).Left;
 
    begin
 
@@ -782,7 +656,7 @@ package body Oak.Storage.Time_Priority_Pool is
       N (New_Head).Parent := N (Old_Head).Parent;
 
       if N (Old_Head).Parent = No_Node then
-         Pool.Root := New_Head;
+         Queue.Root := New_Head;
 
       elsif Old_Head = N (N (Old_Head).Parent).Left then
          N (N (Old_Head).Parent).Left := New_Head;
@@ -792,17 +666,8 @@ package body Oak.Storage.Time_Priority_Pool is
          N (N (Old_Head).Parent).Right := New_Head;
       end if;
 
-      N (New_Head).Right   := Old_Head;
+      N (New_Head).Right  := Old_Head;
       N (Old_Head).Parent := New_Head;
-
-      --  Update priority branches
-
-      N (Old_Head).Left_Priority := N (New_Head).Right_Priority;
-
-      --  New_Head's right priority is the maximum of Old_Head's priority and
-      --  Old_Head's left and right priorities.
-
-      N (New_Head).Right_Priority := Max_Priority_For_Subtree (Pool, Old_Head);
    end Rotate_Right;
 
-end Oak.Storage.Time_Priority_Pool;
+end Oak.Storage.Priority_Queue;

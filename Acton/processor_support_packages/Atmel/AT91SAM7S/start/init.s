@@ -174,7 +174,7 @@ ram_text_copy:
 bss_init:
 	mem_initialise __bss_start__, __bss_end__, 0
 stack_init_0:
-	mem_initialise __stack_space_end, __stack_space_start, 0 @ 0x6b617453 @ 'Stak'
+	mem_initialise __stack_space_end, __stack_space_start, 0x6b617453 @ 'Stak'
 
 @
 @   Set up the kernel stack. Note that the base of the
