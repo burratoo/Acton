@@ -18,7 +18,7 @@ abstract project Acton_Common is
                          "Oak.Agent", "Oak.Agent.Storage", "Oak.Agent.Tasks", "Oak.Agent.Tasks.Activation", "Oak.Agent.Tasks.Main_Task", "Oak.Agent.Protected_Objects", "Oak.Agent.Schedulers", "Oak.Agent.Oak_Agent", "Oak.Agent.Kernel",
                          "Oak.Indices", "Oak.Message", "Oak.States",
                          "Oak.Oak_Time", "Oak.Oak_Time.Conversion",
-                              "Oak.Processor_Support_Package", "Oak.Processor_Support_Package.Interrupts", "Oak.Timers", "Oak.Storage", "Oak.Storage.Time_Priority_Pool", "Oak.Storage.Unsorted_Pool", "Oak.Storage.Binary_Heap", "Oak.Storage.Priority_Queue",
+                              "Oak.Processor_Support_Package", "Oak.Processor_Support_Package.Interrupts", "Oak.Timers", "Oak.Storage", "Oak.Storage.Time_Priority_Pool", "Oak.Storage.Unsorted_Pool", "Oak.Storage.Binary_Heap", "Oak.Storage.Priority_Queue", "Oak.Storage.Slim_Priority_Queue",
                          "System", "System.Assertions", "System.Exceptions_Debug", "System.Machine_Code", "System.Multiprocessors", "System.Standard_Library", "System.Storage_Elements", "System.Unsigned_Types",
                          "System.Address_To_Access_Conversions",
                          "System.Secondary_Stack",

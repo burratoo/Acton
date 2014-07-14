@@ -14,6 +14,7 @@ with Oak.Oak_Time; use Oak.Oak_Time;
 with Oak.States;   use Oak.States;
 
 with Oak.Agent.Kernel;     use Oak.Agent.Kernel;
+with Oak.Agent.Oak_Agent;  use Oak.Agent.Oak_Agent;
 with Oak.Agent.Schedulers; use Oak.Agent.Schedulers;
 
 with Oak.Core;    use Oak.Core;
@@ -173,26 +174,19 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
       ---------------------------------
 
       procedure Remove_Agent_From_Scheduler (Agent : in Oak_Agent_Id) is
-         Pulled_Agent : Oak_Agent_Id;
       begin
          --  The state of the agent determines which queue it is on.
 
          case State (Agent) is
             when Runnable | Entering_PO | Waiting_For_Event | Inactive |
-                 Waiting_For_Protected_Object =>
+                 Waiting_For_Protected_Object | Allowance_Exhausted =>
 
                --  For now we can only delete an agent at the head of its
                --  queue (the only possible way for an agent to be deleted
                --  at the moment). If the agent pulled off the runnable queue
                --  is not the agent we wanted we have a little problem
 
-               Remove_Queue_Head (From_Queue => Runnable_Queue,
-                                  Item       => Pulled_Agent);
-
-               if Agent /= Pulled_Agent then
-                  raise Scheduler_Error;
-               end if;
-
+               Remove_Item (Runnable_Queue, Agent);
             when Sleeping =>
                --  Not supported at this point. Support for it would need
                --  a double linked list or a tree to ease its removal.

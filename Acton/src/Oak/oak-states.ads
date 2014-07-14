@@ -30,6 +30,8 @@ package Oak.States with Pure is
       Adding_Agents,                -- 28
       Removing_Agent,               -- 29
       Scheduler_Agent_Done,         -- 30
+      Allowance_Exhausted,
+      No_Agent_To_Run,
       Initialising_Agents,          -- 31
       Not_Initialised,              -- 32
       Wake_Agent,                   -- 33
@@ -42,4 +44,6 @@ package Oak.States with Pure is
    subtype Interrupt_States is Agent_State range
      Handling_Interrupt .. Interrupt_Done;
 
+   subtype Deletable_State is Agent_State
+     with Static_Predicate => Deletable_State in Allowance_Exhausted;
 end Oak.States;
