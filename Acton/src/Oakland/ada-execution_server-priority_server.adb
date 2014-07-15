@@ -33,7 +33,8 @@ package body Ada.Execution_Server.Priority_Server is
          Relative_Deadline => To_Oak_Time_Span (Relative_Deadline),
          CPU               => CPU);
       Message := (Message_Type => Adding_Agent,
-                  Agent_To_Add => Server.Scheduler);
+                  Agent_To_Add => Server.Scheduler,
+                  Place_At     => Back);
       Yield_Processor_To_Kernel (With_Message => Message);
    end Add_Execution_Server;
 

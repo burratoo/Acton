@@ -79,7 +79,7 @@ package body Acton.Scheduler_Agents.Priority_Server is
       procedure Add_Agent_To_End_Of_Runnable_Queue
         (Agent_Sid : in Storage_Id);
 
-      procedure Add_Agent_To_Scheduler (Agent : in Oak_Agent_Id);
+      procedure Add_Agent (Agent : in Oak_Agent_Id);
 
       procedure Agent_Changed (Agent : in Oak_Agent_Id);
 
@@ -128,7 +128,7 @@ package body Acton.Scheduler_Agents.Priority_Server is
       -- Add_Agent_To_Scheduler --
       ----------------------------
 
-      procedure Add_Agent_To_Scheduler (Agent : in Oak_Agent_Id) is
+      procedure Add_Agent (Agent : in Oak_Agent_Id) is
          Agent_Sid : Storage_Id;
       begin
          --  Storage allocation follows the Storage.Time_Priority_Pool.
@@ -159,7 +159,7 @@ package body Acton.Scheduler_Agents.Priority_Server is
          else
             Insert_Into_Sleeping_Queue (Agent_Sid);
          end if;
-      end Add_Agent_To_Scheduler;
+      end Add_Agent;
 
       -------------------
       -- Agent_Changed --
@@ -403,7 +403,7 @@ package body Acton.Scheduler_Agents.Priority_Server is
             when Agent_State_Change =>
                Agent_Changed (Message.Agent_That_Changed);
             when Adding_Agent =>
-               Add_Agent_To_Scheduler (Message.Agent_To_Add);
+               Add_Agent (Message.Agent_To_Add);
             when Removing_Agent =>
                Remove_Agent_From_Scheduler (Message.Agent_To_Remove);
             when others =>

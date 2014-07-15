@@ -178,7 +178,7 @@ package body Oak.Protected_Objects is
       Remove_Task_From_Within_Protected_Object (PO, Exiting_Agent);
 
       --  FIXME! Currently we do not remove agents from schedulers.
-      Add_Agent_To_Scheduler (Exiting_Agent);
+      Add_Agent_To_Scheduler (Exiting_Agent, Place_At => Front);
 
       if Has_Entries (PO) then
          --  Service entries.

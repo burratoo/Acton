@@ -287,7 +287,8 @@ package body Oak.Core is
                     (Oak_Kernel => My_Kernel_Id,
                      Scheduler  => Scheduler_Agent_For_Agent (Master_Task),
                      Operation  => (Message_Type => Adding_Agent,
-                                    Agent_To_Add => Master_Task));
+                                    Agent_To_Add => Master_Task,
+                                    Place_At     => Front));
                end if;
                pragma Warnings (On, "*True*");
             end;
@@ -543,7 +544,8 @@ package body Oak.Core is
 
                   Set_Next_Agent (A, No_Agent);
                   Message_To_Agent := (Message_Type => Adding_Agent,
-                                       Agent_To_Add => A);
+                                       Agent_To_Add => A,
+                                       Place_At     => Back);
                end;
 
             when Initialising_Agents =>

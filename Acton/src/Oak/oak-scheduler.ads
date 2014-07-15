@@ -21,7 +21,8 @@ package Oak.Scheduler with Preelaborate is
    -- Subprograms --
    -----------------
 
-   procedure Add_Agent_To_Scheduler (Agent : in Oak_Agent_Id);
+   procedure Add_Agent_To_Scheduler (Agent    : in Oak_Agent_Id;
+                                     Place_At : in Queue_End := Back);
    --  Adds the specified Agent to its scheduler agent (which the Agent
    --  contains a reference to).
 

@@ -23,7 +23,8 @@ package body Oak.Scheduler is
    -- Add_Agent_To_Scheduler --
    ----------------------------
 
-   procedure Add_Agent_To_Scheduler (Agent : in Oak_Agent_Id) is
+   procedure Add_Agent_To_Scheduler (Agent   : in Oak_Agent_Id;
+                                     Place_At : in Queue_End := Back) is
    begin
       --  If a scheduler agent is schedulable, it must have its scheduler agent
       --  recorded.
@@ -36,7 +37,8 @@ package body Oak.Scheduler is
         (Oak_Kernel => This_Oak_Kernel,
          Scheduler  => Scheduler_Agent_For_Agent (Agent),
          Operation  => (Message_Type => Adding_Agent,
-                        Agent_To_Add => Agent));
+                        Agent_To_Add => Agent,
+                        Place_At     => Place_At));
 
       --  Initialise the the scheduler agent first before it is added to its
       --  scheduler agent ??? Do I really need to do this???
@@ -275,8 +277,8 @@ package body Oak.Scheduler is
 
       case State (SA) is
          when Runnable =>
-            if Message.Next_Agent = No_Agent
-              and then Scheduler_Agent_For_Agent (SA) /= No_Agent
+            if Scheduler_Agent_For_Agent (SA) /= No_Agent
+              and then Message.Next_Agent = No_Agent
               and then Interpret_No_Agent_As (SA) = As_Is
             then
                --  The scheduler agent is a nested agent and has nothing to
@@ -304,7 +306,8 @@ package body Oak.Scheduler is
                  (Oak_Kernel => My_Kernel_Id,
                   Scheduler  => Scheduler_Agent_For_Agent (SA),
                   Operation  => (Message_Type => Adding_Agent,
-                                 Agent_To_Add => SA));
+                                 Agent_To_Add => SA,
+                                 Place_At     => Back));
             end if;
 
          when No_Agent_To_Run =>
@@ -317,7 +320,8 @@ package body Oak.Scheduler is
                  (Oak_Kernel => My_Kernel_Id,
                   Scheduler  => Scheduler_Agent_For_Agent (SA),
                   Operation  => (Message_Type => Adding_Agent,
-                                 Agent_To_Add => SA));
+                                 Agent_To_Add => SA,
+                                 Place_At     => Back));
             end if;
 
          when others =>

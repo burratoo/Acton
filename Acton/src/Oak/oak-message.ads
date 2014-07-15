@@ -23,7 +23,7 @@ package Oak.Message with Preelaborate is
       end case;
    end record;
 
-   --
+   type Queue_End is (Back, Front);
 
    type Oak_Message (Message_Type : Agent_State := No_Message) is record
       case Message_Type is
@@ -57,6 +57,7 @@ package Oak.Message with Preelaborate is
 
          when Adding_Agent =>
             Agent_To_Add : Oak_Agent_Id;
+            Place_At     : Queue_End;
 
          when Adding_Agents =>
             Agents_To_Add : Oak_Agent_Id;
