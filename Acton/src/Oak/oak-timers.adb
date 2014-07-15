@@ -17,8 +17,8 @@ package body Oak.Timers is
 
    procedure Activate_Timer (Timer : in Oak_Timer_Id) is
    begin
-      if not In_Tree (Pool => Pool, Item_Id => Timer) then
-         Insert_Node (Pool, Timer);
+      if not In_Queue (Timer_Queue, Item_Id => Timer) then
+         Enqueue_Item (Timer_Queue, Timer);
       end if;
    end Activate_Timer;
 
@@ -28,8 +28,8 @@ package body Oak.Timers is
 
    procedure Deactivate_Timer (Timer : in Oak_Timer_Id) is
    begin
-      if In_Tree (Pool => Pool, Item_Id => Timer) then
-         Remove_Node (Pool, Timer);
+      if In_Queue (Timer_Queue, Item_Id => Timer) then
+         Remove_Item (Timer_Queue, Timer);
       end if;
    end Deactivate_Timer;
 
@@ -39,7 +39,8 @@ package body Oak.Timers is
 
    procedure Delete_Timer (Timer : in Oak_Timer_Id) is
    begin
-      Delete_Item (Pool, Timer);
+      Deactivate_Timer (Timer);
+      Deallocate_Item (Timer);
    end Delete_Timer;
 
    ----------------------------
@@ -51,7 +52,7 @@ package body Oak.Timers is
       return Oak_Timer_Id
    is
       Timer : constant Oak_Timer_Id :=
-                Find_Earliest_Item (Pool, Above_Priority);
+                Find_Earliest_Item (Timer_Queue, Above_Priority);
    begin
       if Firing_Time (Timer) < Time_Last then
          return Timer;
@@ -68,18 +69,18 @@ package body Oak.Timers is
      (Timer     : out Oak_Timer_Id;
       Priority  : in  Oak_Priority;
       Fire_Time : in  Oak_Time.Time := Time_Last;
-      Activate  : in  Boolean := False)
-   is
-      New_Timer : constant Oak_Timer :=
-                    (Fire_Time => Fire_Time,
-                     Priority  => Priority,
-                     Kind      => Empty_Timer);
+      Enable    : in  Boolean := False) is
    begin
-      New_Item
-        (Pool        => Pool,
-         Item        => New_Timer,
-         Item_Id     => Timer,
-         Add_To_Tree => Activate);
+      Allocate_An_Item (Timer);
+
+      Timer_Pool (Timer) :=
+        (Fire_Time => Fire_Time,
+         Priority  => Priority,
+         Kind      => Empty_Timer);
+
+      if Enable then
+         Enqueue_Item (Timer_Queue, Timer);
+      end if;
    end New_Timer;
 
    procedure New_Event_Timer
@@ -89,22 +90,21 @@ package body Oak.Timers is
       Agent        : in  Oak_Agent_Id;
       Handler      : in  Ada.Cyclic_Tasks.Response_Handler := null;
       Fire_Time    : in  Oak_Time.Time := Time_Last;
-      Activate     : in  Boolean := False)
-   is
-
-      New_Timer : constant Oak_Timer :=
-                    (Fire_Time => Fire_Time,
-                     Priority  => Priority,
-                     Kind      => Event_Timer,
-                     Timer_Action     => Timer_Action,
-                     Agent_To_Handle  => Agent,
-                     Event_Handler    => Handler);
+      Enable       : in  Boolean := False) is
    begin
-      New_Item
-        (Pool        => Pool,
-         Item        => New_Timer,
-         Item_Id     => Timer,
-         Add_To_Tree => Activate);
+      Allocate_An_Item (Timer);
+
+      Timer_Pool (Timer) :=
+        (Fire_Time        => Fire_Time,
+         Priority         => Priority,
+         Kind             => Event_Timer,
+         Timer_Action     => Timer_Action,
+         Agent_To_Handle  => Agent,
+         Event_Handler    => Handler);
+
+      if Enable then
+         Enqueue_Item (Timer_Queue, Timer);
+      end if;
    end New_Event_Timer;
 
    procedure New_Scheduler_Timer
@@ -112,19 +112,19 @@ package body Oak.Timers is
       Priority  : in  Oak_Priority;
       Scheduler : in  Scheduler_Id;
       Fire_Time : in  Oak_Time.Time := Time_Last;
-      Activate  : in  Boolean := False)
-   is
-      New_Timer : constant Oak_Timer :=
-                    (Fire_Time        => Fire_Time,
-                     Priority         => Priority,
-                     Kind             => Scheduler_Timer,
-                     Scheduler        => Scheduler);
+      Enable    : in  Boolean := False) is
    begin
-      New_Item
-        (Pool        => Pool,
-         Item        => New_Timer,
-         Item_Id     => Timer,
-         Add_To_Tree => Activate);
+      Allocate_An_Item (Timer);
+
+      Timer_Pool (Timer) :=
+        (Fire_Time        => Fire_Time,
+         Priority         => Priority,
+         Kind             => Scheduler_Timer,
+         Scheduler        => Scheduler);
+
+      if Enable then
+         Enqueue_Item (Timer_Queue, Timer);
+      end if;
    end New_Scheduler_Timer;
 
    ------------------
@@ -133,12 +133,11 @@ package body Oak.Timers is
 
    procedure Setup_Timers is
    begin
-      Replace_Item
-        (Pool     => Pool,
-         Item_Id  => No_Timer,
-         Contents => (Kind      => Empty_Timer,
-                      Fire_Time => Time_Last,
-                      Priority  => Oak_Priority'First));
+      Setup_Storage;
+      Timer_Pool (No_Timer) :=
+        (Kind      => Empty_Timer,
+         Fire_Time => Time_Last,
+         Priority  => Oak_Priority'First);
    end Setup_Timers;
 
    ------------------
@@ -147,23 +146,14 @@ package body Oak.Timers is
 
    procedure Update_Timer
      (Timer    : in Oak_Timer_Id;
-      New_Time : in Oak_Time.Time)
-   is
-      procedure Set_Timer (T : in out Oak_Timer; Time : in Oak_Time.Time)
-        with Inline;
-
-      procedure Update_Timer is new Generic_Update_Time (Set_Timer);
-
-      ---------------
-      -- Set_Timer --
-      ---------------
-
-      procedure Set_Timer (T : in out Oak_Timer; Time : in Oak_Time.Time) is
-      begin
-         T.Fire_Time := Time;
-      end Set_Timer;
-
+      New_Time : in Oak_Time.Time) is
    begin
-      Update_Timer (Pool, Timer, New_Time);
+      if In_Queue (Timer_Queue, Item_Id => Timer) then
+         Remove_Item (Timer_Queue, Timer);
+         Timer_Pool (Timer).Fire_Time := New_Time;
+         Enqueue_Item (Timer_Queue, Timer);
+      else
+         Timer_Pool (Timer).Fire_Time := New_Time;
+      end if;
    end Update_Timer;
 end Oak.Timers;

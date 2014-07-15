@@ -17,7 +17,9 @@ with Oak.Oak_Time;
 
 with Oak.Agent;                   use Oak.Agent;
 with Oak.Project_Support_Package; use Oak.Project_Support_Package;
-with Oak.Storage.Time_Priority_Pool;
+
+with Oak.Storage.Generic_Pool;
+with Oak.Storage.Slim_Time_Priority_Queue;
 
 with System; use System;
 
@@ -39,22 +41,22 @@ package Oak.Timers with Preelaborate is
    -- Subprograms --
    -----------------
 
-   procedure Activate_Timer (Timer : in Oak_Timer_Id)
-     with Pre  => Is_Valid (Timer),
-          Post => Is_Valid (Timer);
+   procedure Activate_Timer (Timer : in Oak_Timer_Id);
+--       with Pre  => Is_Valid (Timer),
+--            Post => Is_Valid (Timer);
    --  Activate the specified timer. Adds the timer to storage pool's timer
    --  list. Can be safely called even if the timer is already activated.
 
    function Agent_To_Handle (Timer : in Oak_Timer_Id)
-                             return Oak_Agent_Id
-     with Pre => Timer_Kind (Timer) = Event_Timer;
+                             return Oak_Agent_Id;
+--       with Pre => Timer_Kind (Timer) = Event_Timer;
    --  Returns the agent attached to the Action Timer, that is the Agent which
    --  the action to will apply to.
    --  TIMER KIND: Event_Timer.
 
-   procedure Deactivate_Timer (Timer : in Oak_Timer_Id)
-     with Pre  => Is_Valid (Timer),
-          Post => Is_Valid (Timer);
+   procedure Deactivate_Timer (Timer : in Oak_Timer_Id);
+--       with Pre  => Is_Valid (Timer),
+--            Post => Is_Valid (Timer);
    --  Deactivate the specified timer. Can be safely called even if the timer
    --  is not already activated (in this case the request has no effect).
 
@@ -82,14 +84,14 @@ package Oak.Timers with Preelaborate is
    function Is_Active (Timer : in Oak_Timer_Id) return Boolean;
    --  Can the timer fire.
 
-   function Is_Valid (Timer : in Oak_Timer_Id) return Boolean;
+--     function Is_Valid (Timer : in Oak_Timer_Id) return Boolean;
    --  Is the Id refering to a valid timer.
 
    procedure New_Timer
      (Timer     : out Oak_Timer_Id;
       Priority  : in  Oak_Priority;
       Fire_Time : in  Oak_Time.Time := Oak_Time.Time_Last;
-      Activate  : in  Boolean := False);
+      Enable    : in  Boolean := False);
    --  Create a new generic timer.
 
    procedure New_Event_Timer
@@ -99,7 +101,7 @@ package Oak.Timers with Preelaborate is
       Agent        : in  Oak_Agent_Id;
       Handler      : in  Ada.Cyclic_Tasks.Response_Handler := null;
       Fire_Time    : in  Oak_Time.Time := Oak_Time.Time_Last;
-      Activate     : in  Boolean := False);
+      Enable       : in  Boolean := False);
    --  Creates a new Action Timer from its componenets.
 
    procedure New_Scheduler_Timer
@@ -107,7 +109,7 @@ package Oak.Timers with Preelaborate is
       Priority  : in  Oak_Priority;
       Scheduler : in  Scheduler_Id;
       Fire_Time : in  Oak_Time.Time := Oak_Time.Time_Last;
-      Activate  : in  Boolean := False);
+      Enable    : in  Boolean := False);
    --  Create a new Scheduler Timer.
 
    function Scheduler_Agent (Timer : in Oak_Timer_Id)
@@ -129,7 +131,8 @@ package Oak.Timers with Preelaborate is
      with Inline;
    --  Returns what kind of Oak Timer the specified timer is.
 
-   function Timer_Priority (Timer : in Oak_Timer_Id) return Oak_Priority;
+   function Timer_Priority (Timer : in Oak_Timer_Id) return Oak_Priority
+     with Inline;
    --  Priority attached to the timer.
 
    procedure Update_Timer
@@ -145,6 +148,8 @@ private
 
    type Oak_Timer_Id is mod Max_Timers;
    --  The type that represents each Oak_Timer in the system.
+
+   No_Timer : constant Oak_Timer_Id := Oak_Timer_Id'First;
 
    type Oak_Timer (Kind : Oak_Timer_Kind := Event_Timer) is record
    --  Oak Timer is a variant record to support the three different types of
@@ -183,74 +188,67 @@ private
    -- Timer Storage --
    -------------------
 
-   function "<"            (Left, Right : in Oak_Timer) return Boolean
-     with Inline;
-   function Firing_Time    (Timer : in Oak_Timer) return Oak_Time.Time
-     with Inline;
-   function Timer_Priority (Timer : in Oak_Timer) return Oak_Priority
-     with Inline;
+   function "<" (Left, Right : in Oak_Timer_Id) return Boolean with Inline;
 
-   package Storage is new Oak.Storage.Time_Priority_Pool
-     (Element_Type  => Oak_Timer,
-      Key_Type      => Oak_Time.Time,
-      Node_Location => Oak_Timer_Id,
-      Priority_Type => Oak_Priority,
-      "<"           => "<",
-      Key           => Firing_Time,
-      Priority      => Timer_Priority);
-
+   package Storage is new Oak.Storage.Generic_Pool
+     (Item_Type    => Oak_Timer,
+      Item_Id_Type => Oak_Timer_Id);
    use Storage;
 
-   Pool : Pool_Type;
+   Timer_Pool : Pool_Type renames Item_Pool;
 
-   No_Timer : constant Oak_Timer_Id := No_Node;
+   package Queue is new Oak.Storage.Slim_Time_Priority_Queue
+     (Item_Type     => Oak_Timer_Id,
+      Priority_Type => Any_Priority,
+      No_Item       => No_Timer,
+      "<"           => "<",
+      Priority      => Timer_Priority);
+
+   use Queue;
+
+   Timer_Queue : Queue_Type;
 
    --------------------------
    -- Function Expressions --
    --------------------------
+
    use Oak_Time;
 
-   function "<" (Left, Right : in Oak_Timer) return Boolean is
-     (Left.Fire_Time < Right.Fire_Time);
+   function "<" (Left, Right : in Oak_Timer_Id) return Boolean is
+     (Timer_Pool (Left).Fire_Time < Timer_Pool (Right).Fire_Time);
 
    function Agent_To_Handle (Timer : in Oak_Timer_Id)
                              return Oak_Agent_Id is
-      (Element (Pool, Timer).Agent_To_Handle);
+      (Timer_Pool (Timer).Agent_To_Handle);
 
    function Has_Timer_Fired (Timer : in Oak_Timer_Id) return Boolean is
-      (Element (Pool, Timer).Fire_Time <= Clock);
+      (Timer_Pool (Timer).Fire_Time <= Clock);
 
    function Is_Active (Timer : in Oak_Timer_Id) return Boolean is
-     (In_Tree (Pool, Timer));
-
-   function Is_Valid (Timer : in Oak_Timer_Id) return Boolean is
-      (Has_Element (Pool, Timer));
-
-   function Firing_Time (Timer : in Oak_Timer) return Oak_Time.Time is
-     (Timer.Fire_Time);
+     (In_Queue (Timer_Queue, Timer));
+--
+--     function Is_Valid (Timer : in Oak_Timer_Id) return Boolean is
+--        (Has_Timer_Pool (Timer));
 
    function Firing_Time (Timer : in Oak_Timer_Id) return Oak_Time.Time is
-     (Element (Pool, Timer).Fire_Time);
+     (Timer_Pool (Timer).Fire_Time);
 
    function Handler (Timer : in Oak_Timer_Id)
                      return Ada.Cyclic_Tasks.Response_Handler is
-     (Element (Pool, Timer).Event_Handler);
+     (Timer_Pool (Timer).Event_Handler);
 
    function Scheduler_Agent (Timer : in Oak_Timer_Id)
                              return Scheduler_Id is
-      (Element (Pool, Timer).Scheduler);
+      (Timer_Pool (Timer).Scheduler);
 
    function Timer_Action (Timer : in Oak_Timer_Id)
                           return Ada.Cyclic_Tasks.Event_Response is
-      (Element (Pool, Timer).Timer_Action);
+      (Timer_Pool (Timer).Timer_Action);
 
    function Timer_Kind (Timer : in Oak_Timer_Id) return Oak_Timer_Kind is
-     (Element (Pool, Timer).Kind);
-
-   function Timer_Priority (Timer : in Oak_Timer) return Oak_Priority is
-     (Timer.Priority);
+     (Timer_Pool (Timer).Kind);
 
    function Timer_Priority (Timer : in Oak_Timer_Id) return Oak_Priority is
-     (Element (Pool, Timer).Priority);
+     (Timer_Pool (Timer).Priority);
 
 end Oak.Timers;

@@ -79,7 +79,7 @@ package body Oak.Agent.Schedulers is
             Priority  => Highest_Priority,
             Scheduler => Agent,
             Fire_Time => Oak_Time.Time_Zero,
-            Activate  => False);
+            Enable    => False);
 
          S.Next_Run_Cycle := WT + Cycle_Period;
          Set_Absolute_Deadline
