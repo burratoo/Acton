@@ -27,7 +27,7 @@ package Oak.Core with Preelaborate is
    Global_Start_Time : Time;
    --  The global start time used by the system.
 
-   type Run_Reason is (First_Run, Agent_Request, Timer, External_Interrupt);
+   type Run_Reason is (Agent_Request, Timer, External_Interrupt);
    --  The reason why Oak was run.
 
    -----------------

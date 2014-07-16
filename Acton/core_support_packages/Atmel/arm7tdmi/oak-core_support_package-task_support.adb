@@ -15,6 +15,8 @@ with System.Machine_Code; use System.Machine_Code;
 with Oak.Core_Support_Package.Interrupts;
 use  Oak.Core_Support_Package.Interrupts;
 
+with Oak.Message; use Oak.Message;
+
 with Oak.Processor_Support_Package.Time;
 
 with Ada.Unchecked_Conversion;
@@ -51,12 +53,12 @@ package body Oak.Core_Support_Package.Task_Support is
 
    procedure Context_Switch_From_Oak
      (Reason_For_Oak_To_Run : out Run_Reason;
-      Message               : out Message_Access)
+      Message_Address       : out Address)
    is
    begin
       Asm ("swi 0",
            Outputs  => (Run_Reason'Asm_Output ("=r", Reason_For_Oak_To_Run),
-                        Message_Access'Asm_Output ("=r", Message)),
+                        Address'Asm_Output ("=r", Message_Address)),
            Volatile => True,
            Clobber  => "r2, r3, r4, r5, r6, r7, r8, r9, r10, r12");
    end Context_Switch_From_Oak;
