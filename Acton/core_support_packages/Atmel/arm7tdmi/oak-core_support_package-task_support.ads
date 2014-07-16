@@ -33,7 +33,7 @@ package Oak.Core_Support_Package.Task_Support with Preelaborate is
 
    procedure Context_Switch with Inline_Always;
    procedure Context_Switch_From_Oak
-     (Reason_For_Oak_To_Run : out    Run_Reason;
+     (Reason_For_Oak_To_Run : out Run_Reason;
       Message               : out Message_Access) with Inline_Always;
    procedure Context_Switch_Save_Callee_Registers with Inline_Always;
    --  Procedures that initiate the context switch.
@@ -46,9 +46,13 @@ package Oak.Core_Support_Package.Task_Support with Preelaborate is
    procedure Enter_Barrier_Function with Inline_Always;
    procedure Exit_Barrier_Function with Inline_Always;
 
-   procedure Set_Oak_Wake_Up_Timer (Wake_Up_At : Oak.Oak_Time.Time);
+   procedure Set_Oak_Wake_Up_Timer (Wake_Up_At : in Oak.Oak_Time.Time);
 
    procedure Sleep_Agent_Run_Loop;
+
+   procedure Copy_Oak_Message (Destination, Source : in Address)
+     with Inline_Always;
+   --  Optimised procedure to copy oak messages arround
 
 private
    SWI_Vector   : Address

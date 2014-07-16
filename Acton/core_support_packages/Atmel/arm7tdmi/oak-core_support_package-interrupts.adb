@@ -178,7 +178,7 @@ package body Oak.Core_Support_Package.Interrupts is
       --  most of them get trashed. Also note that SP should already be
       --  pointing to the kernel's register store.
 
-      Asm ("stm sp, {sp}^", Volatile => True);
+      Asm ("stm sp, {fp, sp, lr}^", Volatile => True);
       Asm ("nop", Volatile => True);
 
       --  Store the kernel's instruction pointer (currently in lr_svc) and its
@@ -252,7 +252,7 @@ package body Oak.Core_Support_Package.Interrupts is
       Asm ("mov sp, r3", Volatile => True);
       Asm ("ldmdb sp, {r4, lr}", Volatile => True);
       Asm ("msr spsr_all, r4", Volatile => True);
-      Asm ("ldm sp, {sp}^", Volatile => True);
+      Asm ("ldm sp, {fp, sp, lr}^", Volatile => True);
       Asm ("nop", Volatile => True);
 
       Asm ("movs pc, lr", Volatile => True);
@@ -305,7 +305,7 @@ package body Oak.Core_Support_Package.Interrupts is
       --  most of them get trashed. Also note that SP should already be
       --  pointing to the kernel's register store.
 
-      Asm ("stm sp, {sp}^", Volatile => True);
+      Asm ("stm sp, {fp, sp, lr}^", Volatile => True);
       Asm ("nop", Volatile => True);
 
       --  Store the kernel's instruction pointer (currently in lr_svc) and its
@@ -402,11 +402,11 @@ package body Oak.Core_Support_Package.Interrupts is
            Inputs => Address'Asm_Input ("r", Task_Stack_Pointer),
            Volatile => True);
 
-      --  Restore task's registers
+      --  Restore kernel's registers
 
       Asm ("ldmdb sp, {r4, lr}", Volatile => True);
       Asm ("msr spsr_cxsf, r4", Volatile => True);
-      Asm ("ldm sp, {sp}^", Volatile => True);
+      Asm ("ldm sp, {fp, sp, lr}^", Volatile => True);
       Asm ("nop", Volatile => True);
       --  Return
       Asm ("movs pc, lr", Volatile => True);

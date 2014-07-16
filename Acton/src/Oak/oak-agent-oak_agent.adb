@@ -12,6 +12,9 @@
 with Oak.Oak_Time;              use Oak.Oak_Time;
 with Oak.Memory.Call_Stack.Ops; use Oak.Memory.Call_Stack.Ops;
 
+with Oak.Core_Support_Package.Task_Support;
+use Oak.Core_Support_Package.Task_Support;
+
 package body Oak.Agent.Oak_Agent is
 
    -----------------------
@@ -291,6 +294,27 @@ package body Oak.Agent.Oak_Agent is
    begin
       Agent_Pool (For_Agent).Max_Execution_Time := To;
    end Set_Max_Execution_Time;
+
+   ---------------------
+   -- Set_Oak_Message --
+   ---------------------
+
+   procedure Set_Oak_Message
+     (For_Agent : in Oak_Agent_Id;
+      Message   : in Oak_Message)
+   is
+      Message_Address : Address renames
+                          Agent_Pool (For_Agent).Agent_Message_Address;
+   begin
+      if Message_Address /= Null_Address then
+         --  Cannot convert Message_Dest to a pointer since Ada makes
+         --  a mutable variant record immutable when it is accessed through
+         --  a pointer. So we brute force copy using Mem_Copy.
+
+         Copy_Oak_Message (Destination => Message_Address,
+                           Source      => Message'Address);
+      end if;
+   end Set_Oak_Message;
 
    --------------
    -- Set_Name --

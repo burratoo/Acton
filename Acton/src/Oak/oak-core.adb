@@ -38,7 +38,6 @@ use Oak.Core_Support_Package.Call_Stack;
 with System; use System;
 
 with Oak.Memory.Ops; use Oak.Memory.Ops;
-with Interfaces.C;   use Interfaces.C;
 
 package body Oak.Core is
 
@@ -47,14 +46,8 @@ package body Oak.Core is
    -----------------------
 
    procedure Run_Oak
-     (Reason_For_Run : in Run_Reason;
-      Message        : in Message_Access) with Convention => Ada, Export;
-
-   procedure Run_Oak
      (Reason_For_Run     : in  Run_Reason;
-      Message_From_Agent : in  Oak_Message;
-      Message_To_Agent   : out Oak_Message;
-      Message_Address    : out Address);
+      Message_From_Agent : in  Oak_Message);
    --  Run Oak once to handle the reason for why Oak needs to run.
 
    ----------------
@@ -133,9 +126,12 @@ package body Oak.Core is
       Reason_For_Run  : Run_Reason     := First_Run;
    begin
       loop
+         if Reason_For_Run /= Agent_Request or else Agent_Message = null then
+            Agent_Message := No_Message_Here'Access;
+         end if;
          Run_Oak
-           (Reason_For_Run => Reason_For_Run,
-            Message        => Agent_Message);
+           (Reason_For_Run     => Reason_For_Run,
+            Message_From_Agent => Agent_Message.all);
          Context_Switch_From_Oak
            (Reason_For_Oak_To_Run => Reason_For_Run,
             Message               => Agent_Message);
@@ -146,48 +142,9 @@ package body Oak.Core is
    -- Run_Oak --
    -------------
 
-   --  Run_Oak exists seperate from Run_Loop for the simple reason that this
-   --  way there is no need to save any of Oak's registers. The first procedure
-   --  sets up the appropriate Oak Message to write to, while the second
-   --  procedure implements the actual operations of Oak.
-
    procedure Run_Oak
-     (Reason_For_Run : in Run_Reason;
-      Message        : in Message_Access)
-   is
-      M                : Message_Access := Message;
-      Message_To_Agent : Oak_Message;
-      Message_Dest     : Address;
-   begin
-      --  Should add check to ensure that the pointer to the Message is in the
-      --  range of the agent's stack.
-
-      if Reason_For_Run /= Agent_Request or else Message = null then
-         M := No_Message_Here'Access;
-      end if;
-
-      Run_Oak
-        (Reason_For_Run     => Reason_For_Run,
-         Message_From_Agent => M.all,
-         Message_To_Agent   => Message_To_Agent,
-         Message_Address    => Message_Dest);
-
-      if Message_Dest /= Null_Address then
-         --  Cannot convert Message_Dest to a pointer since Ada makes
-         --  a mutable variant record immutable when it is accessed through
-         --  a pointer. So we brute force copy using Mem_Copy.
-         Message_Dest := Mem_Copy
-           (dest => Message_Dest,
-            src  => Message_To_Agent'Address,
-            n    => Oak_Message'Object_Size / Storage_Unit);
-      end if;
-   end Run_Oak;
-
-   procedure Run_Oak
-     (Reason_For_Run     : in  Run_Reason;
-      Message_From_Agent : in  Oak_Message;
-      Message_To_Agent   : out Oak_Message;
-      Message_Address    : out Address)
+     (Reason_For_Run     : in Run_Reason;
+      Message_From_Agent : in Oak_Message)
    is
       My_Kernel_Id   : constant Kernel_Id := This_Oak_Kernel;
 
@@ -199,7 +156,7 @@ package body Oak.Core is
       Next_Agent     : Oak_Agent_Id := No_Agent;
       Next_Timer     : Oak_Timer_Id;
 
-      Message_Is_Bad : constant Oak_Message :=
+      Message_Is_Bad   : constant Oak_Message :=
                          (Message_Type => Invalid_Message);
 
       procedure Handle_External_Interrupt;
@@ -225,8 +182,6 @@ package body Oak.Core is
       end Handle_External_Interrupt;
 
    begin
-      Message_To_Agent := (Message_Type => No_Message);
-
       --  First thing is to calculate run-time statistics and remove the
       --  current task from the charge list. Does not apply when this is the
       --  first run.
@@ -314,7 +269,7 @@ package body Oak.Core is
                         Activation_List  =>
                           Message_From_Agent.Activation_List);
                   else
-                     Message_To_Agent := Message_Is_Bad;
+                     Set_Oak_Message (Current_Agent, Message_Is_Bad);
                   end if;
 
                when Activation_Complete =>
@@ -324,7 +279,7 @@ package body Oak.Core is
                      Agent.Tasks.Activation.Finish_Activation
                        (Activator        => Current_Agent);
                   else
-                     Message_To_Agent := Message_Is_Bad;
+                     Set_Oak_Message (Current_Agent, Message_Is_Bad);
                   end if;
 
                when Activation_Successful =>
@@ -335,7 +290,7 @@ package body Oak.Core is
                        (For_Agent => Current_Agent,
                         State     => Activation_Successful);
                   else
-                     Message_To_Agent := Message_Is_Bad;
+                     Set_Oak_Message (Current_Agent, Message_Is_Bad);
                   end if;
 
                when Scheduler_Agent_Done =>
@@ -354,7 +309,7 @@ package body Oak.Core is
                      Inform_Scheduler_Agent_Has_Changed_State
                        (Changed_Agent => Current_Agent);
                   else
-                     Message_To_Agent := Message_Is_Bad;
+                     Set_Oak_Message (Current_Agent, Message_Is_Bad);
                   end if;
 
                when Setup_Cycles =>
@@ -363,7 +318,7 @@ package body Oak.Core is
                   if Current_Agent in Task_Id then
                      Setup_Cyclic_Section (For_Task => Current_Agent);
                   else
-                     Message_To_Agent := Message_Is_Bad;
+                     Set_Oak_Message (Current_Agent, Message_Is_Bad);
                   end if;
 
                when New_Cycle =>
@@ -372,7 +327,7 @@ package body Oak.Core is
                   if Current_Agent in Task_Id then
                      New_Cycle (For_Task => Current_Agent);
                   else
-                     Message_To_Agent := Message_Is_Bad;
+                     Set_Oak_Message (Current_Agent, Message_Is_Bad);
                   end if;
 
                when Release_Task =>
@@ -392,7 +347,7 @@ package body Oak.Core is
                         Property_To_Update =>
                           Message_From_Agent.Property_To_Update);
                   else
-                     Message_To_Agent := Message_Is_Bad;
+                     Set_Oak_Message (Current_Agent, Message_Is_Bad);
                   end if;
 
                when Entering_PO =>
@@ -405,7 +360,7 @@ package body Oak.Core is
                         Subprogram_Kind => Message_From_Agent.Subprogram_Kind,
                         Entry_Id        => Message_From_Agent.Entry_Id_Enter);
                   else
-                     Message_To_Agent := Message_Is_Bad;
+                     Set_Oak_Message (Current_Agent, Message_Is_Bad);
                   end if;
 
                when Exiting_PO =>
@@ -416,7 +371,7 @@ package body Oak.Core is
                        (Exiting_Agent => Current_Agent,
                         PO            => Message_From_Agent.PO_Exit);
                   else
-                     Message_To_Agent := Message_Is_Bad;
+                     Set_Oak_Message (Current_Agent, Message_Is_Bad);
                   end if;
 
                when Attach_Interrupt_Handler =>
@@ -426,7 +381,7 @@ package body Oak.Core is
                      Attach_Handler
                        (Handler => Message_From_Agent.Attach_Handler);
                   else
-                     Message_To_Agent := Message_Is_Bad;
+                     Set_Oak_Message (Current_Agent, Message_Is_Bad);
                   end if;
 
                when Interrupt_Done =>
@@ -437,7 +392,7 @@ package body Oak.Core is
                        (Kernel        => My_Kernel_Id,
                         Current_Agent => Current_Agent);
                   else
-                     Message_To_Agent := Message_Is_Bad;
+                     Set_Oak_Message (Current_Agent, Message_Is_Bad);
                   end if;
 
                when Adding_Agent =>
@@ -517,18 +472,21 @@ package body Oak.Core is
       --  Pick a next Agent to run
 
       if Has_Scheduler_Operations_Pending (My_Kernel_Id) then
-         Pop_Scheduler_Op
-           (Oak_Kernel => My_Kernel_Id,
-            Scheduler  => Next_Agent,
-            Operation  => Message_To_Agent);
+         declare
+            Message : Oak_Message;
+         begin
+            Pop_Scheduler_Op
+              (Oak_Kernel => My_Kernel_Id,
+               Scheduler  => Next_Agent,
+               Operation  => Message);
 
-         --  Deal with the fact that we can only add one agent at a time to
-         --  a scheduler agent.
+            --  Deal with the fact that we can only add one agent at a time to
+            --  a scheduler agent.
 
-         case Message_To_Agent.Message_Type is
+            case Message.Message_Type is
             when Adding_Agents =>
                declare
-                  A : constant Oak_Agent_Id := Message_To_Agent.Agents_To_Add;
+                  A : constant Oak_Agent_Id := Message.Agents_To_Add;
                   B : constant Oak_Agent_Id := Oak_Agent.Next_Agent (A);
                begin
                   --  Push the remaining agents back onto the scheduler ops
@@ -543,14 +501,14 @@ package body Oak.Core is
                   end if;
 
                   Set_Next_Agent (A, No_Agent);
-                  Message_To_Agent := (Message_Type => Adding_Agent,
-                                       Agent_To_Add => A,
-                                       Place_At     => Back);
+                  Message := (Message_Type => Adding_Agent,
+                              Agent_To_Add => A,
+                              Place_At     => Back);
                end;
 
             when Initialising_Agents =>
                declare
-                  A : constant Oak_Agent_Id := Message_To_Agent.Agents_To_Init;
+                  A : constant Oak_Agent_Id := Message.Agents_To_Init;
                   B : constant Oak_Agent_Id := Oak_Agent.Next_Agent (A);
                begin
                   --  Push the remaining agents back onto the scheduler ops
@@ -564,12 +522,16 @@ package body Oak.Core is
                                        Agents_To_Init => B));
                   end if;
 
-                  Message_To_Agent := (Message_Type => No_Message);
+                  Message := (Message_Type => No_Message);
                end;
 
             when others =>
                null;
-         end case;
+            end case;
+
+            Set_Oak_Message (For_Agent => Next_Agent,
+                             Message   => Message);
+         end;
 
          Set_Current_Priority
            (Oak_Kernel => My_Kernel_Id,
@@ -735,15 +697,10 @@ package body Oak.Core is
       Set_Current_Timer (Oak_Kernel => My_Kernel_Id, Timer => Next_Timer);
       Set_Hardware_Priority (Current_Priority (Oak_Kernel => My_Kernel_Id));
 
-      Message_Address := Null_Address;
-
       if Is_Agent_Interrupted (Next_Agent) then
          Context_Switch_Will_Be_To_Interrupted_Task;
       else
          Context_Switch_Will_Be_To_Agent;
-         if Message_To_Agent.Message_Type /= No_Message then
-            Message_Address := Agent_Message_Address (Next_Agent);
-         end if;
       end if;
 
       Update_Exit_Stats (Oak_Kernel => This_Oak_Kernel);

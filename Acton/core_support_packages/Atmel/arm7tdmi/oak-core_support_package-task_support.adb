@@ -19,6 +19,7 @@ with Oak.Processor_Support_Package.Time;
 
 with Ada.Unchecked_Conversion;
 with Oak.Core_Support_Package.Time;
+with Interfaces; use Interfaces;
 
 package body Oak.Core_Support_Package.Task_Support is
 
@@ -44,15 +45,20 @@ package body Oak.Core_Support_Package.Task_Support is
    -- Context_Switch_From_Oak --
    ------------------------------
 
+   --  Offically ARM sucks: it seems like when we have more than one return
+   --  value eveything gets sent on the stack. So inline it.
+   --  Follow up: It works!
+
    procedure Context_Switch_From_Oak
-     (Reason_For_Oak_To_Run : out    Run_Reason;
+     (Reason_For_Oak_To_Run : out Run_Reason;
       Message               : out Message_Access)
    is
    begin
       Asm ("swi 0",
            Outputs  => (Run_Reason'Asm_Output ("=r", Reason_For_Oak_To_Run),
                         Message_Access'Asm_Output ("=r", Message)),
-           Volatile => True);
+           Volatile => True,
+           Clobber  => "r2, r3, r4, r5, r6, r7, r8, r9, r10, r12");
    end Context_Switch_From_Oak;
 
    ------------------------------------------
@@ -94,6 +100,25 @@ package body Oak.Core_Support_Package.Task_Support is
       SWI_Vector        := In_Place_Context_Switch_To_Agent_Interrupt'Address;
       SWI_Return_Vector := In_Place_Context_Switch_To_Oak_Interrupt'Address;
    end Context_Switch_Will_Switch_In_Place;
+
+   ----------------------
+   -- Copy_Oak_Message --
+   ----------------------
+
+   procedure Copy_Oak_Message (Destination, Source : in Address) is
+      type Message_Array is
+        array (1 .. Oak_Message'Object_Size / Storage_Unit / 4)
+        of Unsigned_32;
+      type Memptr is access Message_Array;
+      function To_Memptr is
+        new Ada.Unchecked_Conversion (Address, Memptr);
+      Dest_P : constant Memptr := To_Memptr (Destination);
+      Src_P  : constant Memptr := To_Memptr (Source);
+   begin
+      for J in Message_Array'Range loop
+         Dest_P (J) := Src_P (J);
+      end loop;
+   end Copy_Oak_Message;
 
    ----------------------------
    -- Enter_Barrier_Function --

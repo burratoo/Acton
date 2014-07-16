@@ -21,6 +21,7 @@ with Oak.Agent.Storage;
 with Oak.Oak_Time;
 
 with Oak.Memory.Call_Stack;   use Oak.Memory.Call_Stack;
+with Oak.Message;             use Oak.Message;
 with Oak.States;              use Oak.States;
 with System;                  use System;
 with System.Storage_Elements; use System.Storage_Elements;
@@ -209,6 +210,11 @@ package Oak.Agent.Oak_Agent with Preelaborate is
      (For_Agent : in Oak_Agent_Id;
       To        : in Oak_Time.Time_Span);
    --  Sets the agent's maximum execution time.
+
+   procedure Set_Oak_Message
+     (For_Agent : in Oak_Agent_Id;
+      Message   : in Oak_Message);
+   --  Copies the given message into the agent's message store.
 
    procedure Set_Next_Agent
      (For_Agent  : in Oak_Agent_Id;
