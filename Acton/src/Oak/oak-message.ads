@@ -35,8 +35,8 @@ package Oak.Message with Preelaborate is
             Remove_From_Charge_List : Boolean;
 
          when Update_Task_Property =>
-            Update_Task         : Task_Id;
             Property_To_Update  : Task_Property;
+            Update_Task         : Task_Id;
 
          when Release_Task =>
             Task_To_Release : Task_Id;
@@ -69,8 +69,8 @@ package Oak.Message with Preelaborate is
             Agent_That_Changed : Oak_Agent_Id;
 
          when Scheduler_Agent_Done =>
-            Next_Agent        : Oak_Agent_Id;
             Wake_Scheduler_At : Oak_Time.Time;
+            Next_Agent        : Oak_Agent_Id;
 
          when Initialising_Agents =>
             Agents_To_Init : Oak_Agent_Id;

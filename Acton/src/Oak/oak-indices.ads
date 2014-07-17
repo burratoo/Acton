@@ -10,7 +10,7 @@ package Oak.Indices with Pure is
      (if Max_Protected_Entries > Max_Task_Entries then
                 Max_Protected_Entries else Max_Task_Entries);
 
-   type Entry_Index is range No_Entry .. Max_Entries;
+   type Entry_Index is mod Max_Entries + 1;
 
    subtype Protected_Entry_Index is Entry_Index
    range No_Entry .. Max_Protected_Entries;
