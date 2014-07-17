@@ -230,14 +230,6 @@ package body Oak.Scheduler is
       end if;
 
       if State (SA) /= Allowance_Exhausted then
-         --  Wake_Time is used to set the scheduler timer to enable the
-         --  agent to manage its queues when needed. Not carried out if
-         --  the agent's budget has been exhausted.
-
-         --  Set_Wake_Time
-         --    (For_Agent => SA,
-         --     Wake_Time => Message.Wake_Scheduler_At);
-
          --  Fix up the scheduler timer if it is being used to
          --  detect the passing of a scheduler agent's deadline.
 
