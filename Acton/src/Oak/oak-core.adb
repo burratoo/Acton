@@ -345,9 +345,15 @@ package body Oak.Core is
             --  the task in question, rather than call a procedure.
             -------------------
 
-            Next_Timer :=
-              Earliest_Timer_To_Fire
-                (Above_Priority => Current_Priority (My_Kernel_Id));
+            --  OPTIMISATION: no need to look for new timer if the agent to
+            --  run is the same as the agent that entered Oak.
+            if Next_Agent /= Current_Agent then
+               Next_Timer :=
+                 Earliest_Timer_To_Fire
+                   (Above_Priority => Current_Priority (My_Kernel_Id));
+            else
+               Next_Timer := Current_Timer;
+            end if;
          end if;
 
          --  Execution timers do not live in the active timer store since they
@@ -356,14 +362,34 @@ package body Oak.Core is
          --  Because of that, each kernel has a timer of their own which they
          --  fill in with the details of the currently active execution timer.
 
-         Add_Agent_To_Charge_List
-           (Oak_Kernel => My_Kernel_Id,
-            Agent      => Next_Agent);
+         --  OPTIMISATION: Conditional this since there is no point pulling
+         --  off the current agent if it is going to be put back on.
+
+         if Current_Agent /= Next_Agent then
+            Remove_Agent_From_Charge_List
+              (Oak_Kernel => My_Kernel_Id, Agent => Current_Agent);
+            Add_Agent_To_Charge_List
+              (Oak_Kernel => My_Kernel_Id,
+               Agent      => Next_Agent);
+         end if;
 
          --  A timer is not set for scheduler agents, but are for tasks and
-         --  interrupt agents.
+         --  interrupt agents. The following code also sets up a timer to
+         --  trigger on budget exhaustion if this event will occur before the
+         --  selected timer.
 
-         if Next_Agent not in Scheduler_Id then
+         --  OPTIMISATION: If the next timer is already the same as the current
+         --  timer then there has been no changes to the timing system. This is
+         --  because any timer changes would also cause a scheduler agent to
+         --  run, in which case the current timer would be No_Timer. Note that
+         --  there is an edge case if the task decides to top up its execution
+         --  budget. In this case it sets the current timer to No_Timer to
+         --  force a refresh. An alternative approach would be to compare
+         --  Current_Agent to Next_Agent. Or compare times.
+
+         if Next_Agent not in Scheduler_Id
+           and then Current_Timer /= Next_Timer
+         then
             declare
                Budget_Task    : constant Oak_Agent_Id :=
                                   Earliest_Expiring_Budget
@@ -458,18 +484,16 @@ package body Oak.Core is
          --  first run.
 
          Update_Entry_Stats (Oak_Kernel => My_Kernel_Id);
-         Remove_Agent_From_Charge_List
-           (Oak_Kernel => My_Kernel_Id, Agent => Current_Agent);
 
          --  Flag if the current agent was interrupted (affects how the context
          --  switch back is handled.
 
          case Reason_For_Run is
-         when Agent_Request =>
-            Set_Agent_Interrupted (Current_Agent, False);
+            when Agent_Request =>
+               Set_Agent_Interrupted (Current_Agent, False);
 
-         when Timer | External_Interrupt =>
-            Set_Agent_Interrupted (Current_Agent);
+            when Timer | External_Interrupt =>
+               Set_Agent_Interrupted (Current_Agent);
          end case;
 
          --  Check to see why we are running.
