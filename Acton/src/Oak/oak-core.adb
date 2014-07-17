@@ -25,7 +25,7 @@ with Oak.Agent.Tasks.Activation;  use Oak.Agent.Tasks.Activation;
 with Oak.Interrupts;        use Oak.Interrupts;
 with Oak.Protected_Objects; use Oak.Protected_Objects;
 with Oak.Scheduler;         use Oak.Scheduler;
-with Oak.Timers;            use Oak.Timers;
+--  with Oak.Timers;            use Oak.Timers;
 
 with Oak.Core_Support_Package.Interrupts;
 with Oak.Core_Support_Package.Task_Support;
@@ -147,6 +147,12 @@ package body Oak.Core is
       end Handle_External_Interrupt;
 
    begin
+
+      Invoke_Reason_Table :=
+        (Reason_For_Run => (others => 0),
+         Message_Reason => (others => 0),
+         Timer_Kind     => (others => 0),
+         Early_Fire     => 0);
 
       First_Run_Actions : declare
 
@@ -488,8 +494,15 @@ package body Oak.Core is
 
          --  ????? Check to see if the above is valid and makes sense.
 
+         Invoke_Reason_Table.Reason_For_Run (Reason_For_Run) :=
+           Invoke_Reason_Table.Reason_For_Run (Reason_For_Run) + 1;
+
          case Reason_For_Run is
          when Agent_Request =>
+            Invoke_Reason_Table.Message_Reason (Agent_Message.Message_Type) :=
+              Invoke_Reason_Table.Message_Reason (Agent_Message.Message_Type)
+              + 1;
+
             --  The task has yielded to tell or ask Oak something. The agent
             --  in question is stored in Current_Agent.
 
@@ -642,6 +655,14 @@ package body Oak.Core is
             Handle_External_Interrupt;
 
          when Timer =>
+
+            Invoke_Reason_Table.Timer_Kind (Timer_Kind (Current_Timer)) :=
+              Invoke_Reason_Table.Timer_Kind (Timer_Kind (Current_Timer)) + 1;
+
+            if not Has_Timer_Fired (Current_Timer) then
+               Invoke_Reason_Table.Early_Fire :=
+                 Invoke_Reason_Table.Early_Fire + 1;
+            end if;
 
             if Current_Timer = No_Timer
               or else not Has_Timer_Fired (Current_Timer)

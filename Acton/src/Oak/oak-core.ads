@@ -17,6 +17,7 @@ with Oak.Agent;    use Oak.Agent;
 with Oak.Message;  use Oak.Message;
 with Oak.Oak_Time; use Oak.Oak_Time;
 with Oak.States;   use Oak.States;
+with Oak.Timers;   use Oak.Timers;
 
 package Oak.Core with Preelaborate is
 
@@ -89,4 +90,17 @@ private
    --  In theory on a multiprocessor machine we would query the processor to
    --  find out what its id is.
 
+   type Invoke_Count is mod 2 ** 32 with Size => 32;
+   type Run_Reason_Count is array (Run_Reason) of Invoke_Count;
+   type Message_Reason_Count is array (Agent_State) of Invoke_Count;
+   type Timer_Kind_Count is array (Oak_Timer_Kind) of Invoke_Count;
+
+   type Invoke_Reason is record
+      Reason_For_Run : Run_Reason_Count;
+      Message_Reason : Message_Reason_Count;
+      Timer_Kind     : Timer_Kind_Count;
+      Early_Fire     : Invoke_Count;
+   end record;
+
+   Invoke_Reason_Table : Invoke_Reason;
 end Oak.Core;

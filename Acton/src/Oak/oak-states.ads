@@ -8,35 +8,35 @@ package Oak.States with Pure is
       Running,                      -- 5
       Runnable,                     -- 6
       Sleeping,                     -- 7
-      Waiting_For_Event,            -- 9
-      Waiting_For_Protected_Object, -- 10
-      Inactive,                     -- 11
-      Setup_Cycles,                 -- 12
-      New_Cycle,                    -- 13
-      Release_Task,                 -- 14
-      Update_Task_Property,         -- 15
-      Terminated,                   -- 16
-      Entering_PO,                  -- 17
-      Enter_PO_Refused,             -- 18
-      Exiting_PO,                   -- 19
-      Exit_PO_Error,                -- 20
-      Attach_Interrupt_Handler,     -- 21
-      Handling_Interrupt,           -- 22
-      Interrupt_Done,               -- 23
-      No_State,                     -- 24
-      Agent_State_Change,           -- 25
-      Selecting_Next_Agent,         -- 26
-      Adding_Agent,                 -- 27
-      Adding_Agents,                -- 28
-      Removing_Agent,               -- 29
-      Scheduler_Agent_Done,         -- 30
-      Allowance_Exhausted,
-      No_Agent_To_Run,
-      Initialising_Agents,          -- 31
-      Not_Initialised,              -- 32
-      Wake_Agent,                   -- 33
-      No_Message,                   -- 34
-      Invalid_Message);             -- 35
+      Waiting_For_Event,            -- 8
+      Waiting_For_Protected_Object, -- 9
+      Inactive,                     -- 10
+      Setup_Cycles,                 -- 11
+      New_Cycle,                    -- 12
+      Release_Task,                 -- 13
+      Update_Task_Property,         -- 14
+      Terminated,                   -- 15
+      Entering_PO,                  -- 16
+      Enter_PO_Refused,             -- 17
+      Exiting_PO,                   -- 18
+      Exit_PO_Error,                -- 19
+      Attach_Interrupt_Handler,     -- 20
+      Handling_Interrupt,           -- 21
+      Interrupt_Done,               -- 22
+      No_State,                     -- 23
+      Agent_State_Change,           -- 24
+      Selecting_Next_Agent,         -- 25
+      Adding_Agent,                 -- 26
+      Adding_Agents,                -- 27
+      Removing_Agent,               -- 28
+      Scheduler_Agent_Done,         -- 29
+      Allowance_Exhausted,          -- 30
+      No_Agent_To_Run,              -- 31
+      Initialising_Agents,          -- 32
+      Not_Initialised,              -- 33
+      Wake_Agent,                   -- 34
+      No_Message,                   -- 35
+      Invalid_Message);             -- 36
 
    subtype Waiting is Agent_State range
      Waiting_For_Event .. Waiting_For_Protected_Object;
