@@ -351,6 +351,10 @@ private
       --  a cycle is agent dependent.
       --  ??? Change to a mod type?
 
+      Agent_Message_Address  : Address;
+      --  Address of the agent's Oak_Message that is used when it requested
+      --  something from Oak.
+
       When_To_Charge         : Charge_Occurrence;
       --  Defines the conditions that an agent who is part of a charge list is
       --  charged for a member of the charge list executing on the processor.
@@ -359,10 +363,6 @@ private
       --  Flags whether the agent has been interrupted or not. Indicates
       --  whether a full register restor is needed when the context is switched
       --  back to the task.
-
-      Agent_Message_Address  : Address;
-      --  Address of the agent's Oak_Message that is used when it requested
-      --  something from Oak.
 
    end record;
 

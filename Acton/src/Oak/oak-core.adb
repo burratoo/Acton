@@ -308,7 +308,7 @@ package body Oak.Core is
 
                Set_Current_Priority
                  (Oak_Kernel => My_Kernel_Id,
-                  Priority   => P);
+                  Priority   => Normal_Priority (Next_Agent));
             end;
 
             --  Correct Next Agent. Needed to cover the case where a

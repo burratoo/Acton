@@ -98,11 +98,7 @@ package body Oak.Agent.Oak_Agent is
    -- Delete_Agent --
    ------------------
 
-   procedure Delete_Agent (Agent : Oak_Agent_Id)
-   is
-   begin
-      Deallocate_Agent (Agent);
-   end Delete_Agent;
+   procedure Delete_Agent (Agent : Oak_Agent_Id) renames Deallocate_Agent;
 
    ------------------------------
    -- Earliest_Expiring_Budget --
