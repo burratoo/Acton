@@ -124,7 +124,7 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
             when Sleeping =>
                Remove_Queue_Head (From_Queue => Runnable_Queue,
                                   Item       => Pulled_Agent);
-               Insert_Into_Sleep_Queue (Agent);
+               Add_Agent_To_Scheduler (Agent);
 
             when Activation_Pending    |
                  Activation_Complete   |
@@ -135,8 +135,7 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
             when Runnable =>
                Remove_Queue_Head (From_Queue => Runnable_Queue,
                                   Item       => Pulled_Agent);
-               Enqueue_Item (To_Queue => Runnable_Queue,
-                             Item     => Agent);
+               Add_Agent_To_Scheduler (Agent);
 
             when others =>
                raise Scheduler_Error;
@@ -252,7 +251,16 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
       end loop;
    end Run_Loop;
 
+   function Priority_Greater_Than  (Left, Right : in Oak_Agent_Id)
+                                    return Boolean is
+        (Normal_Priority (Left) > Normal_Priority (Right));
+
+   function Priority_Greater_Than_Equal  (Left, Right : in Oak_Agent_Id)
+                                          return Boolean is
+     (Normal_Priority (Left) >= Normal_Priority (Right));
+
    function Wake_Greater_Than (Left, Right : in Oak_Agent_Id)
                                   return Boolean is
      (Wake_Time (Left) > Wake_Time (Right));
+
 end Acton.Scheduler_Agents.FIFO_Within_Priorities;

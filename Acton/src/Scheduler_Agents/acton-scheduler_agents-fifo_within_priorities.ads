@@ -17,8 +17,6 @@ with Oak.Project_Support_Package; use Oak.Project_Support_Package;
 with Oak.Storage.Slim_Priority_Queue;
 with Oak.Storage.Binary_Heap;
 
---  with Oak.Project_Support_Package; use Oak.Project_Support_Package;
-
 package Acton.Scheduler_Agents.FIFO_Within_Priorities with Preelaborate is
 
    procedure New_Scheduler_Agent
@@ -33,12 +31,22 @@ private
 
    Scheduler_Error : exception;
 
+   function Priority_Greater_Than  (Left, Right : in Oak_Agent_Id)
+                                    return Boolean
+     with Inline_Always;
+
+   function Priority_Greater_Than_Equal  (Left, Right : in Oak_Agent_Id)
+                                          return Boolean
+     with Inline_Always;
+
    function Wake_Greater_Than (Left, Right : in Oak_Agent_Id) return Boolean
      with Inline;
 
    package Priority_Queue is new Oak.Storage.Slim_Priority_Queue
      (Item_Type     => Oak_Agent_Id,
-      No_Item       => No_Agent);
+      No_Item       => No_Agent,
+      ">"           => Priority_Greater_Than,
+      ">="          => Priority_Greater_Than_Equal);
 
    use Priority_Queue;
 

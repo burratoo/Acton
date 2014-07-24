@@ -35,7 +35,10 @@ abstract project Acton_Common is
                          "Oak.Core_Support_Package.Task_Support",
                          "Oak.Memory.Ops",
                          "Oak.Protected_Objects",
-                         "Oak.Scheduler"
+                         "Oak.Scheduler",
+                         --  Questionable packages
+                         "Oak.Core_Support_Package.Time",
+                         "Oak.Processor_Support_Package.Time"
 );
 
    Ada_Switches := ("-gnatwa.Xl", "-g", "-O2", "-gnatn", "-gnatg",  "-ffunction-sections", "-fdata-sections", "-gnatp");

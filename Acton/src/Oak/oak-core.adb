@@ -148,11 +148,11 @@ package body Oak.Core is
 
    begin
 
-      Invoke_Reason_Table :=
-        (Reason_For_Run => (others => 0),
-         Message_Reason => (others => 0),
-         Timer_Kind     => (others => 0),
-         Early_Fire     => 0);
+--        Invoke_Reason_Table :=
+--          (Reason_For_Run => (others => 0),
+--           Message_Reason => (others => 0),
+--           Timer_Kind     => (others => 0),
+--           Early_Fire     => 0);
 
       First_Run_Actions : declare
 
@@ -254,9 +254,24 @@ package body Oak.Core is
             --  Remove the scheduler agent from the charge list since it will
             --  be added back below. This is done since the scheduler agent may
             --  already be on the charge list and we can safely call the remove
-            --  procedure even if the agent is not on the charge list.
+            --  procedure even if the agent is not on the charge list. Cost of
+            --  searching vs cost of deleting then adding do not differ to much
+            --  since the scheduler will be added back to the front of the
+            --  charge list.
+
+            --  OPTIMISATION: Could conditionalise this to exclude the case
+            --  of the scheduler running again, but as this is a case that does
+            --  not occur that often, its probably best to forgo the if
+            --  statement.
 
             Remove_Agent_From_Charge_List
+              (Oak_Kernel => My_Kernel_Id, Agent => Current_Agent);
+            if Scheduler_Agent_For_Agent (Next_Agent) /= No_Agent then
+               Remove_Agent_From_Charge_List
+                 (Oak_Kernel => My_Kernel_Id,
+                  Agent      => Next_Agent);
+            end if;
+            Add_Agent_To_Charge_List
               (Oak_Kernel => My_Kernel_Id,
                Agent      => Next_Agent);
 
@@ -347,10 +362,19 @@ package body Oak.Core is
 
             --  OPTIMISATION: no need to look for new timer if the agent to
             --  run is the same as the agent that entered Oak.
+
+            --  OPTIMISATION: Conditional this since there is no point pulling
+            --  off the current agent if it is going to be put back on.
+
             if Next_Agent /= Current_Agent then
                Next_Timer :=
                  Earliest_Timer_To_Fire
                    (Above_Priority => Current_Priority (My_Kernel_Id));
+               Remove_Agent_From_Charge_List
+                 (Oak_Kernel => My_Kernel_Id, Agent => Current_Agent);
+               Add_Agent_To_Charge_List
+                 (Oak_Kernel => My_Kernel_Id,
+                  Agent      => Next_Agent);
             else
                Next_Timer := Current_Timer;
             end if;
@@ -361,17 +385,6 @@ package body Oak.Core is
          --  if the timer will fire before any timer that is currently managed.
          --  Because of that, each kernel has a timer of their own which they
          --  fill in with the details of the currently active execution timer.
-
-         --  OPTIMISATION: Conditional this since there is no point pulling
-         --  off the current agent if it is going to be put back on.
-
-         if Current_Agent /= Next_Agent then
-            Remove_Agent_From_Charge_List
-              (Oak_Kernel => My_Kernel_Id, Agent => Current_Agent);
-            Add_Agent_To_Charge_List
-              (Oak_Kernel => My_Kernel_Id,
-               Agent      => Next_Agent);
-         end if;
 
          --  A timer is not set for scheduler agents, but are for tasks and
          --  interrupt agents. The following code also sets up a timer to
@@ -518,14 +531,14 @@ package body Oak.Core is
 
          --  ????? Check to see if the above is valid and makes sense.
 
-         Invoke_Reason_Table.Reason_For_Run (Reason_For_Run) :=
-           Invoke_Reason_Table.Reason_For_Run (Reason_For_Run) + 1;
+--           Invoke_Reason_Table.Reason_For_Run (Reason_For_Run) :=
+--             Invoke_Reason_Table.Reason_For_Run (Reason_For_Run) + 1;
 
          case Reason_For_Run is
          when Agent_Request =>
-            Invoke_Reason_Table.Message_Reason (Agent_Message.Message_Type) :=
-              Invoke_Reason_Table.Message_Reason (Agent_Message.Message_Type)
-              + 1;
+--         Invoke_Reason_Table.Message_Reason (Agent_Message.Message_Type) :=
+--           Invoke_Reason_Table.Message_Reason (Agent_Message.Message_Type)
+--                + 1;
 
             --  The task has yielded to tell or ask Oak something. The agent
             --  in question is stored in Current_Agent.
@@ -680,13 +693,13 @@ package body Oak.Core is
 
          when Timer =>
 
-            Invoke_Reason_Table.Timer_Kind (Timer_Kind (Current_Timer)) :=
-              Invoke_Reason_Table.Timer_Kind (Timer_Kind (Current_Timer)) + 1;
-
-            if not Has_Timer_Fired (Current_Timer) then
-               Invoke_Reason_Table.Early_Fire :=
-                 Invoke_Reason_Table.Early_Fire + 1;
-            end if;
+--              Invoke_Reason_Table.Timer_Kind (Timer_Kind (Current_Timer)) :=
+--             Invoke_Reason_Table.Timer_Kind (Timer_Kind (Current_Timer)) + 1;
+--
+--              if not Has_Timer_Fired (Current_Timer) then
+--                 Invoke_Reason_Table.Early_Fire :=
+--                   Invoke_Reason_Table.Early_Fire + 1;
+--              end if;
 
             if Current_Timer = No_Timer
               or else not Has_Timer_Fired (Current_Timer)

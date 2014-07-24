@@ -52,6 +52,10 @@ package Oak.Memory.Call_Stack.Ops with Preelaborate is
    --  Returns the location of the current agent's secondardy stack which lies
    --  at the bottom of the agent's stack.
 
+   procedure Stack_Check (Stack_Address : in Address)
+     with Export, Convention => C,
+       External_Name => "_gnat_stack_check";
+
 private
 
    Stack_Pool_Bottom : System.Address := Stack_Pointer_Init'Address;

@@ -8,23 +8,19 @@ package Ada.Task_Identification with Preelaborate is
 
    Null_Task_Id : constant Task_Id;
 
---     function "=" (Left, Right : Task_Id) return Boolean;
---     pragma Inline ("=");
---
---     function Image (T : Task_Id) return String;
---
---     function Current_Task return Task_Id;
---     pragma Inline (Current_Task);
---
---     procedure Abort_Task (T : Task_Id);
---     pragma Inline (Abort_Task);
---     --  Note: parameter is mode IN, not IN OUT, per AI-00101
---
---     function Is_Terminated (T : Task_Id) return Boolean;
---     pragma Inline (Is_Terminated);
---
---     function Is_Callable (T : Task_Id) return Boolean;
---     pragma Inline (Is_Callable);
+   function "=" (Left, Right : Task_Id) return Boolean;
+   pragma Inline ("=");
+
+   function Image (T : Task_Id) return String;
+
+   function Current_Task return Task_Id with Inline;
+
+   procedure Abort_Task (T : Task_Id) with Inline;
+   --  Note: parameter is mode IN, not IN OUT, per AI-00101
+
+   function Is_Terminated (T : Task_Id) return Boolean with Inline;
+
+   function Is_Callable (T : Task_Id) return Boolean with Inline;
 
 private
 

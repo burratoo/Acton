@@ -1,5 +1,4 @@
 with Acton.Scheduler_Agents.Priority_Server;
-use Acton.Scheduler_Agents.Priority_Server;
 
 with Oak.Scheduler;            use Oak.Scheduler;
 with Oak.Oak_Time.Conversion;  use Oak.Oak_Time.Conversion;
@@ -23,7 +22,7 @@ package body Ada.Execution_Server.Priority_Server is
    is
       Message : Oak_Message;
    begin
-      New_Scheduler_Agent
+      Acton.Scheduler_Agents.Priority_Server.New_Scheduler_Agent
         (Agent             => Server.Scheduler,
          Min_Priority      => Priority,
          Max_Priority      => Priority,

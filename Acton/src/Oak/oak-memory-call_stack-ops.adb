@@ -12,8 +12,9 @@
 with Oak.Core_Support_Package.Call_Stack.Ops;
 use Oak.Core_Support_Package.Call_Stack.Ops;
 
-with Oak.Agent.Oak_Agent; use Oak.Agent.Oak_Agent;
+with Oak.Agent;           use Oak.Agent;
 with Oak.Agent.Kernel;    use Oak.Agent.Kernel;
+with Oak.Agent.Oak_Agent; use Oak.Agent.Oak_Agent;
 with Oak.Core;            use Oak.Core;
 
 package body Oak.Memory.Call_Stack.Ops is
@@ -94,5 +95,15 @@ package body Oak.Memory.Call_Stack.Ops is
    begin
       return Stack (Current_Agent (This_Oak_Kernel)).Bottom;
    end Get_Secondary_Stack_Location;
+
+   procedure Stack_Check (Stack_Address : in Address) is
+      This_Agent : constant Oak_Agent_Id := Current_Agent (This_Oak_Kernel);
+   begin
+      if Stack_Address < Stack (This_Agent).Bottom
+        or else Stack_Address > Stack (This_Agent).Top
+      then
+         raise Storage_Error;
+      end if;
+   end Stack_Check;
 
 end Oak.Memory.Call_Stack.Ops;

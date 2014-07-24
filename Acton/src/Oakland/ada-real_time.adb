@@ -87,7 +87,8 @@ package body Ada.Real_Time is
 
    function Microseconds (US : Integer) return Time_Span is
    begin
-      return Time_Span (US * Integer (Ticks_Per_Second / 1_000_000));
+      return Time_Span (US) * Time_Span (Ticks_Per_Second) /
+        Time_Span (1_000_000);
    end Microseconds;
 
    ------------------

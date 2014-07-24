@@ -15,6 +15,8 @@ with Oak.Oak_Time; use Oak.Oak_Time;
 with System;                 use System;
 with System.Multiprocessors; use System.Multiprocessors;
 
+with Oak.Storage.Binary_Heap;
+
 package Acton.Scheduler_Agents.Priority_Server with Preelaborate is
 
    procedure New_Scheduler_Agent
@@ -34,35 +36,17 @@ private
 
    Max_Schedulable_Agents : constant := 10;
 
-   type Storage_Id is mod Max_Schedulable_Agents + 1;
+   Scheduler_Error : exception;
 
-   No_Node : constant Storage_Id := Storage_Id'First;
+   function Wake_Greater_Than (Left, Right : in Oak_Agent_Id) return Boolean
+     with Inline;
 
-   type Scheduler_Element is record
-      Agent : Oak_Agent_Id;
-      Next  : Storage_Id;
-   end record;
+   package Queue_Pack is new Oak.Storage.Binary_Heap
+     (Item_Type                    => Oak_Agent_Id,
+      No_Item                      => No_Agent,
+      Size                         => Max_Schedulable_Agents,
+      ">"                          => Wake_Greater_Than);
 
-   type Elements is array (Storage_Id)
-     of Scheduler_Element;
-
-   type Queue is record
-      Head, Tail : Storage_Id;
-   end record;
-
-   Empty_Queue : constant Queue := (Head => No_Node, Tail => No_Node);
-
-   type Scheduler_Storage is record
-   --  Storage is currently very similar to the time priority pool when it
-   --  comes to allocating from an array.
-
-      Pool : Elements;
-
-      Runnable_Queue : Queue := (No_Node, No_Node);
-      Sleeping_Queue : Queue := (No_Node, No_Node);
-
-      Bulk_Free : Storage_Id := No_Node + 1;
-      Free_List : Storage_Id := No_Node;
-   end record;
+   use Queue_Pack;
 
 end Acton.Scheduler_Agents.Priority_Server;
