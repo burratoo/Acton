@@ -52,4 +52,13 @@ package Oak.Project_Support_Package with Pure is
    --  provability reasons for the number of entries to be restricted, for
    --  example under the Ravenscar Profile.
 
+   --  Call_Stack_Size could be defined in the linker script (Enviroment
+   --  defined variables don't make sense in this system) Call_Stack_Size in
+   --  Storage_Elements
+   Call_Stack_Size            : constant := 4 * 1024;
+   Default_Call_Stack_Size    : constant := Call_Stack_Size;
+   Main_Task_Call_Stack_Size  : constant := 1 * 1024;
+   Oak_Call_Stack_Size        : constant := 1 * 1024;
+   Interrupt_Stack_Size       : constant := 512;
+
 end Oak.Project_Support_Package;

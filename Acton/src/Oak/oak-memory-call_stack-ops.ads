@@ -18,11 +18,14 @@
 with Oak.Core_Support_Package.Call_Stack;
 use Oak.Core_Support_Package.Call_Stack;
 
+with Oak.Project_Support_Package; use Oak.Project_Support_Package;
+
 package Oak.Memory.Call_Stack.Ops with Preelaborate is
 
    procedure Allocate_Call_Stack
      (Stack            : out Call_Stack_Handler;
-      Size_In_Elements : in  Storage_Count := CSP_Stack.Call_Stack_Size);
+      Size_In_Elements : in  Storage_Count :=
+        Project_Support_Package.Call_Stack_Size);
    --  Allocates a call stack from the call stack pool.
 
    procedure Initialise_Call_Stack

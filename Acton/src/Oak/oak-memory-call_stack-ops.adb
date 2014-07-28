@@ -25,8 +25,8 @@ package body Oak.Memory.Call_Stack.Ops is
 
    procedure Allocate_Call_Stack
      (Stack            : out Call_Stack_Handler;
-      Size_In_Elements : in Storage_Elements.Storage_Count :=
-        CSP_Stack.Call_Stack_Size)
+      Size_In_Elements : in  Storage_Count :=
+        Project_Support_Package.Call_Stack_Size)
    is
       Size : Storage_Elements.Storage_Count := Size_In_Elements;
    begin

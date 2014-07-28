@@ -14,6 +14,8 @@
 with Oak.Core_Support_Package;
 with Oak.Core_Support_Package.Call_Stack;
 
+with Oak.Project_Support_Package;
+
 with System;                  use System;
 with System.Storage_Elements; use System.Storage_Elements;
 
@@ -34,7 +36,7 @@ package Oak.Memory.Call_Stack with Pure is
      with Inline_Always;
 
    Default_Stack_Size : constant :=
-     Oak.Core_Support_Package.Call_Stack.Default_Call_Stack_Size;
+     Oak.Project_Support_Package.Default_Call_Stack_Size;
 
    --  Value used to indicate tha no size has been set
 

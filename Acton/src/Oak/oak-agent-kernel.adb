@@ -13,9 +13,6 @@ with Oak.Agent.Interrupts; use Oak.Agent.Interrupts;
 with Oak.Agent.Oak_Agent;  use Oak.Agent.Oak_Agent;
 with Oak.Agent.Schedulers; use Oak.Agent.Schedulers;
 
-with Oak.Core_Support_Package.Call_Stack;
-use Oak.Core_Support_Package.Call_Stack;
-
 with Oak.States;  use Oak.States;
 
 package body Oak.Agent.Kernel is

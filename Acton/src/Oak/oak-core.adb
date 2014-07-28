@@ -37,8 +37,6 @@ use Oak.Core_Support_Package.Call_Stack;
 
 with System; use System;
 
-with Oak.Memory.Ops; use Oak.Memory.Ops;
-
 package body Oak.Core is
 
    ----------------

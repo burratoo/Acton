@@ -17,9 +17,6 @@ with Oak.Agent.Oak_Agent;         use Oak.Agent.Oak_Agent;
 with Oak.Agent.Protected_Objects; use Oak.Agent.Protected_Objects;
 with Oak.Protected_Objects;       use Oak.Protected_Objects;
 
-with Oak.Core_Support_Package.Call_Stack;
-use Oak.Core_Support_Package.Call_Stack;
-
 with Oak.Core;    use Oak.Core;
 with Oak.Message; use Oak.Message;
 with Oak.States;  use Oak.States;
