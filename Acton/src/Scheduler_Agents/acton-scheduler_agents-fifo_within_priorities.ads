@@ -10,12 +10,11 @@
 ------------------------------------------------------------------------------
 
 with Oak.Agent;           use Oak.Agent;
+with Oak.Agent.Oak_Agent; use Oak.Agent.Oak_Agent;
 with System;              use System;
 
-with Oak.Project_Support_Package; use Oak.Project_Support_Package;
-
 with Oak.Storage.Slim_Priority_Queue;
-with Oak.Storage.Binary_Heap;
+with Oak.Storage.Slim_Time_Priority_Queue;
 
 package Acton.Scheduler_Agents.FIFO_Within_Priorities with Preelaborate is
 
@@ -39,7 +38,7 @@ private
                                           return Boolean
      with Inline_Always;
 
-   function Wake_Greater_Than (Left, Right : in Oak_Agent_Id) return Boolean
+   function Wake_Less_Than (Left, Right : in Oak_Agent_Id) return Boolean
      with Inline;
 
    package Priority_Queue is new Oak.Storage.Slim_Priority_Queue
@@ -50,11 +49,12 @@ private
 
    use Priority_Queue;
 
-   package Time_Queue is new Oak.Storage.Binary_Heap
-     (Item_Type                    => Oak_Agent_Id,
-      No_Item                      => No_Agent,
-      Size                         => Max_Task_Agents + Max_Scheduler_Agents,
-      ">"                          => Wake_Greater_Than);
+   package Time_Queue is new Oak.Storage.Slim_Time_Priority_Queue
+     (Item_Type     => Oak_Agent_Id,
+      Priority_Type => Any_Priority,
+      No_Item       => No_Agent,
+      "<"           => Wake_Less_Than,
+      Priority      => Normal_Priority);
 
    use Time_Queue;
 

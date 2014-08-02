@@ -8,7 +8,9 @@ generic
 
    with function ">" (Left, Right : Item_Type) return Boolean is <>;
 
-package Oak.Storage.Binary_Heap with Pure is
+--  package Oak.Storage.Binary_Heap with Pure is
+package Oak.Storage.Binary_Heap is
+   pragma Pure;
 
    Heap_Capacity_Error : exception;
 

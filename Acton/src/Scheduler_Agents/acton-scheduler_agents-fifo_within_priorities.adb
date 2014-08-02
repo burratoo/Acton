@@ -14,7 +14,6 @@ with Oak.Oak_Time; use Oak.Oak_Time;
 with Oak.States;   use Oak.States;
 
 with Oak.Agent.Kernel;     use Oak.Agent.Kernel;
-with Oak.Agent.Oak_Agent;  use Oak.Agent.Oak_Agent;
 with Oak.Agent.Schedulers; use Oak.Agent.Schedulers;
 
 with Oak.Core;    use Oak.Core;
@@ -60,8 +59,8 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
 
    procedure Run_Loop is
 
-      Runnable_Queue : Queue_Type;
-      Sleep_Queue    : Heap_Type;
+      Runnable_Queue : Priority_Queue.Queue_Type;
+      Sleep_Queue    : Time_Queue.Queue_Type;
 
       --------------------------
       -- Run Loop Subprograms --
@@ -148,8 +147,8 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
 
       procedure Insert_Into_Sleep_Queue (Agent : in Oak_Agent_Id) is
       begin
-         Add_Item (To_Heap => Sleep_Queue,
-                   Item    => Agent);
+         Enqueue_Item (To_Queue => Sleep_Queue,
+                       Item     => Agent);
       end Insert_Into_Sleep_Queue;
 
       ----------------------
@@ -160,10 +159,11 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
          Current_Time : constant Time := Clock;
          Agent        : Oak_Agent_Id;
       begin
-         while First_Item (Sleep_Queue) /= No_Agent
-           and then Wake_Time (First_Item (Sleep_Queue)) <= Current_Time
          loop
-            Remove_Top (From_Heap => Sleep_Queue, Item => Agent);
+            Agent := Find_Earliest_Item (Sleep_Queue);
+            exit when Agent = No_Agent
+              or else Wake_Time (Agent) > Current_Time;
+            Remove_Item (Sleep_Queue, Item => Agent);
             Add_Agent_To_End_Of_Runnable_Queue (Agent);
          end loop;
       end Move_Woken_Tasks;
@@ -203,11 +203,16 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
         (Message : out Oak_Message)
       is
          Next_Agent_To_Wake : Oak_Agent_Id;
+         Next_Agent_To_Run  : Oak_Agent_Id;
          WT                 : Time;
       begin
          Move_Woken_Tasks;
 
-         Next_Agent_To_Wake := First_Item (From_Heap => Sleep_Queue);
+         Next_Agent_To_Run := Head_Of_Queue (Runnable_Queue);
+
+         Next_Agent_To_Wake := Find_Earliest_Item
+           (In_Queue       => Sleep_Queue,
+            Above_Priority => Normal_Priority (Next_Agent_To_Run));
 
          if Next_Agent_To_Wake = No_Agent then
             WT := Time_Last;
@@ -217,7 +222,7 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
 
          Message :=
            (Message_Type        => Scheduler_Agent_Done,
-            Next_Agent          => Head_Of_Queue (Runnable_Queue),
+            Next_Agent          => Next_Agent_To_Run,
             Wake_Scheduler_At   => WT);
       end Select_Next_Task;
 
@@ -259,8 +264,8 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
                                           return Boolean is
      (Normal_Priority (Left) >= Normal_Priority (Right));
 
-   function Wake_Greater_Than (Left, Right : in Oak_Agent_Id)
+   function Wake_Less_Than (Left, Right : in Oak_Agent_Id)
                                   return Boolean is
-     (Wake_Time (Left) > Wake_Time (Right));
+     (Wake_Time (Left) < Wake_Time (Right));
 
 end Acton.Scheduler_Agents.FIFO_Within_Priorities;

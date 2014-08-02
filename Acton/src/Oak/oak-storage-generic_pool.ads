@@ -19,7 +19,9 @@ generic
    type Item_Type is private;
    type Item_Id_Type     is mod <>;
 
-package Oak.Storage.Generic_Pool with Preelaborate is
+--  package Oak.Storage.Generic_Pool with Preelaborate is
+package Oak.Storage.Generic_Pool is
+   pragma Preelaborate;
 
    type Pool_Type is array (Item_Id_Type) of Item_Type;
 

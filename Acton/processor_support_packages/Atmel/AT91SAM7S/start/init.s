@@ -185,7 +185,7 @@ stack_init_0:
 @
 stack_init_1:
         ldr   sp, =__stack_space_start
-        sub   sp, sp, #16
+        sub   sp, sp, #20
 @ Set up initial frame pointers etc
 	mov     a2, #0		@ Second arg: fill value
 	mov	fp, a2		@ Null frame pointer

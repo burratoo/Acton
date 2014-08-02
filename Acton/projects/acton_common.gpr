@@ -41,7 +41,7 @@ abstract project Acton_Common is
                          "Oak.Processor_Support_Package.Time"
 );
 
-   Ada_Switches := ("-gnatwa.Xl", "-g", "-O2", "-gnatn", "-gnatg",  "-ffunction-sections", "-fdata-sections", "-gnatp");
+   Ada_Switches := ("-gnatwa.Xl", "-g", "-O2", "-flto", "-ffunction-sections", "-fdata-sections", "-gnatn", "-gnatg", "-gnatp");
    Asm_Switches := ("-g");
 
    Documentation_Dir := "../doc/";

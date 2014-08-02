@@ -39,6 +39,7 @@ with System.Storage_Elements; use System.Storage_Elements;
 --                   -----------
 --                   |   LR^   |
 --                   |   SP^   |
+--                   |   IP^   |
 --  Stack.Pointer -> |   FP^   |
 --                   |   LR    |
 --                   |   SPSR  |
@@ -64,6 +65,9 @@ with System.Storage_Elements; use System.Storage_Elements;
 --  The nop assembly instructions after each stm and ldm instructions that
 --  touch the user mode registers is needed for ARM versions less than ARMv6,
 --  see the ARM Architecture Reference Manual for the reason.
+
+--  Note that any change to the stack frame will require changes to
+--  Call_Stack.Ops
 
 package body Oak.Core_Support_Package.Interrupts is
 
@@ -178,7 +182,7 @@ package body Oak.Core_Support_Package.Interrupts is
       --  most of them get trashed. Also note that SP should already be
       --  pointing to the kernel's register store.
 
-      Asm ("stm sp, {fp, sp, lr}^", Volatile => True);
+      Asm ("stm sp, {fp - lr}^", Volatile => True);
       Asm ("nop", Volatile => True);
 
       --  Store the kernel's instruction pointer (currently in lr_svc) and its
@@ -252,7 +256,7 @@ package body Oak.Core_Support_Package.Interrupts is
       Asm ("mov sp, r3", Volatile => True);
       Asm ("ldmdb sp, {r4, lr}", Volatile => True);
       Asm ("msr spsr_all, r4", Volatile => True);
-      Asm ("ldm sp, {fp, sp, lr}^", Volatile => True);
+      Asm ("ldm sp, {fp - lr}^", Volatile => True);
       Asm ("nop", Volatile => True);
 
       Asm ("movs pc, lr", Volatile => True);
@@ -305,7 +309,7 @@ package body Oak.Core_Support_Package.Interrupts is
       --  most of them get trashed. Also note that SP should already be
       --  pointing to the kernel's register store.
 
-      Asm ("stm sp, {fp, sp, lr}^", Volatile => True);
+      Asm ("stm sp, {fp - lr}^", Volatile => True);
       Asm ("nop", Volatile => True);
 
       --  Store the kernel's instruction pointer (currently in lr_svc) and its
@@ -325,7 +329,7 @@ package body Oak.Core_Support_Package.Interrupts is
            Volatile => True);
       Asm ("ldmdb sp, {r4, lr}", Volatile => True);
       Asm ("msr spsr_all, r4", Volatile => True);
-      Asm ("ldm sp, {fp, sp, lr}^", Volatile => True);
+      Asm ("ldm sp, {fp - lr}^", Volatile => True);
       Asm ("nop", Volatile => True);
 
       --  Install sp into FIQ and IRQ modes. Unlike for the full context switch
@@ -387,7 +391,7 @@ package body Oak.Core_Support_Package.Interrupts is
       --  This is the spot where we store the agent's registers. Note that
       --  only the fp, sp and lr are saved.
 
-      Asm ("stm sp, {fp, sp, lr}^", Volatile => True);
+      Asm ("stm sp, {fp - lr}^", Volatile => True);
       Asm ("nop", Volatile => True);
       Asm ("mrs r4, spsr", Volatile => True);
       Asm ("stmdb sp, {r4, lr}", Volatile => True);
@@ -406,7 +410,7 @@ package body Oak.Core_Support_Package.Interrupts is
 
       Asm ("ldmdb sp, {r4, lr}", Volatile => True);
       Asm ("msr spsr_cxsf, r4", Volatile => True);
-      Asm ("ldm sp, {fp, sp, lr}^", Volatile => True);
+      Asm ("ldm sp, {fp - lr}^", Volatile => True);
       Asm ("nop", Volatile => True);
       --  Return
       Asm ("movs pc, lr", Volatile => True);

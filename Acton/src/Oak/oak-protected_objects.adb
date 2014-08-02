@@ -138,7 +138,8 @@ package body Oak.Protected_Objects is
          end if;
 
       elsif Subprogram_Kind = Protected_Function and then
-        Active_Subprogram_Kind (PO) = Protected_Function then
+        Active_Subprogram_Kind (PO) = Protected_Function
+      then
          --  Another task is operating inside a protected function, so this
          --  task is able to join as well.
 

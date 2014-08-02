@@ -25,24 +25,25 @@ package body Oak.Core_Support_Package.Call_Stack.Ops is
    begin
       Asm
         --  Calculate the start of the agent's stack
-        ("mov r5, %0" & ASCII.LF & ASCII.HT &
+        ("mov r6, %0" & ASCII.LF & ASCII.HT &
          --  8-byte alignment. Holds full frame
-         "sub r5, #72"     & ASCII.LF & ASCII.HT &
+         "sub r6, #72"     & ASCII.LF & ASCII.HT &
          "mov r4, #0"      & ASCII.LF & ASCII.HT &   --  Agent fp
-         "mov r6, #0"      & ASCII.LF & ASCII.HT &   --  Agent lr
+         "mov r5, #0"      & ASCII.LF & ASCII.HT &   --  Agent ip
+         "mov r7, #0"      & ASCII.LF & ASCII.HT &   --  Agent lr
          --  Default CPSR value - User mode, all interrupts enabled
-         "mov r7, #0x10"   & ASCII.LF & ASCII.HT &
-         "mov r8, %1"      & ASCII.LF & ASCII.HT &   --  Agent first instr.
+         "mov r8, #0x10"   & ASCII.LF & ASCII.HT &
+         "mov r9, %1"      & ASCII.LF & ASCII.HT &   --  Agent first instr.
          --  Stack.Pointer lives here
          "sub %0, #60"     & ASCII.LF & ASCII.HT &
          --  Store the agent's fp, sp, lr, initial address and agent CPSR onto
          --  the agents register store (represented by Stack.Pointer)
-         "stm   %0, {r4 - r6}" & ASCII.LF & ASCII.HT &
-         "stmdb %0,  {r7 - r8}",
+         "stm   %0, {r4 - r7}" & ASCII.LF & ASCII.HT &
+         "stmdb %0,  {r8 - r9}",
          Outputs  => Address'Asm_Output ("+r", Stack.Pointer),
          Inputs   => Address'Asm_Input ("r", Instruction_Address),
          Volatile => True,
-         Clobber  => "r4, r5, r6, r7, r8");
+         Clobber  => "r4, r5, r6, r7, r8, r9");
    end Set_Task_Instruction_Pointer;
 
    procedure Set_Task_Body_Procedure

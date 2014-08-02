@@ -16,7 +16,8 @@
 
 with Oak.Oak_Time;
 
-with Oak.Core; use Oak.Core;
+with Oak.Core;    use Oak.Core;
+with Oak.Message; use Oak.Message;
 
 with System; use System;
 
@@ -31,7 +32,10 @@ package Oak.Core_Support_Package.Task_Support with Preelaborate is
    procedure Context_Switch with Inline_Always;
    procedure Context_Switch_From_Oak
      (Reason_For_Oak_To_Run : out Run_Reason;
-      Message_Address       : out Address) with Inline_Always;
+      Message_Address       : out Address);
+   procedure Context_Switch_To_Oak
+     (Reason_For_Run : in     Run_Reason;
+      Message        : in out Oak_Message) with Inline => False;
    procedure Context_Switch_Save_Callee_Registers with Inline_Always;
    --  Procedures that initiate the context switch.
 

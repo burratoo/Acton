@@ -5,6 +5,7 @@ with Interfaces; use Interfaces;
 --  From AdaCore's website I think.
 
 package body Oak.Memory.Ops is
+   pragma Suppress (All_Checks);
 
    function Mem_Compare (dest, src : Address;
                          n         : size_t) return unsigned_char is

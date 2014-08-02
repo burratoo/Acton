@@ -15,8 +15,6 @@ with System.Machine_Code; use System.Machine_Code;
 with Oak.Core_Support_Package.Interrupts;
 use  Oak.Core_Support_Package.Interrupts;
 
-with Oak.Message; use Oak.Message;
-
 with Oak.Processor_Support_Package.Time;
 
 with Ada.Unchecked_Conversion;
@@ -56,12 +54,27 @@ package body Oak.Core_Support_Package.Task_Support is
       Message_Address       : out Address)
    is
    begin
-      Asm ("swi 0",
+      Asm ("swi 0"      & ASCII.LF & ASCII.HT &
+           "mov %0, r0" & ASCII.LF & ASCII.HT &
+           "mov %1, r1",
            Outputs  => (Run_Reason'Asm_Output ("=r", Reason_For_Oak_To_Run),
                         Address'Asm_Output ("=r", Message_Address)),
            Volatile => True,
-           Clobber  => "r2, r3, r4, r5, r6, r7, r8, r9, r10, r12");
+           Clobber  => "r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10");
    end Context_Switch_From_Oak;
+
+   ---------------------------
+   -- Context_Switch_To_Oak --
+   ---------------------------
+
+   procedure Context_Switch_To_Oak
+     (Reason_For_Run : in     Run_Reason;
+      Message        : in out Oak_Message) is
+      pragma Unreferenced (Reason_For_Run, Message);
+   begin
+      Asm ("swi 0", Volatile => True,
+           Clobber     => "r2, r3, r4, r5, r6, r7, r8, r9, r10"); -- , r11");
+   end Context_Switch_To_Oak;
 
    ------------------------------------------
    -- Context_Switch_Save_Callee_Registers --

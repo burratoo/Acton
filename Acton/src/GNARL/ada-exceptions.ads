@@ -42,7 +42,7 @@
 with System;
 
 package Ada.Exceptions is
-   pragma Preelaborate_05;
+   pragma Preelaborate;
    --  In accordance with Ada 2005 AI-362
 
    type Exception_Id is private;

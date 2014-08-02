@@ -20,7 +20,9 @@ generic
 
    with function ">" (Left, Right : Item_Type) return Boolean is <>;
    with function ">=" (Left, Right : Item_Type) return Boolean is <>;
-package Oak.Storage.Slim_Priority_Queue with Pure is
+--  package Oak.Storage.Slim_Priority_Queue with Pure is
+package Oak.Storage.Slim_Priority_Queue is
+   pragma Pure;
 
    Queue_Capacity_Error : exception;
 

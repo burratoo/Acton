@@ -97,11 +97,7 @@ package body Oak.Core is
    procedure Request_Oak_Service
      (Reason_For_Run : in Run_Reason;
       Message        : in out Oak_Message)
-   is
-      pragma Unreferenced (Reason_For_Run, Message);
-   begin
-      Context_Switch_Save_Callee_Registers;
-   end Request_Oak_Service;
+   renames Context_Switch_To_Oak;
 
    --------------
    -- Run_Loop --
@@ -160,7 +156,7 @@ package body Oak.Core is
          Master_Task   : constant Task_Id     := Task_Id'First;
       begin
          Flush_Scheduler_Ops_Stack (Oak_Kernel => My_Kernel_Id);
-         pragma Warnings (Off, "*True*");
+         pragma Warnings (Off, "*False*");
          if My_Kernel_Id = 1 then
             Push_Scheduler_Op
               (Oak_Kernel => My_Kernel_Id,
@@ -169,7 +165,7 @@ package body Oak.Core is
                               Agent_To_Add => Master_Task,
                               Place_At     => Front));
          end if;
-         pragma Warnings (On, "*True*");
+         pragma Warnings (On, "*False*");
 
          Push_Scheduler_Op
            (Oak_Kernel => My_Kernel_Id,
@@ -468,7 +464,8 @@ package body Oak.Core is
               (Reason_For_Oak_To_Run => Reason_For_Run,
                Message_Address       => Received_Message_Address);
             if Reason_For_Run = Agent_Request
-              and then Received_Message_Address /= Null_Address then
+              and then Received_Message_Address /= Null_Address
+            then
                --  Copy message into kernel space
 
                Copy_Oak_Message (Destination => Agent_Message'Address,

@@ -23,7 +23,9 @@ generic
    with function "<" (Left, Right : Item_Type) return Boolean is <>;
    with function Priority (Element : in Item_Type) return Priority_Type;
 
-package Oak.Storage.Slim_Time_Priority_Queue with Pure is
+--  package Oak.Storage.Slim_Time_Priority_Queue with Pure is
+package Oak.Storage.Slim_Time_Priority_Queue is
+   pragma Pure;
 
    Queue_Capacity_Error : exception;
 
