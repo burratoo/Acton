@@ -38,7 +38,8 @@ abstract project Acton_Common is
                          "Oak.Scheduler",
                          --  Questionable packages
                          "Oak.Core_Support_Package.Time",
-                         "Oak.Processor_Support_Package.Time"
+                         "Oak.Processor_Support_Package.Time",
+                         "Acton.Scheduler_Agents.FIFO_Within_Priorities_Basic_Sleep"
 );
 
    Ada_Switches := ("-gnatwa.Xl", "-g", "-O2", "-flto", "-ffunction-sections", "-fdata-sections", "-gnatn", "-gnatg", "-gnatp");
