@@ -9,6 +9,8 @@
 --                 Copyright (C) 2013-2014, Patrick Bernardi                --
 ------------------------------------------------------------------------------
 
+pragma Restrictions (No_Elaboration_Code);
+
 with Oak.Agent;    use Oak.Agent;
 with Oak.Oak_Time; use Oak.Oak_Time;
 

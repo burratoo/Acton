@@ -138,7 +138,7 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities_Basic_Sleep is
                Add_Agent_To_Scheduler (Agent);
 
             when others =>
-               raise Scheduler_Error;
+               raise Program_Error;
          end case;
       end Agent_Changed;
 
@@ -189,9 +189,9 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities_Basic_Sleep is
             when Sleeping =>
                --  Not supported at this point. Support for it would need
                --  a double linked list or a tree to ease its removal.
-               raise Scheduler_Error;
+               raise Program_Error;
             when others =>
-               raise Scheduler_Error;
+               raise Program_Error;
          end case;
       end Remove_Agent_From_Scheduler;
 

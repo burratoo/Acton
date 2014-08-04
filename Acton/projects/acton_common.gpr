@@ -42,7 +42,7 @@ abstract project Acton_Common is
                          "Acton.Scheduler_Agents.FIFO_Within_Priorities_Basic_Sleep"
 );
 
-   Ada_Switches := ("-gnatwa.Xl", "-g", "-O2", "-flto", "-ffunction-sections", "-fdata-sections", "-gnatn", "-gnatg", "-gnatp");
+   Ada_Switches := ("-gnatwa.Xl", "-g", "-O2",  "-flto", "-ffunction-sections", "-fdata-sections", "-gnatn", "-gnatg", "-gnatp");
    Asm_Switches := ("-g");
 
    Documentation_Dir := "../doc/";

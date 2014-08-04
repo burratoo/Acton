@@ -9,6 +9,8 @@
 --                 Copyright (C) 2010-2014, Patrick Bernardi                --
 ------------------------------------------------------------------------------
 
+pragma Restrictions (No_Elaboration_Code);
+
 with Oak.Agent;           use Oak.Agent;
 with System;              use System;
 
@@ -25,12 +27,11 @@ package Acton.Scheduler_Agents.FIFO_Within_Priorities_Basic_Sleep
       Min_Priority : in  Any_Priority;
       Max_Priority : in  Any_Priority);
 
-   Stack_Size : constant := 1 * 1024;
    Agent_Name : constant String := "Fixed_Priority_Scheduler";
-
+   Stack_Size : constant := 1 * 1024;
 private
 
-   Scheduler_Error : exception;
+--     Scheduler_Error : exception;
 
    function Priority_Greater_Than  (Left, Right : in Oak_Agent_Id)
                                     return Boolean

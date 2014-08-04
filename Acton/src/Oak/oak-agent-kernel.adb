@@ -15,6 +15,9 @@ with Oak.Agent.Schedulers; use Oak.Agent.Schedulers;
 
 with Oak.States;  use Oak.States;
 
+with Oak.Core_Support_Package.Call_Stack;
+use Oak.Core_Support_Package.Call_Stack;
+
 package body Oak.Agent.Kernel is
 
    ------------------------------
