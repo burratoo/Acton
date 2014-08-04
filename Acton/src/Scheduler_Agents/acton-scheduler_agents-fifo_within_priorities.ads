@@ -25,10 +25,13 @@ package Acton.Scheduler_Agents.FIFO_Within_Priorities with Preelaborate is
       Min_Priority : in  Any_Priority;
       Max_Priority : in  Any_Priority);
 
-   Stack_Size : constant := 1 * 1024;
+   Stack_Size : constant := 1 * 512;
    Agent_Name : constant String := "Fixed_Priority_Scheduler";
 
 private
+
+   subtype Schedulable_Agents is
+     Oak_Agent_Id range Sleep_Agent .. Task_Id'Last;
 
    function Priority_Greater_Than  (Left, Right : in Oak_Agent_Id)
                                     return Boolean
@@ -42,7 +45,7 @@ private
      with Inline;
 
    package Priority_Queue is new Oak.Storage.Slim_Priority_Queue
-     (Item_Type     => Oak_Agent_Id,
+     (Item_Type     => Schedulable_Agents,
       No_Item       => No_Agent,
       ">"           => Priority_Greater_Than,
       ">="          => Priority_Greater_Than_Equal);
@@ -50,7 +53,7 @@ private
    use Priority_Queue;
 
    package Time_Queue is new Oak.Storage.Slim_Time_Priority_Queue
-     (Item_Type     => Oak_Agent_Id,
+     (Item_Type     => Schedulable_Agents,
       Priority_Type => Any_Priority,
       No_Item       => No_Agent,
       "<"           => Wake_Less_Than,

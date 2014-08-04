@@ -15,10 +15,10 @@ package Oak.Project_Support_Package with Pure is
    --  be less than the number of interrupt prioities available on the hardware
    --  if not all the priorities are used. This allows for some space saving.
 
-   Max_Task_Agents       : constant := 2;
+   Max_Task_Agents       : constant := 8;
    --  Limit on the number of tasks on the system.
 
-   Max_Protected_Agents  : constant := 1;
+   Max_Protected_Agents  : constant := 11;
    --  Limit on the number of protected objects use in the system.
    --  Note that space for at least one protected agent must be defined.
 

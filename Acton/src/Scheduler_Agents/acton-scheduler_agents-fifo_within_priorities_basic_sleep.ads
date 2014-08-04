@@ -32,6 +32,9 @@ package Acton.Scheduler_Agents.FIFO_Within_Priorities_Basic_Sleep
 
 private
 
+   subtype Schedulable_Agents is
+     Oak_Agent_Id range Sleep_Agent .. Task_Id'Last;
+
    function Priority_Greater_Than  (Left, Right : in Oak_Agent_Id)
                                     return Boolean
      with Inline_Always;
@@ -44,7 +47,7 @@ private
      with Inline;
 
    package Priority_Queue is new Oak.Storage.Slim_Priority_Queue
-     (Item_Type     => Oak_Agent_Id,
+     (Item_Type     => Schedulable_Agents,
       No_Item       => No_Agent,
       ">"           => Priority_Greater_Than,
       ">="          => Priority_Greater_Than_Equal);
