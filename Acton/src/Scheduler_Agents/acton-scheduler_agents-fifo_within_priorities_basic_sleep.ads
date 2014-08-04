@@ -29,9 +29,8 @@ package Acton.Scheduler_Agents.FIFO_Within_Priorities_Basic_Sleep
 
    Agent_Name : constant String := "Fixed_Priority_Scheduler";
    Stack_Size : constant := 1 * 1024;
-private
 
---     Scheduler_Error : exception;
+private
 
    function Priority_Greater_Than  (Left, Right : in Oak_Agent_Id)
                                     return Boolean

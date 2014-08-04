@@ -30,8 +30,6 @@ package Acton.Scheduler_Agents.FIFO_Within_Priorities with Preelaborate is
 
 private
 
-   Scheduler_Error : exception;
-
    function Priority_Greater_Than  (Left, Right : in Oak_Agent_Id)
                                     return Boolean
      with Inline_Always;

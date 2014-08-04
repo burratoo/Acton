@@ -38,8 +38,6 @@ private
 
    Max_Schedulable_Agents : constant := 10;
 
-   Scheduler_Error : exception;
-
    function Wake_Greater_Than (Left, Right : in Oak_Agent_Id) return Boolean
      with Inline;
 
