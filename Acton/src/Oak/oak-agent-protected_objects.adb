@@ -296,7 +296,9 @@ package body Oak.Agent.Protected_Objects is
          P.Entry_Queues := New_Q;
       else
          --  Otherwise fix the previous Q item reference.
-         Set_Next_Queue (For_Task => Prev_Q, Next_Queue => New_Q);
+         --  Otherwise fix the previous Q item reference.
+         Set_Next_Queue (For_Task   => Prev_Q,
+                         Next_Queue => New_Q);
       end if;
 
       --  Next_Task is simply Q.

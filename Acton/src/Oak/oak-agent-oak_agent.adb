@@ -323,7 +323,7 @@ package body Oak.Agent.Oak_Agent is
       Agent : Oak_Agent_Record renames Agent_Pool (Agent_Id);
    begin
       Agent.Name_Length                   :=
-        Natural'Min (Name'Length, Name'Length);
+        Natural'Min (Name'Length, Agent.Name'Length);
       Agent.Name (1 .. Agent.Name_Length) :=
         Name (Name'First .. Name'First + Agent.Name_Length - 1);
    end Set_Name;

@@ -28,13 +28,13 @@ with System.Storage_Elements; use System.Storage_Elements;
 
 package Oak.Agent.Oak_Agent with Preelaborate is
 
-   subtype Agent_Name_Length is Integer range 1 ..
+   subtype Agent_Name_Length is Integer range 0 ..
      Project_Support_Package.Max_Task_Name_Length;
    --  A type used to represent the length of the the Agent Name string. A new
    --  type is used for this based on the maximum length of the name to allow
    --  the compiler to pick an appropriately size variable.
 
-   subtype Agent_Name is String (Agent_Name_Length);
+   subtype Agent_Name is String (1 .. Agent_Name_Length'Last);
    --  The name of the Agent. Uses a fixed string to make storage easier.
 
    type Charge_Occurrence is
