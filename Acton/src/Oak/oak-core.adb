@@ -442,65 +442,76 @@ package body Oak.Core is
          Set_Current_Timer (Oak_Kernel => My_Kernel_Id, Timer => Next_Timer);
          Set_Hardware_Priority (Current_Priority (Oak_Kernel => My_Kernel_Id));
 
-         if Is_Agent_Interrupted (Next_Agent) then
-            Context_Switch_Will_Be_To_Interrupted_Task;
-         else
-            Context_Switch_Will_Be_To_Agent;
-         end if;
-
          Current_Agent := Next_Agent;
          Current_Timer := Next_Timer;
 
-         Update_Exit_Stats (Oak_Kernel => This_Oak_Kernel);
+         --  If a timer needs servicing we do not switch to the agent, instead
+         --  we service the timer straight away (removes needless context
+         --  switching).
 
-         --  Switch to the selected agent.
+         if Firing_Time (Current_Timer) <= Clock then
+            Agent_Message := (Message_Type => No_Message);
+            Reason_For_Run := Timer;
+         else
+            --  Exit Oak and switch to selected agent
 
-         Context_Switch_To_Agent : declare
-            Received_Message_Address : Address;
-         begin
-            Context_Switch_From_Oak
-              (Reason_For_Oak_To_Run => Reason_For_Run,
-               Message_Address       => Received_Message_Address);
-            if Reason_For_Run = Agent_Request
-              and then Received_Message_Address /= Null_Address
-            then
-               --  Copy message into kernel space
-
-               Copy_Oak_Message (Destination => Agent_Message'Address,
-                                 Source      => Received_Message_Address);
+            if Is_Agent_Interrupted (Next_Agent) then
+               Context_Switch_Will_Be_To_Interrupted_Task;
             else
-               Agent_Message := (Message_Type => No_Message);
+               Context_Switch_Will_Be_To_Agent;
             end if;
-            Set_Agent_Message_Address
-              (For_Agent       => Current_Agent,
-               Message_Address => Received_Message_Address);
-         end Context_Switch_To_Agent;
 
-         -------------------------------
-         -- Start of the OAK RUN LOOP --
-         -------------------------------
+            Update_Exit_Stats (Oak_Kernel => This_Oak_Kernel);
 
-         --  Note the start is down here instead of logically up the top
-         --  because the first time the run loop is invoked, none of the code
-         --  below here is relevant to that first run through. This saves
-         --  a few needless comparisions to a first run flag.
+            --  Switch to the selected agent.
 
-         --  First thing is to calculate run-time statistics and remove the
-         --  current task from the charge list. Does not apply when this is the
-         --  first run.
+            Context_Switch_To_Agent : declare
+               Received_Message_Address : Address;
+            begin
+               Context_Switch_From_Oak
+                 (Reason_For_Oak_To_Run => Reason_For_Run,
+                  Message_Address       => Received_Message_Address);
+               if Reason_For_Run = Agent_Request
+                 and then Received_Message_Address /= Null_Address
+               then
+                  --  Copy message into kernel space
 
-         Update_Entry_Stats (Oak_Kernel => My_Kernel_Id);
+                  Copy_Oak_Message (Destination => Agent_Message'Address,
+                                    Source      => Received_Message_Address);
+               else
+                  Agent_Message := (Message_Type => No_Message);
+               end if;
+               Set_Agent_Message_Address
+                 (For_Agent       => Current_Agent,
+                  Message_Address => Received_Message_Address);
+            end Context_Switch_To_Agent;
 
-         --  Flag if the current agent was interrupted (affects how the context
-         --  switch back is handled.
+            -------------------------------
+            -- Start of the OAK RUN LOOP --
+            -------------------------------
 
-         case Reason_For_Run is
-            when Agent_Request =>
-               Set_Agent_Interrupted (Current_Agent, False);
+            --  Note the start is down here instead of logically up the top
+            --  because the first time the run loop is invoked, none of the
+            --  code below here is relevant to that first run through. This
+            --  saves a few needless comparisions to a first run flag.
 
-            when Timer | External_Interrupt =>
-               Set_Agent_Interrupted (Current_Agent);
-         end case;
+            --  First thing is to calculate run-time statistics and remove the
+            --  current task from the charge list. Does not apply when this is
+            --  the first run.
+
+            Update_Entry_Stats (Oak_Kernel => My_Kernel_Id);
+
+            --  Flag if the current agent was interrupted (affects how the
+            --  context switch back is handled.
+
+            case Reason_For_Run is
+               when Agent_Request =>
+                  Set_Agent_Interrupted (Current_Agent, False);
+
+               when Timer | External_Interrupt =>
+                  Set_Agent_Interrupted (Current_Agent);
+            end case;
+         end if;
 
          --  Check to see why we are running.
          --
