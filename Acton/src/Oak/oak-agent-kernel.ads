@@ -15,9 +15,10 @@
 
 with Oak.Agent.Storage;
 
-with Oak.Message;   use Oak.Message;
-with Oak.Oak_Time;  use Oak.Oak_Time;
-with Oak.Timers;    use Oak.Timers;
+with Oak.Brokers;  use Oak.Brokers;
+with Oak.Message;  use Oak.Message;
+with Oak.Oak_Time; use Oak.Oak_Time;
+with Oak.Timers;   use Oak.Timers;
 
 with System; use System;
 
@@ -107,6 +108,11 @@ package Oak.Agent.Kernel with Preelaborate is
       Agent      : in Oak_Agent_Id);
    --  Remove the specified agent from the kernel's charge list.
 
+   function This_Oak_Kernel return Kernel_Id with Inline_Always;
+   --  Return the id of the current Oak_Kernel. This needs to be inlined since
+   --  it is called from within interrupt handlers where we want to avoid
+   --  calling subprograms as it messes with the agent's stack.
+
    function Top_Level_Schedulers
      (Oak_Kernel : in Kernel_Id)
       return Scheduler_Id_With_No;
@@ -134,13 +140,13 @@ package Oak.Agent.Kernel with Preelaborate is
 
    --  Protected object handling code
 
-   procedure Add_Protected_Agent_To_Kernel
+   procedure Add_Protected_Broker_To_Kernel
      (Oak_Kernel : in Kernel_Id;
-      Agent      : in Protected_Id);
+      Broker     : in Protected_Id);
 
-   procedure Remove_Protected_Agent_From_Kernel
+   procedure Remove_Protected_Broker_From_Kernel
      (Oak_Kernel : in Kernel_Id;
-      Agent      : in Protected_Id);
+      Broker     : in Protected_Id);
 
    function Next_Protected_Agent_To_Run
      (Oak_Kernel : in Kernel_Id) return Protected_Id_With_No;
@@ -192,8 +198,8 @@ private
       Entry_Exit_Stamp   : Oak_Time.Time;
       --  The time the kernel entered/exited its run loop.
 
-      Active_Protected_Agents : Protected_Id_With_No;
-      --  List of active protected agents sorted by priority.
+      Active_Protected_Brokers : Protected_Id_With_No;
+      --  List of active protected brokers sorted by priority.
 
       Interrupt_Agents   : Interrupt_Ids;
       --  An array of interrupt agents that handle interrupts, with an
@@ -252,6 +258,10 @@ private
       Priority   : in Interrupt_Priority)
       return Interrupt_Id is
       (Agent_Pool (Oak_Kernel).Interrupt_Agents (Priority));
+
+   function This_Oak_Kernel return Kernel_Id is (Kernel_Id'First);
+   --  In theory on a multiprocessor machine we would query the processor to
+   --  find out what its id is.
 
    function Top_Level_Schedulers
      (Oak_Kernel : in Kernel_Id)

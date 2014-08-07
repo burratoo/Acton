@@ -9,6 +9,7 @@
 ------------------------------------------------------------------------------
 
 with Oak.Agent;   use Oak.Agent;
+with Oak.Brokers; use Oak.Brokers;
 with Oak.Indices; use Oak.Indices;
 with Oak.Message; use Oak.Message;
 

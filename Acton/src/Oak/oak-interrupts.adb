@@ -8,8 +8,7 @@
 --                 Copyright (C) 2012-2014, Patrick Bernardi                --
 ------------------------------------------------------------------------------
 
-with Oak.Agent.Oak_Agent;         use Oak.Agent.Oak_Agent;
-with Oak.Agent.Protected_Objects; use Oak.Agent.Protected_Objects;
+with Oak.Brokers.Protected_Objects; use Oak.Brokers.Protected_Objects;
 
 package body Oak.Interrupts is
 
@@ -19,7 +18,7 @@ package body Oak.Interrupts is
         (Interrupt => Handler.Interrupt,
          Handler   => Handler.Handler,
          Priority  =>
-           Normal_Priority
+           Ceiling_Priority
              (Protected_Object_From_Access
                   (Parameterless_Access (Handler.Handler))));
    end Attach_Handler;

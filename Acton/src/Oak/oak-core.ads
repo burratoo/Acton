@@ -59,11 +59,6 @@ package Oak.Core with Preelaborate is
    procedure Run_Loop with No_Return;
    --  The Oak kernel's run loop that performs the kernel's operations.
 
-   function This_Oak_Kernel return Kernel_Id with Inline_Always;
-   --  Return the id of the current Oak_Kernel. This needs to be inlined since
-   --  it is called from within interrupt handlers where we want to avoid
-   --  calling subprograms as it messes with the agent's stack.
-
    procedure Start
      with Export, Convention => Ada, External_Name => "__oak_start";
    --  Called once by the system startup code to begin executing Oak the
@@ -85,10 +80,6 @@ private
      External_Name => "_global_start_phase";
 
    No_Message_Here : aliased Oak_Message := (Message_Type => No_Message);
-
-   function This_Oak_Kernel return Kernel_Id is (Kernel_Id'First);
-   --  In theory on a multiprocessor machine we would query the processor to
-   --  find out what its id is.
 
    type Invoke_Count is mod 2 ** 32 with Size => 32;
    type Run_Reason_Count is array (Run_Reason) of Invoke_Count;

@@ -140,6 +140,12 @@ package Oak.Timers with Preelaborate is
       New_Time : in Oak_Time.Time);
    --  Update the timer's fire time.
 
+   procedure Update_Timer
+     (Timer        : in Oak_Timer_Id;
+      New_Time     : in Oak_Time.Time;
+      New_Priority : in Any_Priority);
+   --  Update the timer's fire time.
+
 private
 
    ---------------------

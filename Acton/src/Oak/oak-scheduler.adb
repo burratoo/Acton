@@ -12,7 +12,6 @@
 with Oak.Agent.Kernel;     use Oak.Agent.Kernel;
 with Oak.Agent.Oak_Agent;  use Oak.Agent.Oak_Agent;
 with Oak.Agent.Schedulers; use Oak.Agent.Schedulers;
-with Oak.Core;             use Oak.Core;
 with Oak.Oak_Time;         use Oak.Oak_Time;
 with Oak.States;           use Oak.States;
 with Oak.Timers;           use Oak.Timers;
@@ -214,112 +213,121 @@ package body Oak.Scheduler is
          Set_State (Message.Next_Agent, Runnable);
       end if;
 
-      --  The scheduler agent is placed back on the charge list
-      --  if its when charge state is not Only_While_Running or
-      --  if the scheduler agent does not want to be charged
-      --  while it has the No_Agent selected.
+      --  Handle top-level scheduler agents here so it can short cut all the
+      --  code that handles nested scheduler agents.
 
-      if When_To_Charge (SA) /= Only_While_Running
-        and then Is_Scheduler_Active (SA)
-        and then not (Message.Next_Agent = No_Agent
-                      and then not Charge_While_No_Agent (SA))
-      then
-         Add_Agent_To_Charge_List
-           (Oak_Kernel => My_Kernel_Id,
-            Agent      => SA);
-      end if;
+      if Scheduler_Agent_For_Agent (SA) = No_Agent then
+         Update_Timer
+           (Timer        => Timer_For_Scheduler_Agent (SA),
+            New_Time     => Message.Wake_Scheduler_At,
+            New_Priority => Message.Wake_Priority);
 
-      if State (SA) /= Allowance_Exhausted then
-         --  Fix up the scheduler timer if it is being used to
-         --  detect the passing of a scheduler agent's deadline.
-
-         if Scheduler_Active_Till (SA) = Deadline and then
-           Absolute_Deadline (SA) <= Message.Wake_Scheduler_At
-         then
-            Update_Timer
-              (Timer    => Timer_For_Scheduler_Agent (SA),
-               New_Time => Absolute_Deadline (SA));
-         else
-            Update_Timer
-              (Timer    => Timer_For_Scheduler_Agent (SA),
-               New_Time => Message.Wake_Scheduler_At);
-         end if;
       else
-         --  Special case when the scheduler agent's allowance is exhausted:
-         --  the timer is set to no earilier than the start of the agent's next
-         --  cycle.
+         --  The scheduler agent was a nested scheduler agent
 
-         if Message.Wake_Scheduler_At > Time_Next_Cycle_Commences (SA) then
-            --  Set_Wake_Time
-            --    (For_Agent => SA,
-            --     Wake_Time => Message.Wake_Scheduler_At);
-            Update_Timer
-              (Timer    => Timer_For_Scheduler_Agent (SA),
-               New_Time => Message.Wake_Scheduler_At);
-         else
-            Update_Timer
-              (Timer    => Timer_For_Scheduler_Agent (SA),
-               New_Time => Time_Next_Cycle_Commences (SA));
+         --  The scheduler agent is placed back on the charge list
+         --  if its when charge state is not Only_While_Running or
+         --  if the scheduler agent does not want to be charged
+         --  while it has the No_Agent selected.
+
+         if When_To_Charge (SA) /= Only_While_Running
+           and then Is_Scheduler_Active (SA)
+           and then not (Message.Next_Agent = No_Agent
+                         and then not Charge_While_No_Agent (SA))
+         then
+            Add_Agent_To_Charge_List
+              (Oak_Kernel => My_Kernel_Id,
+               Agent      => SA);
          end if;
-      end if;
 
-      --  From here it depends on whether the scheduler agent was runnable or
-      --  if it has been suspended since it has exhausted its allowance or has
-      --  not agent to run.
+         if State (SA) /= Allowance_Exhausted then
+            --  Fix up the scheduler timer if it is being used to
+            --  detect the passing of a scheduler agent's deadline.
 
-      case State (SA) is
-         when Runnable =>
-            if Scheduler_Agent_For_Agent (SA) /= No_Agent
-              and then Message.Next_Agent = No_Agent
-              and then Interpret_No_Agent_As (SA) = As_Is
+            if Scheduler_Active_Till (SA) = Deadline and then
+              Absolute_Deadline (SA) <= Message.Wake_Scheduler_At
             then
-               --  The scheduler agent is a nested agent and has nothing to
-               --  dispatch. In this case it is removed its parent scheduler
-               --  agent. The agent's timer is kept active so it can
-               --  manage its queues and dispatch a task once one becomes
-               --  ready.
-
-               Set_State (SA, No_Agent_To_Run);
-               Push_Scheduler_Op
-                 (Oak_Kernel => My_Kernel_Id,
-                  Scheduler  => Scheduler_Agent_For_Agent (SA),
-                  Operation  => (Message_Type    => Removing_Agent,
-                                 Agent_To_Remove => SA));
+               Update_Timer
+                 (Timer    => Timer_For_Scheduler_Agent (SA),
+                  New_Time => Absolute_Deadline (SA));
+            else
+               Update_Timer
+                 (Timer    => Timer_For_Scheduler_Agent (SA),
+                  New_Time => Message.Wake_Scheduler_At);
             end if;
+         else
+            --  Special case when the scheduler agent's allowance is exhausted:
+            --  the timer is set to no earilier than the start of the agent's
+            --  next cycle.
 
-         when Allowance_Exhausted =>
-
-            --  If the next cycle time has passed, then the agent goes back
-            --  onto it's respective runnable queue.
-
-            if Time_Next_Cycle_Commences (SA) < Clock then
-               Set_State (SA, Runnable);
-               Push_Scheduler_Op
-                 (Oak_Kernel => My_Kernel_Id,
-                  Scheduler  => Scheduler_Agent_For_Agent (SA),
-                  Operation  => (Message_Type => Adding_Agent,
-                                 Agent_To_Add => SA,
-                                 Place_At     => Back));
+            if Message.Wake_Scheduler_At > Time_Next_Cycle_Commences (SA) then
+               Update_Timer
+                 (Timer    => Timer_For_Scheduler_Agent (SA),
+                  New_Time => Message.Wake_Scheduler_At);
+            else
+               Update_Timer
+                 (Timer    => Timer_For_Scheduler_Agent (SA),
+                  New_Time => Time_Next_Cycle_Commences (SA));
             end if;
+         end if;
 
-         when No_Agent_To_Run =>
-            if Message.Next_Agent /= No_Agent then
-               --  Add the scheduler agent back to its scheduler agent since
-               --  it now has an agent to dispatch
+         --  From here it depends on whether the scheduler agent was runnable
+         --  or if it has been suspended since it has exhausted its allowance
+         --  or has no agent to run.
 
-               Set_State (SA, Runnable);
-               Push_Scheduler_Op
-                 (Oak_Kernel => My_Kernel_Id,
-                  Scheduler  => Scheduler_Agent_For_Agent (SA),
-                  Operation  => (Message_Type => Adding_Agent,
-                                 Agent_To_Add => SA,
-                                 Place_At     => Back));
-            end if;
+         case State (SA) is
+            when Runnable =>
+               if Message.Next_Agent = No_Agent
+                 and then Interpret_No_Agent_As (SA) = As_Is
+               then
+                  --  The scheduler agent is a nested agent and has nothing to
+                  --  dispatch. In this case it is removed its parent scheduler
+                  --  agent. The agent's timer is kept active so it can
+                  --  manage its queues and dispatch a task once one becomes
+                  --  ready.
 
-         when others =>
-            --  ??? Should not get here.
-            pragma Assert (False);
-      end case;
+                  Set_State (SA, No_Agent_To_Run);
+                  Push_Scheduler_Op
+                    (Oak_Kernel => My_Kernel_Id,
+                     Scheduler  => Scheduler_Agent_For_Agent (SA),
+                     Operation  => (Message_Type    => Removing_Agent,
+                                    Agent_To_Remove => SA));
+               end if;
+
+            when Allowance_Exhausted =>
+
+               --  If the next cycle time has passed, then the agent goes back
+               --  onto it's respective runnable queue.
+
+               if Time_Next_Cycle_Commences (SA) < Clock then
+                  Set_State (SA, Runnable);
+                  Push_Scheduler_Op
+                    (Oak_Kernel => My_Kernel_Id,
+                     Scheduler  => Scheduler_Agent_For_Agent (SA),
+                     Operation  => (Message_Type => Adding_Agent,
+                                    Agent_To_Add => SA,
+                                    Place_At     => Back));
+               end if;
+
+            when No_Agent_To_Run =>
+               if Message.Next_Agent /= No_Agent then
+                  --  Add the scheduler agent back to its scheduler agent since
+                  --  it now has an agent to dispatch
+
+                  Set_State (SA, Runnable);
+                  Push_Scheduler_Op
+                    (Oak_Kernel => My_Kernel_Id,
+                     Scheduler  => Scheduler_Agent_For_Agent (SA),
+                     Operation  => (Message_Type => Adding_Agent,
+                                    Agent_To_Add => SA,
+                                    Place_At     => Back));
+               end if;
+
+            when others =>
+               --  ??? Should not get here.
+               pragma Assert (False);
+         end case;
+      end if;
    end Post_Run_Scheduler_Agent;
 
    ---------------------------------

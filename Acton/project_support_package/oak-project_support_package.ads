@@ -20,7 +20,6 @@ package Oak.Project_Support_Package with Pure is
 
    Max_Protected_Agents  : constant := 11;
    --  Limit on the number of protected objects use in the system.
-   --  Note that space for at least one protected agent must be defined.
 
    Max_Sleep_Agents      : constant := 1;
    --  The maximum number of sleep agents is always one. Only defined to help
@@ -28,8 +27,7 @@ package Oak.Project_Support_Package with Pure is
 
    Max_Oak_Agents        : constant := Max_Kernel_Agents +
                              Max_Scheduler_Agents + Max_Interrupt_Agents +
-                               Max_Task_Agents + Max_Protected_Agents +
-                                 Max_Sleep_Agents;
+                               Max_Task_Agents + Max_Sleep_Agents;
    --  The maximum number of Oak Agents is defined by the sum of the previous
    --  agents. Each of these agents contains an Oak Agent as their general
    --  data structure.

@@ -9,11 +9,12 @@
 --                 Copyright (C) 2011-2014, Patrick Bernardi                --
 ------------------------------------------------------------------------------
 
-with Oak.Agent.Kernel;            use Oak.Agent.Kernel;
-with Oak.Agent.Oak_Agent;         use Oak.Agent.Oak_Agent;
-with Oak.Agent.Protected_Objects; use Oak.Agent.Protected_Objects;
+with Oak.Agent;           use Oak.Agent;
+with Oak.Agent.Kernel;    use Oak.Agent.Kernel;
+with Oak.Agent.Oak_Agent; use Oak.Agent.Oak_Agent;
 
-with Oak.Core;    use Oak.Core;
+with Oak.Brokers.Protected_Objects; use Oak.Brokers.Protected_Objects;
+
 with Oak.States;  use Oak.States;
 
 with Oakland.Tasks; use Oakland.Tasks;

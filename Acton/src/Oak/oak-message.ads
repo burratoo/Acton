@@ -1,9 +1,11 @@
 with Oak.Oak_Time;
 
 with Oak.Agent;      use Oak.Agent;
+with Oak.Brokers;    use Oak.Brokers;
 with Oak.Indices;    use Oak.Indices;
 with Oak.Interrupts; use Oak.Interrupts;
 with Oak.States;     use Oak.States;
+with System;         use System;
 
 package Oak.Message with Preelaborate is
 
@@ -70,6 +72,7 @@ package Oak.Message with Preelaborate is
 
          when Scheduler_Agent_Done =>
             Wake_Scheduler_At : Oak_Time.Time;
+            Wake_Priority     : Any_Priority;
             Next_Agent        : Oak_Agent_Id;
 
          when Initialising_Agents =>

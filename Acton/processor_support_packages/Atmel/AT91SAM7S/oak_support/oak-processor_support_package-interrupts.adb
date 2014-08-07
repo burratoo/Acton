@@ -1,4 +1,4 @@
-with Oak.Agent.Protected_Objects; use Oak.Agent.Protected_Objects;
+with Oak.Brokers.Protected_Objects; use Oak.Brokers.Protected_Objects;
 
 with Atmel; use Atmel;
 with Atmel.AT91SAM7S;     use Atmel.AT91SAM7S;

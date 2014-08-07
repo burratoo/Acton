@@ -216,9 +216,10 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities_Basic_Sleep is
          end if;
 
          Message :=
-           (Message_Type        => Scheduler_Agent_Done,
-            Next_Agent          => Head_Of_Queue (Runnable_Queue),
-            Wake_Scheduler_At   => WT);
+           (Message_Type      => Scheduler_Agent_Done,
+            Next_Agent        => Head_Of_Queue (Runnable_Queue),
+            Wake_Priority     => Normal_Priority (Next_Agent_To_Wake),
+            Wake_Scheduler_At => WT);
       end Select_Next_Task;
 
       -------------------

@@ -228,6 +228,7 @@ package body Acton.Scheduler_Agents.Priority_Server is
          Message :=
            (Message_Type        => Scheduler_Agent_Done,
             Next_Agent          => First_Item (Runnable_Queue),
+            Wake_Priority       => 1,
             Wake_Scheduler_At   => WT);
       end Select_Next_Task;
 

@@ -148,12 +148,20 @@ package body Oak.Timers is
      (Timer    : in Oak_Timer_Id;
       New_Time : in Oak_Time.Time) is
    begin
+      Timer_Pool (Timer).Fire_Time := New_Time;
+
       if In_Queue (Timer_Queue, Item_Id => Timer) then
          Remove_Item (Timer_Queue, Timer);
-         Timer_Pool (Timer).Fire_Time := New_Time;
          Enqueue_Item (Timer_Queue, Timer);
-      else
-         Timer_Pool (Timer).Fire_Time := New_Time;
       end if;
+   end Update_Timer;
+
+   procedure Update_Timer
+     (Timer        : in Oak_Timer_Id;
+      New_Time     : in Oak_Time.Time;
+      New_Priority : in Any_Priority) is
+   begin
+      Timer_Pool (Timer).Priority := New_Priority;
+      Update_Timer (Timer, New_Time);
    end Update_Timer;
 end Oak.Timers;

@@ -15,7 +15,6 @@ use Oak.Core_Support_Package.Call_Stack.Ops;
 with Oak.Agent;           use Oak.Agent;
 with Oak.Agent.Kernel;    use Oak.Agent.Kernel;
 with Oak.Agent.Oak_Agent; use Oak.Agent.Oak_Agent;
-with Oak.Core;            use Oak.Core;
 
 package body Oak.Memory.Call_Stack.Ops is
 

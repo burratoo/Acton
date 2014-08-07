@@ -13,6 +13,8 @@ with Oak.Agent.Interrupts; use Oak.Agent.Interrupts;
 with Oak.Agent.Oak_Agent;  use Oak.Agent.Oak_Agent;
 with Oak.Agent.Schedulers; use Oak.Agent.Schedulers;
 
+with Oak.Brokers.Protected_Objects; use Oak.Brokers.Protected_Objects;
+
 with Oak.States;  use Oak.States;
 
 with Oak.Core_Support_Package.Call_Stack;
@@ -180,7 +182,7 @@ package body Oak.Agent.Kernel is
          K.Schedulers              := No_Agent;
          K.Current_Agent           := No_Agent;
          K.Entry_Exit_Stamp        := Clock;
-         K.Active_Protected_Agents := No_Agent;
+         K.Active_Protected_Brokers := No_Protected_Object;
          K.Interrupt_States        := (others => Inactive);
          K.Budgets_To_Charge       := No_Agent;
 
@@ -331,60 +333,69 @@ package body Oak.Agent.Kernel is
       Agent_Pool (Oak_Kernel).Entry_Exit_Stamp := Time;
    end Set_Entry_Exit_Stamp;
 
-   procedure Add_Protected_Agent_To_Kernel
+   ------------------------------------
+   -- Add_Protected_Broker_To_Kernel --
+   ------------------------------------
+
+   procedure Add_Protected_Broker_To_Kernel
      (Oak_Kernel : in Kernel_Id;
-      Agent      : in Protected_Id)
+      Broker     : in Protected_Id)
    is
-      Prev_A : Protected_Id_With_No := No_Agent;
-      A      : Protected_Id_With_No :=
-                     Agent_Pool (Oak_Kernel).Active_Protected_Agents;
+      Prev_B : Protected_Id_With_No := No_Protected_Object;
+      B      : Protected_Id_With_No :=
+                     Agent_Pool (Oak_Kernel).Active_Protected_Brokers;
    begin
-      if A = No_Agent then
-         Agent_Pool (Oak_Kernel).Active_Protected_Agents := Agent;
-         Set_Next_Agent (Agent, No_Agent);
+      if B = No_Protected_Object then
+         Agent_Pool (Oak_Kernel).Active_Protected_Brokers := Broker;
+         Set_Next_Broker (Broker, No_Protected_Object);
       else
-         while Normal_Priority (Agent) < Normal_Priority (A) loop
-            Prev_A := A;
-            A      := Next_Agent (A);
+         while Ceiling_Priority (Broker) < Ceiling_Priority (B) loop
+            Prev_B := B;
+            B      := Next_Broker (B);
          end loop;
 
-         if Prev_A = No_Agent then
-            Agent_Pool (Oak_Kernel).Active_Protected_Agents := Agent;
+         if Prev_B = No_Protected_Object then
+            Agent_Pool (Oak_Kernel).Active_Protected_Brokers := Broker;
          else
-            Set_Next_Agent (Prev_A, Agent);
+            Set_Next_Broker (Prev_B, Broker);
          end if;
 
-         Set_Next_Agent (Agent, A);
+         Set_Next_Broker (Broker, B);
       end if;
-   end Add_Protected_Agent_To_Kernel;
+   end Add_Protected_Broker_To_Kernel;
 
-   procedure Remove_Protected_Agent_From_Kernel
+   -----------------------------------------
+   -- Remove_Protected_Broker_From_Kernel --
+   -----------------------------------------
+
+   procedure Remove_Protected_Broker_From_Kernel
      (Oak_Kernel : in Kernel_Id;
-      Agent      : in Protected_Id)
+      Broker     : in Protected_Id)
    is
-      Prev_A : Protected_Id_With_No := No_Agent;
-      A      : Protected_Id_With_No :=
-                 Agent_Pool (Oak_Kernel).Active_Protected_Agents;
+      Prev_B : Protected_Id_With_No := No_Protected_Object;
+      B      : Protected_Id_With_No :=
+                 Agent_Pool (Oak_Kernel).Active_Protected_Brokers;
    begin
-      if A = Agent then
-         Agent_Pool (Oak_Kernel).Active_Protected_Agents :=
-           Next_Agent (Agent);
+      if B = Broker then
+         Agent_Pool (Oak_Kernel).Active_Protected_Brokers :=
+           Next_Broker (Broker);
       else
-         while A /= Agent and A /= No_Agent loop
-            Prev_A := A;
-            A      := Next_Agent (A);
+         loop
+            Prev_B := B;
+            B      := Next_Broker (B);
+            exit when B = Broker or else B = No_Protected_Object;
          end loop;
 
-         if A /= No_Agent then
-            Set_Next_Agent (Prev_A, Next_Agent (A));
+         if B /= No_Protected_Object then
+            Set_Next_Broker (Prev_B, Next_Broker (B));
          end if;
       end if;
-   end Remove_Protected_Agent_From_Kernel;
+   end Remove_Protected_Broker_From_Kernel;
 
    function Next_Protected_Agent_To_Run
      (Oak_Kernel : in Kernel_Id) return Protected_Id_With_No is
    begin
-      return Agent_Pool (Oak_Kernel).Active_Protected_Agents;
+      return Agent_Pool (Oak_Kernel).Active_Protected_Brokers;
    end Next_Protected_Agent_To_Run;
 
 end Oak.Agent.Kernel;

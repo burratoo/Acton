@@ -16,16 +16,17 @@ with Ada.Cyclic_Tasks;
 with Oak.Agent.Interrupts;        use Oak.Agent.Interrupts;
 with Oak.Agent.Kernel;            use Oak.Agent.Kernel;
 with Oak.Agent.Oak_Agent;         use Oak.Agent.Oak_Agent;
-with Oak.Agent.Protected_Objects; use Oak.Agent.Protected_Objects;
 with Oak.Agent.Schedulers;        use Oak.Agent.Schedulers;
 with Oak.Agent.Tasks;             use Oak.Agent.Tasks;
 with Oak.Agent.Tasks.Cycle;       use Oak.Agent.Tasks.Cycle;
 with Oak.Agent.Tasks.Activation;  use Oak.Agent.Tasks.Activation;
 
+with Oak.Brokers;                   use Oak.Brokers;
+with Oak.Brokers.Protected_Objects; use Oak.Brokers.Protected_Objects;
+
 with Oak.Interrupts;        use Oak.Interrupts;
 with Oak.Protected_Objects; use Oak.Protected_Objects;
 with Oak.Scheduler;         use Oak.Scheduler;
---  with Oak.Timers;            use Oak.Timers;
 
 with Oak.Core_Support_Package.Interrupts;
 with Oak.Core_Support_Package.Task_Support;
@@ -97,7 +98,7 @@ package body Oak.Core is
    procedure Request_Oak_Service
      (Reason_For_Run : in Run_Reason;
       Message        : in out Oak_Message)
-   renames Context_Switch_To_Oak;
+      renames Context_Switch_To_Oak;
 
    --------------
    -- Run_Loop --
@@ -126,7 +127,7 @@ package body Oak.Core is
 
          P               : constant Interrupt_Priority :=
                              Current_Interrupt_Priority;
-         Interrupt_Agent : constant Interrupt_Id :=
+         Interrupt_Agent : constant Agent.Interrupt_Id :=
                              Interrupt_For_Priority
                                (Oak_Kernel => My_Kernel_Id,
                                 Priority   => P);
@@ -142,11 +143,11 @@ package body Oak.Core is
 
    begin
 
---        Invoke_Reason_Table :=
---          (Reason_For_Run => (others => 0),
---           Message_Reason => (others => 0),
---           Timer_Kind     => (others => 0),
---           Early_Fire     => 0);
+      --        Invoke_Reason_Table :=
+      --          (Reason_For_Run => (others => 0),
+      --           Message_Reason => (others => 0),
+      --           Timer_Kind     => (others => 0),
+      --           Early_Fire     => 0);
 
       First_Run_Actions : declare
 
@@ -296,9 +297,11 @@ package body Oak.Core is
                --  it maps to the sleep agent that has a value of
                --  Priority'First. Same applies to protected agents
 
-               if Normal_Priority (Protected_Agent) >= P then
-                  P := Normal_Priority (Protected_Agent);
-                  Next_Agent := Protected_Agent;
+               if Protected_Agent /= No_Protected_Object
+                 and then Ceiling_Priority (Protected_Agent) >= P
+               then
+                  P := Ceiling_Priority (Protected_Agent);
+                  Next_Agent := Task_Within (Protected_Agent);
                end if;
 
                if Normal_Priority (Interrupt_Agent) >= P then
@@ -310,8 +313,7 @@ package body Oak.Core is
                --  save switching unnecessarily to another agent and then
                --  imediately back through here again.
 
-               if Has_Outstanding_Interrupts (Above_Priority => P)
-               then
+               if Has_Outstanding_Interrupts (Above_Priority => P) then
                   Handle_External_Interrupt;
                   Next_Agent := Find_Top_Active_Interrupt (My_Kernel_Id);
                   P := Normal_Priority (Next_Agent);
@@ -324,24 +326,20 @@ package body Oak.Core is
                Set_Current_Priority
                  (Oak_Kernel => My_Kernel_Id,
                   Priority   => P);
+
+               --  Correct Next Agent. Needed to cover the case where a
+               --  protected or an activitor task has been selected.
+
+               --  If it is an activator call the Continue_Activation
+               --  subprogram to discover the task to run.
+
+               if State (Next_Agent) = Activation_Pending then
+                  --  This call will select the correct task to run.
+                  Continue_Activation
+                    (Activator        => Next_Agent,
+                     Next_Task_To_Run => Next_Agent);
+               end if;
             end;
-
-            --  Correct Next Agent. Needed to cover the case where a
-            --  protected or an activitor task has been selected.
-
-            --  If the Next_Task is a protected agent, select the first task
-            --  within it. Otherwise if it is an activator call the
-            --  Continue_Activation subprogram to discover the task to run.
-
-            if Next_Agent in Protected_Id then
-               Next_Agent := Task_Within (Next_Agent);
-            elsif State (Next_Agent) = Activation_Pending then
-               --  This call will select the correct task to run.
-
-               Continue_Activation
-                 (Activator        => Next_Agent,
-                  Next_Task_To_Run => Next_Agent);
-            end if;
 
             ---------------
             --  After we run the Scheduler Agents, all that is left to do is
@@ -533,7 +531,7 @@ package body Oak.Core is
          when Agent_Request =>
 --         Invoke_Reason_Table.Message_Reason (Agent_Message.Message_Type) :=
 --           Invoke_Reason_Table.Message_Reason (Agent_Message.Message_Type)
---                + 1;
+            --                + 1;
 
             --  The task has yielded to tell or ask Oak something. The agent
             --  in question is stored in Current_Agent.
@@ -666,7 +664,7 @@ package body Oak.Core is
                when Interrupt_Done =>
                   --  Only applies to interrupt agents.
 
-                  if Current_Agent in Interrupt_Id then
+                  if Current_Agent in Agent.Interrupt_Id then
                      Interrupt_Done
                        (Kernel        => My_Kernel_Id,
                         Current_Agent => Current_Agent);
@@ -690,11 +688,11 @@ package body Oak.Core is
 
 --              Invoke_Reason_Table.Timer_Kind (Timer_Kind (Current_Timer)) :=
 --             Invoke_Reason_Table.Timer_Kind (Timer_Kind (Current_Timer)) + 1;
---
---              if not Has_Timer_Fired (Current_Timer) then
---                 Invoke_Reason_Table.Early_Fire :=
---                   Invoke_Reason_Table.Early_Fire + 1;
---              end if;
+            --
+            --              if not Has_Timer_Fired (Current_Timer) then
+            --                 Invoke_Reason_Table.Early_Fire :=
+            --                   Invoke_Reason_Table.Early_Fire + 1;
+            --              end if;
 
             if Current_Timer = No_Timer
               or else not Has_Timer_Fired (Current_Timer)
@@ -733,7 +731,7 @@ package body Oak.Core is
                      Handle_Event : declare
                         P              : constant Any_Priority :=
                                            Timer_Priority (Current_Timer);
-                        Interrup_Agent : constant Interrupt_Id :=
+                        Interrup_Agent : constant Agent.Interrupt_Id :=
                                            Interrupt_For_Priority
                                              (Oak_Kernel => My_Kernel_Id,
                                               Priority   => P);

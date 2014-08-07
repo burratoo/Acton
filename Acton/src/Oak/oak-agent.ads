@@ -26,7 +26,6 @@
 --    Task_Agent        Agent that represents tasks
 --    Interrupt_Agent   Agent that represents the tasks used to handle
 --                      interrupts
---    Protected_Agent   Agent that represents protected objects.
 
 with Oak.Project_Support_Package; use Oak.Project_Support_Package;
 
@@ -95,11 +94,6 @@ package Oak.Agent with Pure is
    Task_Id_High_Bound      : constant :=
                                Scheduler_Id_High_Bound + Max_Task_Agents;
 
-   Protected_Id_Low_Bound  : constant :=
-                               Task_Id_High_Bound + 1;
-   Protected_Id_High_Bound : constant :=
-                               Task_Id_High_Bound + Max_Protected_Agents;
-
    --  Subtype defintions for Agent Ids that derive from Oak Agent.
 
    subtype Kernel_Id                is Oak_Agent_Id
@@ -113,9 +107,6 @@ package Oak.Agent with Pure is
 
    subtype Task_Id                  is Oak_Agent_Id
      range Task_Id_Low_Bound          .. Task_Id_High_Bound;
-
-   subtype Protected_Id             is Oak_Agent_Id
-   range Protected_Id_Low_Bound     .. Protected_Id_High_Bound;
 
    --  Subtype defintions for Agent Ids that derive from Oak Agent that also
    --  include the No_Agent id. The advantage of this approach is twofold:
@@ -136,9 +127,6 @@ package Oak.Agent with Pure is
 
    subtype Task_Id_With_No is Oak_Agent_Id
      with Static_Predicate => Task_Id_With_No in No_Agent | Task_Id;
-
-   subtype Protected_Id_With_No is Oak_Agent_Id
-     with Static_Predicate => Protected_Id_With_No in No_Agent | Protected_Id;
 
    --  Derivatives of Agent list which only have a head pointer. Used to
    --  indicate a list is being used.

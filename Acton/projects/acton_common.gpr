@@ -15,7 +15,7 @@ abstract project Acton_Common is
                               "Oak.Core_Support_Package.Call_Stack",
                               "Oak.Core_Support_Package.Time",
                               "Oak.Interrupts",
-                         "Oak.Agent", "Oak.Agent.Storage", "Oak.Agent.Tasks", "Oak.Agent.Tasks.Activation", "Oak.Agent.Tasks.Main_Task", "Oak.Agent.Protected_Objects", "Oak.Agent.Schedulers", "Oak.Agent.Oak_Agent", "Oak.Agent.Kernel",
+                         "Oak.Agent", "Oak.Agent.Storage", "Oak.Agent.Tasks", "Oak.Agent.Tasks.Activation", "Oak.Agent.Tasks.Main_Task", "Oak.Agent.Schedulers", "Oak.Agent.Oak_Agent", "Oak.Agent.Kernel",
                          "Oak.Indices", "Oak.Message", "Oak.States",
                          "Oak.Oak_Time", "Oak.Oak_Time.Conversion",
                               "Oak.Processor_Support_Package", "Oak.Processor_Support_Package.Interrupts", "Oak.Timers", "Oak.Storage", "Oak.Storage.Time_Priority_Pool", "Oak.Storage.Unsorted_Pool", "Oak.Storage.Binary_Heap", "Oak.Storage.Priority_Queue", "Oak.Storage.Slim_Priority_Queue", "Oak.Storage.Generic_Pool", "Oak.Storage.Slim_Time_Priority_Queue",
@@ -23,12 +23,13 @@ abstract project Acton_Common is
                          "System.Address_To_Access_Conversions",
                          "System.Secondary_Stack",
                          "ISA",
-
+                         "Oak.Brokers", "Oak.Brokers.Protected_Objects",
                          "Ada.Execution_Server.Priority_Server", "Acton.Scheduler_Agents.Priority_Server", "Ada.Execution_Server.Operations",
                          "Oak.Project_Support_Package",
                          "Oak.Memory.Call_Stack.Ops",
                          --  Only needed for their ali files
-                         "Oak.Core", "Interfaces.C",
+                         "Oak.Core",
+                         "Interfaces.C",
                          "Oak.Agent.Interrupts",
                          "Oak.Agent.Tasks.Cycle",
                          "Oak.Core_Support_Package.Interrupts",
@@ -42,7 +43,7 @@ abstract project Acton_Common is
                          "Acton.Scheduler_Agents.FIFO_Within_Priorities_Basic_Sleep"
 );
 
-   Ada_Switches := ("-gnatwa.Xl", "-g", "-O2",  "-flto", "-ffunction-sections", "-fdata-sections", "-gnatn", "-gnatg", "-gnatp");
+   Ada_Switches := ("-gnatwa.Xl", "-g", "-O2", "-flto", "-ffunction-sections", "-fdata-sections", "-gnatn", "-gnatg", "-gnatp");
    Asm_Switches := ("-g");
 
    Documentation_Dir := "../doc/";
