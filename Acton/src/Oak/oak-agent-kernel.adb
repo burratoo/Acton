@@ -13,10 +13,12 @@ with Oak.Agent.Interrupts; use Oak.Agent.Interrupts;
 with Oak.Agent.Oak_Agent;  use Oak.Agent.Oak_Agent;
 with Oak.Agent.Schedulers; use Oak.Agent.Schedulers;
 
-with Oak.Core_Support_Package.Call_Stack;
-use Oak.Core_Support_Package.Call_Stack;
+with Oak.Brokers.Protected_Objects; use Oak.Brokers.Protected_Objects;
 
 with Oak.States;  use Oak.States;
+
+with Oak.Core_Support_Package.Call_Stack;
+use Oak.Core_Support_Package.Call_Stack;
 
 package body Oak.Agent.Kernel is
 
@@ -177,11 +179,12 @@ package body Oak.Agent.Kernel is
       Setup_Kernel_Agent : declare
          K : Oak_Kernel_Record renames Agent_Pool (Agent);
       begin
-         K.Schedulers        := No_Agent;
-         K.Current_Agent     := No_Agent;
-         K.Entry_Exit_Stamp  := Clock;
-         K.Interrupt_States  := (others => Inactive);
-         K.Budgets_To_Charge := No_Agent;
+         K.Schedulers              := No_Agent;
+         K.Current_Agent           := No_Agent;
+         K.Entry_Exit_Stamp        := Clock;
+         K.Active_Protected_Brokers := No_Protected_Object;
+         K.Interrupt_States        := (others => Inactive);
+         K.Budgets_To_Charge       := No_Agent;
 
          for P in K.Interrupt_Agents'Range loop
             New_Interrupt_Agent
@@ -329,5 +332,70 @@ package body Oak.Agent.Kernel is
    begin
       Agent_Pool (Oak_Kernel).Entry_Exit_Stamp := Time;
    end Set_Entry_Exit_Stamp;
+
+   ------------------------------------
+   -- Add_Protected_Broker_To_Kernel --
+   ------------------------------------
+
+   procedure Add_Protected_Broker_To_Kernel
+     (Oak_Kernel : in Kernel_Id;
+      Broker     : in Protected_Id)
+   is
+      Prev_B : Protected_Id_With_No := No_Protected_Object;
+      B      : Protected_Id_With_No :=
+                     Agent_Pool (Oak_Kernel).Active_Protected_Brokers;
+   begin
+      if B = No_Protected_Object then
+         Agent_Pool (Oak_Kernel).Active_Protected_Brokers := Broker;
+         Set_Next_Broker (Broker, No_Protected_Object);
+      else
+         while Ceiling_Priority (Broker) < Ceiling_Priority (B) loop
+            Prev_B := B;
+            B      := Next_Broker (B);
+         end loop;
+
+         if Prev_B = No_Protected_Object then
+            Agent_Pool (Oak_Kernel).Active_Protected_Brokers := Broker;
+         else
+            Set_Next_Broker (Prev_B, Broker);
+         end if;
+
+         Set_Next_Broker (Broker, B);
+      end if;
+   end Add_Protected_Broker_To_Kernel;
+
+   -----------------------------------------
+   -- Remove_Protected_Broker_From_Kernel --
+   -----------------------------------------
+
+   procedure Remove_Protected_Broker_From_Kernel
+     (Oak_Kernel : in Kernel_Id;
+      Broker     : in Protected_Id)
+   is
+      Prev_B : Protected_Id_With_No := No_Protected_Object;
+      B      : Protected_Id_With_No :=
+                 Agent_Pool (Oak_Kernel).Active_Protected_Brokers;
+   begin
+      if B = Broker then
+         Agent_Pool (Oak_Kernel).Active_Protected_Brokers :=
+           Next_Broker (Broker);
+      else
+         loop
+            Prev_B := B;
+            B      := Next_Broker (B);
+            exit when B = Broker or else B = No_Protected_Object;
+         end loop;
+
+         if B /= No_Protected_Object then
+            Set_Next_Broker (Prev_B, Next_Broker (B));
+         end if;
+      end if;
+   end Remove_Protected_Broker_From_Kernel;
+
+   function Next_Protected_Agent_To_Run
+     (Oak_Kernel : in Kernel_Id) return Protected_Id_With_No is
+   begin
+      return Agent_Pool (Oak_Kernel).Active_Protected_Brokers;
+   end Next_Protected_Agent_To_Run;
 
 end Oak.Agent.Kernel;

@@ -21,19 +21,20 @@ with Oak.Agent.Storage;
 with Oak.Oak_Time;
 
 with Oak.Memory.Call_Stack;   use Oak.Memory.Call_Stack;
+with Oak.Message;             use Oak.Message;
 with Oak.States;              use Oak.States;
 with System;                  use System;
 with System.Storage_Elements; use System.Storage_Elements;
 
 package Oak.Agent.Oak_Agent with Preelaborate is
 
-   subtype Agent_Name_Length is Integer range 1 ..
+   subtype Agent_Name_Length is Integer range 0 ..
      Project_Support_Package.Max_Task_Name_Length;
    --  A type used to represent the length of the the Agent Name string. A new
    --  type is used for this based on the maximum length of the name to allow
    --  the compiler to pick an appropriately size variable.
 
-   subtype Agent_Name is String (Agent_Name_Length);
+   subtype Agent_Name is String (1 .. Agent_Name_Length'Last);
    --  The name of the Agent. Uses a fixed string to make storage easier.
 
    type Charge_Occurrence is
@@ -120,7 +121,7 @@ package Oak.Agent.Oak_Agent with Preelaborate is
 
    procedure Increment_Execution_Cycle_Count
      (For_Agent : in Oak_Agent_Id;
-      By        : in Natural)
+      By        : in Natural := 1)
      with Inline;
    --  Increments the agent's execution cycle count by the specified amount.
 
@@ -210,6 +211,11 @@ package Oak.Agent.Oak_Agent with Preelaborate is
       To        : in Oak_Time.Time_Span);
    --  Sets the agent's maximum execution time.
 
+   procedure Set_Oak_Message
+     (For_Agent : in Oak_Agent_Id;
+      Message   : in Oak_Message);
+   --  Copies the given message into the agent's message store.
+
    procedure Set_Next_Agent
      (For_Agent  : in Oak_Agent_Id;
       Next_Agent : in Oak_Agent_Id);
@@ -251,6 +257,10 @@ package Oak.Agent.Oak_Agent with Preelaborate is
       Wake_Time : in Oak_Time.Time)
      with Pre => Has_Agent (For_Agent);
    --  Set the wake time of the agent.
+
+   function Stack
+     (Agent : in Oak_Agent_Id) return Call_Stack_Handler;
+   --  Get the call stack handler for the agent.
 
    function Stack_Pointer
      (Agent : in Oak_Agent_Id)
@@ -341,6 +351,10 @@ private
       --  a cycle is agent dependent.
       --  ??? Change to a mod type?
 
+      Agent_Message_Address  : Address;
+      --  Address of the agent's Oak_Message that is used when it requested
+      --  something from Oak.
+
       When_To_Charge         : Charge_Occurrence;
       --  Defines the conditions that an agent who is part of a charge list is
       --  charged for a member of the charge list executing on the processor.
@@ -349,10 +363,6 @@ private
       --  Flags whether the agent has been interrupted or not. Indicates
       --  whether a full register restor is needed when the context is switched
       --  back to the task.
-
-      Agent_Message_Address  : Address;
-      --  Address of the agent's Oak_Message that is used when it requested
-      --  something from Oak.
 
    end record;
 
@@ -414,6 +424,10 @@ private
    function Scheduler_Agent_For_Agent
      (Agent : in Oak_Agent_Id) return Scheduler_Id_With_No is
      (Agent_Pool (Agent).Scheduler_Agent);
+
+   function Stack
+     (Agent : in Oak_Agent_Id) return Call_Stack_Handler is
+     (Agent_Pool (Agent).Call_Stack);
 
    function Stack_Pointer
      (Agent : in Oak_Agent_Id) return System.Address is

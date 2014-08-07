@@ -1,4 +1,3 @@
-with Acton.Scheduler_Agents.Priority_Server;
 with System;
 
 package Ada.Execution_Server.Priority_Server is

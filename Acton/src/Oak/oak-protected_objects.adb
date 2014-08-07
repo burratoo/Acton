@@ -9,12 +9,14 @@
 --                 Copyright (C) 2011-2014, Patrick Bernardi                --
 ------------------------------------------------------------------------------
 
-with Oak.Agent.Oak_Agent;         use Oak.Agent.Oak_Agent;
-with Oak.Agent.Protected_Objects; use Oak.Agent.Protected_Objects;
-with Oak.Agent.Tasks;             use Oak.Agent.Tasks;
+with Oak.Agent.Oak_Agent; use Oak.Agent.Oak_Agent;
+with Oak.Agent.Kernel;    use Oak.Agent.Kernel;
+with Oak.Agent.Tasks;     use Oak.Agent.Tasks;
 
-with Oak.Scheduler; use Oak.Scheduler;
+with Oak.Brokers.Protected_Objects; use Oak.Brokers.Protected_Objects;
+
 with Oak.States;    use Oak.States;
+with Oak.Scheduler; use Oak.Scheduler;
 
 package body Oak.Protected_Objects is
 
@@ -25,7 +27,7 @@ package body Oak.Protected_Objects is
    procedure Acquire_Protected_Object_For_Interrupt (PO : in Protected_Id) is
    begin
       --  Need a Lock around this.
-      Set_State (For_Agent => PO, State => Handling_Interrupt);
+      Set_State (PO => PO, State => Handling_Interrupt);
    end Acquire_Protected_Object_For_Interrupt;
 
    ---------------------------
@@ -36,8 +38,7 @@ package body Oak.Protected_Objects is
      (Entering_Agent  : in Task_Id;
       PO              : in Protected_Id;
       Subprogram_Kind : in Protected_Subprogram_Type;
-      Entry_Id        : in Entry_Index;
-      Resubmitted     : in Boolean := False)
+      Entry_Id        : in Entry_Index)
    is
       Agent_That_Is_Entering : Task_Id_With_No;
    begin
@@ -52,7 +53,7 @@ package body Oak.Protected_Objects is
 
       --  Check for ceiling protocol volation.
 
-      if Normal_Priority (Entering_Agent) > Normal_Priority (PO) then
+      if Normal_Priority (Entering_Agent) > Ceiling_Priority (PO) then
          Set_State (For_Agent => Entering_Agent, State => Enter_PO_Refused);
          return;
       end if;
@@ -65,10 +66,7 @@ package body Oak.Protected_Objects is
       --     3. Once the protected action is completed in Process_Exit_Request.
       --  Acquire_Lock  (PO);
 
-      if not Resubmitted then
-         Remove_Agent_From_Scheduler (Agent => Entering_Agent);
-         Set_Id_Of_Entry (Entering_Agent, Entry_Id);
-      end if;
+      Set_Id_Of_Entry (Entering_Agent, Entry_Id);
 
       if Task_Within (PO) = No_Agent then
          Agent_That_Is_Entering := No_Agent;
@@ -77,6 +75,8 @@ package body Oak.Protected_Objects is
             --  Handle protected entry. Note that it only selects the next
             --  task to run inside the protected object and the actual
             --  placement inside the protected object occurs after this block.
+
+            Remove_Agent_From_Scheduler (Agent => Entering_Agent);
 
             Handle_Entry : declare
                Open_Entry       : Entry_Index;
@@ -132,13 +132,14 @@ package body Oak.Protected_Objects is
 
             if State (PO) = Inactive then
                --  Run protected agent
-               Set_State (For_Agent => PO, State => Runnable);
-               Add_Agent_To_Scheduler (PO);
+               Set_State (PO => PO, State => Runnable);
+               Add_Protected_Broker_To_Kernel (This_Oak_Kernel, PO);
             end if;
          end if;
 
       elsif Subprogram_Kind = Protected_Function and then
-        Active_Subprogram_Kind (PO) = Protected_Function then
+        Active_Subprogram_Kind (PO) = Protected_Function
+      then
          --  Another task is operating inside a protected function, so this
          --  task is able to join as well.
 
@@ -157,7 +158,7 @@ package body Oak.Protected_Objects is
 
    procedure Process_Exit_Request
      (Exiting_Agent     : in Task_Id;
-      PO                : in  Protected_Id)
+      PO                : in Protected_Id)
    is
       Agent_That_Is_Entering : Task_Id_With_No := No_Agent;
    begin
@@ -172,7 +173,10 @@ package body Oak.Protected_Objects is
 
       Set_State (Exiting_Agent, Runnable);
       Remove_Task_From_Within_Protected_Object (PO, Exiting_Agent);
-      Add_Agent_To_Scheduler (Exiting_Agent);
+
+      if Id_Of_Entry (Exiting_Agent) /= No_Entry then
+         Add_Agent_To_Scheduler (Exiting_Agent, Place_At => Front);
+      end if;
 
       if Has_Entries (PO) then
          --  Service entries.
@@ -222,19 +226,20 @@ package body Oak.Protected_Objects is
 
          Process_Enter_Request
            (Entering_Agent    => Agent_That_Is_Entering,
-            PO                =>
-              Protected_Agent_To_Access (Agent_That_Is_Entering),
+            PO                => PO,
             Subprogram_Kind   =>
               Protected_Subprogram_Kind (Agent_That_Is_Entering),
-            Entry_Id          => Id_Of_Entry (Agent_That_Is_Entering),
-            Resubmitted       => True);
+            Entry_Id          => Id_Of_Entry (Agent_That_Is_Entering));
       end loop;
 
       --  If there is no agents to run inside the protected object, the
       --  protected object is made inactive.
 
       if Agent_That_Is_Entering = No_Agent then
-         Remove_Agent_From_Scheduler (PO);
+         --  FIXME! PO are never added to the scheduler in the first place in
+         --  this implementation
+         --  Remove_Agent_From_Scheduler (PO);
+         Remove_Protected_Broker_From_Kernel (This_Oak_Kernel, PO);
          Set_State (PO, Inactive);
 
          --  Object release point 3.
@@ -285,8 +290,12 @@ package body Oak.Protected_Objects is
          --  then it will not be presence in a runnable queue.
 
          --  Run protected agent
-         Set_State (For_Agent => PO, State => Runnable);
-         Add_Agent_To_Scheduler (PO);
+         Set_State (PO => PO, State => Runnable);
+
+         --  FIXME! This implementation does not scheduler agents to the
+         --  scheduler
+         --  Add_Agent_To_Scheduler (PO);
+         Add_Protected_Broker_To_Kernel (This_Oak_Kernel, PO);
       else
          Set_State (PO, Inactive);
       end if;

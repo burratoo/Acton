@@ -9,10 +9,14 @@
 --                 Copyright (C) 2010-2014, Patrick Bernardi                --
 ------------------------------------------------------------------------------
 
-with Oak.Agent; use Oak.Agent;
-with System;    use System;
+pragma Restrictions (No_Elaboration_Code);
 
-with Oak.Project_Support_Package; use Oak.Project_Support_Package;
+with Oak.Agent;           use Oak.Agent;
+with Oak.Agent.Oak_Agent; use Oak.Agent.Oak_Agent;
+with System;              use System;
+
+with Oak.Storage.Slim_Priority_Queue;
+with Oak.Storage.Slim_Time_Priority_Queue;
 
 package Acton.Scheduler_Agents.FIFO_Within_Priorities with Preelaborate is
 
@@ -21,49 +25,40 @@ package Acton.Scheduler_Agents.FIFO_Within_Priorities with Preelaborate is
       Min_Priority : in  Any_Priority;
       Max_Priority : in  Any_Priority);
 
-   Stack_Size : constant := 1 * 1024;
+   Stack_Size : constant := 1 * 512;
    Agent_Name : constant String := "Fixed_Priority_Scheduler";
 
 private
 
-   Max_Schedulable_Agents : constant :=
-                              Max_Scheduler_Agents + Max_Task_Agents +
-                                Max_Protected_Agents;
+   subtype Schedulable_Agents is
+     Oak_Agent_Id range Sleep_Agent .. Task_Id'Last;
 
-   type Storage_Id is mod Max_Schedulable_Agents + 1;
+   function Priority_Greater_Than  (Left, Right : in Oak_Agent_Id)
+                                    return Boolean
+     with Inline_Always;
 
-   No_Node : constant Storage_Id := Storage_Id'First;
+   function Priority_Greater_Than_Equal  (Left, Right : in Oak_Agent_Id)
+                                          return Boolean
+     with Inline_Always;
 
-   type Scheduler_Element is record
-      Agent : Oak_Agent_Id;
-      Next  : Storage_Id;
-   end record;
+   function Wake_Less_Than (Left, Right : in Oak_Agent_Id) return Boolean
+     with Inline;
 
-   type Elements is array (Storage_Id)
-     of Scheduler_Element;
+   package Priority_Queue is new Oak.Storage.Slim_Priority_Queue
+     (Item_Type     => Schedulable_Agents,
+      No_Item       => No_Agent,
+      ">"           => Priority_Greater_Than,
+      ">="          => Priority_Greater_Than_Equal);
 
-   type Queue is record
-      Head, Tail : Storage_Id;
-   end record;
+   use Priority_Queue;
 
-   Empty_Queue : constant Queue := (Head => No_Node, Tail => No_Node);
+   package Time_Queue is new Oak.Storage.Slim_Time_Priority_Queue
+     (Item_Type     => Schedulable_Agents,
+      Priority_Type => Any_Priority,
+      No_Item       => No_Agent,
+      "<"           => Wake_Less_Than,
+      Priority      => Normal_Priority);
 
-   type Queues is
-     array (System.Any_Priority range <>) of Queue;
-
-   type Scheduler_Storage (Min, Max : Any_Priority) is record
-   --  Storage is currently very similar to the time priority pool when it
-   --  comes to allocating from an array.
-
-      Pool : Elements;
-
-      Runnable_Queues : Queues (Min .. Max) :=
-                          (others => (No_Node, No_Node));
-      Sleeping_Queues : Queues (Min .. Max) :=
-                          (others => (No_Node, No_Node));
-
-      Bulk_Free : Storage_Id := No_Node + 1;
-      Free_List : Storage_Id := No_Node;
-   end record;
+   use Time_Queue;
 
 end Acton.Scheduler_Agents.FIFO_Within_Priorities;

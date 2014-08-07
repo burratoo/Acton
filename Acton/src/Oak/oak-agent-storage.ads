@@ -27,7 +27,9 @@ generic
    type Agent_Record_Type is private;
    type Agent_Id_Type     is mod <>;
 
-package Oak.Agent.Storage with Preelaborate is
+--  package Oak.Agent.Storage with Preelaborate is
+package Oak.Agent.Storage is
+   pragma Preelaborate;
 
    type Pool_Type is array (Agent_Id_Type) of Agent_Record_Type;
 

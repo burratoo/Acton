@@ -10,6 +10,7 @@
 ------------------------------------------------------------------------------
 
 package body Oak.Storage.Time_Priority_Pool is
+   pragma Suppress (All_Checks);
 
    --  ???? TODO: Need to write some code to verify this actually works. Spark
    --  should help.
@@ -303,6 +304,9 @@ package body Oak.Storage.Time_Priority_Pool is
                   Rotate_Left (Pool, Current_Node);
                end if;
 
+               Parent_Node      := N (Current_Node).Parent;
+               Grandparent_Node := N (Parent_Node).Parent;
+
                N (Parent_Node).Colour      := Black;
                N (Grandparent_Node).Colour := Red;
                Rotate_Right (Pool, Grandparent_Node);
@@ -326,6 +330,9 @@ package body Oak.Storage.Time_Priority_Pool is
                   Current_Node := Parent_Node;
                   Rotate_Right (Pool, Current_Node);
                end if;
+
+               Parent_Node      := N (Current_Node).Parent;
+               Grandparent_Node := N (Parent_Node).Parent;
 
                N (Parent_Node).Colour      := Black;
                N (Grandparent_Node).Colour := Red;

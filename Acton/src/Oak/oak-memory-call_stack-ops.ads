@@ -18,11 +18,14 @@
 with Oak.Core_Support_Package.Call_Stack;
 use Oak.Core_Support_Package.Call_Stack;
 
+with Oak.Project_Support_Package; use Oak.Project_Support_Package;
+
 package Oak.Memory.Call_Stack.Ops with Preelaborate is
 
    procedure Allocate_Call_Stack
      (Stack            : out Call_Stack_Handler;
-      Size_In_Elements : in  Storage_Count := CSP_Stack.Call_Stack_Size);
+      Size_In_Elements : in  Storage_Count :=
+        Project_Support_Package.Call_Stack_Size);
    --  Allocates a call stack from the call stack pool.
 
    procedure Initialise_Call_Stack
@@ -45,6 +48,16 @@ package Oak.Memory.Call_Stack.Ops with Preelaborate is
       Stack_Address     : in     Address;
       Stack_Size        : in     Storage_Elements.Storage_Count);
    --  Initialise a call stack like above, but to a paricular size???
+
+   function Get_Secondary_Stack_Location return Address
+     with Export, Convention => C,
+     External_Name => "__gnat_get_secondary_stack";
+   --  Returns the location of the current agent's secondardy stack which lies
+   --  at the bottom of the agent's stack.
+
+   procedure Stack_Check (Stack_Address : in Address)
+     with Export, Convention => C,
+       External_Name => "_gnat_stack_check";
 
 private
 

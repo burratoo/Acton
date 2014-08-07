@@ -2,7 +2,7 @@
 --                                                                          --
 --                              OAK COMPONENTS                              --
 --                                                                          --
---                        OAK.AGENT.PROTECTED_OBJECTS                       --
+--                       OAK.BROKERS.PROTECTED_OBJECTS                      --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
@@ -11,17 +11,22 @@
 
 with Ada.Unchecked_Conversion;
 
-with Oak.Agent.Oak_Agent;         use Oak.Agent.Oak_Agent;
-with Oak.Agent.Protected_Objects; use Oak.Agent.Protected_Objects;
 with Oak.Agent.Tasks;             use Oak.Agent.Tasks;
-with Oak.Oak_Time;                use Oak.Oak_Time;
 with Oak.Scheduler;               use Oak.Scheduler;
 
 with Oak.Processor_Support_Package; use Oak.Processor_Support_Package;
 with Oak.Core_Support_Package.Task_Support;
-use  Oak.Core_Support_Package.Task_Support;
 
-package body Oak.Agent.Protected_Objects is
+package body Oak.Brokers.Protected_Objects is
+
+   -----------------------
+   -- Local Subprograms --
+   -----------------------
+
+   procedure Set_Name
+     (PO   : in Protected_Id;
+      Name : in String);
+   --  Sets the name of the Agent.
 
    procedure Task_Action
      (Protected_Object : in  Protected_Id;
@@ -29,6 +34,7 @@ package body Oak.Agent.Protected_Objects is
       Exception_Raised : out Boolean;
       Preference       : in  Entry_Index := No_Entry)
      with Export, Convention => Ada;
+   --  ?
 
    -------------------------
    -- Add_Contending_Task --
@@ -38,7 +44,7 @@ package body Oak.Agent.Protected_Objects is
      (PO : in Protected_Id;
       T  : in Task_Id)
    is
-      P : Protected_Agent_Record renames Agent_Pool (PO);
+      P : Protected_Broker_Record renames Agent_Pool (PO);
    begin
       if P.Contending_Tasks.Head = No_Agent then
          P.Contending_Tasks.Head := T;
@@ -63,7 +69,7 @@ package body Oak.Agent.Protected_Objects is
       T        : in Task_Id;
       Entry_Id : Entry_Index)
    is
-      P : Protected_Agent_Record renames Agent_Pool (PO);
+      P : Protected_Broker_Record renames Agent_Pool (PO);
 
       Q, Prev_Q      : Task_Id_With_No;
    begin
@@ -119,7 +125,7 @@ package body Oak.Agent.Protected_Objects is
      (PO : in Protected_Id;
       T  : in Task_Id)
    is
-      P : Protected_Agent_Record renames Agent_Pool (PO);
+      P : Protected_Broker_Record renames Agent_Pool (PO);
    begin
       if P.Tasks_Within.Head = No_Agent then
          P.Tasks_Within.Head := T;
@@ -143,7 +149,7 @@ package body Oak.Agent.Protected_Objects is
       Entry_Id : in Entry_Index)
       return Natural
    is
-      P : Protected_Agent_Record renames Agent_Pool (PO);
+      P : Protected_Broker_Record renames Agent_Pool (PO);
 
       Length         : Natural := 0;
       T              : Task_Id_With_No;
@@ -200,16 +206,15 @@ package body Oak.Agent.Protected_Objects is
       --  Switching across requires the callee registers to be saved since we
       --  cannot trust the agent not to damage them.
 
-      Context_Switch_Will_Switch_In_Place;
-      Context_Switch_Save_Callee_Registers;
+      Oak.Core_Support_Package.Task_Support.Enter_Barrier_Function;
 
       Task_Action
-        (Protected_Object => Protected_Object,
-         Open_Entry       => Open_Entry,
-         Exception_Raised => Exception_Raised,
-         Preference       => Preference);
+          (Protected_Object => Protected_Object,
+           Open_Entry       => Open_Entry,
+           Exception_Raised => Exception_Raised,
+           Preference       => Preference);
 
-      Context_Switch;
+      Oak.Core_Support_Package.Task_Support.Exit_Barrier_Function;
    end Find_Open_Entry;
 
    -----------------------------------------
@@ -220,7 +225,7 @@ package body Oak.Agent.Protected_Objects is
      (PO        : in Protected_Id;
       Next_Task : out Task_Id_With_No)
    is
-      P : Protected_Agent_Record renames Agent_Pool (PO);
+      P : Protected_Broker_Record renames Agent_Pool (PO);
 
    begin
       Next_Task := P.Contending_Tasks.Head;
@@ -250,7 +255,7 @@ package body Oak.Agent.Protected_Objects is
       Entry_Id  : in Entry_Index;
       Next_Task : out Task_Id)
    is
-      P : Protected_Agent_Record renames Agent_Pool (PO);
+      P : Protected_Broker_Record renames Agent_Pool (PO);
 
       Prev_Q         : Task_Id_With_No := No_Agent;
       Q              : Task_Id_With_No := P.Entry_Queues;
@@ -298,7 +303,9 @@ package body Oak.Agent.Protected_Objects is
          P.Entry_Queues := New_Q;
       else
          --  Otherwise fix the previous Q item reference.
-         Set_Next_Queue (For_Task => Prev_Q, Next_Queue => New_Q);
+         --  Otherwise fix the previous Q item reference.
+         Set_Next_Queue (For_Task   => Prev_Q,
+                         Next_Queue => New_Q);
       end if;
 
       --  Next_Task is simply Q.
@@ -317,7 +324,7 @@ package body Oak.Agent.Protected_Objects is
       T  : in Task_Id)
       return Boolean
    is
-      P : Protected_Agent_Record renames Agent_Pool (PO);
+      P : Protected_Broker_Record renames Agent_Pool (PO);
 
       Current_Task : Task_Id_With_No := P.Tasks_Within.Head;
    begin
@@ -337,32 +344,26 @@ package body Oak.Agent.Protected_Objects is
       Name                  : in String;
       Ceiling_Priority      : in Integer;
       Barriers_Function     : in Address;
-      Object_Record_Address : in Address) is
+      Object_Record_Address : in Address)
+   is
+      Prior  : Any_Priority;
    begin
       Allocate_An_Agent (Agent);
 
-      Setup_Oak_Agent : declare
-         SA : Scheduler_Id_With_No;
-      begin
-         SA := Scheduler.Find_Scheduler_For_System_Priority
-           (Ceiling_Priority, 1);
-
-         New_Agent
-           (Agent              => Agent,
-            Name               => Name,
-            Call_Stack_Address => Null_Address,
-            Call_Stack_Size    => 0,
-            Run_Loop           => Null_Address,
-            Run_Loop_Parameter => Null_Address,
-            Normal_Priority    => Ceiling_Priority,
-            Initial_State      => Inactive,
-            Scheduler_Agent    => SA,
-            Wake_Time          => Time_First);
-      end Setup_Oak_Agent;
+      if Ceiling_Priority in Any_Priority then
+         Prior := System.Any_Priority (Ceiling_Priority);
+      elsif Ceiling_Priority = Unspecified_Priority then
+         Prior := Interrupt_Priority'First;
+      else
+         raise Program_Error with "Priority out of range";
+      end if;
 
       Setup_Protected_Agent : declare
-         P : Protected_Agent_Record renames Agent_Pool (Agent);
+         P : Protected_Broker_Record renames Agent_Pool (Agent);
       begin
+         Set_Name (Agent, Name);
+         P.Ceiling_Priority       := Prior;
+         P.State                  := Inactive;
          P.Object_Record          := Object_Record_Address;
          P.Entry_Barriers         := Barriers_Function;
          P.Entry_Queues           := No_Agent;
@@ -380,7 +381,7 @@ package body Oak.Agent.Protected_Objects is
      (PO             : in Protected_Id;
       New_Task_State : in Agent_State)
    is
-      P : Protected_Agent_Record renames Agent_Pool (PO);
+      P : Protected_Broker_Record renames Agent_Pool (PO);
 
       Q         : Task_Id_With_No := P.Entry_Queues;
       Next_Q    : Task_Id_With_No;
@@ -411,7 +412,7 @@ package body Oak.Agent.Protected_Objects is
      (PO       : in Protected_Id;
       T        : in Task_Id)
    is
-      P : Protected_Agent_Record renames Agent_Pool (PO);
+      P : Protected_Broker_Record renames Agent_Pool (PO);
 
       Entry_Id       : constant Entry_Index := Id_Of_Entry (T);
       Prev_Q         : Task_Id_With_No      := No_Agent;
@@ -459,7 +460,8 @@ package body Oak.Agent.Protected_Objects is
             P.Entry_Queues := New_Q;
          else
             --  Otherwise fix the previous Q item reference.
-            Agent_Pool (Prev_Q).Entry_Queues := New_Q;
+            Set_Next_Queue (For_Task  => Prev_Q,
+                            Next_Queue => New_Q);
          end if;
 
       else
@@ -488,7 +490,7 @@ package body Oak.Agent.Protected_Objects is
      (PO : in Protected_Id;
       T  : in Task_Id)
    is
-      P : Protected_Agent_Record renames Agent_Pool (PO);
+      P : Protected_Broker_Record renames Agent_Pool (PO);
 
       Curr_T : Task_Id_With_No := P.Tasks_Within.Head;
       Prev_T : Task_Id_With_No := No_Agent;
@@ -548,6 +550,40 @@ package body Oak.Agent.Protected_Objects is
       end if;
    end Remove_Task_From_Within_Protected_Object;
 
+   --------------
+   -- Set_Name --
+   --------------
+
+   procedure Set_Name
+     (PO   : in Protected_Id;
+      Name : in String)
+   is
+      Agent : Protected_Broker_Record renames Agent_Pool (PO);
+   begin
+      Agent.Name_Length                   :=
+        Natural'Min (Name'Length, Agent.Name'Length);
+      Agent.Name (1 .. Agent.Name_Length) :=
+        Name (Name'First .. Name'First + Agent.Name_Length - 1);
+   end Set_Name;
+
+   procedure Set_Next_Broker
+     (PO   : Protected_Id;
+      Next : Protected_Id_With_No) is
+   begin
+      Agent_Pool (PO).Next_Object := Next;
+   end Set_Next_Broker;
+
+   ---------------
+   -- Set_State --
+   ---------------
+
+   procedure Set_State
+     (PO    : in Protected_Id;
+      State : in Agent_State) is
+   begin
+      Agent_Pool (PO).State := State;
+   end Set_State;
+
    -----------------
    -- Task_Action --
    -----------------
@@ -558,7 +594,7 @@ package body Oak.Agent.Protected_Objects is
       Exception_Raised : out Boolean;
       Preference       : in  Entry_Index := No_Entry)
    is
-      P : Protected_Agent_Record renames Agent_Pool (Protected_Object);
+      P : Protected_Broker_Record renames Agent_Pool (Protected_Object);
 
       type Barrier_Eval_Function is access function
         (O : Address; E : Entry_Index) return Boolean;
@@ -649,4 +685,4 @@ package body Oak.Agent.Protected_Objects is
       return To_Protected_Subprogram_Components (Handler).Object.Agent;
    end Protected_Object_From_Access;
 
-end Oak.Agent.Protected_Objects;
+end Oak.Brokers.Protected_Objects;

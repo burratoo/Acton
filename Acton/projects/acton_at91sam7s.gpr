@@ -1,0 +1,74 @@
+with "acton_common";
+
+project Acton_AT91SAM7S is
+
+   --  Source Directories
+   Traget_Source_Dirs := ("../processor_support_packages/Atmel/AT91SAM7S/arm7tdmi",
+                          "../processor_support_packages/Atmel/AT91SAM7S/AT91SAM7S",
+                          "../processor_support_packages/Atmel/AT91SAM7S/oak_support",
+                          "../processor_support_packages/Atmel/AT91SAM7S/start",
+                          "../src/Maths-32bit");
+
+   --  Target Libraries
+   Target_Library_Interface := ("Atmel",
+                                "Atmel.AT91SAM7S",
+                                "Atmel.AT91SAM7S.ADC",
+                                "Atmel.AT91SAM7S.AIC",
+                                "Atmel.AT91SAM7S.PDC",
+                                "Atmel.AT91SAM7S.PIO",
+                                "Atmel.AT91SAM7S.PIT",
+                                "Atmel.AT91SAM7S.PMC",
+--                                  "Atmel.AT91SAM7S.SPI",
+                                "Atmel.AT91SAM7S.SSC",
+                                "Atmel.AT91SAM7S.TC",
+--                                  "Atmel.AT91SAM7S.TWI",
+--                                  "Atmel.AT91SAM7S.USART",
+                                "Oakland.Maths.Arithmetic_64"
+
+                               );
+
+   --  IDE
+   Target          := "arm-burratoo-acton-";
+   Target_Gnat     := Target & "gnat";
+   Target_Gnatlist := Target & "gnatls";
+   Target_Debugger_Command := Target & "gdb";
+
+   --  Builder Switches
+   Target_Ada_Switches := Acton_Common.Ada_Switches; -- & ("-Wa,-mregnames");
+   Target_Asm_Switches := Acton_Common.Asm_Switches; -- & "-mregnames";
+
+
+   for Source_Dirs use Acton_Common.Source_Dirs & Traget_Source_Dirs;
+   for Object_Dir use Acton_Common.Object_Dir;
+   for Languages use Acton_Common.Languages;
+   for Library_Name use Acton_Common.Library_Name;
+   for Library_Dir use Acton_Common.Library_Dir;
+   for Library_Version use Acton_Common.Library_Version;
+   for Library_Src_Dir use Acton_Common.Library_Src_Dir;
+   for Library_Interface use Acton_Common.Library_Interface & Target_Library_Interface;
+
+   package Ide is
+      for Documentation_Dir use Acton_Common.Documentation_Dir;
+      for Gnat use Target_Gnat;
+      for Gnatlist use Target_Gnatlist;
+      for Debugger_Command use Target_Debugger_Command;
+   end Ide;
+
+   package Builder renames Acton_Common.Builder;
+
+   package Compiler extends Acton_Common.Compiler Is
+      for Default_Switches ("ada") use Acton_Common.Ada_Switches & Target_Ada_Switches;
+      for Default_Switches ("asm") use Acton_Common.Asm_Switches & Target_Asm_Switches;
+      for Switches ("oak-core_support_package-task_support.adb") use Compiler'Default_Switches ("ada") & ("-fno-lto");
+      for Switches ("oak-memory-ops.adb") use Compiler'Default_Switches ("ada") & ("-fno-lto");
+      for Switches ("oak-processor_support_package-time-interrupt.adb") use Compiler'Default_Switches ("ada") & ("-fno-lto", "-O2", "-ffixed-r0", "-ffixed-r1", "-ffixed-r2", "-ffixed-r3", "-ffixed-r4", "-ffixed-r5", "-ffixed-r6", "-ffixed-r7", "-ffixed-lr");
+   end Compiler;
+
+   --  package Linker is
+   --   for Default_Switches ("ada") use ("-g", "-T", "linker/intflash.ld");
+   --  end Linker;
+
+   package Pretty_Printer renames Acton_Common.Pretty_Printer;
+
+end Acton_AT91SAM7S;
+

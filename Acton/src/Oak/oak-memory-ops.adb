@@ -1,9 +1,11 @@
 with Ada.Unchecked_Conversion;
 with System.Storage_Elements; use System.Storage_Elements;
+with Interfaces; use Interfaces;
 
 --  From AdaCore's website I think.
 
 package body Oak.Memory.Ops is
+   pragma Suppress (All_Checks);
 
    function Mem_Compare (dest, src : Address;
                          n         : size_t) return unsigned_char is
@@ -33,19 +35,37 @@ package body Oak.Memory.Ops is
 
    function Mem_Copy (dest, src : Address;
                       n         : size_t) return Address is
-      subtype mem is char_array (size_t);
-      type memptr is access mem;
-      function to_memptr is
-         new Ada.Unchecked_Conversion (Address, memptr);
-      dest_p : constant memptr := to_memptr (dest);
-      src_p  : constant memptr := to_memptr (src);
-
    begin
       if n > 0 then
-         --  need to guard against n=0 since size_t is a modular type
-         for J in 0 .. n - 1 loop
-            dest_p (J) := src_p (J);
-         end loop;
+         if src mod 4 /= 0 or else dest mod 4 /= 0 or else n mod 4 /= 0 then
+            --  need to guard against n=0 since size_t is a modular type
+            declare
+               subtype Mem is char_array (size_t);
+               type Memptr is access Mem;
+               function To_Memptr is
+                 new Ada.Unchecked_Conversion (Address, Memptr);
+               Dest_P : constant Memptr := To_Memptr (dest);
+               Src_P  : constant Memptr := To_Memptr (src);
+            begin
+               for J in 0 .. n - 1 loop
+                  Dest_P (J) := Src_P (J);
+               end loop;
+            end;
+
+         else
+            declare
+               type Mem is array (size_t) of Unsigned_32;
+               type Memptr is access Mem;
+               function To_Memptr is
+                 new Ada.Unchecked_Conversion (Address, Memptr);
+               Dest_P : constant Memptr := To_Memptr (dest);
+               Src_P  : constant Memptr := To_Memptr (src);
+            begin
+               for J in 0 .. n / 4 - 1 loop
+                  Dest_P (J) := Src_P (J);
+               end loop;
+            end;
+         end if;
       end if;
 
       return dest;

@@ -21,8 +21,13 @@ package body Oak.Agent.Storage is
          raise Agent_Pool_Capacity_Error;
       end if;
 
-      Agent     := Free_Cell;
-      Free_Cell := Free_Cell + 1;
+      Agent := Free_Cell;
+
+      if Free_Cell = Agent_Id_Type'Last then
+         Pool_Full := True;
+      else
+         Free_Cell := Free_Cell + 1;
+      end if;
    end Allocate_An_Agent;
 
    -------------------------------

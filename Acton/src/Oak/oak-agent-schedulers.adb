@@ -63,25 +63,27 @@ package body Oak.Agent.Schedulers is
       Setup_Scheduler_Agent : declare
          S : Scheduler_Agent_Record renames Agent_Pool (Agent);
       begin
-         S.Lowest_Priority       := Lowest_Priority;
-         S.Highest_Priority      := Highest_Priority;
-         S.Agent_To_Run          := No_Agent;
-         S.Interpret_No_Agent_As := Interpret_No_Agent_As;
-         S.Charge_While_No_Agent := Charge_While_No_Agent;
-         S.Agent_Active_Till     := Agent_Active_Till;
-         S.Period                := Cycle_Period;
-         S.Phase                 := Cycle_Phase;
-         S.Relative_Deadline     := Relative_Deadline;
-         S.Execution_Budget      := Execution_Budget;
+         S := (Lowest_Priority       => Lowest_Priority,
+               Highest_Priority      => Highest_Priority,
+               Agent_To_Run          => No_Agent,
+               Interpret_No_Agent_As => Interpret_No_Agent_As,
+               Charge_While_No_Agent => Charge_While_No_Agent,
+               Agent_Active_Till     => Agent_Active_Till,
+               Period                => Cycle_Period,
+               Phase                 => Cycle_Phase,
+               Relative_Deadline     => Relative_Deadline,
+               Execution_Budget      => Execution_Budget,
+               Run_Timer             => No_Timer,
+               Scheduler_Active      => False,
+               Next_Run_Cycle        => WT + Cycle_Period);
 
          New_Scheduler_Timer
            (Timer     => S.Run_Timer,
             Priority  => Highest_Priority,
             Scheduler => Agent,
             Fire_Time => Oak_Time.Time_Zero,
-            Activate  => False);
+            Enable    => False);
 
-         S.Next_Run_Cycle := WT + Cycle_Period;
          Set_Absolute_Deadline
            (For_Agent => Agent,
             Deadline  => WT + Relative_Deadline);

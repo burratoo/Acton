@@ -1,3 +1,2 @@
-package Oak is
-   pragma Pure;
+package Oak with Pure is
 end Oak;

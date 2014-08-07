@@ -9,6 +9,7 @@
 ------------------------------------------------------------------------------
 
 with Oak.Agent;   use Oak.Agent;
+with Oak.Brokers; use Oak.Brokers;
 with Oak.Indices; use Oak.Indices;
 with Oak.Message; use Oak.Message;
 
@@ -23,13 +24,8 @@ package Oak.Protected_Objects with Preelaborate is
      (Entering_Agent  : in Task_Id;
       PO              : in Protected_Id;
       Subprogram_Kind : in Protected_Subprogram_Type;
-      Entry_Id        : in Entry_Index;
-      Resubmitted     : in Boolean := False);
+      Entry_Id        : in Entry_Index);
    --  Processess a task's entry request to the desired protected object.
-   --  If Resubmitted is false it means that this is the first enter request,
-   --  and the entering task is removed from its scheduler. If true, it means
-   --  the task has already made one request to the object and is already not
-   --  part of its scheduler.
 
    procedure Process_Exit_Request
      (Exiting_Agent : in Task_Id;

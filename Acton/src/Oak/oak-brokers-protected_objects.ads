@@ -2,7 +2,7 @@
 --                                                                          --
 --                              OAK COMPONENTS                              --
 --                                                                          --
---                        OAK.AGENT.PROTECTED_OBJECTS                       --
+--                       OAK.BROKERS.PROTECTED_OBJECTS                      --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
@@ -20,9 +20,12 @@ with Oak.Indices; use Oak.Indices;
 with Oak.Message; use Oak.Message;
 with Oak.States;  use Oak.States;
 
+with Oak.Agent;           use Oak.Agent;
+with Oak.Agent.Oak_Agent; use Oak.Agent.Oak_Agent;
+
 with System; use System;
 
-package Oak.Agent.Protected_Objects with Preelaborate is
+package Oak.Brokers.Protected_Objects with Preelaborate is
 
    -----------------
    -- Subprograms --
@@ -49,6 +52,10 @@ package Oak.Agent.Protected_Objects with Preelaborate is
      (PO : in Protected_Id;
       T  : in Task_Id);
    --  Add a task to the task within list.
+
+   function Ceiling_Priority
+     (PO : in Protected_Id) return System.Any_Priority;
+   --  Retrieves the priority assigned to the agent.
 
    function Entry_Queue_Length
      (PO       : in Protected_Id;
@@ -105,6 +112,16 @@ package Oak.Agent.Protected_Objects with Preelaborate is
    --  Creates a new Protected Agent with the given prameters. Allocates the
    --  storage for the Protected Agent data structure and any dependents.
 
+   procedure Set_Next_Broker (PO : Protected_Id; Next : Protected_Id_With_No);
+   function Next_Broker (PO : Protected_Id) return Protected_Id_With_No;
+
+   function Name (PO : in Protected_Id) return Agent_Name;
+   --  Fetches the name of the Agent.
+
+   function State (PO : in Protected_Id) return Agent_State
+     with Inline;
+   --  Fetches the state of the Agent.
+
    procedure Purge_Entry_Queues
      (PO             : in Protected_Id;
       New_Task_State : in Agent_State);
@@ -120,6 +137,11 @@ package Oak.Agent.Protected_Objects with Preelaborate is
       T  : in Task_Id)
      with Pre => Is_Task_Inside_Protect_Object (PO, T);
    --  Remove the specified task from the protected object.
+
+   procedure Set_State
+     (PO    : in Protected_Id;
+      State : in Agent_State);
+   --  Set the state of the agent.
 
    function Task_Within
      (PO : in Protected_Id)
@@ -151,8 +173,27 @@ private
    -- Private Types --
    -------------------
 
-   type Protected_Agent_Record is record
-   --  Protected Object Properties
+   type Protected_Broker_Record is record
+
+      Name                   : Agent_Name;
+      --  The name of the Agent. Allows users and debugger to query the name of
+      --  the task to figure out who it is.
+
+      Name_Length            : Agent_Name_Length;
+      --  Specifies the actual length of the name. Required since Task_Name is
+      --  fixed string which may be (much) longer than the name actually is.
+      --  Allows for a smaller string to be returned without the blank space at
+      --  the end or dealing with the hell that end of string tokens are.
+
+      Ceiling_Priority       : Any_Priority;
+      --  The priority of the agent under normal conditions.
+
+      Next_Object            : Protected_Id_With_No;
+
+      State                  : Agent_State;
+      --  The state of the agent.
+
+      --  Protected Object Properties
 
       Object_Record          : Address;
       --  Address of the record that holds the protected object's contents.
@@ -176,12 +217,14 @@ private
 
    end record;
 
-   -----------------------------
-   -- Protected Agent Storage --
-   -----------------------------
+   ------------------------------
+   -- Protected Broker Storage --
+   ------------------------------
+
+   --  The agent generic pool is also suitable for brokers
 
    package Protected_Pool is new Oak.Agent.Storage
-     (Agent_Record_Type => Protected_Agent_Record,
+     (Agent_Record_Type => Protected_Broker_Record,
       Agent_Id_Type     => Protected_Id);
 
    use Protected_Pool;
@@ -195,6 +238,10 @@ private
       return Protected_Subprogram_Type is
      (Agent_Pool (PO).Active_Subprogram_Kind);
 
+   function Ceiling_Priority
+     (PO : in Protected_Id) return System.Any_Priority is
+     (Agent_Pool (PO).Ceiling_Priority);
+
    function Has_Entries
      (PO : in Protected_Id)
       return Boolean is (Agent_Pool (PO).Entry_Barriers /= Null_Address);
@@ -205,8 +252,18 @@ private
       return Boolean is
      (Entry_Id > No_Entry);
 
+   function Next_Broker (PO : Protected_Id) return Protected_Id_With_No is
+      (Agent_Pool (PO).Next_Object);
+
+   function Name (PO : in Protected_Id) return Agent_Name is
+     (Agent_Pool (PO).Name
+      (Agent_Name_Length'First .. Agent_Pool (PO).Name_Length));
+
+   function State (PO : in Protected_Id) return Agent_State is
+     (Agent_Pool (PO).State);
+
    function Task_Within
      (PO : in Protected_Id)
       return Task_Id_With_No is (Agent_Pool (PO).Tasks_Within.Head);
 
-end Oak.Agent.Protected_Objects;
+end Oak.Brokers.Protected_Objects;

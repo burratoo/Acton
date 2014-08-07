@@ -11,10 +11,11 @@
 
 with Ada.Cyclic_Tasks; use Ada.Cyclic_Tasks;
 
-with Oak.Agent.Oak_Agent;         use Oak.Agent.Oak_Agent;
-with Oak.Agent.Protected_Objects; use Oak.Agent.Protected_Objects;
-with Oak.Scheduler;               use Oak.Scheduler;
-with Oak.States;                  use Oak.States;
+with Oak.Agent.Oak_Agent;           use Oak.Agent.Oak_Agent;
+with Oak.Brokers.Protected_Objects; use Oak.Brokers.Protected_Objects;
+
+with Oak.Scheduler; use Oak.Scheduler;
+with Oak.States;    use Oak.States;
 
 package body Oak.Agent.Tasks is
 
@@ -100,7 +101,7 @@ package body Oak.Agent.Tasks is
                New_Event_Timer
                  (Timer        => T.Budget_Timer,
                   Priority     =>
-                     Oak_Agent.Normal_Priority (Protected_Object_From_Access
+                     Ceiling_Priority (Protected_Object_From_Access
                     (Budget_Handler)),
                   Timer_Action => Handler,
                   Agent        => Agent,
@@ -122,7 +123,7 @@ package body Oak.Agent.Tasks is
                New_Event_Timer
                  (Timer        => T.Deadline_Timer,
                   Priority     =>
-                     Oak_Agent.Normal_Priority (Protected_Object_From_Access
+                     Ceiling_Priority (Protected_Object_From_Access
                     (Deadline_Handler)),
                   Timer_Action => Handler,
                   Agent        => Agent,
@@ -206,23 +207,6 @@ package body Oak.Agent.Tasks is
    begin
       Agent_Pool (For_Task).Next_Queue := Next_Queue;
    end Set_Next_Queue;
-
-   ---------------------------------
-   -- Set_Protected_Entry_Request --
-   ---------------------------------
-
-   procedure Set_Protected_Entry_Request
-     (For_Task         : Task_Id;
-      Protected_Object : Protected_Id;
-      Subprogram_Kind  : Protected_Subprogram_Type;
-      Entry_Id         : Entry_Index)
-   is
-      T : Task_Agent_Record renames Agent_Pool (For_Task);
-   begin
-      T.Protected_Object := Protected_Object;
-      T.Subprogram_Kind  := Subprogram_Kind;
-      T.Id_Of_Entry      := Entry_Id;
-   end Set_Protected_Entry_Request;
 
    ---------------------------
    -- Set_Relative_Deadline --

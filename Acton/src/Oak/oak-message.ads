@@ -1,9 +1,11 @@
 with Oak.Oak_Time;
 
 with Oak.Agent;      use Oak.Agent;
+with Oak.Brokers;    use Oak.Brokers;
 with Oak.Indices;    use Oak.Indices;
 with Oak.Interrupts; use Oak.Interrupts;
 with Oak.States;     use Oak.States;
+with System;         use System;
 
 package Oak.Message with Preelaborate is
 
@@ -23,7 +25,7 @@ package Oak.Message with Preelaborate is
       end case;
    end record;
 
-   --
+   type Queue_End is (Back, Front);
 
    type Oak_Message (Message_Type : Agent_State := No_Message) is record
       case Message_Type is
@@ -35,8 +37,8 @@ package Oak.Message with Preelaborate is
             Remove_From_Charge_List : Boolean;
 
          when Update_Task_Property =>
-            Update_Task         : Task_Id;
             Property_To_Update  : Task_Property;
+            Update_Task         : Task_Id;
 
          when Release_Task =>
             Task_To_Release : Task_Id;
@@ -57,6 +59,7 @@ package Oak.Message with Preelaborate is
 
          when Adding_Agent =>
             Agent_To_Add : Oak_Agent_Id;
+            Place_At     : Queue_End;
 
          when Adding_Agents =>
             Agents_To_Add : Oak_Agent_Id;
@@ -68,8 +71,9 @@ package Oak.Message with Preelaborate is
             Agent_That_Changed : Oak_Agent_Id;
 
          when Scheduler_Agent_Done =>
-            Next_Agent        : Oak_Agent_Id;
             Wake_Scheduler_At : Oak_Time.Time;
+            Wake_Priority     : Any_Priority;
+            Next_Agent        : Oak_Agent_Id;
 
          when Initialising_Agents =>
             Agents_To_Init : Oak_Agent_Id;
