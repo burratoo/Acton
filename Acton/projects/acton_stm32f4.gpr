@@ -1,29 +1,18 @@
 with "acton_common";
 
-project Acton_AT91SAM7S is
+project Acton_STM32F4 is
 
    --  Source Directories
-   Traget_Source_Dirs := ("../processor_support_packages/Atmel/AT91SAM7S/arm",
-                          "../processor_support_packages/Atmel/AT91SAM7S/arm/arm7tdmi",
-                          "../processor_support_packages/Atmel/AT91SAM7S/AT91SAM7S",
-                          "../processor_support_packages/Atmel/AT91SAM7S/oak_support",
-                          "../processor_support_packages/Atmel/AT91SAM7S/start",
+   Traget_Source_Dirs := ("../processor_support_packages/ST/STM32F4/arm",
+                          "../processor_support_packages/ST/STM32F4/arm/cortex-m4",
+                          "../processor_support_packages/ST/STM32F4/STM32F4",
+                          "../processor_support_packages/ST/STM32F4/oak_support",
+                          "../processor_support_packages/ST/STM32F4/start",
                           "../src/Maths-32bit");
 
    --  Target Libraries
-   Target_Library_Interface := ("Atmel",
-                                "Atmel.AT91SAM7S",
-                                "Atmel.AT91SAM7S.ADC",
-                                "Atmel.AT91SAM7S.AIC",
-                                "Atmel.AT91SAM7S.PDC",
-                                "Atmel.AT91SAM7S.PIO",
-                                "Atmel.AT91SAM7S.PIT",
-                                "Atmel.AT91SAM7S.PMC",
---                                  "Atmel.AT91SAM7S.SPI",
-                                "Atmel.AT91SAM7S.SSC",
-                                "Atmel.AT91SAM7S.TC",
---                                  "Atmel.AT91SAM7S.TWI",
---                                  "Atmel.AT91SAM7S.USART",
+   Target_Library_Interface := ("ST",
+                                "ST.STM32F4",
                                 "Oakland.Maths.Arithmetic_64"
 
                                );
@@ -35,8 +24,8 @@ project Acton_AT91SAM7S is
    Target_Debugger_Command := Target & "gdb";
 
    --  Builder Switches
-   Target_Ada_Switches := Acton_Common.Ada_Switches; -- & ("-Wa,-mregnames");
-   Target_Asm_Switches := Acton_Common.Asm_Switches; -- & "-mregnames";
+   Target_Ada_Switches := Acton_Common.Ada_Switches & ("-mcpu=cortex-m4");
+   Target_Asm_Switches := Acton_Common.Asm_Switches & ("-mcpu=cortex-m4");
 
 
    for Source_Dirs use Acton_Common.Source_Dirs & Traget_Source_Dirs;
@@ -71,5 +60,5 @@ project Acton_AT91SAM7S is
 
    package Pretty_Printer renames Acton_Common.Pretty_Printer;
 
-end Acton_AT91SAM7S;
+end Acton_STM32F4;
 
