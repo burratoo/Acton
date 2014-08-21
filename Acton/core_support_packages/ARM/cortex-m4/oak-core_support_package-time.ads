@@ -1,19 +1,18 @@
+with Oak.Project_Support_Package; use Oak.Project_Support_Package;
+
 package Oak.Core_Support_Package.Time with Pure is
 
-   MHz         : constant := 1E6;
-   Clock_Speed : constant := 48 * MHz;
-
-   type Oak_Time is mod 2 ** 31 with Size => 32;
-   type Oak_Time_Span is range -(2 ** 31) .. +(2 ** 31 - 1) with Size => 32;
+   type Oak_Time is mod 2 ** 63 with Size => 64;
+   type Oak_Time_Span is range -(2 ** 63) .. +(2 ** 63 - 1) with Size => 64;
 
    --     type Oak_Time_Span is new Oak_Time; for Oak_Time_Span'Size use 32;
 
-   Oak_Time_Unit      : constant := 1 / 1E4;
+   Oak_Time_Unit      : constant := 1.0 / Clock_Speed;
    Oak_Time_Span_Unit : constant := 1;
 
    Oak_Tick : constant := 1;
 
-   Ticks_Per_Second : constant := 10_000;
+   Ticks_Per_Second : constant := Clock_Speed;
 
    function Get_Clock return Oak_Time
      with Import,

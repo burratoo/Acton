@@ -56,7 +56,7 @@ package body Oak.Agent.Oak_Agent is
      (List             : in Charge_List_Head;
       Exec_Time        : in Oak_Time.Time_Span;
       Current_Agent    : in Oak_Agent_Id;
-      Current_Priority : in Oak_Priority)
+      Current_Priority : in Any_Priority)
    is
       Agent   : Oak_Agent_Id := List;
    begin

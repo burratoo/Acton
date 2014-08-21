@@ -1,34 +1,23 @@
 with Oak.Brokers.Protected_Objects; use Oak.Brokers.Protected_Objects;
 
-with Atmel; use Atmel;
-with Atmel.AT91SAM7S;     use Atmel.AT91SAM7S;
-with Atmel.AT91SAM7S.AIC; use Atmel.AT91SAM7S.AIC;
+with ISA.ARM.Cortex_M4.NVIC;       use ISA.ARM.Cortex_M4.NVIC;
 
 package body Oak.Processor_Support_Package.Interrupts is
 
    procedure External_Interrupt_Handler (Interrupt_Id : External_Interrupt_Id)
    is
-      ICRV : Peripheral_Bit_Field := (others => False);
    begin
-      AIC_Vector_Table (Interrupt_Id).all;
-      ICRV (Interrupt_Id) := True;
-      Interrupt_Clear_Command_Register.Clear_Interrupt := ICRV;
-      End_Of_Interrupt_Command_Register := 1;
+      Interrupt_Vector_Table (Interrupt_Id).all;
    end External_Interrupt_Handler;
 
    function Get_External_Interrupt_Id return External_Interrupt_Id is
-      A : Address with Unreferenced;
    begin
-      A := Interrupt_Vector_Register;
-      return Interrupt_Status_Register.Current_Interrupt;
+      return
+        External_Interrupt_Id
+          (Oak.Core_Support_Package.Interrupts.Current_IRQ);
    end Get_External_Interrupt_Id;
 
-   procedure Initialise_Interrupts is
-   begin
-      --  Need to turn on interrupts here?
-      null;
-
-   end Initialise_Interrupts;
+   procedure Initialise_Interrupts is null;
 
    procedure Complete_Interrupt_Initialisation is null;
 
@@ -36,28 +25,17 @@ package body Oak.Processor_Support_Package.Interrupts is
                              Handler   : Parameterless_Handler;
                              Priority  : Interrupt_Priority)
    is
-      IECV : Interrupt_Enable_No_Change_Field := (others => No_Change);
    begin
-      Source_Mode_Register (Interrupt).Priority_Level :=
-        AIC_Interrupt_Priority (Priority - System.Priority'Last);
-
-      AIC_Vector_Table (Interrupt) := Handler;
-
-      IECV (Interrupt) := Enable;
-      Interrupt_Enable_Command_Register.Interrupt := IECV;
+      Interrupt_Priority_Register (Interrupt) := To_Cortex_Priority (Priority);
+      Interrupt_Vector_Table (Interrupt) := Handler;
    end Attach_Handler;
 
    function Current_Interrupt_Priority return Any_Priority is
-      Interrupt_Id : constant External_Interrupt_Id :=
-                       Interrupt_Status_Register.Current_Interrupt;
    begin
-      --  On the AT91SAM7S there is only one interrupt priority level
-      --  available since we cannot mask the hardware interrupts based on
-      --  priority.
-
+      --  Figure this out!!!!!!!
       return
-        (if Source_Mode_Register (Interrupt_Id).Priority_Level > 0
-         then Interrupt_Priority'Last else Priority'Last);
+        To_Ada_Priority
+          (Interrupt_Priority_Register (Get_External_Interrupt_Id));
    end Current_Interrupt_Priority;
 
    procedure Set_Hardware_Priority (P : Any_Priority) is null;
@@ -68,14 +46,21 @@ package body Oak.Processor_Support_Package.Interrupts is
      (Interrupt : External_Interrupt_Id) return Protected_Id_With_No is
    begin
       return Protected_Object_From_Access
-        (Parameterless_Access (AIC_Vector_Table (Interrupt)));
+        (Parameterless_Access (Interrupt_Vector_Table (Interrupt)));
    end Handler_Protected_Object;
 
    function Has_Outstanding_Interrupts (Above_Priority : Any_Priority)
                                         return Boolean is
+      pragma Unreferenced (Above_Priority);
    begin
-      return Core_Interrupt_Status_Register.NIRQ  = Active
-        and Above_Priority = 0;
+      return False;
    end Has_Outstanding_Interrupts;
+
+   procedure Trap_Handler is
+   begin
+      loop
+         null;
+      end loop;
+   end Trap_Handler;
 
 end Oak.Processor_Support_Package.Interrupts;

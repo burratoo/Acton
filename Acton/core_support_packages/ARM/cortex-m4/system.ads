@@ -59,7 +59,7 @@ pragma Restrictions (No_Finalization);
 --  pragma Restrictions (No_Tasking);
 --  Tasking is not supported in this run time
 
-pragma Discard_Names;
+--  pragma Discard_Names;
 --  Disable explicitly the generation of names associated with entities in
 --  order to reduce the amount of storage used. These names are not used anyway
 --  (attributes such as 'Image and 'Value are not supported in this run time).
@@ -123,8 +123,8 @@ package System is
 
    --  ??? need comments explaining the values below
 
-   Max_Priority           : constant Positive := 29;
-   Max_Interrupt_Priority : constant Positive := 30;
+   Max_Priority           : constant Positive := 240;
+   Max_Interrupt_Priority : constant Positive := 255;
    --  Interrupt priority has a range of one since while the AT91SAM7S has
    --  hardware support for nested interrupts and interrupt priority levels,
    --  these priority levels cannot be masked by software.
@@ -132,15 +132,10 @@ package System is
    --  Need to provide the range in numbers to make the binder happy.
    --  Don't change the spacing of Any_Priority subtype definition!
 
-   subtype Any_Priority       is Integer      range   0 .. 30;
-   subtype Priority           is Any_Priority range   0 .. 29;
+   subtype Any_Priority       is Integer      range   0 .. 255;
+   subtype Priority           is Any_Priority range   0 .. 240;
    subtype Interrupt_Priority is Any_Priority range
      Priority'Last + 1 .. Any_Priority'Last;
-
-   subtype Oak_Priority           is Integer      range
-     Any_Priority'First .. Any_Priority'Last + 1;
-   subtype Oak_Interrupt_Priority is Oak_Priority range
-     Interrupt_Priority'First .. Oak_Priority'Last;
 
    Default_Priority : constant Priority :=
                         (Priority'First + Priority'Last) / 2;

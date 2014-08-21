@@ -15,10 +15,11 @@ with System.Machine_Code; use System.Machine_Code;
 with Oak.Core_Support_Package.Interrupts;
 use  Oak.Core_Support_Package.Interrupts;
 
-with Oak.Processor_Support_Package.Time;
+with Oak.Core_Support_Package.Clock;
+with Oak.Core_Support_Package.Time;
 
 with Ada.Unchecked_Conversion;
-with Oak.Core_Support_Package.Time;
+
 with Interfaces; use Interfaces;
 
 package body Oak.Core_Support_Package.Task_Support is
@@ -38,7 +39,7 @@ package body Oak.Core_Support_Package.Task_Support is
 
    procedure Context_Switch is
    begin
-      Asm ("swi 0", Volatile => True);
+      Asm ("svc 0", Volatile => True);
    end Context_Switch;
 
    -----------------------------
@@ -46,21 +47,21 @@ package body Oak.Core_Support_Package.Task_Support is
    ------------------------------
 
    --  Offically ARM sucks: it seems like when we have more than one return
-   --  value eveything gets sent on the stack. So inline it.
-   --  Follow up: It works!
+   --  value eveything gets sent on the stack. So move the values so that they
+   --  are on the stack.
 
    procedure Context_Switch_From_Oak
      (Reason_For_Oak_To_Run : out Run_Reason;
       Message_Address       : out Address)
    is
    begin
-      Asm ("swi 0"      & ASCII.LF & ASCII.HT &
-           "mov %0, r0" & ASCII.LF & ASCII.HT &
-           "mov %1, r1",
+      Asm ("svc 0"      & ASCII.LF & ASCII.HT &
+           "mov %0, r4" & ASCII.LF & ASCII.HT &
+           "mov %1, r5",
            Outputs  => (Run_Reason'Asm_Output ("=r", Reason_For_Oak_To_Run),
                         Address'Asm_Output ("=r", Message_Address)),
            Volatile => True,
-           Clobber  => "r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10");
+           Clobber  => "r4, r5, r6, r7, r8, r9, r10, r11");
    end Context_Switch_From_Oak;
 
    ---------------------------
@@ -70,10 +71,14 @@ package body Oak.Core_Support_Package.Task_Support is
    procedure Context_Switch_To_Oak
      (Reason_For_Run : in     Run_Reason;
       Message        : in out Oak_Message) is
-      pragma Unreferenced (Reason_For_Run, Message);
    begin
-      Asm ("swi 0", Volatile => True,
-           Clobber     => "r2, r3, r4, r5, r6, r7, r8, r9, r10"); -- , r11");
+      Asm ("mov r4, %0" & ASCII.LF & ASCII.HT &
+           "mov r5, %1" & ASCII.LF & ASCII.HT &
+           "svc 0",
+           Inputs  => (Run_Reason'Asm_Input ("r", Reason_For_Run),
+                        Address'Asm_Input ("r", Message'Address)),
+           Volatile => True,
+           Clobber     => "r4, r5, r6, r7, r8, r9, r10, r11");
    end Context_Switch_To_Oak;
 
    ------------------------------------------
@@ -82,8 +87,8 @@ package body Oak.Core_Support_Package.Task_Support is
 
    procedure Context_Switch_Save_Callee_Registers is
    begin
-      Asm ("swi 0", Volatile => True,
-           Clobber => "r4, r5, r6, r7, r8, r9, r10, r12"); -- , r11");
+      Asm ("svc 0", Volatile => True,
+           Clobber => "r4, r5, r6, r7, r8, r9, r10, r11");
    end Context_Switch_Save_Callee_Registers;
 
    ------------------------------------------------
@@ -92,8 +97,8 @@ package body Oak.Core_Support_Package.Task_Support is
 
    procedure Context_Switch_Will_Be_To_Interrupted_Task is
    begin
-      SWI_Vector        := Full_Context_Switch_To_Agent_Interrupt'Address;
-      SWI_Return_Vector := Request_Context_Switch_To_Oak_Interrupt'Address;
+      SVC_Vector := Full_Context_Switch_To_Agent_Interrupt'Address;
+      SVC_Return_Vector := Request_Context_Switch_To_Oak_Interrupt'Address;
    end Context_Switch_Will_Be_To_Interrupted_Task;
 
    -----------------------------------------------
@@ -102,8 +107,8 @@ package body Oak.Core_Support_Package.Task_Support is
 
    procedure Context_Switch_Will_Be_To_Agent is
    begin
-      SWI_Vector        := Request_Context_Switch_To_Agent_Interrupt'Address;
-      SWI_Return_Vector := Request_Context_Switch_To_Oak_Interrupt'Address;
+      SVC_Vector := Request_Context_Switch_To_Agent_Interrupt'Address;
+      SVC_Return_Vector := Request_Context_Switch_To_Oak_Interrupt'Address;
    end Context_Switch_Will_Be_To_Agent;
 
    -----------------------------------------
@@ -112,8 +117,8 @@ package body Oak.Core_Support_Package.Task_Support is
 
    procedure Context_Switch_Will_Switch_In_Place is
    begin
-      SWI_Vector        := In_Place_Context_Switch_To_Agent_Interrupt'Address;
-      SWI_Return_Vector := In_Place_Context_Switch_To_Oak_Interrupt'Address;
+      SVC_Vector := In_Place_Context_Switch_To_Agent_Interrupt'Address;
+      SVC_Return_Vector := In_Place_Context_Switch_To_Oak_Interrupt'Address;
    end Context_Switch_Will_Switch_In_Place;
 
    ----------------------
@@ -161,7 +166,7 @@ package body Oak.Core_Support_Package.Task_Support is
    ---------------------------
 
    procedure Set_Oak_Wake_Up_Timer (Wake_Up_At : in Oak.Oak_Time.Time) is
-      use Oak.Processor_Support_Package.Time;
+      use Oak.Core_Support_Package.Clock;
       function To_Interal_Oak_Time is new
         Ada.Unchecked_Conversion (Oak.Oak_Time.Time,
                                   Oak.Core_Support_Package.Time.Oak_Time);

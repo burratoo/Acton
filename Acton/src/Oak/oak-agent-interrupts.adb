@@ -96,7 +96,7 @@ package body Oak.Agent.Interrupts is
 
    procedure New_Interrupt_Agent
      (Agent    : out Interrupt_Id;
-      Priority : in Oak_Priority)
+      Priority : in Any_Priority)
    is
    begin
       Allocate_An_Agent (Agent);

@@ -17,21 +17,26 @@
 
 with System; use System;
 
+with ISA.ARM.Cortex_M4.Exceptions; use ISA.ARM.Cortex_M4.Exceptions;
+
 package Oak.Core_Support_Package.Interrupts with Preelaborate is
 
-   --  Only modify these across all variants
+   ---------------------------------
+   -- INTERNAL PACKAGE COMPONENTS --
+   ---------------------------------
 
    procedure Set_Up_Interrupts;
+
+   pragma Warnings (Off, "*attribute directive ignored*");
 
    --  May customise this section with the appropriate linker section
    procedure Decrementer_Interrupt;
    pragma Machine_Attribute
      (Decrementer_Interrupt, "naked");
 
-   procedure External_Interrupt_Handler
-     with Export, Convention => Ada, External_Name => "irq_handler";
+   procedure IRQ_Interrupt_Handler;
    pragma Machine_Attribute
-     (External_Interrupt_Handler, "naked");
+     (IRQ_Interrupt_Handler, "naked");
 
    procedure Full_Context_Switch_To_Agent_Interrupt;
    pragma Machine_Attribute
@@ -58,12 +63,21 @@ package Oak.Core_Support_Package.Interrupts with Preelaborate is
      (Full_Context_Switch_To_Oak, "naked");
    --  Called by Decrementer_Interrupt and External_Interrupt.
 
+   procedure SVCall_Handler;
+   pragma Machine_Attribute
+     (SVCall_Handler, "naked");
+
+   pragma Warnings (On, "*attribute directive ignored*");
+
+   Current_IRQ : Exception_Id;
+   --  Current exception as picked up in the external interrupt handler
+
 private
 
-   SWI_Vector   : Address
-     with Import, Convention => Asm, External_Name => "swi_vector";
+   SVC_Vector : Address
+     with Import, Convention => Ada, External_Name => "svc_vector";
 
-   SWI_Return_Vector : Address
-     with Import, Convention => Ada, External_Name => "swi_return_vector";
+   SVC_Return_Vector : Address
+     with Import, Convention => Ada, External_Name => "svc_return_vector";
 
 end Oak.Core_Support_Package.Interrupts;

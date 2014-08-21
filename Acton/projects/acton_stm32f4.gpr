@@ -3,8 +3,8 @@ with "acton_common";
 project Acton_STM32F4 is
 
    --  Source Directories
-   Traget_Source_Dirs := ("../processor_support_packages/ST/STM32F4/arm",
-                          "../processor_support_packages/ST/STM32F4/arm/cortex-m4",
+   Traget_Source_Dirs := ("../core_support_packages/arm",
+                          "../core_support_packages/arm/cortex-m4",
                           "../processor_support_packages/ST/STM32F4/STM32F4",
                           "../processor_support_packages/ST/STM32F4/oak_support",
                           "../processor_support_packages/ST/STM32F4/start",
@@ -13,6 +13,8 @@ project Acton_STM32F4 is
    --  Target Libraries
    Target_Library_Interface := ("ST",
                                 "ST.STM32F4",
+                                "ST.STM32F4.GPIO",
+                                "ST.STM32F4.RCC",
                                 "Oakland.Maths.Arithmetic_64"
 
                                );
@@ -24,8 +26,8 @@ project Acton_STM32F4 is
    Target_Debugger_Command := Target & "gdb";
 
    --  Builder Switches
-   Target_Ada_Switches := Acton_Common.Ada_Switches & ("-mcpu=cortex-m4");
-   Target_Asm_Switches := Acton_Common.Asm_Switches & ("-mcpu=cortex-m4");
+   Target_Ada_Switches := Acton_Common.Ada_Switches & ("-mcpu=cortex-m4", "-mthumb");
+   Target_Asm_Switches := Acton_Common.Asm_Switches & ("-mcpu=cortex-m4", "-mthumb");
 
 
    for Source_Dirs use Acton_Common.Source_Dirs & Traget_Source_Dirs;
@@ -51,7 +53,7 @@ project Acton_STM32F4 is
       for Default_Switches ("asm") use Acton_Common.Asm_Switches & Target_Asm_Switches;
       for Switches ("oak-core_support_package-task_support.adb") use Compiler'Default_Switches ("ada") & ("-fno-lto");
       for Switches ("oak-memory-ops.adb") use Compiler'Default_Switches ("ada") & ("-fno-lto");
-      for Switches ("oak-processor_support_package-time-interrupt.adb") use Compiler'Default_Switches ("ada") & ("-fno-lto", "-O2", "-ffixed-r0", "-ffixed-r1", "-ffixed-r2", "-ffixed-r3", "-ffixed-r4", "-ffixed-r5", "-ffixed-r6", "-ffixed-r7", "-ffixed-lr");
+      for Switches ("oak-core_support_package-clock-interrupt.adb") use Compiler'Default_Switches ("ada") & ("-fno-lto", "-O2", "-ffixed-r4", "-ffixed-r5", "-ffixed-r6", "-ffixed-r7", "-ffixed-r8", "-ffixed-r9", "-ffixed-r10", "-ffixed-r11", "-ffixed-lr");
    end Compiler;
 
    --  package Linker is

@@ -48,7 +48,7 @@ package body Oak.Timers is
    ----------------------------
 
    function Earliest_Timer_To_Fire
-     (Above_Priority : in Any_Priority := Oak_Priority'First)
+     (Above_Priority : in Any_Priority := Any_Priority'First)
       return Oak_Timer_Id
    is
       Timer : constant Oak_Timer_Id :=
@@ -67,7 +67,7 @@ package body Oak.Timers is
 
    procedure New_Timer
      (Timer     : out Oak_Timer_Id;
-      Priority  : in  Oak_Priority;
+      Priority  : in  Any_Priority;
       Fire_Time : in  Oak_Time.Time := Time_Last;
       Enable    : in  Boolean := False) is
    begin
@@ -85,7 +85,7 @@ package body Oak.Timers is
 
    procedure New_Event_Timer
      (Timer        : out Oak_Timer_Id;
-      Priority     : in  Oak_Priority;
+      Priority     : in  Any_Priority;
       Timer_Action : in  Ada.Cyclic_Tasks.Event_Response;
       Agent        : in  Oak_Agent_Id;
       Handler      : in  Ada.Cyclic_Tasks.Response_Handler := null;
@@ -109,7 +109,7 @@ package body Oak.Timers is
 
    procedure New_Scheduler_Timer
      (Timer     : out Oak_Timer_Id;
-      Priority  : in  Oak_Priority;
+      Priority  : in  Any_Priority;
       Scheduler : in  Scheduler_Id;
       Fire_Time : in  Oak_Time.Time := Time_Last;
       Enable    : in  Boolean := False) is
@@ -137,7 +137,7 @@ package body Oak.Timers is
       Timer_Pool (No_Timer) :=
         (Kind      => Empty_Timer,
          Fire_Time => Time_Last,
-         Priority  => Oak_Priority'First);
+         Priority  => Any_Priority'First);
    end Setup_Timers;
 
    ------------------

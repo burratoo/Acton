@@ -64,7 +64,7 @@ package Oak.Timers with Preelaborate is
    --  Delete the Timer from the storage pool.
 
    function Earliest_Timer_To_Fire
-     (Above_Priority : in Any_Priority := Oak_Priority'First)
+     (Above_Priority : in Any_Priority := Any_Priority'First)
       return Oak_Timer_Id;
    --  Returns the timer that will fire first the is above the given priority.
 
@@ -89,14 +89,14 @@ package Oak.Timers with Preelaborate is
 
    procedure New_Timer
      (Timer     : out Oak_Timer_Id;
-      Priority  : in  Oak_Priority;
+      Priority  : in  Any_Priority;
       Fire_Time : in  Oak_Time.Time := Oak_Time.Time_Last;
       Enable    : in  Boolean := False);
    --  Create a new generic timer.
 
    procedure New_Event_Timer
      (Timer        : out Oak_Timer_Id;
-      Priority     : in  Oak_Priority;
+      Priority     : in  Any_Priority;
       Timer_Action : in  Ada.Cyclic_Tasks.Event_Response;
       Agent        : in  Oak_Agent_Id;
       Handler      : in  Ada.Cyclic_Tasks.Response_Handler := null;
@@ -106,7 +106,7 @@ package Oak.Timers with Preelaborate is
 
    procedure New_Scheduler_Timer
      (Timer     : out Oak_Timer_Id;
-      Priority  : in  Oak_Priority;
+      Priority  : in  Any_Priority;
       Scheduler : in  Scheduler_Id;
       Fire_Time : in  Oak_Time.Time := Oak_Time.Time_Last;
       Enable    : in  Boolean := False);
@@ -131,7 +131,7 @@ package Oak.Timers with Preelaborate is
      with Inline;
    --  Returns what kind of Oak Timer the specified timer is.
 
-   function Timer_Priority (Timer : in Oak_Timer_Id) return Oak_Priority
+   function Timer_Priority (Timer : in Oak_Timer_Id) return Any_Priority
      with Inline;
    --  Priority attached to the timer.
 
@@ -166,7 +166,7 @@ private
       Fire_Time : Oak_Time.Time;
       --  The time the timer will fire.
 
-      Priority  : Oak_Priority;
+      Priority  : Any_Priority;
       --  The priority of the scheduler timer.
 
       case Kind is
@@ -254,7 +254,7 @@ private
    function Timer_Kind (Timer : in Oak_Timer_Id) return Oak_Timer_Kind is
      (Timer_Pool (Timer).Kind);
 
-   function Timer_Priority (Timer : in Oak_Timer_Id) return Oak_Priority is
+   function Timer_Priority (Timer : in Oak_Timer_Id) return Any_Priority is
      (Timer_Pool (Timer).Priority);
 
 end Oak.Timers;

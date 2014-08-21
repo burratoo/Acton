@@ -97,7 +97,7 @@ package Oak.Agent.Oak_Agent with Preelaborate is
      (List             : in Charge_List_Head;
       Exec_Time        : in Oak_Time.Time_Span;
       Current_Agent    : in Oak_Agent_Id;
-      Current_Priority : in Oak_Priority);
+      Current_Priority : in Any_Priority);
    --  Charges the provided execution time to agents on the the specified
    --  execution time charge list. Whether an agent is charged is dependent on
    --  the priority provided by the procedure and the When_To_Charge attribute

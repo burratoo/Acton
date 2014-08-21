@@ -23,16 +23,16 @@ with System; use System;
 
 package Oak.Core_Support_Package.Task_Support with Preelaborate is
 
-   --  On ARM the kernel runs in the Supervisor Mode and is switched directly
-   --  to by a procedure call (unlike Power which requires a software
-   --  interrupt). All other tasks operate in User Mode.
+   -----------------------
+   -- INTERFACE FOR OAK --
+   -----------------------
 
    procedure Initialise_Task_Enviroment;
 
    procedure Context_Switch with Inline_Always;
    procedure Context_Switch_From_Oak
      (Reason_For_Oak_To_Run : out Run_Reason;
-      Message_Address       : out Address);
+      Message_Address       : out Address) with Inline_Always;
    procedure Context_Switch_To_Oak
      (Reason_For_Run : in     Run_Reason;
       Message        : in out Oak_Message) with Inline => False;
@@ -56,9 +56,10 @@ package Oak.Core_Support_Package.Task_Support with Preelaborate is
    --  Optimised procedure to copy oak messages arround
 
 private
-   SWI_Vector   : Address
-     with Import, Convention => Asm, External_Name => "swi_vector";
 
-   SWI_Return_Vector : Address
-     with Export, Convention => Ada, External_Name => "swi_return_vector";
+   SVC_Vector : Address
+     with Export, Convention => Ada, External_Name => "svc_vector";
+
+   SVC_Return_Vector : Address
+     with Export, Convention => Ada, External_Name => "svc_return_vector";
 end Oak.Core_Support_Package.Task_Support;

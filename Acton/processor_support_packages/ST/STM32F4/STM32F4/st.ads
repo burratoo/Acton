@@ -1,5 +1,4 @@
-package ISA with Pure is
-
+package ST with Pure is
    type Enable_Type is (Disable, Enable);
    for Enable_Type use (Disable => 0, Enable => 1);
 
@@ -9,4 +8,9 @@ package ISA with Pure is
    type Decision_Type is (No, Yes);
    for Decision_Type use (No => 0, Yes => 1);
 
-end ISA;
+   type Occurred_Type is (Not_Occurred, Occurred);
+   type Clear_Type is (Do_Not_Clear, Clear);
+
+   type Reset_Type is (Do_Not_Reset, Reset);
+   for Reset_Type use (Do_Not_Reset => 0, Reset => 1);
+end ST;

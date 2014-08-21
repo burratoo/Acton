@@ -1,36 +1,9 @@
-ENTRY(_start)
-/* SAM7 linker script source.
- *  This file must be run through a sed script to
- *  generate an ldscript suitable for either a ram or rom image.
- *
- *  The sed script achieves this by selectively copying the lines
- *   with ROM_ONLY and RAM_ONLY.
- *
- *  This script is for a system that runs with the memory 
- *  mapped  so that ram is visible at both 0 and 2M.
- *
- *  Notes on alignment:
- *  1) Sections should be 4-byte aligned otherwise ARM fetches
- *     will be misaligned.
- *  2) The stack should be 8-byte aligned for the APCS. That's because STRD
- *     and LDRD assume that they are on 8-byte boundaries.
- *  3) Align 16 is a good idea for any copied or initialised sections because
- *     this allows the faster LDM/STM code to run instead.
- */
-
-
-/* 
- * Memory definitions.
- */
-
-/* SAM7S256 */
-
+ENTRY(_start);
 
 MEMORY
 {
-   flash      : ORIGIN = 0x00100000, LENGTH = 256k
-   vector_ram : ORIGIN = 2M, LENGTH = 64
-   ram : ORIGIN = 2M + 64, LENGTH = 64K - 64
+  flash (rx)  : ORIGIN = 0x08000000, LENGTH = 1024K
+  sram (rwx)  : ORIGIN = 0x20000000, LENGTH = 112K
 }
 
 /*
@@ -70,111 +43,88 @@ MEMORY
  * +---------------------------+
  */
  
-RAM_BASE = 2M;
-RAM_SIZE = 64k;
-
 SECTIONS {
-
-/* The vectors are at 0, but since this is overlapped with 
- * the ram area we need to reserve some space for the vector
- * table
- */
-.arm_vector_table : {
+  /* Note that the vector table needs to be aligned to the power of two that is
+   * greater than or equal to the number of words in the table. The STM32F4
+   * has 98 entries which means an alignment of 512 bytes is required.
+   */
+   
+  .arm_vector_table : {
     KEEP(*(.arm_vector_table))
-    . = ALIGN(16);
-} > vector_ram
- AT > flash
+    . = ALIGN(512); 
+  } > flash
+   
+  .text : {
+    *(.text .text.* .gnu.linkonce.t*)
+    *(.gnu.warning)
+  } > flash
 
-__vectors_ram_start__  = ADDR(.arm_vector_table);
-__vectors_ram_end__    = (ADDR(.arm_vector_table) + SIZEOF(.arm_vector_table));
-__vectors_load_start__ = LOADADDR(.arm_vector_table);
-__vectors_load_end__ = (LOADADDR(.arm_vector_table) + SIZEOF(.arm_vector_table));
+  .rodata :
+  {
+    *(.lit)
+    *(.rodata .rodata.* .gnu.linkonce.r*)
+    . = ALIGN(0x4);
+    __rom_end = .;
+  } > flash
 
-/* .text is the main program area. This is stored in flash or
- * RAM depending on the build type.
- */
+  __data_load = __rom_end;
+  .data : AT (__rom_end)
+  {
+    __data_start = .;
+    *(.data .data.* .gnu.linkonce.d*)
 
-.text : {
-    . = ALIGN(16);
-    * (*.text *.text.* *.glue*)
-    . = ALIGN(16);
-    * (*.rodata *.rodata.*)
-    . = ALIGN(16);
-}
- > flash
+    /* Align in 4 byte so the copy function can copy words */
 
-  .ARM.extab   : { *(.ARM.extab* .gnu.linkonce.armextab.*) }
- > flash
-   PROVIDE_HIDDEN (__exidx_start = .);
+    . = ALIGN(0x4);
+    __data_end = .;
+  } > sram
+  __data_size = SIZEOF (.data) >> 2;
 
-  .ARM.exidx   : { *(.ARM.exidx* .gnu.linkonce.armexidx.*) }
- > flash
-   PROVIDE_HIDDEN (__exidx_end = .);
+  .bss (NOLOAD): {
+   . = ALIGN(0x8);
+   __bss_start = .;
 
-/*
- * data is initialised data. This has two addresses:
- * VMA: run-time address
- * LMA: load address.
- * For a ram build, these addresses are the same and since the data 
- * is loaded into the correct address there is no need to copy it.
- * For a rom build, the LMA is where the data is stored in rom and
- * the init code copies it into ram for run-time.
- *
- * NB LOADADDR is the same as ADDR if the VMA and LMA are the same.
- */
+   *(.bss .bss.*)
+   *(COMMON)
 
-/*
- * .ram_text is code that is relocated to RAM for execution. 
- * Typical usage is flash programming code that needs to be in RAM while the
- * flash is busy.
- * NB We copy all program (text) and rodata into the RAM.
- */
+    /* Align in 4 byte so the zero function can use words */
 
+   . = ALIGN(0x4); 
+   __bss_end = .;
 
-.ram_text : {
-    . = ALIGN(16);
-    *.oram(*.text *.text.* *.glue*)
-    . = ALIGN(16);
-    *.oram(*.rodata *.rodata.*)
-    . = ALIGN(16);
-} > ram
-  AT > flash
+  } > sram
 
-__ramtext_ram_start__ = ADDR(.ram_text);
-__ramtext_ram_end__   = ADDR(.ram_text) + SIZEOF(.ram_text);
-__ramtext_load_start__ = LOADADDR(.ram_text); 
-__ramtext_load_end__ = __ramtext_load_start__ + SIZEOF(.ram_text) ;
+  __bss_size = SIZEOF (.bss) >> 2;
 
-.data : {
-    * (*.data *.data.*)
-    . = ALIGN(16);
-} > ram 
-  AT > flash
-
-/* LOADADDR is the same as the ADDR if it is a ram build */
-__data_ram_start__ = ADDR(.data);
-__data_ram_end__   = ADDR(.data) + SIZEOF(.data);
-__data_load_start__ = LOADADDR(.data); 
-__data_load_end__ = __data_load_start__ + SIZEOF(.data) ;
-
-/* bss is zero initialised data */
-.bss : {
-    * (*.bss *.bss.*)
-    . = ALIGN(16);
-    __bss_end__ = . ;
-} > ram
-
-__bss_start__ = ADDR(.bss);
-__bss_end__   = (ADDR(.bss) + SIZEOF(.bss));
+  __stack_space_end = __bss_end ;
+  __stack_space_start = (ORIGIN(sram) + LENGTH(sram));
 
 
-/* end = __bss_end__ ;  used by malloc */
+  /* DWARF debug sections.
+     Symbols in the DWARF debugging sections are relative to the beginning
+     of the section so we begin them at 0.  */
+  /* DWARF 1 */
+  .debug          0 : { *(.debug) }
+  .line           0 : { *(.line) }
+  /* GNU DWARF 1 extensions */
+  .debug_srcinfo  0 : { *(.debug_srcinfo) }
+  .debug_sfnames  0 : { *(.debug_sfnames) }
+  /* DWARF 1.1 and DWARF 2 */
+  .debug_aranges  0 : { *(.debug_aranges) }
+  .debug_pubnames 0 : { *(.debug_pubnames) }
+  /* DWARF 2 */
+  .debug_info     0 : { *(.debug_info .gnu.linkonce.wi.*) }
+  .debug_abbrev   0 : { *(.debug_abbrev) }
+  .debug_line     0 : { *(.debug_line) }
+  .debug_frame    0 : { *(.debug_frame) }
+  .debug_str      0 : { *(.debug_str) }
+  .debug_loc      0 : { *(.debug_loc) }
+  .debug_macinfo  0 : { *(.debug_macinfo) }
+  /* DWARF 3 */
+  .debug_pubtypes 0 : { *(.debug_pubtypes) }
+  .debug_ranges   0 : { *(.debug_ranges) }
+  .gnu.attributes 0 : { KEEP (*(.gnu.attributes)) }
+  /DISCARD/ : { *(.note.GNU-stack) *(.gnu_debuglink) *(.gnu.lto_*) }
 
-__stack_space_end = __bss_end__ ;
-__stack_space_start = (RAM_BASE + RAM_SIZE);
-
-
-REPORTME_RAM_TOP = __bss_end__ ;
-/* REPORTME_FREE_RAM_SIZE = __free_ram_end__ - __free_ram_start__; */
-
+  /DISCARD/ : { *(.ARM.extab .ARM.exidx) }
 }

@@ -1,5 +1,8 @@
 package Oak.Project_Support_Package with Pure is
 
+   MHz         : constant := 1E6;
+   Clock_Speed : constant := 168 * MHz;
+
    Max_Kernel_Agents     : constant := 1;
    --  The number of Oak Kernel you need should be equal to the number of
    --  processors in the system. Not linked to the constant
@@ -10,7 +13,7 @@ package Oak.Project_Support_Package with Pure is
    Max_Scheduler_Agents  : constant := 1;
    --  A limit on the number of Scheduler Agents in the system.
 
-   Max_Interrupt_Agents  : constant := 1;
+   Max_Interrupt_Agents  : constant := 15;
    --  A limit on the number of interrupt priorities used by the system. Could
    --  be less than the number of interrupt prioities available on the hardware
    --  if not all the priorities are used. This allows for some space saving.
@@ -37,7 +40,7 @@ package Oak.Project_Support_Package with Pure is
    --  The maximum number of Oak Timers used in the system. At the bare minimum
    --  each scheduler agent needs one timer and task agent need two timers.
 
-   Max_Task_Name_Length  : constant := 0;
+   Max_Task_Name_Length  : constant := 20;
    --  The length of a task name. Set to an appropriate value for the system.
    --  Can be zero if not needed.
 
