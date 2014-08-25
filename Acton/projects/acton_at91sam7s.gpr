@@ -3,7 +3,8 @@ with "acton_common";
 project Acton_AT91SAM7S is
 
    --  Source Directories
-   Traget_Source_Dirs := ("../processor_support_packages/Atmel/AT91SAM7S/arm7tdmi",
+   Traget_Source_Dirs := ("../core_support_packages/ARM/",
+                          "../core_support_packages/ARM/arm7tdmi",
                           "../processor_support_packages/Atmel/AT91SAM7S/AT91SAM7S",
                           "../processor_support_packages/Atmel/AT91SAM7S/oak_support",
                           "../processor_support_packages/Atmel/AT91SAM7S/start",

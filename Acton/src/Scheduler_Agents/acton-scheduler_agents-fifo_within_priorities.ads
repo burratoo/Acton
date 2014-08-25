@@ -25,7 +25,7 @@ package Acton.Scheduler_Agents.FIFO_Within_Priorities with Preelaborate is
       Min_Priority : in  Any_Priority;
       Max_Priority : in  Any_Priority);
 
-   Stack_Size : constant := 1 * 512;
+   Stack_Size : constant := 1 * 1024;
    Agent_Name : constant String := "Fixed_Priority_Scheduler";
 
 private

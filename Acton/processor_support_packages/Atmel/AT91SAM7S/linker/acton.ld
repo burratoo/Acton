@@ -172,9 +172,4 @@ __bss_end__   = (ADDR(.bss) + SIZEOF(.bss));
 
 __stack_space_end = __bss_end__ ;
 __stack_space_start = (RAM_BASE + RAM_SIZE);
-
-
-REPORTME_RAM_TOP = __bss_end__ ;
-/* REPORTME_FREE_RAM_SIZE = __free_ram_end__ - __free_ram_start__; */
-
 }

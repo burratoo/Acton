@@ -48,7 +48,7 @@ package Oak.Agent.Interrupts with Preelaborate is
 
    procedure New_Interrupt_Agent
      (Agent    : out Interrupt_Id;
-      Priority : in Oak_Priority);
+      Priority : in Any_Priority);
    --  Creates a new Interrupt Agent with the given parameters. Allocates the
    --  storage for the Task Agent data structure and any dependents.
 

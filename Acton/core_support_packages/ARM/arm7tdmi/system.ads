@@ -137,11 +137,6 @@ package System is
    subtype Interrupt_Priority is Any_Priority range
      Priority'Last + 1 .. Any_Priority'Last;
 
-   subtype Oak_Priority           is Integer      range
-     Any_Priority'First .. Any_Priority'Last + 1;
-   subtype Oak_Interrupt_Priority is Oak_Priority range
-     Interrupt_Priority'First .. Oak_Priority'Last;
-
    Default_Priority : constant Priority :=
                         (Priority'First + Priority'Last) / 2;
 
