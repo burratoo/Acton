@@ -40,7 +40,7 @@ package Oak.Memory.Call_Stack with Pure is
 
    --  Value used to indicate tha no size has been set
 
-   Unspecified_Call_Stack_Size : constant Storage_Count := 0;
+   Unspecified_Call_Stack_Size : constant Storage_Count := Default_Stack_Size;
 
    subtype Call_Stack_Size is Storage_Elements.Storage_Count range
      CSP_Stack.Minimum_Call_Stack_Size ..

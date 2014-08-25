@@ -1,4 +1,4 @@
---  From llvm I think.
+--  From llvm I think. Or the reference inside it.
 
 with Interfaces; use Interfaces;
 with Ada.Unchecked_Conversion;
@@ -69,7 +69,7 @@ package body Oakland.Maths.Arithmetic_64 is
 
    function Unsigned_64_Divide
      (A, B      : Interfaces.Unsigned_64;
-      Remainder : access Interfaces.Unsigned_64 := null)
+      Remainder : access Interfaces.Unsigned_64)
       return Interfaces.Unsigned_64
    is
 

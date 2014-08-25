@@ -4,7 +4,7 @@ project Acton_STM32F4 is
 
    --  Source Directories
    Traget_Source_Dirs := ("../core_support_packages/arm",
-                          "../core_support_packages/arm/cortex-m4",
+                          "../core_support_packages/arm/cortex-m4f",
                           "../processor_support_packages/ST/STM32F4/STM32F4",
                           "../processor_support_packages/ST/STM32F4/oak_support",
                           "../processor_support_packages/ST/STM32F4/start",
@@ -26,8 +26,8 @@ project Acton_STM32F4 is
    Target_Debugger_Command := Target & "gdb";
 
    --  Builder Switches
-   Target_Ada_Switches := Acton_Common.Ada_Switches & ("-mcpu=cortex-m4", "-mthumb");
-   Target_Asm_Switches := Acton_Common.Asm_Switches & ("-mcpu=cortex-m4", "-mthumb");
+   Target_Ada_Switches := Acton_Common.Ada_Switches & ("-mcpu=cortex-m4", "-mthumb", "-mfloat-abi=hard", "-mfpu=fpv4-sp-d16");
+   Target_Asm_Switches := Acton_Common.Asm_Switches & ("-mcpu=cortex-m4", "-mthumb", "-mfloat-abi=hard", "-mfpu=fpv4-sp-d16");
 
 
    for Source_Dirs use Acton_Common.Source_Dirs & Traget_Source_Dirs;
