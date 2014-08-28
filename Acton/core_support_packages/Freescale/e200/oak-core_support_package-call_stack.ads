@@ -14,18 +14,9 @@ with System.Storage_Elements;
 
 package Oak.Core_Support_Package.Call_Stack with Pure is
 
-   --  Call_Stack_Size could be defined in the linker script (Enviroment
-   --  defined variables don't make sense in this system) Call_Stack_Size in
-   --  Storage_Elements
-   Call_Stack_Size            : constant := 4 * 1024;
-   Default_Call_Stack_Size    : constant := Call_Stack_Size;
-   Main_Task_Call_Stack_Size  : constant := 4 * 1024;
-   Oak_Call_Stack_Size        : constant := 2 * 1024;
-   Interrupt_Stack_Size       : constant := 512;
-
    --  Call_Stack_Alignment in bytes
    Call_Stack_Allignment      : constant := 8;
-
+   Oak_Call_Stack_Size        : constant := 2 * 1024;
    Minimum_Call_Stack_Size    : constant := 1 * 1024;
 
    Sleep_Stack_Size           : constant := 288;
@@ -33,8 +24,13 @@ package Oak.Core_Support_Package.Call_Stack with Pure is
    --  Warning! This is not a real variable. It is defined in the linker script
    --  and as such does not have any data storage allocated for it. Instead
    --  only a memory address is attached.
-   Stack_Pointer_Init : constant System.Storage_Elements.Storage_Element;
-   pragma Import (Assembler, Stack_Pointer_Init, "__SP_INIT");
+   Stack_Pointer_Init : constant System.Storage_Elements.Storage_Element
+   with Import, Convention => Assembler,
+     External_Name => "__SP_INIT";
+
+   Stack_Pointer_End  : constant System.Storage_Elements.Storage_Element
+     with Import, Convention => Assembler,
+     External_Name => "__SP_END";
 
    --
    --  SPRG0 -> Kernel stack pointer

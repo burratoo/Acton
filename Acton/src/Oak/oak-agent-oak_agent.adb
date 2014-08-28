@@ -12,8 +12,9 @@
 with Oak.Oak_Time;              use Oak.Oak_Time;
 with Oak.Memory.Call_Stack.Ops; use Oak.Memory.Call_Stack.Ops;
 
-with Oak.Core_Support_Package.Task_Support;
-use Oak.Core_Support_Package.Task_Support;
+with Interfaces; use Interfaces;
+
+with Ada.Unchecked_Conversion;
 
 package body Oak.Agent.Oak_Agent is
 
@@ -93,6 +94,26 @@ package body Oak.Agent.Oak_Agent is
          exit when Agent = No_Agent;
       end loop;
    end Charge_Execution_Time_To_List;
+
+   ----------------------
+   -- Copy_Oak_Message --
+   ----------------------
+
+   procedure Copy_Oak_Message (Destination, Source : in Address) is
+      type Message_Array is
+        array (1 .. Oak_Message'Object_Size / Word_Size)
+        of Unsigned_32;
+      type Memptr is access Message_Array;
+      function To_Memptr is
+        new
+          Ada.Unchecked_Conversion (Address, Memptr);
+      Dest_P : constant Memptr := To_Memptr (Destination);
+      Src_P  : constant Memptr := To_Memptr (Source);
+   begin
+      for J in Message_Array'Range loop
+         Dest_P (J) := Src_P (J);
+      end loop;
+   end Copy_Oak_Message;
 
    ------------------
    -- Delete_Agent --
@@ -360,6 +381,17 @@ package body Oak.Agent.Oak_Agent is
    begin
       Agent_Pool (For_Agent).Remaining_Budget := To_Amount;
    end Set_Remaining_Budget;
+
+   ---------------------------------
+   -- Set_Secondary_Stack_Pointer --
+   ---------------------------------
+
+   procedure Set_Secondary_Stack_Pointer
+     (For_Agent : in Oak_Agent_Id;
+      Pointer   : in Address) is
+   begin
+      Agent_Pool (For_Agent).Call_Stack.Secondary_Stack_Pointer := Pointer;
+   end Set_Secondary_Stack_Pointer;
 
    -------------------------
    -- Set_Scheduler_Agent --

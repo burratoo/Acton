@@ -3,7 +3,7 @@ with System; use System;
 with MPC5554; use MPC5554;
 with MPC5554.INTC; use MPC5554.INTC;
 
-with Oak.Agent; use Oak.Agent;
+with Oak.Brokers; use Oak.Brokers;
 
 package Oak.Processor_Support_Package.Interrupts with Preelaborate is
 
@@ -29,6 +29,9 @@ package Oak.Processor_Support_Package.Interrupts with Preelaborate is
 
    procedure Set_Hardware_Priority (P : Any_Priority);
    procedure Clear_Hardware_Priority;
+
+   function Has_Outstanding_Interrupts (Above_Priority : Any_Priority)
+                                           return Boolean;
 
 private
    type FIFO_Array is array

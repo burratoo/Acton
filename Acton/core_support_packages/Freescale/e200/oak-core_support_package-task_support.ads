@@ -20,6 +20,7 @@ with ISA;
 
 with Oak.Core;    use Oak.Core;
 with Oak.Message; use Oak.Message;
+with System;      use System;
 
 package Oak.Core_Support_Package.Task_Support with Preelaborate is
 
@@ -52,11 +53,11 @@ package Oak.Core_Support_Package.Task_Support with Preelaborate is
 
    procedure Context_Switch with Inline_Always;
    procedure Context_Switch_From_Oak
-     (Reason_For_Oak_To_Run : out    Run_Reason;
-      Message               : out Message_Access) with Inline_Always;
-   procedure Context_Switch_From_OakN
-     (Reason_For_Oak_To_Run : out    Run_Reason;
-      Message               : out Message_Access);
+     (Reason_For_Oak_To_Run : out Run_Reason;
+      Message_Address       : out Address) with Inline_Always;
+   procedure Context_Switch_To_Oak
+     (Reason_For_Run : in     Run_Reason;
+      Message        : in out Oak_Message) with Inline => False;
    procedure Context_Switch_Save_Callee_Registers with Inline_Always;
    --  Procedures that initiate the context switch.
 
@@ -64,6 +65,9 @@ package Oak.Core_Support_Package.Task_Support with Preelaborate is
    procedure Context_Switch_Will_Be_To_Agent with Inline_Always;
    procedure Context_Switch_Will_Switch_In_Place with Inline_Always;
    --  Procedures that set up the appropriate interrupt handlers.
+
+   procedure Enter_Barrier_Function with Inline_Always;
+   procedure Exit_Barrier_Function with Inline_Always;
 
    procedure Set_Oak_Wake_Up_Timer (Wake_Up_At : Oak.Oak_Time.Time);
 

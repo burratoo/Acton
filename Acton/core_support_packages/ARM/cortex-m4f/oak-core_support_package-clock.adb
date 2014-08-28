@@ -48,7 +48,7 @@ package body Oak.Core_Support_Package.Clock is
 
       Ex_Flag         : Integer;
       --  Use a word type to match the word load/store instructions below
-      Ex_Flag_Address : Address := Ex_Flag'Address;
+      Ex_Flag_Address : constant Address := Ex_Flag'Address;
 
    begin
       loop

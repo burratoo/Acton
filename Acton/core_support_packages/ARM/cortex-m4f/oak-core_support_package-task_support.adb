@@ -21,8 +21,6 @@ with Oak.Core_Support_Package.Time;
 with ISA.ARM.Cortex_M4;             use ISA.ARM.Cortex_M4;
 with ISA.ARM.Cortex_M4.Coprocessor; use ISA.ARM.Cortex_M4.Coprocessor;
 
-with Interfaces; use Interfaces;
-
 with Ada.Unchecked_Conversion;
 
 package body Oak.Core_Support_Package.Task_Support is
@@ -125,25 +123,6 @@ package body Oak.Core_Support_Package.Task_Support is
       SVC_Vector := In_Place_Context_Switch_To_Agent_Interrupt'Address;
       SVC_Return_Vector := In_Place_Context_Switch_To_Oak_Interrupt'Address;
    end Context_Switch_Will_Switch_In_Place;
-
-   ----------------------
-   -- Copy_Oak_Message --
-   ----------------------
-
-   procedure Copy_Oak_Message (Destination, Source : in Address) is
-      type Message_Array is
-        array (1 .. Oak_Message'Object_Size / Storage_Unit / 4)
-        of Unsigned_32;
-      type Memptr is access Message_Array;
-      function To_Memptr is
-        new Ada.Unchecked_Conversion (Address, Memptr);
-      Dest_P : constant Memptr := To_Memptr (Destination);
-      Src_P  : constant Memptr := To_Memptr (Source);
-   begin
-      for J in Message_Array'Range loop
-         Dest_P (J) := Src_P (J);
-      end loop;
-   end Copy_Oak_Message;
 
    ----------------------------
    -- Enter_Barrier_Function --

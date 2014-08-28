@@ -157,8 +157,9 @@ package body Oak.Core is
          Master_Task   : constant Task_Id     := Task_Id'First;
       begin
          Flush_Scheduler_Ops_Stack (Oak_Kernel => My_Kernel_Id);
-         pragma Warnings (Off, "*False*");
+         pragma Warnings (Off);
          if My_Kernel_Id = 1 then
+            pragma Warnings (On);
             Push_Scheduler_Op
               (Oak_Kernel => My_Kernel_Id,
                Scheduler  => Scheduler_Agent_For_Agent (Master_Task),
@@ -166,7 +167,6 @@ package body Oak.Core is
                               Agent_To_Add => Master_Task,
                               Place_At     => Front));
          end if;
-         pragma Warnings (On, "*False*");
 
          Push_Scheduler_Op
            (Oak_Kernel => My_Kernel_Id,

@@ -29,11 +29,10 @@ package Oak.Memory.Call_Stack with Pure is
 --     for Call_Stack'Component_Size use Storage_Unit;
 
    type Call_Stack_Handler is record
-      Top, Bottom, Pointer : Address;
+      Top, Bottom, Pointer    : Address;
+      Secondary_Stack_Pointer : Address;
+      Secondary_Stack_Limit   : Address;
    end record;
-
-   function No_Call_Stack return Call_Stack_Handler
-     with Inline_Always;
 
    Default_Stack_Size : constant :=
      Oak.Project_Support_Package.Default_Call_Stack_Size;
@@ -44,8 +43,6 @@ package Oak.Memory.Call_Stack with Pure is
 
    subtype Call_Stack_Size is Storage_Elements.Storage_Count range
      CSP_Stack.Minimum_Call_Stack_Size ..
-      Storage_Elements.Storage_Count'Last;
-private
-   function No_Call_Stack return Call_Stack_Handler is
-     ((Null_Address, Null_Address, Null_Address));
+       Storage_Elements.Storage_Count'Last;
+
 end Oak.Memory.Call_Stack;

@@ -1,6 +1,7 @@
 with MPC5554.Flash;
 with Oak.Core_Support_Package.Interrupts;
-with Oak.Agent.Protected_Objects; use Oak.Agent.Protected_Objects;
+
+with Oak.Brokers.Protected_Objects; use Oak.Brokers.Protected_Objects;
 
 package body Oak.Processor_Support_Package.Interrupts is
 
@@ -106,5 +107,11 @@ package body Oak.Processor_Support_Package.Interrupts is
       return Protected_Object_From_Access
         (Parameterless_Access (INTC_Vector_Table (Interrupt)));
    end Handler_Protected_Object;
+
+   function Has_Outstanding_Interrupts (Above_Priority : Any_Priority)
+                                           return Boolean is
+   begin
+      return Current_Interrupt_Priority > Above_Priority;
+   end Has_Outstanding_Interrupts;
 
 end Oak.Processor_Support_Package.Interrupts;

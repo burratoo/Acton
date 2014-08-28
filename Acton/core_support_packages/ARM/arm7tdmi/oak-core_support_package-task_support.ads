@@ -51,10 +51,6 @@ package Oak.Core_Support_Package.Task_Support with Preelaborate is
 
    procedure Sleep_Agent_Run_Loop;
 
-   procedure Copy_Oak_Message (Destination, Source : in Address)
-     with Inline_Always;
-   --  Optimised procedure to copy oak messages arround
-
 private
    SWI_Vector   : Address
      with Import, Convention => Asm, External_Name => "swi_vector";

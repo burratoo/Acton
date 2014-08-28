@@ -7,17 +7,21 @@ project Acton_STM32F4 is
                           "../core_support_packages/arm/cortex-m4f",
                           "../processor_support_packages/ST/STM32F4/STM32F4",
                           "../processor_support_packages/ST/STM32F4/oak_support",
-                          "../processor_support_packages/ST/STM32F4/start",
-                          "../src/Maths-32bit");
+                          "../processor_support_packages/ST/STM32F4/start");
 
    --  Target Libraries
-   Target_Library_Interface := ("ST",
+   Target_Library_Interface := ("ISA",
+                                "ISA.ARM",
+                                "ISA.ARM.Cortex_M4",
+                                "ISA.ARM.Cortex_M4.Exceptions",
+                                "ISA.ARM.Cortex_M4.NVIC",
+                                "ST",
                                 "ST.STM32F4",
                                 "ST.STM32F4.GPIO",
                                 "ST.STM32F4.RCC",
-                                "Oakland.Maths.Arithmetic_64"
-
-                               );
+                                "ST.STM32F4.NVIC",
+                                "Oak.Core_Support_Package.Clock",
+                                "Oak.Core_Support_Package.Clock.Interrupt");
 
    --  IDE
    Target          := "arm-burratoo-acton-";
@@ -49,8 +53,8 @@ project Acton_STM32F4 is
    package Builder renames Acton_Common.Builder;
 
    package Compiler extends Acton_Common.Compiler Is
-      for Default_Switches ("ada") use Acton_Common.Ada_Switches & Target_Ada_Switches;
-      for Default_Switches ("asm") use Acton_Common.Asm_Switches & Target_Asm_Switches;
+      for Default_Switches ("ada") use Target_Ada_Switches;
+      for Default_Switches ("asm") use Target_Asm_Switches;
       for Switches ("oak-core_support_package-task_support.adb") use Compiler'Default_Switches ("ada") & ("-fno-lto");
       for Switches ("oak-memory-ops.adb") use Compiler'Default_Switches ("ada") & ("-fno-lto");
       for Switches ("oak-core_support_package-clock-interrupt.adb") use Compiler'Default_Switches ("ada") & ("-fno-lto", "-O2", "-ffixed-r4", "-ffixed-r5", "-ffixed-r6", "-ffixed-r7", "-ffixed-r8", "-ffixed-r9", "-ffixed-r10", "-ffixed-r11", "-ffixed-lr");

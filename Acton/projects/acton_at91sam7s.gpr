@@ -7,8 +7,7 @@ project Acton_AT91SAM7S is
                           "../core_support_packages/ARM/arm7tdmi",
                           "../processor_support_packages/Atmel/AT91SAM7S/AT91SAM7S",
                           "../processor_support_packages/Atmel/AT91SAM7S/oak_support",
-                          "../processor_support_packages/Atmel/AT91SAM7S/start",
-                          "../src/Maths-32bit");
+                          "../processor_support_packages/Atmel/AT91SAM7S/start");
 
    --  Target Libraries
    Target_Library_Interface := ("Atmel",
@@ -21,10 +20,9 @@ project Acton_AT91SAM7S is
                                 "Atmel.AT91SAM7S.PMC",
 --                                  "Atmel.AT91SAM7S.SPI",
                                 "Atmel.AT91SAM7S.SSC",
-                                "Atmel.AT91SAM7S.TC",
+                                "Atmel.AT91SAM7S.TC"
 --                                  "Atmel.AT91SAM7S.TWI",
 --                                  "Atmel.AT91SAM7S.USART",
-                                "Oakland.Maths.Arithmetic_64"
 
                                );
 

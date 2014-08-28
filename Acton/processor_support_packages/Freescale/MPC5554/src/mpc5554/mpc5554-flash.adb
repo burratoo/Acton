@@ -93,21 +93,24 @@ package body MPC5554.Flash is
       case Space is
          when Shadow_Primary | Low_Primary | Mid_Primary =>
             if Low_Mid_Address_Space_Block_Locking_Register.Locks =
-              Not_Editable then
+              Not_Editable
+            then
                Low_Mid_Address_Space_Block_Locking_Register :=
                  To_LMLR (LMLR_Password);
             end if;
 
          when Shadow_Secondary | Low_Secondary | Mid_Secondary =>
             if Secondary_Low_Mid_Address_Space_Block_Locking_Register.Locks =
-              Not_Editable then
+              Not_Editable
+            then
                Secondary_Low_Mid_Address_Space_Block_Locking_Register :=
                  To_LMLR (SLMLR_Password);
             end if;
 
          when High =>
             if High_Address_Space_Block_Locking_Register.Locks =
-              Not_Editable then
+              Not_Editable
+            then
                High_Address_Space_Block_Locking_Register :=
                  To_HLR (HLR_Password);
             end if;

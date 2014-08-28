@@ -22,9 +22,9 @@ package Oak.Brokers with Pure is
    Protected_Id_Low_Bound  : constant := 1;
    Protected_Id_High_Bound : constant := Max_Protected_Agents;
 
-   type Protected_Id_With_No is mod Max_Protected_Agents + 1;
+   type Protected_Id_With_No is mod Protected_Id_High_Bound + 1;
    subtype Protected_Id is Protected_Id_With_No range
-     1 .. Protected_Id_With_No'Last;
+     Protected_Id_Low_Bound .. Protected_Id_High_Bound;
    No_Protected_Object : constant Protected_Id_With_No :=
                            Protected_Id_With_No'First;
 

@@ -44,6 +44,10 @@ package body Oak.Memory.Call_Stack.Ops is
       Stack.Pointer     := Stack_Pool_Bottom;
       Stack_Pool_Bottom := Stack_Pool_Bottom - Size;
       Stack.Bottom      := Stack_Pool_Bottom;
+
+      Stack.Secondary_Stack_Pointer := Stack_Pool_Bottom;
+      Stack.Secondary_Stack_Limit   := Stack_Pool_Bottom +
+        Oak.Project_Support_Package.Secondary_Stack_Percentage * Size;
    end Allocate_Call_Stack;
 
    ---------------------------
@@ -89,11 +93,6 @@ package body Oak.Memory.Call_Stack.Ops is
          Start_Instruction => Start_Instruction,
          Task_Value_Record => Task_Value_Record);
    end Initialise_Call_Stack;
-
-   function Get_Secondary_Stack_Location return Address is
-   begin
-      return Stack (Current_Agent (This_Oak_Kernel)).Bottom;
-   end Get_Secondary_Stack_Location;
 
    procedure Stack_Check (Stack_Address : in Address) is
       This_Agent : constant Oak_Agent_Id := Current_Agent (This_Oak_Kernel);

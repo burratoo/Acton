@@ -38,7 +38,7 @@ package System.Secondary_Stack is
    package SSE renames System.Storage_Elements;
 
    Default_Secondary_Stack_Size : constant := 512;
-   --  Default size of a secondary stack
+   --  Should be ignored
 
    procedure SS_Init
      (Stk  : System.Address;
@@ -73,6 +73,6 @@ private
    --  Unused entity that is just present to ease the sharing of the pool
    --  mechanism for specific allocation/deallocation in the compiler
 
-   type Mark_Id is new SSE.Integer_Address;
+   type Mark_Id is new System.Address;
 
 end System.Secondary_Stack;

@@ -10,8 +10,7 @@
 --                 Copyright (C) 2010-2014, Patrick Bernardi                --
 ------------------------------------------------------------------------------
 
-with System;                         use System;
-with System.Machine_Code;            use System.Machine_Code;
+with System.Machine_Code; use System.Machine_Code;
 
 with Oak.Core_Support_Package.Interrupts;
 use  Oak.Core_Support_Package.Interrupts;
@@ -41,27 +40,31 @@ package body Oak.Core_Support_Package.Task_Support is
    ------------------------------
 
    procedure Context_Switch_From_Oak
-     (Reason_For_Oak_To_Run : out    Run_Reason;
-      Message               : out Message_Access)
+     (Reason_For_Oak_To_Run : out Run_Reason;
+      Message_Address       : out Address)
    is
    begin
       Asm ("sc",
            Outputs  => (Run_Reason'Asm_Output ("=r", Reason_For_Oak_To_Run),
-                        Message_Access'Asm_Output ("=r", Message)),
+                        Address'Asm_Output ("=r", Message_Address)),
            Volatile => True);
    end Context_Switch_From_Oak;
 
-   procedure Context_Switch_From_OakN
-     (Reason_For_Oak_To_Run : out    Run_Reason;
-      Message               : out Message_Access) is
+   ---------------------------
+   -- Context_Switch_To_Oak --
+   ---------------------------
+
+   procedure Context_Switch_To_Oak
+     (Reason_For_Run : in     Run_Reason;
+      Message        : in out Oak_Message) is
    begin
       Asm ("sc",
-           Outputs  => (Run_Reason'Asm_Output ("=r", Reason_For_Oak_To_Run),
-                        Message_Access'Asm_Output ("=r", Message)),
+           Inputs  => (Run_Reason'Asm_Input ("r", Reason_For_Run),
+                       Address'Asm_Input ("r", Message'Address)),
            Clobber  => "r14, r15, r16, r17, r18, r19, r20, r21, r22, r23, r24,"
            & " r25, r26, r27, r28, r29, r30, r31, cc, ctr, lr",
            Volatile => True);
-   end Context_Switch_From_OakN;
+   end Context_Switch_To_Oak;
 
    ------------------------------------------
    -- Context_Switch_Save_Callee_Registers --
@@ -123,6 +126,25 @@ package body Oak.Core_Support_Package.Task_Support is
               ("r", In_Place_Context_Switch_To_Oak_Interrupt'Address)),
          Volatile => True);
    end Context_Switch_Will_Switch_In_Place;
+
+   ----------------------------
+   -- Enter_Barrier_Function --
+   ----------------------------
+
+   procedure Enter_Barrier_Function is
+   begin
+      Context_Switch_Will_Switch_In_Place;
+      Context_Switch_Save_Callee_Registers;
+   end Enter_Barrier_Function;
+
+   ---------------------------
+   -- Exit_Barrier_Function --
+   ---------------------------
+
+   procedure Exit_Barrier_Function is
+   begin
+      Context_Switch;
+   end Exit_Barrier_Function;
 
    ---------------------------
    -- Set_Oak_Wake_Up_Timer --

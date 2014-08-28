@@ -103,6 +103,9 @@ package Oak.Agent.Oak_Agent with Preelaborate is
    --  the priority provided by the procedure and the When_To_Charge attribute
    --  of the agent.
 
+   procedure Copy_Oak_Message (Destination, Source : in Address);
+   --  Optimised procedure to copy oak messages arround
+
    function Current_Execution_Time
      (For_Agent : in Oak_Agent_Id)
       return Oak_Time.Time_Span
@@ -180,6 +183,12 @@ package Oak.Agent.Oak_Agent with Preelaborate is
      with Pre => Has_Agent (For_Agent);
    --  Add the time span given to the agent's execution budget.
 
+   function Secondary_Stack_Limit
+     (Agent : in Oak_Agent_Id) return Address;
+
+   function Secondary_Stack_Pointer
+     (Agent : in Oak_Agent_Id) return Address;
+
    function Scheduler_Agent_For_Agent
      (Agent : in Oak_Agent_Id) return Scheduler_Id_With_No
      with Pre => Has_Agent (Agent), Inline;
@@ -206,15 +215,15 @@ package Oak.Agent.Oak_Agent with Preelaborate is
       To        : in Oak_Time.Time_Span);
    --  Sets the agent's current execution time.
 
-   procedure Set_Max_Execution_Time
-     (For_Agent : in Oak_Agent_Id;
-      To        : in Oak_Time.Time_Span);
-   --  Sets the agent's maximum execution time.
-
    procedure Set_Oak_Message
      (For_Agent : in Oak_Agent_Id;
       Message   : in Oak_Message);
    --  Copies the given message into the agent's message store.
+
+   procedure Set_Max_Execution_Time
+     (For_Agent : in Oak_Agent_Id;
+      To        : in Oak_Time.Time_Span);
+   --  Sets the agent's maximum execution time.
 
    procedure Set_Next_Agent
      (For_Agent  : in Oak_Agent_Id;
@@ -232,11 +241,16 @@ package Oak.Agent.Oak_Agent with Preelaborate is
      with Pre => Has_Agent (For_Agent);
    --  Set the amount of execution budget remaining for the agent.
 
+   procedure Set_Secondary_Stack_Pointer
+     (For_Agent : in Oak_Agent_Id;
+      Pointer   : in Address);
+   --  Set's the agent's secondary stack pointer.
+
    procedure Set_Scheduler_Agent
      (For_Agent : in Oak_Agent_Id;
       Scheduler : in Scheduler_Id_With_No)
      with Pre => Has_Agent (For_Agent);
-   --  Sets the Scheduler Agent responsible for scheduling the agent.
+   --  Set's the Scheduler Agent responsible for scheduling the agent.
 
    procedure Set_Stack_Pointer
      (For_Agent     : in Oak_Agent_Id;
@@ -420,6 +434,14 @@ private
    function Remaining_Budget
      (Agent : in Oak_Agent_Id) return Oak_Time.Time_Span is
      (Agent_Pool (Agent).Remaining_Budget);
+
+   function Secondary_Stack_Limit
+     (Agent : in Oak_Agent_Id) return Address is
+     (Agent_Pool (Agent).Call_Stack.Secondary_Stack_Limit);
+
+   function Secondary_Stack_Pointer
+     (Agent : in Oak_Agent_Id) return Address is
+     (Agent_Pool (Agent).Call_Stack.Secondary_Stack_Pointer);
 
    function Scheduler_Agent_For_Agent
      (Agent : in Oak_Agent_Id) return Scheduler_Id_With_No is

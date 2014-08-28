@@ -33,61 +33,13 @@
 
 with Ada.Unchecked_Conversion;
 
+with Oak.Agent;           use Oak.Agent;
+with Oak.Agent.Oak_Agent; use Oak.Agent.Oak_Agent;
+with Oak.Agent.Kernel;    use Oak.Agent.Kernel;
+
+with System.Storage_Elements; use System.Storage_Elements;
+
 package body System.Secondary_Stack is
-
-   use type SSE.Storage_Offset;
-
-   type Memory is array (Mark_Id range <>) of SSE.Storage_Element;
-
-   type Stack_Id is record
-      Top  : Mark_Id;
-      Last : Mark_Id;
-      Mem  : Memory (1 .. Mark_Id'Last);
-   end record;
-   pragma Suppress_Initialization (Stack_Id);
-
-   type Stack_Ptr is access Stack_Id;
-
-   function From_Addr is new Ada.Unchecked_Conversion (Address, Stack_Ptr);
-
-   function Get_Sec_Stack return Stack_Ptr;
-   pragma Import (C, Get_Sec_Stack, "__gnat_get_secondary_stack");
-   --  Return the address of the secondary stack.
-   --  In a multi-threaded environment, Sec_Stack should be a thread-local
-   --  variable. In Oak this the base of the task's stack.
-   --
-   --  Possible separate implementation of Get_Sec_Stack in a single-threaded
-   --  environment:
-   --
-   --  with System;
-
-   --  package Secondary_Stack is
-   --     function Get_Sec_Stack return System.Address;
-   --     pragma Export (C, Get_Sec_Stack, "__gnat_get_secondary_stack");
-   --  end Secondary_Stack;
-
-   --  pragma Warnings (Off);
-   --  with System.Secondary_Stack; use System.Secondary_Stack;
-   --  pragma Warnings (On);
-
-   --  package body Secondary_Stack is
-
-   --     Chunk : aliased String (1 .. Default_Secondary_Stack_Size);
-   --     for Chunk'Alignment use Standard'Maximum_Alignment;
-
-   --     Initialized : Boolean := False;
-
-   --     function Get_Sec_Stack return System.Address is
-   --     begin
-   --        if not Initialized then
-   --           Initialized := True;
-   --           SS_Init (Chunk'Address);
-   --        end if;
-
-   --        return Chunk'Address;
-   --     end Get_Sec_Stack;
-
-   --  end Secondary_Stack;
 
    -----------------
    -- SS_Allocate --
@@ -97,19 +49,21 @@ package body System.Secondary_Stack is
      (Address      : out System.Address;
       Storage_Size : SSE.Storage_Count)
    is
-      Max_Align    : constant Mark_Id := Mark_Id (Standard'Maximum_Alignment);
-      Max_Size     : constant Mark_Id :=
-                       ((Mark_Id (Storage_Size) + Max_Align - 1) / Max_Align)
-                         * Max_Align;
-      Sec_Stack    : constant Stack_Ptr := Get_Sec_Stack;
+      Max_Align : constant Storage_Count := Standard'Maximum_Alignment;
+      Max_Size  : constant Storage_Count :=
+                       ((Storage_Size + Max_Align - 1) / Max_Align)
+                       * Max_Align;
+
+      Self      : constant Oak_Agent_Id := Current_Agent (This_Oak_Kernel);
 
    begin
-      if Sec_Stack.Top + Max_Size > Sec_Stack.Last then
+      Address := Secondary_Stack_Pointer (Self);
+
+      if Address + Max_Size > Secondary_Stack_Limit (Self) then
          raise Storage_Error;
       end if;
 
-      Address := Sec_Stack.Mem (Sec_Stack.Top)'Address;
-      Sec_Stack.Top := Sec_Stack.Top + Max_Size;
+      Set_Secondary_Stack_Pointer (Self, Address + Max_Size);
    end SS_Allocate;
 
    -------------
@@ -119,13 +73,7 @@ package body System.Secondary_Stack is
    procedure SS_Init
      (Stk  : System.Address;
       Size : Natural := Default_Secondary_Stack_Size)
-   is
-      Stack : constant Stack_Ptr := From_Addr (Stk);
-   begin
-      pragma Assert (Size >= 2 * Mark_Id'Max_Size_In_Storage_Elements);
-      Stack.Top := Stack.Mem'First;
-      Stack.Last := Mark_Id (Size) - 2 * Mark_Id'Max_Size_In_Storage_Elements;
-   end SS_Init;
+   is null;
 
    -------------
    -- SS_Mark --
@@ -133,7 +81,8 @@ package body System.Secondary_Stack is
 
    function SS_Mark return Mark_Id is
    begin
-      return Get_Sec_Stack.Top;
+      return Mark_Id
+        (Secondary_Stack_Pointer (Current_Agent (This_Oak_Kernel)));
    end SS_Mark;
 
    ----------------
@@ -142,7 +91,8 @@ package body System.Secondary_Stack is
 
    procedure SS_Release (M : Mark_Id) is
    begin
-      Get_Sec_Stack.Top := M;
+      Set_Secondary_Stack_Pointer (Current_Agent (This_Oak_Kernel),
+                                   Address (M));
    end SS_Release;
 
 end System.Secondary_Stack;
