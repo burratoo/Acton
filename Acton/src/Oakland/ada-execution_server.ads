@@ -35,5 +35,4 @@ private
    type Execution_Server is abstract tagged limited record
       Scheduler : Oak.Agent.Scheduler_Id;
    end record;
-
 end Ada.Execution_Server;

@@ -9,6 +9,9 @@ package ISA.ARM.Cortex_M4.Exceptions with Pure is
    function Current_Exception return Exception_Id with Inline_Always;
    function Current_IRQ return Exception_Id with Inline_Always;
 
+   function To_Exception (IRQ : Exception_Id) return Exception_Id;
+   function To_IRQ (E : Exception_Id) return Exception_Id;
+
    Thread_Mode   : constant Exception_Id := 0;
    Stack_Address : constant Exception_Id := 0;
    Reset         : constant Exception_Id := 1;
@@ -112,4 +115,9 @@ package ISA.ARM.Cortex_M4.Exceptions with Pure is
 private
    function Current_IRQ return Exception_Id is (Current_Exception - IRQ0);
 
+   function To_Exception (IRQ : Exception_Id) return Exception_Id is
+     (IRQ + IRQ0);
+
+   function To_IRQ (E : Exception_Id) return Exception_Id is
+      (E - IRQ0);
 end ISA.ARM.Cortex_M4.Exceptions;

@@ -13,13 +13,17 @@ project Acton_STM32F4 is
    Target_Library_Interface := ("ISA",
                                 "ISA.ARM",
                                 "ISA.ARM.Cortex_M4",
+                                "ISA.ARM.Cortex_M4.DWT",
                                 "ISA.ARM.Cortex_M4.Exceptions",
                                 "ISA.ARM.Cortex_M4.NVIC",
+                                "ISA.ARM.Cortex_M4.SysTick",
                                 "ST",
                                 "ST.STM32F4",
+                                "ST.STM32F4.EXTI",
                                 "ST.STM32F4.GPIO",
-                                "ST.STM32F4.RCC",
                                 "ST.STM32F4.NVIC",
+                                "ST.STM32F4.RCC",
+                                "ST.STM32F4.SYSCFG",
                                 "Oak.Core_Support_Package.Clock",
                                 "Oak.Core_Support_Package.Clock.Interrupt");
 

@@ -58,14 +58,15 @@ package ISA.ARM.Cortex_M4.NVIC with Preelaborate is
 
    type Software_Trigger_Interrupt_Type is record
       Interrupt : NVIC_Interrupt_Id;
-   end record;
+   end record with Size => Word_Size;
 
    ------------------------------
    -- Hardware Representations --
    ------------------------------
 
    for Software_Trigger_Interrupt_Type use record
-      Interrupt at 0 range 0 .. 8;
+      Interrupt at 0 range 0 .. 31;
+      --  This should be 0 .. 8, but need to force a 32 bit access to the field
    end record;
 
    --------------------

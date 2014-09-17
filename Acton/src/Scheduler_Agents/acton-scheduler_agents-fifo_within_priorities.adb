@@ -180,11 +180,6 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
             when Runnable | Entering_PO | Waiting_For_Event | Inactive |
                  Waiting_For_Protected_Object | Allowance_Exhausted =>
 
-               --  For now we can only delete an agent at the head of its
-               --  queue (the only possible way for an agent to be deleted
-               --  at the moment). If the agent pulled off the runnable queue
-               --  is not the agent we wanted we have a little problem
-
                Remove_Item (Runnable_Queue, Agent);
             when Sleeping =>
                --  Not supported at this point. Support for it would need

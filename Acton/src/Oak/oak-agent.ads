@@ -97,16 +97,16 @@ package Oak.Agent with Pure is
    --  Subtype defintions for Agent Ids that derive from Oak Agent.
 
    subtype Kernel_Id                is Oak_Agent_Id
-     range Kernel_Id_Low_Bound        .. Kernel_Id_High_Bound;
+     range Kernel_Id_Low_Bound    .. Kernel_Id_High_Bound;
 
    subtype Interrupt_Id             is Oak_Agent_Id
-     range Interrupt_Id_Low_Bound     .. Interrupt_Id_High_Bound;
+     range Interrupt_Id_Low_Bound .. Interrupt_Id_High_Bound;
 
    subtype Scheduler_Id             is Oak_Agent_Id
-   range Scheduler_Id_Low_Bound     .. Scheduler_Id_High_Bound;
+   range Scheduler_Id_Low_Bound   .. Scheduler_Id_High_Bound;
 
    subtype Task_Id                  is Oak_Agent_Id
-     range Task_Id_Low_Bound          .. Task_Id_High_Bound;
+     range Task_Id_Low_Bound      .. Task_Id_High_Bound;
 
    --  Subtype defintions for Agent Ids that derive from Oak Agent that also
    --  include the No_Agent id. The advantage of this approach is twofold:

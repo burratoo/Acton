@@ -164,11 +164,8 @@ package body Oak.Core_Support_Package.Task_Support is
 
    procedure Sleep_Agent_Run_Loop is
    begin
-
-      --  On the AT91SAM7S we do not have an appropraite sleep state to go into
-      --  (takes 20us (or ms) to wake up after system clock is enabled).
       loop
-         null;
+         Asm ("wfi", Volatile => True);
       end loop;
    end Sleep_Agent_Run_Loop;
 

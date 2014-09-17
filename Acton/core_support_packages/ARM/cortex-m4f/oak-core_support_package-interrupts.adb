@@ -119,7 +119,7 @@ package body Oak.Core_Support_Package.Interrupts is
          Flault_Handlers_Ignore_BusFault => False,
          Trap_Divide_By_0                => True,
          Trap_Unaligned_Access           => False,
-         Unpriviledged_Soft_Intr_Trigger => False,
+         Unpriviledged_Soft_Intr_Trigger => True,
          Thread_Mode_Access              => Any_Level);
 
       System_Handler_Control_And_State_Register :=
@@ -373,8 +373,12 @@ package body Oak.Core_Support_Package.Interrupts is
       --  Load the current agents stack pointer
 
       Task_Stack_Pointer := Stack_Pointer (Current_Agent (This_Oak_Kernel));
-      Hardware_Priority  := To_Cortex_Priority
-        (Current_Priority (This_Oak_Kernel));
+      if Current_Agent (This_Oak_Kernel) in Scheduler_Id then
+         Hardware_Priority := Oak_Mask_Priority;
+      else
+         Hardware_Priority  := To_Cortex_Priority
+           (Current_Priority (This_Oak_Kernel));
+      end if;
 
       --  Set base priority, restore agent's exc_return value and load its
       --  stack address into the banked psp register.

@@ -59,8 +59,6 @@ package body Oak.Core_Support_Package.Clock is
               Clobber  => "r0",
               Volatile => True);
 
-         Data_Memory_Barrier;
-
          Clock := Time_Base;
          Decrementer := SysTick.Current_Value_Register;
 

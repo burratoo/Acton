@@ -38,7 +38,7 @@ package System.Secondary_Stack is
    package SSE renames System.Storage_Elements;
 
    Default_Secondary_Stack_Size : constant := 512;
-   --  Should be ignored
+   --  Should be ignored, keeps GCC happy.
 
    procedure SS_Init
      (Stk  : System.Address;

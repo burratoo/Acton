@@ -1,6 +1,7 @@
 with Oak.Brokers.Protected_Objects; use Oak.Brokers.Protected_Objects;
 
-with ISA.ARM.Cortex_M4.NVIC;       use ISA.ARM.Cortex_M4.NVIC;
+with ISA.ARM;                use ISA.ARM;
+with ISA.ARM.Cortex_M4.NVIC; use ISA.ARM.Cortex_M4.NVIC;
 
 package body Oak.Processor_Support_Package.Interrupts is
 
@@ -8,6 +9,13 @@ package body Oak.Processor_Support_Package.Interrupts is
    is
    begin
       Interrupt_Vector_Table (Interrupt_Id).all;
+
+      --  Need to manually clear the interrupt because although it was
+      --  cleared once when the system interrupt handler was taken to enter the
+      --  kernel to dispatch this handler, since the original source was not
+      --  cleared this causes the interrupt to be pending again.
+
+      Interrupt_Clear_Pending_Register (Interrupt_Id) := Clear;
    end External_Interrupt_Handler;
 
    function Get_External_Interrupt_Id return External_Interrupt_Id is
@@ -28,6 +36,7 @@ package body Oak.Processor_Support_Package.Interrupts is
    begin
       Interrupt_Priority_Register (Interrupt) := To_Cortex_Priority (Priority);
       Interrupt_Vector_Table (Interrupt) := Handler;
+      Interrupt_Enable_Register (Interrupt) := Enable;
    end Attach_Handler;
 
    function Current_Interrupt_Priority return Any_Priority is

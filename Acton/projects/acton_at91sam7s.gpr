@@ -33,8 +33,8 @@ project Acton_AT91SAM7S is
    Target_Debugger_Command := Target & "gdb";
 
    --  Builder Switches
-   Target_Ada_Switches := Acton_Common.Ada_Switches; -- & ("-Wa,-mregnames");
-   Target_Asm_Switches := Acton_Common.Asm_Switches; -- & "-mregnames";
+   Target_Ada_Switches := Acton_Common.Ada_Switches & ("-mcpu=arm7tdmi");
+   Target_Asm_Switches := Acton_Common.Asm_Switches & "-mcpu=arm7tdmi";
 
 
    for Source_Dirs use Acton_Common.Source_Dirs & Traget_Source_Dirs;

@@ -18,7 +18,7 @@ package Oak.Project_Support_Package with Pure is
    --  be less than the number of interrupt prioities available on the hardware
    --  if not all the priorities are used. This allows for some space saving.
 
-   Max_Task_Agents       : constant := 2;
+   Max_Task_Agents       : constant := 101;
    --  Limit on the number of tasks on the system.
 
    Max_Protected_Agents  : constant := 2;
@@ -58,9 +58,9 @@ package Oak.Project_Support_Package with Pure is
    --  Call_Stack_Size could be defined in the linker script (Enviroment
    --  defined variables don't make sense in this system) Call_Stack_Size in
    --  Storage_Elements
-   Call_Stack_Size            : constant := 4 * 1024;
+   Call_Stack_Size            : constant := 1 * 1024;
    Default_Call_Stack_Size    : constant := Call_Stack_Size;
-   Main_Task_Call_Stack_Size  : constant := 1 * 1024;
+   Main_Task_Call_Stack_Size  : constant := 4 * 1024;
    Interrupt_Stack_Size       : constant := 512;
 
    Secondary_Stack_Percentage : constant := 10;
