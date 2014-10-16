@@ -44,9 +44,13 @@ package body Oak.Core_Support_Package.Task_Support is
       Message_Address       : out Address)
    is
    begin
-      Asm ("sc",
+      Asm ("sc" & ASCII.LF & ASCII.HT &
+           "mr %0, r3" & ASCII.LF & ASCII.HT &
+           "mr %1, r4",
            Outputs  => (Run_Reason'Asm_Output ("=r", Reason_For_Oak_To_Run),
                         Address'Asm_Output ("=r", Message_Address)),
+           Clobber  => "r14, r15, r16, r17, r18, r19, r20, r21, r22, r23, r24,"
+           & " r25, r26, r27, r28, r29, r30, r31, cc, ctr, lr",
            Volatile => True);
    end Context_Switch_From_Oak;
 
@@ -58,6 +62,8 @@ package body Oak.Core_Support_Package.Task_Support is
      (Reason_For_Run : in     Run_Reason;
       Message        : in out Oak_Message) is
    begin
+      --  Since this will be inlined, explicitly move parameters into r3 and r4
+
       Asm ("sc",
            Inputs  => (Run_Reason'Asm_Input ("r", Reason_For_Run),
                        Address'Asm_Input ("r", Message'Address)),

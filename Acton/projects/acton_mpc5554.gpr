@@ -53,7 +53,6 @@ project Acton_MPC5554 is
       for Default_Switches ("ada") use Acton_Common.Ada_Switches & Target_Ada_Switches;
       for Default_Switches ("asm") use Acton_Common.Asm_Switches & Target_Asm_Switches;
       for Switches ("oak-core_support_package-interrupts.adb") use Compiler'Default_Switches ("ada") & "-falign-functions=16";
---        for Switches ("oak.core") use Compiler'Default_Switches ("ada") & "-fno-inline-functions-called-once";
    end Compiler;
 
    --  package Linker is

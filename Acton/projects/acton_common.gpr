@@ -28,6 +28,7 @@ abstract project Acton_Common is
                          "Ada.Execution_Server.Priority_Server", "Acton.Scheduler_Agents.Priority_Server", "Ada.Execution_Server.Operations",
                          "Oak.Project_Support_Package",
                          "Oak.Memory.Call_Stack.Ops",
+                         "System.Machine_Code",
                          --  Only needed for their ali files
                          "Oak.Core",
                          "Interfaces.C",
@@ -37,14 +38,14 @@ abstract project Acton_Common is
                          "Oak.Core_Support_Package.Task_Support",
                          "Oak.Memory.Ops",
                          "Oak.Protected_Objects",
-                         "Oak.Scheduler",
+                         "Oak.Scheduler"
                          --  Questionable packages
-                         "Acton.Scheduler_Agents.FIFO_Within_Priorities_Basic_Sleep",
-                         "Acton.Scheduler_Agents.FIFO_Within_Priorities_Basic",
-                         "Acton.Scheduler_Agents.FIFO_Within_Priorities_GNATBB"
+--                           "Acton.Scheduler_Agents.FIFO_Within_Priorities_Basic_Sleep",
+--                           "Acton.Scheduler_Agents.FIFO_Within_Priorities_Basic",
+--                           "Acton.Scheduler_Agents.FIFO_Within_Priorities_GNATBB"
 );
 
-   Ada_Switches := ("-gnatwa.Xl", "-O2", "-g", "-ffunction-sections", "-fdata-sections", "-gnatn", "-gnatg", "-flto", "-gnatp");
+   Ada_Switches := ("-gnatwa.Xl", "-O2", "-g", "-ffunction-sections", "-fdata-sections", "-gnatn", "-gnatg", "-gnatp"); -- , "-flto");
    Asm_Switches := ();
 
    Documentation_Dir := "../doc/";

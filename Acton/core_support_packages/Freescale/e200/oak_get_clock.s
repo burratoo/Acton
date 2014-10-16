@@ -13,14 +13,9 @@
 # aligned.
 
 oak_get_clock:
-        stwu   r1,-8(r1)
-        stw    r14,0(r1)
-oak_get_clock_loop:
-	mftbu  r3                       # load from TBU into r3
-	mftbl  r4                       # load from TBL into r4
-	mftbu  r14                      # load from TBU into r14
-	cmp    CR0, 0, r14, r3          # see if 'old TBU' = 'new TBU'
-	bc     4, 2, oak_get_clock_loop # loop if carry has occured
-        lwz    r14,0(r1)
-        stwu   r1,8(r1)
+	mftbu  r3                   # load from TBU into r3
+	mftbl  r4                   # load from TBL into r4
+	mftbu  r5                   # load from TBU into r5
+	cmp    CR0, 0, r5, r3       # see if 'old TBU' = 'new TBU'
+	bc     4, 2, oak_get_clock  # loop if carry has occured
 	blr

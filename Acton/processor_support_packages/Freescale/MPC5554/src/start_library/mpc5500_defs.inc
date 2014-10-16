@@ -60,6 +60,7 @@
 
     .equ CACHE_STACK_BASE_ADDR, 0x40040000				# 4k cache used as stack if available
     .equ INT_SRAM_128BYTSEGS,   (INT_SRAM_SIZE >> 7)	# Number of 128 byte segments
+    .equ INT_SRAM_16BYTSEGS,   (INT_SRAM_SIZE >> 4)	# Number of 16 byte segments
     .equ SHDW_BLK_ADDR,         0x00FFF000				# Shadow Block starts at 0xFF_FC00 for 1K size
     .equ BAM_BASE_ADDR,         0x11300000
     .equ EXTMEM1_BASE_ADDR,     0x20000000

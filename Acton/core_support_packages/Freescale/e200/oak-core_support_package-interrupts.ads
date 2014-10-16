@@ -44,6 +44,14 @@ package Oak.Core_Support_Package.Interrupts with Preelaborate is
    procedure Request_Context_Switch_To_Oak_Interrupt
      with Linker_Section => ".acton_intr_branch_table";
 
+   ---------------------------------
+   -- Internal Package Components --
+   ---------------------------------
+
+   procedure External_Interrupt_Present
+     with Linker_Section => ".acton_intr_branch_table";
+   --  Sets r3 to 1 to indicate that an external interrupt is present
+
 private
 
    procedure Enable_SPE_Instructions with Inline_Always;

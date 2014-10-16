@@ -1,7 +1,15 @@
 with MPC5554.Flash;
 with Oak.Core_Support_Package.Interrupts;
+use Oak.Core_Support_Package.Interrupts;
 
 with Oak.Brokers.Protected_Objects; use Oak.Brokers.Protected_Objects;
+
+with System.Machine_Code; use System.Machine_Code;
+
+with ISA; use ISA;
+
+with ISA.Power.e200.Processor_Control_Registers;
+use ISA.Power.e200.Processor_Control_Registers;
 
 package body Oak.Processor_Support_Package.Interrupts is
 
@@ -109,9 +117,43 @@ package body Oak.Processor_Support_Package.Interrupts is
    end Handler_Protected_Object;
 
    function Has_Outstanding_Interrupts (Above_Priority : Any_Priority)
-                                           return Boolean is
+                                        return Boolean is
+      pragma Unreferenced (Above_Priority);
+
+      Interrupt_Present : Boolean := False;
+      Oak_Current_MSR   : Machine_State_Register_Type;
+      Oak_New_MSR       : Machine_State_Register_Type;
+
    begin
-      return Current_Interrupt_Priority > Above_Priority;
+      --  Setup external interrupt vector to External_Interrupt_Present to
+      --  see if an external interrupt is present and then enable external
+      --  interrupts.
+      Asm
+        ("mtivor4 %1" & ASCII.LF & ASCII.HT &
+           "mfmsr   %0",
+         Inputs   => System.Address'Asm_Input
+           ("r", External_Interrupt_Present'Address),
+         Outputs  => Machine_State_Register_Type'Asm_Output
+           ("=r", Oak_Current_MSR),
+         Volatile => True);
+
+      Oak_New_MSR := Oak_Current_MSR;
+      Oak_New_MSR.External_Interrupts := Enable;
+
+      Asm
+        ("mtmsr   %1"  & ASCII.LF & ASCII.HT &
+         "mtmsr   %2"  & ASCII.LF & ASCII.HT &
+         "mtivor4 %3",                               -- register
+         Inputs   => (Machine_State_Register_Type'Asm_Input
+                      ("r", Oak_New_MSR),
+                      Machine_State_Register_Type'Asm_Input
+                        ("r", Oak_Current_MSR),
+                      System.Address'Asm_Input
+                        ("r", Oak.Core_Support_Package.Interrupts.
+                           External_Interrupt_Handler'Address)),
+         Outputs => Boolean'Asm_Output ("+r", Interrupt_Present),
+         Volatile => True);
+      return Interrupt_Present;
    end Has_Outstanding_Interrupts;
 
 end Oak.Processor_Support_Package.Interrupts;

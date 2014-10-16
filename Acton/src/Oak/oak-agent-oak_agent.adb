@@ -44,7 +44,7 @@ package body Oak.Agent.Oak_Agent is
       --  Time_Span_Last since that signifies that the Remaining_Budget
       --  variable is not begining used.
 
-      if Agent.Remaining_Budget < Time_Span_Last then
+      if Agent.Remaining_Budget < Oak_Time.Time_Span_Last then
          Agent.Remaining_Budget := Agent.Remaining_Budget - Exec_Time;
       end if;
    end Charge_Execution_Time;
@@ -86,7 +86,7 @@ package body Oak.Agent.Oak_Agent is
                end if;
          end case;
 
-         if Agent in Scheduler_Id then
+         if Agent in Scheduler_Id or else Agent = No_Agent then
             Increment_Execution_Cycle_Count (Agent);
          end if;
 
@@ -154,7 +154,9 @@ package body Oak.Agent.Oak_Agent is
       end loop;
 
       return
-        (if Agent_Pool (Selected_Agent).Remaining_Budget = Time_Span_Last then
+        (if Agent_Pool (Selected_Agent).Remaining_Budget =
+             Oak_Time.Time_Span_Last
+         then
               No_Agent else Selected_Agent);
 
    end Earliest_Expiring_Budget;
@@ -175,7 +177,10 @@ package body Oak.Agent.Oak_Agent is
          A.Max_Execution_Time := A.Current_Execution_Time;
       end if;
 
-      A.Current_Execution_Time := Time_Span_Zero;
+      A.Last_Cycle := Previous_Cycle'Succ (A.Last_Cycle);
+      A.Cycle_Execution_Times (A.Last_Cycle) := A.Current_Execution_Time;
+
+      A.Current_Execution_Time := Oak_Time.Time_Span_Zero;
    end Increment_Execution_Cycle_Count;
 
    ---------------
@@ -241,10 +246,10 @@ package body Oak.Agent.Oak_Agent is
       A.Scheduler_Agent        := Scheduler_Agent;
       A.Wake_Time              := Wake_Time;
       A.Absolute_Deadline      := Oak_Time.Time_Last;
-      A.Total_Execution_Time   := Time_Span_Zero;
-      A.Max_Execution_Time     := Time_Span_Zero;
-      A.Current_Execution_Time := Time_Span_Zero;
-      A.Remaining_Budget       := Time_Span_Last;
+      A.Total_Execution_Time   := Oak_Time.Time_Span_Zero;
+      A.Max_Execution_Time     := Oak_Time.Time_Span_Zero;
+      A.Current_Execution_Time := Oak_Time.Time_Span_Zero;
+      A.Remaining_Budget       := Oak_Time.Time_Span_Last;
       A.Execution_Cycles       := Natural'First;
       A.Scheduler_Agent        := Scheduler_Agent;
       A.When_To_Charge         := When_To_Charge_Agent;

@@ -16,8 +16,10 @@
 
 with Oak.Oak_Time;
 
+with Oak.Agent;   use Oak.Agent;
 with Oak.Core;    use Oak.Core;
 with Oak.Message; use Oak.Message;
+with Oak.States;  use Oak.States;
 
 with System; use System;
 
@@ -51,6 +53,10 @@ package Oak.Core_Support_Package.Task_Support with Preelaborate is
 
    procedure Sleep_Agent_Run_Loop;
 
+   procedure Entered_Kernel_Trace (Reason  : Run_Reason;
+                                   Request : Agent_State);
+   procedure Exited_Kernel_Trace (To_Agent : Oak_Agent_Id);
+
 private
 
    SVC_Vector : Address
@@ -58,4 +64,5 @@ private
 
    SVC_Return_Vector : Address
      with Export, Convention => Ada, External_Name => "svc_return_vector";
+
 end Oak.Core_Support_Package.Task_Support;

@@ -10,12 +10,14 @@ package MPC5554.INTC with Preelaborate is
    CPR_Offset_Address             : constant Integer_Address := 16#0008#;
    Interrupt_Acknowledge_Addresss : constant Integer_Address := 16#0010#;
    End_Of_Interrupt_Address       : constant Integer_Address := 16#0018#;
+   SSCIR_Offset_Address           : constant Integer_Address := 16#0020#;
    Priority_Select_Offset_Address : constant Integer_Address := 16#0040#;
 
    ----------------------------------------------------------------------------
    --  Hardware Features
    ----------------------------------------------------------------------------
-   type INTC_ID_Type is range 0 .. 307;
+   type INTC_ID_Type is mod 308;
+   type Soft_IRQ_Register_Count is mod 8;
    Priority_Select_Register_Size : constant Integer := 8;
 
    ----------------------------------------------------------------------------
@@ -43,6 +45,14 @@ package MPC5554.INTC with Preelaborate is
    --  INTC End-of-Interrupt Register
    type End_Interrupt_Type is (End_Interrupt);
 
+   type Software_Clear_Set_Type is record
+      Set   : Boolean;
+      Clear : Boolean;
+   end record with Size => 8;
+
+   type Software_Clear_Set_Array is array (Soft_IRQ_Register_Count) of
+     Software_Clear_Set_Type with Pack;
+
    ----------------------------------------------------------------------------
    --  Hardware Respresentations
    ----------------------------------------------------------------------------
@@ -59,6 +69,11 @@ package MPC5554.INTC with Preelaborate is
    end record;
 
    for End_Interrupt_Type use (End_Interrupt => 0);
+
+   for Software_Clear_Set_Type use record
+      Set   at 0 range 6 .. 6;
+      Clear at 0 range 7 .. 7;
+   end record;
 
    ----------------------------------------------------------------------------
    --  INTC Registers
@@ -86,6 +101,11 @@ package MPC5554.INTC with Preelaborate is
      with Size => 32,
        Address =>
        System'To_Address (INTC_Base_Address + End_Of_Interrupt_Address);
+
+   Software_Clear_Set_Registers   : Software_Clear_Set_Array
+     with Size => 64,
+     Address =>
+       System'To_Address (INTC_Base_Address + SSCIR_Offset_Address);
 
    pragma Warnings (Off, "*alignment*");
    Priority_Select_Register_Array :

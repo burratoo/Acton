@@ -93,7 +93,7 @@ package Atmel.AT91SAM7S.AIC with Preelaborate is
    end record with Size => Standard'Word_Size;
 
    type Interrupt_Set_Type is record
-      Set_Clear_Interrupt : Peripheral_Bit_Field;
+      Set_Interrupt : Peripheral_Bit_Field;
    end record with Size => Standard'Word_Size;
 
    type Debug_Control_Type is record

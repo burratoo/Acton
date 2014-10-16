@@ -13,10 +13,14 @@ project Acton_STM32F4 is
    Target_Library_Interface := ("ISA",
                                 "ISA.ARM",
                                 "ISA.ARM.Cortex_M4",
+                                "ISA.ARM.Cortex_M4.Coprocessor",
+                                "ISA.ARM.Cortex_M4.DCB",
                                 "ISA.ARM.Cortex_M4.DWT",
                                 "ISA.ARM.Cortex_M4.Exceptions",
+                                "ISA.ARM.Cortex_M4.ITM",
                                 "ISA.ARM.Cortex_M4.NVIC",
                                 "ISA.ARM.Cortex_M4.SysTick",
+                                "ISA.ARM.Cortex_M4.TPIU",
                                 "ST",
                                 "ST.STM32F4",
                                 "ST.STM32F4.EXTI",
@@ -25,7 +29,8 @@ project Acton_STM32F4 is
                                 "ST.STM32F4.RCC",
                                 "ST.STM32F4.SYSCFG",
                                 "Oak.Core_Support_Package.Clock",
-                                "Oak.Core_Support_Package.Clock.Interrupt");
+                                "Oak.Core_Support_Package.Clock.Interrupt",
+                                "Oak.Core_Support_Package.Trace");
 
    --  IDE
    Target          := "arm-burratoo-acton-";
@@ -34,7 +39,7 @@ project Acton_STM32F4 is
    Target_Debugger_Command := Target & "gdb";
 
    --  Builder Switches
-   Target_Ada_Switches := Acton_Common.Ada_Switches & ("-mcpu=cortex-m4", "-mthumb", "-mfloat-abi=hard", "-mfpu=fpv4-sp-d16");
+   Target_Ada_Switches := Acton_Common.Ada_Switches & ("-mcpu=cortex-m4", "-mthumb", "-mfloat-abi=hard", "-mfpu=fpv4-sp-d16", "-flto");
    Target_Asm_Switches := Acton_Common.Asm_Switches & ("-mcpu=cortex-m4", "-mthumb", "-mfloat-abi=hard", "-mfpu=fpv4-sp-d16");
 
 

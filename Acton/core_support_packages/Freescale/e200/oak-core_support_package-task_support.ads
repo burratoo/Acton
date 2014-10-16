@@ -18,8 +18,10 @@ with Oak.Oak_Time;
 with ISA.Power.e200.Processor_Control_Registers;
 with ISA;
 
+with Oak.Agent;   use Oak.Agent;
 with Oak.Core;    use Oak.Core;
 with Oak.Message; use Oak.Message;
+with Oak.States;  use Oak.States;
 with System;      use System;
 
 package Oak.Core_Support_Package.Task_Support with Preelaborate is
@@ -72,6 +74,10 @@ package Oak.Core_Support_Package.Task_Support with Preelaborate is
    procedure Set_Oak_Wake_Up_Timer (Wake_Up_At : Oak.Oak_Time.Time);
 
    procedure Sleep_Agent_Run_Loop;
+
+   procedure Entered_Kernel_Trace (Reason  : Run_Reason;
+                                   Request : Agent_State) is null;
+   procedure Exited_Kernel_Trace (To_Agent : Oak_Agent_Id) is null;
 
    Agent_MSR : constant Machine_State_Register_Type :=
                  (Computation_Mode           => Mode_32,

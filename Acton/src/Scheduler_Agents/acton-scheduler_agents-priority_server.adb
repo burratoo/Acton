@@ -19,6 +19,8 @@ with Oak.Core;      use Oak.Core;
 with Oak.Storage;   use Oak.Storage;
 with Oak.Scheduler;
 
+with Oak.Core_Support_Package.Task_Support;
+
 package body Acton.Scheduler_Agents.Priority_Server is
 
    -----------------------
@@ -256,7 +258,7 @@ package body Acton.Scheduler_Agents.Priority_Server is
    begin
       loop
          Service_Agent (Message);
-         Request_Oak_Service
+         Oak.Core_Support_Package.Task_Support.Context_Switch_To_Oak
            (Reason_For_Run => Agent_Request,
             Message        => Message);
       end loop;

@@ -8,8 +8,9 @@ package Atmel.AT91SAM7S.TC with Preelaborate is
 
    type Timer_Counter_Channel_Id is range 0 .. 2;
 
-   type External_Clock_Pin is (TCLK0, None, TCLK1, TCLK2);
-   type External_Clock_Pin_Set is array (Timer_Counter_Channel_Id) of
+   type External_Clock_Pin is (TCLK, None, TIOA1, TIOA2);
+   type External_Clock is (XC0, XC1, XC2);
+   type External_Clock_Pin_Set is array (External_Clock) of
      External_Clock_Pin with Pack;
 
    type Block_Mode_Type is record
@@ -87,8 +88,6 @@ package Atmel.AT91SAM7S.TC with Preelaborate is
    procedure Software_Trigger (Channel : Timer_Counter_Channel_Id) with Inline;
    procedure Start_Timer (Channel : Timer_Counter_Channel_Id) with Inline;
 
-private
-
    -------------------------
    -- TC Memory Addresses --
    -------------------------
@@ -122,7 +121,7 @@ private
    type Channel_Control_Type is record
       Counter_Clock_Enable  : Enable_No_Change_Type;
       Counter_Clock_Disable : Disable_No_Change_Type;
-      Software_Tigger       : Boolean;
+      Software_Trigger       : Boolean;
    end record;
 
    type Channel_Status_Type is record
@@ -184,8 +183,7 @@ private
       Interrupt_Enable_Register  : Interrupt_Enable_Type;
       Interrupt_Disable_Register : Interrupt_Disable_Type;
       Interrupt_Mask_Register    : Interrupt_Mask_Type;
-      Padding_At_End             : Boolean;
-   end record with Size => 16#40# * 32;
+   end record with Size => 16#40# * 8;
 
    ------------------------------
    -- Hardware Representations --
@@ -199,12 +197,12 @@ private
       External_Clock_Signal at 0 range 0 .. 5;
    end record;
 
-   for External_Clock_Pin use (TCLK0 => 0, None => 1, TCLK1 => 2, TCLK2 => 3);
+   for External_Clock_Pin use (TCLK => 0, None => 1, TIOA1 => 2, TIOA2 => 3);
 
    for Channel_Control_Type use record
       Counter_Clock_Enable  at 0 range 0 .. 0;
       Counter_Clock_Disable at 0 range 1 .. 1;
-      Software_Tigger       at 0 range 2 .. 2;
+      Software_Trigger       at 0 range 2 .. 2;
    end record;
 
    for Clock_Selection_Options use
@@ -318,16 +316,14 @@ private
       Interrupt_Enable_Register  at IER_Offset_Address range 0 .. 31;
       Interrupt_Disable_Register at IDR_Offset_Address range 0 .. 31;
       Interrupt_Mask_Register    at IMR_Offset_Address range 0 .. 31;
-      Padding_At_End             at IMR_Offset_Address + 4 range 0 .. 512;
    end record;
 
    -------------------
    -- TC Registers --
    -------------------
 
-   type Timer_Channel_Set_Type is array (Timer_Counter_Channel_Id) of
-     Timer_Channel_Type
-     with Alignment => 4, Component_Size => 16#40# * 32;
+   type Timer_Channel_Set is array (Timer_Counter_Channel_Id) of
+     Timer_Channel_Type;
 
    Block_Control_Register : Block_Control_Register_Type
      with Address => System'To_Address (TC_Base_Address + BCR_Offset_Address);
@@ -335,19 +331,23 @@ private
    Block_Mode_Register    : Block_Mode_Type
      with Address => System'To_Address (TC_Base_Address + BMR_Offset_Address);
 
-   Timer_Channel_0 : Timer_Channel_Type
-     with Alignment => 4, Address => System'To_Address (TC_Base_Address),
-          Import, Convention => Ada;
+   Timer_Channel : Timer_Channel_Set
+     with Address => System'To_Address (TC_Base_Address),
+     Import, Convention => Ada;
 
-   Timer_Channel_1 : Timer_Channel_Type
-     with Alignment => 4,
-          Address => System'To_Address (TC_Base_Address + 16#40#),
-          Import, Convention => Ada;
-
-   Timer_Channel_2 : Timer_Channel_Type
-     with Alignment => 4,
-          Address => System'To_Address (TC_Base_Address + 2 * 16#40#),
-          Import, Convention => Ada;
+--     Timer_Channel_0 : Timer_Channel_Type
+--       with Alignment => 4, Address => System'To_Address (TC_Base_Address),
+--            Import, Convention => Ada;
+--
+--     Timer_Channel_1 : Timer_Channel_Type
+--       with Alignment => 4,
+--            Address => System'To_Address (TC_Base_Address + 16#40#),
+--            Import, Convention => Ada;
+--
+--     Timer_Channel_2 : Timer_Channel_Type
+--       with Alignment => 4,
+--            Address => System'To_Address (TC_Base_Address + 2 * 16#40#),
+--            Import, Convention => Ada;
 
    -------------------
    -- Internal Data --

@@ -36,10 +36,13 @@ package body Oak.Processor_Support_Package.Interrupts is
                              Handler   : Parameterless_Handler;
                              Priority  : Interrupt_Priority)
    is
+      pragma Unreferenced (Priority);
       IECV : Interrupt_Enable_No_Change_Field := (others => No_Change);
    begin
-      Source_Mode_Register (Interrupt).Priority_Level :=
-        AIC_Interrupt_Priority (Priority - System.Priority'Last);
+      --  All interrupts use the same priority since we cannot mask priorities
+      --  from software
+
+      AIC.Source_Mode_Register (Interrupt).Priority_Level := 1;
 
       AIC_Vector_Table (Interrupt) := Handler;
 

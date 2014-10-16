@@ -81,13 +81,15 @@ package body Oak.Agent.Tasks.Activation is
       T : Task_Id_With_No := Next_Agent (Activator);
       --  Note that the activation list head lives in the Next_Agent field of
       --  the Activator.
+
+      Wake_Time : constant Oak_Time.Time := Oak_Time.Clock;
    begin
       --  Release each task in the activation list since if we got this far all
       --  tasks will have been activated.
 
       while T /= No_Agent loop
          Set_State (For_Agent => T, State => Sleeping);
-         Set_Wake_Time (For_Agent => T, Wake_Time => Oak_Time.Clock);
+         Set_Wake_Time (For_Agent => T, Wake_Time => Wake_Time);
          Set_Next_Deadline_For_Task (T, Using => Wake_Up_Time);
 
          T := Next_Agent (T);

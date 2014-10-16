@@ -22,6 +22,8 @@ with Oak.Message;           use Oak.Message;
 with Oak.Protected_Objects; use Oak.Protected_Objects;
 with Oak.States;            use Oak.States;
 
+with Oak.Core_Support_Package.Task_Support;
+
 package body Oak.Agent.Interrupts is
 
    ----------------
@@ -56,7 +58,7 @@ package body Oak.Agent.Interrupts is
                     (Agent_To_Handle (Agent_Pool (Agent).Timer_To_Handle)));
          end case;
 
-         Request_Oak_Service
+         Oak.Core_Support_Package.Task_Support.Context_Switch_To_Oak
            (Reason_For_Run => Agent_Request, Message => Exit_Message);
       end loop;
    end Interrupt_Run_Loop;

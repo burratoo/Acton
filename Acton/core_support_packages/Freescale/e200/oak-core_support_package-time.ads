@@ -46,8 +46,8 @@ package Oak.Core_Support_Package.Time with Pure is
 
    Ticks_Per_Second : constant := Clock_Speed;
 
-   function Get_Clock return Oak_Time;
-   pragma Import (Assembler, Get_Clock, "oak_get_clock");
+   function Get_Clock return Oak_Time
+     with Import, Convention => Assembler, External_Name => "oak_get_clock";
 
    --
    --  At 132 MHz -> 7.58 ns per tick. 132 x 10^6 ticks per second.

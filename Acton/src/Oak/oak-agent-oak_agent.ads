@@ -309,6 +309,9 @@ private
    --  Private Types --
    --------------------
 
+   type Previous_Cycle is mod Max_Cycle_Lengths_To_Keep;
+   type Time_Set is array (Previous_Cycle) of Oak_Time.Time_Span;
+
    type Oak_Agent_Record is record
       Name                   : Agent_Name;
       --  The name of the Agent. Allows users and debugger to query the name of
@@ -356,6 +359,8 @@ private
 
       Current_Execution_Time : Oak_Time.Time_Span;
       --  The current execution time of current cycle of the agent.
+      --  Updated from the last switch to kernel. Needs to be better
+      --  implemented.
 
       Remaining_Budget       : Oak_Time.Time_Span;
       --  The allowed execution time remaining for the agent's current budget.
@@ -377,6 +382,10 @@ private
       --  Flags whether the agent has been interrupted or not. Indicates
       --  whether a full register restor is needed when the context is switched
       --  back to the task.
+
+      --  Extended timing attributes
+      Last_Cycle             : Previous_Cycle;
+      Cycle_Execution_Times  : Time_Set;
 
    end record;
 

@@ -20,10 +20,10 @@ project Acton_AT91SAM7S is
                                 "Atmel.AT91SAM7S.PMC",
 --                                  "Atmel.AT91SAM7S.SPI",
                                 "Atmel.AT91SAM7S.SSC",
-                                "Atmel.AT91SAM7S.TC"
+                                "Atmel.AT91SAM7S.TC",
 --                                  "Atmel.AT91SAM7S.TWI",
 --                                  "Atmel.AT91SAM7S.USART",
-
+                                "Oak.Processor_Support_Package.Time"
                                );
 
    --  IDE
@@ -33,7 +33,7 @@ project Acton_AT91SAM7S is
    Target_Debugger_Command := Target & "gdb";
 
    --  Builder Switches
-   Target_Ada_Switches := Acton_Common.Ada_Switches & ("-mcpu=arm7tdmi");
+   Target_Ada_Switches := Acton_Common.Ada_Switches & ("-mcpu=arm7tdmi", "-flto");
    Target_Asm_Switches := Acton_Common.Asm_Switches & "-mcpu=arm7tdmi";
 
 

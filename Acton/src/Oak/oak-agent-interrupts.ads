@@ -110,7 +110,8 @@ private
    -- Private Subprograms --
    -------------------------
 
-   procedure Interrupt_Run_Loop;
+   procedure Interrupt_Run_Loop with No_Return;
+
    --  The run loop of the interrupt agent.
 
    --------------------------

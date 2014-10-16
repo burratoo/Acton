@@ -557,4 +557,15 @@ package body Oak.Core_Support_Package.Interrupts is
          Volatile => True);
    end Enable_Oak_Wake_Up_Interrupt;
 
+   --------------------------------
+   -- External_Interrupt_Present --
+   --------------------------------
+
+   procedure External_Interrupt_Present is
+   begin
+      Asm ("li r3, 1"  & ASCII.LF & ASCII.HT &
+           "rfi",
+           Volatile => True);
+   end External_Interrupt_Present;
+
 end Oak.Core_Support_Package.Interrupts;

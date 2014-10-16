@@ -1,7 +1,9 @@
 package Oak.Project_Support_Package with Pure is
 
    MHz         : constant := 1E6;
-   Clock_Speed : constant := 168 * MHz;
+--     Clock_Speed : constant := 168 * MHz;
+--     Clock_Speed : constant := 132 * MHz;
+   Clock_Speed : constant := 48 * MHz;
 
    Max_Kernel_Agents     : constant := 1;
    --  The number of Oak Kernel you need should be equal to the number of
@@ -18,10 +20,10 @@ package Oak.Project_Support_Package with Pure is
    --  be less than the number of interrupt prioities available on the hardware
    --  if not all the priorities are used. This allows for some space saving.
 
-   Max_Task_Agents       : constant := 101;
+   Max_Task_Agents       : constant := 8;
    --  Limit on the number of tasks on the system.
 
-   Max_Protected_Agents  : constant := 2;
+   Max_Protected_Agents  : constant := 11;
    --  Limit on the number of protected objects use in the system. Need to be
    --  at least 1 (since some types dervived need a range of at least 1).
 
@@ -55,13 +57,16 @@ package Oak.Project_Support_Package with Pure is
    --  provability reasons for the number of entries to be restricted, for
    --  example under the Ravenscar Profile.
 
+   Max_Cycle_Lengths_To_Keep : constant := 1;
+   --  The number of previous cycles times to keep.
+
    --  Call_Stack_Size could be defined in the linker script (Enviroment
    --  defined variables don't make sense in this system) Call_Stack_Size in
    --  Storage_Elements
    Call_Stack_Size            : constant := 1 * 1024;
    Default_Call_Stack_Size    : constant := Call_Stack_Size;
    Main_Task_Call_Stack_Size  : constant := 4 * 1024;
-   Interrupt_Stack_Size       : constant := 512;
+   Interrupt_Stack_Size       : constant := 1024;
 
    Secondary_Stack_Percentage : constant := 10;
    --  Percentage of a task's stack that its secondary stack occupies.

@@ -20,6 +20,8 @@ with Oak.Core;    use Oak.Core;
 with Oak.Storage; use Oak.Storage;
 with Oak.Timers;  use Oak.Timers;
 
+with Oak.Core_Support_Package.Task_Support;
+
 package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
 
    -----------------------
@@ -246,7 +248,7 @@ package body Acton.Scheduler_Agents.FIFO_Within_Priorities is
    begin
       loop
          Service_Agent (Message);
-         Request_Oak_Service
+         Oak.Core_Support_Package.Task_Support.Context_Switch_To_Oak
            (Reason_For_Run => Agent_Request,
             Message        => Message);
       end loop;

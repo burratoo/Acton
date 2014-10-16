@@ -15,15 +15,33 @@ with System.Machine_Code; use System.Machine_Code;
 with Oak.Core_Support_Package.Interrupts;
 use  Oak.Core_Support_Package.Interrupts;
 
+with Oak.Core_Support_Package.Trace; use Oak.Core_Support_Package.Trace;
+
 with Oak.Core_Support_Package.Clock;
 with Oak.Core_Support_Package.Time;
 
+with ISA;                           use ISA;
 with ISA.ARM.Cortex_M4;             use ISA.ARM.Cortex_M4;
+with ISA.ARM.Cortex_M4.DCB;         use ISA.ARM.Cortex_M4.DCB;
+with ISA.ARM.Cortex_M4.DWT;         use ISA.ARM.Cortex_M4.DWT;
+with ISA.ARM.Cortex_M4.ITM;         use ISA.ARM.Cortex_M4.ITM;
 with ISA.ARM.Cortex_M4.Coprocessor; use ISA.ARM.Cortex_M4.Coprocessor;
+with ISA.ARM.Cortex_M4.TPIU;        use ISA.ARM.Cortex_M4.TPIU;
+
+with Interfaces; use Interfaces;
 
 with Ada.Unchecked_Conversion;
 
 package body Oak.Core_Support_Package.Task_Support is
+
+   Kernel_Entry_Stimulus_Port : constant := 10;
+   Kernel_Exit_Stimulus_Port  : constant := 11;
+
+   function To_Stimulus_16 is new
+     Ada.Unchecked_Conversion (Kernel_Entry_Tracing, Unsigned_16);
+
+   function To_Stimulus_8 is new
+     Ada.Unchecked_Conversion (Kernel_Exit_Tracing, Unsigned_8);
 
    --------------------------------
    -- Initialise_Task_Enviroment --
@@ -31,9 +49,53 @@ package body Oak.Core_Support_Package.Task_Support is
 
    procedure Initialise_Task_Enviroment is
    begin
+      --  Enable FP Unit
+
       Coprocessor.Access_Control_Register.Coprocessor :=
         (10 .. 11 => Full_Access,
          others   => No_Access);
+
+      --  Setup SWO and debug tracing
+
+      --  Enable access to SWO registers
+      DCB.Debug_Exception_And_Monitor_Control_Register.Trace := Enable;
+      ITM.Lock_Access_Register := 16#C5AC_CE55#;
+
+      --  Disable ITM and stimulus port to ensure nothing is transmitted
+      --  over SWO while setting it up
+
+      ITM.Stimulus_Port_Enable_Register := (others => Disable);
+      ITM.Trace_Control_Register.ITM := Disable;
+
+      --  Setup SWO, DWT and ITM
+
+      TPIU.Selected_Pin_Protocol_Register := (Transmit_Mode => SWO_NRZ);
+      TPIU.Asynchronous_Clock_Prescaler_Register := (SWO_Prescaler => 16#1B#);
+
+      ITM.Trace_Privilege_Register := (others => Unprivileged_Allowed);
+      DWT.Control_Register :=
+        (Number_Of_Comparitors => 4,
+         Exception_Trace       => Disable,
+         Sync_Counter_Tap_At   => Clock_Divide_By_256M,
+         Cycle_Count           => Enable);
+
+      TPIU.Formatter_And_Flush_Control_Register :=
+        (Triggers_Inserted     => True,
+         Continuous_Formatting => Disable);
+
+      ITM.Trace_Control_Register :=
+        (ITM_Busy                   => False,
+         Trace_Bus_Id               => 1,
+         Global_Timestamp_Frequency => Disable,
+         Local_Timestamp_Prescaler  => None,
+         Timestamp_Clock_Source     => System_Clock,
+         Forward_DWT_Packets        => Disable,
+         Synchronization_Packets    => Disable,
+         Local_Timestamp_Generation => Enable,
+         ITM                        => Enable);
+
+      ITM.Stimulus_Port_Enable_Register (Kernel_Entry_Stimulus_Port) := Enable;
+      ITM.Stimulus_Port_Enable_Register (Kernel_Exit_Stimulus_Port) := Enable;
    end Initialise_Task_Enviroment;
 
    --------------------
@@ -144,6 +206,28 @@ package body Oak.Core_Support_Package.Task_Support is
       null;
       --        Context_Switch;
    end Exit_Barrier_Function;
+
+   --------------------------
+   -- Entered_Kernel_Trace --
+   --------------------------
+
+   procedure Entered_Kernel_Trace (Reason  : Run_Reason;
+                                   Request : Agent_State) is
+   begin
+      ITM.Stimulus_Port_Register_16 (Kernel_Entry_Stimulus_Port).Data :=
+        To_Stimulus_16 ((Reason  => Reason,
+                         Request => Request));
+   end Entered_Kernel_Trace;
+
+   -------------------------
+   -- Exited_Kernel_Trace --
+   -------------------------
+
+   procedure Exited_Kernel_Trace (To_Agent : Oak_Agent_Id) is
+   begin
+      ITM.Stimulus_Port_Register_8 (Kernel_Exit_Stimulus_Port).Data :=
+        To_Stimulus_8 ((To_Agent => To_Agent));
+   end Exited_Kernel_Trace;
 
    ---------------------------
    -- Set_Oak_Wake_Up_Timer --

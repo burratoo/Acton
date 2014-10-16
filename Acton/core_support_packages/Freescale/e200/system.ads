@@ -56,10 +56,7 @@ pragma Restrictions (Max_Asynchronous_Select_Nesting => 0);
 pragma Restrictions (No_Finalization);
 --  Controlled types are not supported in this run time
 
---  pragma Restrictions (No_Tasking);
---  Tasking is not supported in this run time
-
---  pragma Discard_Names;
+pragma Discard_Names;
 --  Disable explicitly the generation of names associated with entities in
 --  order to reduce the amount of storage used. These names are not used anyway
 --  (attributes such as 'Image and 'Value are not supported in this run time).
@@ -123,14 +120,14 @@ package System is
 
    --  ??? need comments explaining the values below
 
-   Max_Priority           : constant Positive := 25;
-   Max_Interrupt_Priority : constant Positive := 30;
+   Max_Priority           : constant Positive := 240;
+   Max_Interrupt_Priority : constant Positive := 255;
 
    --  Need to provide the range in numbers to make the binder happy.
    --  Don't change the spacing of Any_Priority subtype definition!
 
-   subtype Any_Priority       is Integer      range   0 .. 30;
-   subtype Priority           is Any_Priority range   0 .. 25;
+   subtype Any_Priority       is Integer      range   0 .. 255;
+   subtype Priority           is Any_Priority range   0 .. 240;
    subtype Interrupt_Priority is Any_Priority range
      Priority'Last + 1 .. Any_Priority'Last;
 

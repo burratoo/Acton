@@ -616,17 +616,23 @@ cfg_FMPLL132:
 cfg_SRAM:
 
 # loop counter to get all of SRAM
-    lis   r5, INT_SRAM_128BYTSEGS@h     # Number of 128 byte segments
-    ori   r5, r5, INT_SRAM_128BYTSEGS@l # Number of 128 byte segments
-    mtctr r5                            # configure control register for use with bdnz
+    lis   r5, INT_SRAM_16BYTSEGS@h     # Number of 16 byte segments
+    ori   r5, r5, INT_SRAM_16BYTSEGS@l # Number of 16 byte segments
+    mtctr r5                           # configure control register for use with bdnz
 
 # base address of the internal SRAM
     lis   r5,SRAM_BASE_ADDR@h
     ori   r5,r5, SRAM_BASE_ADDR@l
 
+# clear load registers
+    li    r31, 0
+    li    r30, 0
+    li    r29, 0
+    li    r28, 0
+
 sram_loop:
-    stmw  r0,0(r5)                      # write all 32 registers to SRAM
-    addi  r5,r5,128                     # increment the ram ptr
+    stmw  r28,0(r5)                     # write all 4 registers to SRAM
+    addi  r5,r5,16                      # increment the ram ptr
     bdnz  sram_loop                     # loop for all of SRAM
 
     blr

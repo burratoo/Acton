@@ -21,9 +21,12 @@ package ISA.ARM.Cortex_M4.DWT with Preelaborate is
    ---------------
 
    type Support_Type is (Supported, Not_Supported);
-
+   type Sync_Counter_Tap is (None, Clock_Divide_By_16M, Clock_Divide_By_64M,
+                             Clock_Divide_By_256M);
    type Control_Type is record
       Number_Of_Comparitors : Comparator_Count;
+      Exception_Trace       : Enable_Type;
+      Sync_Counter_Tap_At   : Sync_Counter_Tap;
       Cycle_Count           : Enable_Type;
    end record;
 
@@ -39,6 +42,8 @@ package ISA.ARM.Cortex_M4.DWT with Preelaborate is
 
    for Control_Type use record
       Number_Of_Comparitors at 0 range 28 .. 31;
+      Exception_Trace       at 0 range 16 .. 16;
+      Sync_Counter_Tap_At   at 0 range 10 .. 11;
       Cycle_Count           at 0 range  0 .. 0;
    end record;
 

@@ -16,6 +16,8 @@ with Oak.Core;     use Oak.Core;
 with Oak.States;   use Oak.States;
 with Oak.Oak_Time; use Oak.Oak_Time;
 
+with Oak.Core_Support_Package.Task_Support;
+
 package body Oakland.Tasks is
 
    --------------------
@@ -123,7 +125,7 @@ package body Oakland.Tasks is
      (With_Message : in out Oak_Message)
    is
    begin
-      Request_Oak_Service
+      Oak.Core_Support_Package.Task_Support.Context_Switch_To_Oak
         (Reason_For_Run => Agent_Request,
          Message        => With_Message);
    end Yield_Processor_To_Kernel;

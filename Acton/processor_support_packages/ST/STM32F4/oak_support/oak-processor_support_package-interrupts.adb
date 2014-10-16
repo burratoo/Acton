@@ -60,8 +60,19 @@ package body Oak.Processor_Support_Package.Interrupts is
 
    function Has_Outstanding_Interrupts (Above_Priority : Any_Priority)
                                         return Boolean is
-      pragma Unreferenced (Above_Priority);
+      E : constant Exception_Id := Current_Exception;
+      Interrupt_Priority : Any_Priority;
    begin
+      if E >= IRQ0 then
+         Interrupt_Priority := To_Ada_Priority
+           (Interrupt_Priority_Register (To_IRQ (E)));
+
+         if Interrupt_Priority > Above_Priority then
+            Oak.Core_Support_Package.Interrupts.Current_IRQ := To_IRQ (E);
+            return True;
+         end if;
+      end if;
+
       return False;
    end Has_Outstanding_Interrupts;
 

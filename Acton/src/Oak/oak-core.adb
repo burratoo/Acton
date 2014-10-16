@@ -27,6 +27,7 @@ with Oak.Brokers.Protected_Objects; use Oak.Brokers.Protected_Objects;
 with Oak.Interrupts;        use Oak.Interrupts;
 with Oak.Protected_Objects; use Oak.Protected_Objects;
 with Oak.Scheduler;         use Oak.Scheduler;
+with Oak.Timers;            use Oak.Timers;
 
 with Oak.Core_Support_Package.Interrupts;
 with Oak.Core_Support_Package.Task_Support;
@@ -91,15 +92,6 @@ package body Oak.Core is
       Processor_Support_Package.Interrupts.Complete_Interrupt_Initialisation;
    end Complete_Initialisation;
 
-   -------------------------
-   -- Request_Oak_Service --
-   -------------------------
-
-   procedure Request_Oak_Service
-     (Reason_For_Run : in Run_Reason;
-      Message        : in out Oak_Message)
-      renames Context_Switch_To_Oak;
-
    --------------
    -- Run_Loop --
    --------------
@@ -142,13 +134,6 @@ package body Oak.Core is
       end Handle_External_Interrupt;
 
    begin
-
-      --        Invoke_Reason_Table :=
-      --          (Reason_For_Run => (others => 0),
-      --           Message_Reason => (others => 0),
-      --           Timer_Kind     => (others => 0),
-      --           Early_Fire     => 0);
-
       First_Run_Actions : declare
 
          --  First time the kernel instance has run. Initialise Scheduler
@@ -462,6 +447,7 @@ package body Oak.Core is
             end if;
 
             Update_Exit_Stats (Oak_Kernel => This_Oak_Kernel);
+            Exited_Kernel_Trace (Next_Agent);
 
             --  Switch to the selected agent.
 
@@ -481,6 +467,7 @@ package body Oak.Core is
                else
                   Agent_Message := (Message_Type => No_Message);
                end if;
+
                Set_Agent_Message_Address
                  (For_Agent       => Current_Agent,
                   Message_Address => Received_Message_Address);
@@ -495,6 +482,9 @@ package body Oak.Core is
             --  code below here is relevant to that first run through. This
             --  saves a few needless comparisions to a first run flag.
 
+            Entered_Kernel_Trace (Reason_For_Run,
+                                  Agent_Message.Message_Type);
+
             --  First thing is to calculate run-time statistics and remove the
             --  current task from the charge list. Does not apply when this is
             --  the first run.
@@ -507,7 +497,6 @@ package body Oak.Core is
             case Reason_For_Run is
                when Agent_Request =>
                   Set_Agent_Interrupted (Current_Agent, False);
-
                when Timer | External_Interrupt =>
                   Set_Agent_Interrupted (Current_Agent);
             end case;
@@ -535,19 +524,19 @@ package body Oak.Core is
 
          --  ????? Check to see if the above is valid and makes sense.
 
---           Invoke_Reason_Table.Reason_For_Run (Reason_For_Run) :=
---             Invoke_Reason_Table.Reason_For_Run (Reason_For_Run) + 1;
-
          case Reason_For_Run is
          when Agent_Request =>
---         Invoke_Reason_Table.Message_Reason (Agent_Message.Message_Type) :=
---           Invoke_Reason_Table.Message_Reason (Agent_Message.Message_Type)
-            --                + 1;
 
             --  The task has yielded to tell or ask Oak something. The agent
             --  in question is stored in Current_Agent.
 
             case Agent_Message.Message_Type is
+
+               when Scheduler_Agent_Done =>
+                  Post_Run_Scheduler_Agent
+                    (Agent   => Current_Agent,
+                     Message => Agent_Message);
+
                when Activation_Pending =>
                   --  Only applies to task agents
 
@@ -580,11 +569,6 @@ package body Oak.Core is
                   else
                      Set_Oak_Message (Current_Agent, Message_Is_Bad);
                   end if;
-
-               when Scheduler_Agent_Done =>
-                  Post_Run_Scheduler_Agent
-                    (Agent   => Current_Agent,
-                     Message => Agent_Message);
 
                when Sleeping =>
                   --  Sleeping only applies to task agents.
@@ -697,14 +681,6 @@ package body Oak.Core is
 
          when Timer =>
 
---              Invoke_Reason_Table.Timer_Kind (Timer_Kind (Current_Timer)) :=
---             Invoke_Reason_Table.Timer_Kind (Timer_Kind (Current_Timer)) + 1;
-            --
-            --              if not Has_Timer_Fired (Current_Timer) then
-            --                 Invoke_Reason_Table.Early_Fire :=
-            --                   Invoke_Reason_Table.Early_Fire + 1;
-            --              end if;
-
             if Current_Timer = No_Timer
               or else not Has_Timer_Fired (Current_Timer)
             then
@@ -797,6 +773,7 @@ package body Oak.Core is
       Current_Time : constant Time := Clock;
       Charge_Time  : constant Time_Span :=
                        Current_Time - Entry_Exit_Stamp (Oak_Kernel);
+
    begin
       Charge_Execution_Time_To_List
         (List             => Charge_List (Oak_Kernel),
@@ -804,6 +781,7 @@ package body Oak.Core is
          Current_Agent    => Current_Agent (Oak_Kernel),
          Current_Priority => Current_Priority (Oak_Kernel));
       Set_Entry_Exit_Stamp (Oak_Kernel, Time => Current_Time);
+      null;
    end Update_Entry_Stats;
 
    -----------------------
@@ -815,12 +793,14 @@ package body Oak.Core is
       Current_Time : constant Time := Clock;
       Charge_Time  : constant Time_Span :=
                        Current_Time - Entry_Exit_Stamp (Oak_Kernel);
+
    begin
       Charge_Execution_Time
         (To_Agent  => Oak_Kernel,
          Exec_Time => Charge_Time);
       Increment_Execution_Cycle_Count (Oak_Kernel);
       Set_Entry_Exit_Stamp (Oak_Kernel, Time => Current_Time);
+      null;
    end Update_Exit_Stats;
 
 end Oak.Core;
