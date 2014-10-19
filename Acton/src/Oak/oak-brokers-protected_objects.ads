@@ -20,7 +20,7 @@ with Oak.Indices; use Oak.Indices;
 with Oak.Message; use Oak.Message;
 with Oak.States;  use Oak.States;
 
-with Oak.Agent;           use Oak.Agent;
+with Oak.Agent;
 with Oak.Agent.Oak_Agent; use Oak.Agent.Oak_Agent;
 
 with System; use System;
@@ -39,18 +39,18 @@ package Oak.Brokers.Protected_Objects with Preelaborate is
 
    procedure Add_Contending_Task
      (PO : in Protected_Id;
-      T  : in Task_Id);
+      T  : in Oak.Agent.Task_Id);
    --  Add a task to the contending task list.
 
    procedure Add_Task_To_Entry_Queue
      (PO       : in Protected_Id;
-      T        : in Task_Id;
+      T        : in Oak.Agent.Task_Id;
       Entry_Id : Entry_Index);
    --  Add a task to the entry queue identified by the entry id.
 
    procedure Add_Task_To_Protected_Object
      (PO : in Protected_Id;
-      T  : in Task_Id);
+      T  : in Oak.Agent.Task_Id);
    --  Add a task to the task within list.
 
    function Ceiling_Priority
@@ -76,13 +76,13 @@ package Oak.Brokers.Protected_Objects with Preelaborate is
 
    procedure Get_And_Remove_Next_Contending_Task
      (PO        : in Protected_Id;
-      Next_Task : out Task_Id_With_No);
+      Next_Task : out Oak.Agent.Task_Id_With_No);
    --  Remove and return the first task on the contending task list.
 
    procedure Get_And_Remove_Next_Task_From_Entry_Queue
      (PO        : in Protected_Id;
       Entry_Id  : in Entry_Index;
-      Next_Task : out Task_Id)
+      Next_Task : out Oak.Agent.Task_Id)
      with Pre => Entry_Queue_Length (PO, Entry_Id) > 0;
    --  Remove and return a task from the specified entry queue.
 
@@ -99,7 +99,7 @@ package Oak.Brokers.Protected_Objects with Preelaborate is
 
    function Is_Task_Inside_Protect_Object
      (PO : in Protected_Id;
-      T  : in Task_Id)
+      T  : in Oak.Agent.Task_Id)
       return Boolean;
    --  Returns whether or not the task is inside the protected object.
 
@@ -129,12 +129,12 @@ package Oak.Brokers.Protected_Objects with Preelaborate is
 
    procedure Remove_Task_From_Entry_Queue
      (PO       : in Protected_Id;
-      T        : in Task_Id);
+      T        : in Oak.Agent.Task_Id);
    --  Remove the specified task from the entry queues.
 
    procedure Remove_Task_From_Within_Protected_Object
      (PO : in Protected_Id;
-      T  : in Task_Id)
+      T  : in Oak.Agent.Task_Id)
      with Pre => Is_Task_Inside_Protect_Object (PO, T);
    --  Remove the specified task from the protected object.
 
@@ -145,7 +145,7 @@ package Oak.Brokers.Protected_Objects with Preelaborate is
 
    function Task_Within
      (PO : in Protected_Id)
-      return Task_Id_With_No;
+      return Oak.Agent.Task_Id_With_No;
    --  Returns the first task inside the protected object.
 
    -----------------------------------------------
@@ -202,17 +202,17 @@ private
       --  The address of the function that determines the barrier state of a
       --  given entry.
 
-      Entry_Queues           : Task_Id_With_No;
+      Entry_Queues           : Oak.Agent.Task_Id_With_No;
       --  Denotes the head of the two-demensional entry queue for the protected
       --  object. Tasks are sorted by first by entry then FIFO.
 
       Active_Subprogram_Kind : Protected_Subprogram_Type;
       --  The type of subprogram currently operating inside the object.
 
-      Contending_Tasks       : Agent_List;
+      Contending_Tasks       : Oak.Agent.Agent_List;
       --  List of tasks that wanting to enter the protected object.
 
-      Tasks_Within           : Agent_List;
+      Tasks_Within           : Oak.Agent.Agent_List;
       --  List of tasks currently executing inside the the object.
 
    end record;
@@ -264,6 +264,6 @@ private
 
    function Task_Within
      (PO : in Protected_Id)
-      return Task_Id_With_No is (Agent_Pool (PO).Tasks_Within.Head);
+      return Oak.Agent.Task_Id_With_No is (Agent_Pool (PO).Tasks_Within.Head);
 
 end Oak.Brokers.Protected_Objects;

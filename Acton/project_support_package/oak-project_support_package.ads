@@ -1,3 +1,5 @@
+with System; use System;
+
 package Oak.Project_Support_Package with Pure is
 
    MHz         : constant := 1E6;
@@ -15,7 +17,7 @@ package Oak.Project_Support_Package with Pure is
    Max_Scheduler_Agents  : constant := 1;
    --  A limit on the number of Scheduler Agents in the system.
 
-   Max_Interrupt_Agents  : constant := 15;
+   Max_Interrupt_Agents  : constant := Interrupt_Priority'Range_Length;
    --  A limit on the number of interrupt priorities used by the system. Could
    --  be less than the number of interrupt prioities available on the hardware
    --  if not all the priorities are used. This allows for some space saving.
@@ -43,7 +45,7 @@ package Oak.Project_Support_Package with Pure is
    --  The maximum number of Oak Timers used in the system. At the bare minimum
    --  each scheduler agent needs one timer and task agent need two timers.
 
-   Max_Task_Name_Length  : constant := 0;
+   Max_Task_Name_Length  : constant := 20;
    --  The length of a task name. Set to an appropriate value for the system.
    --  Can be zero if not needed.
 
@@ -66,7 +68,7 @@ package Oak.Project_Support_Package with Pure is
    Call_Stack_Size            : constant := 1 * 1024;
    Default_Call_Stack_Size    : constant := Call_Stack_Size;
    Main_Task_Call_Stack_Size  : constant := 4 * 1024;
-   Interrupt_Stack_Size       : constant := 1024;
+   Interrupt_Stack_Size       : constant := 512;
 
    Secondary_Stack_Percentage : constant := 10;
    --  Percentage of a task's stack that its secondary stack occupies.

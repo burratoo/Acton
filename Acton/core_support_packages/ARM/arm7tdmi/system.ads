@@ -59,7 +59,7 @@ pragma Restrictions (No_Finalization);
 --  pragma Restrictions (No_Tasking);
 --  Tasking is not supported in this run time
 
-pragma Discard_Names;
+--  pragma Discard_Names;
 --  Disable explicitly the generation of names associated with entities in
 --  order to reduce the amount of storage used. These names are not used anyway
 --  (attributes such as 'Image and 'Value are not supported in this run time).

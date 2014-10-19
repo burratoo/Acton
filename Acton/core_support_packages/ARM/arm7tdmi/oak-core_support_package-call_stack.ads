@@ -17,7 +17,7 @@ package Oak.Core_Support_Package.Call_Stack with Pure is
    --  Call_Stack_Alignment in bytes
    Call_Stack_Allignment      : constant := 8;
    Oak_Call_Stack_Size        : constant := 512;
-   Minimum_Call_Stack_Size    : constant := 512; -- 1 * 1024;
+   Minimum_Call_Stack_Size    : constant := 1 * 1024;
    Sleep_Stack_Size           : constant := 72;
 
    --  Warning! These are not a real variable. It is defined in the linker

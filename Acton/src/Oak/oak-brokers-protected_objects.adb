@@ -11,8 +11,9 @@
 
 with Ada.Unchecked_Conversion;
 
-with Oak.Agent.Tasks;             use Oak.Agent.Tasks;
-with Oak.Scheduler;               use Oak.Scheduler;
+with Oak.Agent;       use Oak.Agent;
+with Oak.Agent.Tasks; use Oak.Agent.Tasks;
+with Oak.Scheduler;   use Oak.Scheduler;
 
 with Oak.Processor_Support_Package; use Oak.Processor_Support_Package;
 with Oak.Core_Support_Package.Task_Support;
@@ -223,7 +224,7 @@ package body Oak.Brokers.Protected_Objects is
 
    procedure Get_And_Remove_Next_Contending_Task
      (PO        : in Protected_Id;
-      Next_Task : out Task_Id_With_No)
+      Next_Task : out Oak.Agent.Task_Id_With_No)
    is
       P : Protected_Broker_Record renames Agent_Pool (PO);
 
