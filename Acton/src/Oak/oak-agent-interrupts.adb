@@ -74,6 +74,7 @@ package body Oak.Agent.Interrupts is
       Deactivate_Interrupt_Agent
         (Oak_Kernel => Kernel,
          Interrupt  => Current_Agent);
+      Set_State (Current_Agent, Waiting_For_Interrupt);
 
       --  Service any open entries
 

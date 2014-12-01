@@ -354,7 +354,7 @@ package body Oak.Brokers.Protected_Objects is
       if Ceiling_Priority in Any_Priority then
          Prior := System.Any_Priority (Ceiling_Priority);
       elsif Ceiling_Priority = Unspecified_Priority then
-         Prior := Interrupt_Priority'First;
+         Prior := Interrupt_Priority'Last;
       else
          raise Program_Error with "Priority out of range";
       end if;

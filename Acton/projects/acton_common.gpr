@@ -52,6 +52,7 @@ abstract project Acton_Common is
 
    package Builder is
       for Default_Switches ("ada") use ("-s", "-m", "-j8", "-g");
+      for Switches (others) use ("-j8");
    end Builder;
 
    package Compiler is

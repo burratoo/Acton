@@ -23,6 +23,7 @@ package Oak.States with Pure is
       Attach_Interrupt_Handler,     -- 20
       Handling_Interrupt,           -- 21
       Interrupt_Done,               -- 22
+      Waiting_For_Interrupt,        --
       No_State,                     -- 23
       Agent_State_Change,           -- 24
       Selecting_Next_Agent,         -- 25

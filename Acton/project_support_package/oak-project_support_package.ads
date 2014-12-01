@@ -45,7 +45,7 @@ package Oak.Project_Support_Package with Pure is
    --  The maximum number of Oak Timers used in the system. At the bare minimum
    --  each scheduler agent needs one timer and task agent need two timers.
 
-   Max_Task_Name_Length  : constant := 20;
+   Max_Task_Name_Length  : constant := 0;
    --  The length of a task name. Set to an appropriate value for the system.
    --  Can be zero if not needed.
 
