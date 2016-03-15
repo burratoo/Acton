@@ -1,0 +1,14 @@
+V "GNAT Lib v4.10"
+A -gnatc
+A -gnatS
+P NO ZX
+
+RN
+RV NO_ELABORATION_CODE
+
+U p%s			p.ads			c253dd2e EE OO PK IL
+
+D p.ads			20141104005718 c253dd2e p%s
+X 1 p.ads
+1K9*p 1l18 1e19
+
