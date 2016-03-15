@@ -18,7 +18,8 @@ project Acton_MPC5554 is
                                 "MPC5554.XBAR",
                                 "Oakland.Maths.Arithmetic_64",
 
-                               "ISA.Power", "ISA.Power.e200", "ISA.Power.e200.z6", "ISA.Power.e200.z6.HID", "ISA.Power.e200.Timer_Registers", "ISA.Power.e200.Processor_Control_Registers");
+                                "ISA.Power", "ISA.Power.e200", "ISA.Power.e200.z6", "ISA.Power.e200.z6.HID", "ISA.Power.e200.Timer_Registers", "ISA.Power.e200.Processor_Control_Registers",
+                               "ISA.Power.e200.L1_Cache_Registers");
 
    --  IDE
    Target          := "powerpc-burratoo-acton-";

@@ -59,10 +59,12 @@ project Acton_AT91SAM7S is
       for Default_Switches ("ada") use Acton_Common.Ada_Switches & Target_Ada_Switches;
       for Default_Switches ("asm") use Acton_Common.Asm_Switches & Target_Asm_Switches;
       for Switches ("oak-core_support_package-task_support.adb") use Compiler'Default_Switches ("ada") & ("-fno-lto");
+      for Switches ("oak-core_support_package-interrupts.adb") use Compiler'Default_Switches ("ada") & ("-fno-lto");
       for Switches ("oak-memory-ops.adb") use Compiler'Default_Switches ("ada") & ("-fno-lto");
-      for Switches ("oak-processor_support_package-time-interrupt.adb") use Compiler'Default_Switches ("ada") & ("-fno-lto", "-O2", "-ffixed-r0", "-ffixed-r1", "-ffixed-r2", "-ffixed-r3", "-ffixed-r4", "-ffixed-r5", "-ffixed-r6", "-ffixed-r7", "-ffixed-lr");
+      for Switches ("oak-processor_support_package-time-interrupt.adb") use Compiler'Default_Switches ("ada") & ("-fno-lto", "-ffixed-r0", "-ffixed-r1", "-ffixed-r2", "-ffixed-r3", "-ffixed-r4", "-ffixed-r5", "-ffixed-r6", "-ffixed-r7", "-ffixed-lr");
       for Switches ("ada-exceptions.adb") use Compiler'Default_Switches ("ada") & ("-fno-lto");
       for Switches ("gnat_exception.adb") use Compiler'Default_Switches ("ada") & ("-fno-lto");
+      --  for Switches ("oak-processor_support_package-interrupts.adb") use Compiler'Default_Switches ("ada") & ("-fno-lto");
    end Compiler;
 
    --  package Linker is

@@ -24,6 +24,7 @@ project Acton_STM32F4 is
                                 "ST",
                                 "ST.STM32F4",
                                 "ST.STM32F4.EXTI",
+                                "ST.STM32F4.Flash",
                                 "ST.STM32F4.GPIO",
                                 "ST.STM32F4.NVIC",
                                 "ST.STM32F4.RCC",
