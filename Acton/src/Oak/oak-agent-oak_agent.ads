@@ -97,13 +97,13 @@ package Oak.Agent.Oak_Agent with Preelaborate is
      (List             : in Charge_List_Head;
       Exec_Time        : in Oak_Time.Time_Span;
       Current_Agent    : in Oak_Agent_Id;
-      Current_Priority : in Any_Priority);
+      Current_Priority : in Any_Priority) with Inline;
    --  Charges the provided execution time to agents on the the specified
    --  execution time charge list. Whether an agent is charged is dependent on
    --  the priority provided by the procedure and the When_To_Charge attribute
    --  of the agent.
 
-   procedure Copy_Oak_Message (Destination, Source : in Address);
+   procedure Copy_Oak_Message (Destination, Source : in Address) with Inline;
    --  Optimised procedure to copy oak messages arround
 
    function Current_Execution_Time
@@ -118,7 +118,7 @@ package Oak.Agent.Oak_Agent with Preelaborate is
    function Earliest_Expiring_Budget
      (Charge_List      : in Charge_List_Head;
       Current_Priority : in Any_Priority)
-      return Oak_Agent_Id;
+      return Oak_Agent_Id with Inline;
    --  Returns the id of the agent that has the eariliest expiring budget.
    --  If the list is empty it will return No_Agent.
 
@@ -180,7 +180,7 @@ package Oak.Agent.Oak_Agent with Preelaborate is
    procedure Replenish_Execution_Budget
      (For_Agent : in Oak_Agent_Id;
       By_Amount : in Oak_Time.Time_Span)
-     with Pre => Has_Agent (For_Agent);
+     with Pre => Has_Agent (For_Agent), Inline;
    --  Add the time span given to the agent's execution budget.
 
    function Secondary_Stack_Limit
@@ -196,60 +196,60 @@ package Oak.Agent.Oak_Agent with Preelaborate is
 
    procedure Set_Agent_Interrupted
      (For_Agent : in Oak_Agent_Id;
-      Value     : in Boolean := True);
+      Value     : in Boolean := True) with Inline;
    --  Sets whether the agent was interrupted.
 
    procedure Set_Agent_Message_Address
      (For_Agent       : in Oak_Agent_Id;
-      Message_Address : in Address);
+      Message_Address : in Address)  with Inline;
    --  Sets the address of the Agent's Oak Message location.
 
    procedure Set_Absolute_Deadline
      (For_Agent : in Oak_Agent_Id;
       Deadline  : in Oak_Time.Time)
-     with Pre => Has_Agent (For_Agent);
+     with Pre => Has_Agent (For_Agent), Inline;
    --  Set the absolute deadline for the task.
 
    procedure Set_Current_Execution_Time
      (For_Agent : in Oak_Agent_Id;
-      To        : in Oak_Time.Time_Span);
+      To        : in Oak_Time.Time_Span) with Inline;
    --  Sets the agent's current execution time.
 
    procedure Set_Oak_Message
      (For_Agent : in Oak_Agent_Id;
-      Message   : in Oak_Message);
+      Message   : in Oak_Message) with Inline;
    --  Copies the given message into the agent's message store.
 
    procedure Set_Max_Execution_Time
      (For_Agent : in Oak_Agent_Id;
-      To        : in Oak_Time.Time_Span);
+      To        : in Oak_Time.Time_Span) with Inline;
    --  Sets the agent's maximum execution time.
 
    procedure Set_Next_Agent
      (For_Agent  : in Oak_Agent_Id;
-      Next_Agent : in Oak_Agent_Id);
+      Next_Agent : in Oak_Agent_Id) with Inline;
    --  Set the Next_Agent link for the Agent.
 
    procedure Set_Next_Charge_Agent
      (For_Agent  : in Oak_Agent_Id;
-      Next_Agent : in Oak_Agent_Id);
+      Next_Agent : in Oak_Agent_Id) with Inline;
    --  Set the Next_Charge_Agent link for the Agent.
 
    procedure Set_Remaining_Budget
      (For_Agent : in Oak_Agent_Id;
       To_Amount : in Oak_Time.Time_Span)
-     with Pre => Has_Agent (For_Agent);
+     with Pre => Has_Agent (For_Agent), Inline;
    --  Set the amount of execution budget remaining for the agent.
 
    procedure Set_Secondary_Stack_Pointer
      (For_Agent : in Oak_Agent_Id;
-      Pointer   : in Address);
+      Pointer   : in Address) with Inline;
    --  Set's the agent's secondary stack pointer.
 
    procedure Set_Scheduler_Agent
      (For_Agent : in Oak_Agent_Id;
       Scheduler : in Scheduler_Id_With_No)
-     with Pre => Has_Agent (For_Agent);
+     with Pre => Has_Agent (For_Agent), Inline;
    --  Set's the Scheduler Agent responsible for scheduling the agent.
 
    procedure Set_Stack_Pointer
@@ -263,13 +263,13 @@ package Oak.Agent.Oak_Agent with Preelaborate is
    procedure Set_State
      (For_Agent : in Oak_Agent_Id;
       State     : in Agent_State)
-     with Pre => Has_Agent (For_Agent);
+     with Pre => Has_Agent (For_Agent), Inline;
    --  Set the state of the agent.
 
    procedure Set_Wake_Time
      (For_Agent : in Oak_Agent_Id;
       Wake_Time : in Oak_Time.Time)
-     with Pre => Has_Agent (For_Agent);
+     with Pre => Has_Agent (For_Agent), Inline;
    --  Set the wake time of the agent.
 
    function Stack
@@ -279,13 +279,13 @@ package Oak.Agent.Oak_Agent with Preelaborate is
    function Stack_Pointer
      (Agent : in Oak_Agent_Id)
       return System.Address
-     with Pre => Has_Agent (Agent), Inline_Always;
+     with Pre => Has_Agent (Agent);
    --  Fetches the stack pointer associated with the Agent. Note that this
    --  procedure should always be inlined should always be inlined since it is
    --  called from within the core interrupt routines.
 
    function State (Agent : in Oak_Agent_Id) return Agent_State
-     with Pre => Has_Agent (Agent), Inline;
+     with Pre => Has_Agent (Agent);
    --  Fetches the state of the Agent.
 
    function Wake_Time (Agent : in Oak_Agent_Id) return Oak_Time.Time

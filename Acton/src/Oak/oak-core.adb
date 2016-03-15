@@ -447,7 +447,7 @@ package body Oak.Core is
             end if;
 
             Update_Exit_Stats (Oak_Kernel => This_Oak_Kernel);
-            Exited_Kernel_Trace (Next_Agent);
+--              Exited_Kernel_Trace (Next_Agent);
 
             --  Switch to the selected agent.
 
@@ -482,8 +482,8 @@ package body Oak.Core is
             --  code below here is relevant to that first run through. This
             --  saves a few needless comparisions to a first run flag.
 
-            Entered_Kernel_Trace (Reason_For_Run,
-                                  Agent_Message.Message_Type);
+--              Entered_Kernel_Trace (Reason_For_Run,
+--                                    Agent_Message.Message_Type);
 
             --  First thing is to calculate run-time statistics and remove the
             --  current task from the charge list. Does not apply when this is

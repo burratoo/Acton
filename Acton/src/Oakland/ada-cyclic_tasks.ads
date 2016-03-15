@@ -5,7 +5,7 @@ package Ada.Cyclic_Tasks with Preelaborate is
    type Behaviour is (Normal, Aperiodic, Sporadic, Periodic);
 
    type Event_Response is (No_Response, Handler, Abort_Cycle,
-                         Abort_And_Raise_Exception);
+                           Abort_And_Raise_Exception);
    type Response_Handler is
      access protected procedure (T : in Ada.Task_Identification.Task_Id);
 
@@ -34,4 +34,5 @@ package Ada.Cyclic_Tasks with Preelaborate is
    --
 
    procedure Release_Task (T : in Ada.Task_Identification.Task_Id);
+
 end Ada.Cyclic_Tasks;

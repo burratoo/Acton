@@ -41,7 +41,7 @@ package Oak.Timers with Preelaborate is
    -- Subprograms --
    -----------------
 
-   procedure Activate_Timer (Timer : in Oak_Timer_Id);
+   procedure Activate_Timer (Timer : in Oak_Timer_Id) with Inline;
 --       with Pre  => Is_Valid (Timer),
 --            Post => Is_Valid (Timer);
    --  Activate the specified timer. Adds the timer to storage pool's timer
@@ -60,7 +60,7 @@ package Oak.Timers with Preelaborate is
    --  Deactivate the specified timer. Can be safely called even if the timer
    --  is not already activated (in this case the request has no effect).
 
-   procedure Delete_Timer (Timer : in Oak_Timer_Id);
+   procedure Delete_Timer (Timer : in Oak_Timer_Id) with Inline;
    --  Delete the Timer from the storage pool.
 
    function Earliest_Timer_To_Fire

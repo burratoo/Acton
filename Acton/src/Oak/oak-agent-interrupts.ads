@@ -54,19 +54,19 @@ package Oak.Agent.Interrupts with Preelaborate is
 
    procedure Set_External_Id
      (For_Agent : in Interrupt_Id;
-      Id        : in External_Interrupt_Id);
+      Id        : in External_Interrupt_Id) with Inline;
    --  Sets the external id of the external interrupt that the Agent will
    --  handle.
 
    procedure Set_Interrupt_Kind
      (For_Agent : in Interrupt_Id;
-      Kind      : in Interrupt_Type);
+      Kind      : in Interrupt_Type) with Inline;
    --  Sets the kind of interrupt that the Agent will handle. See the
    --  Interrupt_Type for the kinds of interrupts that the Agent can handle.
 
    procedure Set_Timer_To_Handle
      (Agent : in Interrupt_Id;
-      Timer : in Oak_Timer_Id);
+      Timer : in Oak_Timer_Id) with Inline;
    --  If the Agent will run the handler of a timer, it is specified here.
 
    function Timer_To_Handle (Agent : in Interrupt_Id)

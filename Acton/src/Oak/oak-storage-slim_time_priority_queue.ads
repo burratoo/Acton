@@ -43,7 +43,7 @@ package Oak.Storage.Slim_Time_Priority_Queue is
    --  Returns No_Item if there is no item found.
 
    function In_Queue (Queue : in Queue_Type; Item_Id : in Item_Type)
-                      return Boolean with Inline;
+                      return Boolean;
 
    procedure Remove_Item (Queue : in out Queue_Type; Item : in Item_Type);
    --  Removes the node from the Queue tree. Does not deallocate the node.

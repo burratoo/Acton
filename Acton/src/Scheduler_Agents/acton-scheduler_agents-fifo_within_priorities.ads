@@ -59,6 +59,7 @@ private
    use Time_Queue;
 
    Stack_Size : constant := 32 * Schedulable_Agents'Range_Length + 512;
-   Agent_Name : constant String := "Fixed_Priority_Scheduler";
+   --   Agent_Name : constant String := "Fixed_Priority_Scheduler";
+   Agent_Name : constant String := "";
 
 end Acton.Scheduler_Agents.FIFO_Within_Priorities;

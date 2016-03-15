@@ -35,7 +35,7 @@ package Oak.Agent.Kernel with Preelaborate is
 
    procedure Add_Agent_To_Charge_List
      (Oak_Kernel : in Kernel_Id;
-      Agent      : in Oak_Agent_Id);
+      Agent      : in Oak_Agent_Id) with Inline;
    --  Add the specified agent to the kernel's charge list.
 
    procedure Add_Scheduler_To_Scheduler_Table
@@ -68,10 +68,10 @@ package Oak.Agent.Kernel with Preelaborate is
 
    function Find_Top_Active_Interrupt
      (Oak_Kernel : in Kernel_Id)
-      return Interrupt_Id_With_No;
+      return Interrupt_Id_With_No with Inline;
    --  Returns the top active interrupt agent that is handling an interrupt.
 
-   procedure Flush_Scheduler_Ops_Stack (Oak_Kernel : in Kernel_Id);
+   procedure Flush_Scheduler_Ops_Stack (Oak_Kernel : in Kernel_Id) with Inline;
 
    function Has_Scheduler_Operations_Pending
      (Oak_Kernel : in Kernel_Id)
@@ -120,22 +120,22 @@ package Oak.Agent.Kernel with Preelaborate is
 
    procedure Set_Current_Agent
      (Oak_Kernel : in Kernel_Id;
-      Agent      : in Oak_Agent_Id);
+      Agent      : in Oak_Agent_Id) with Inline;
    --  Set the currently active agent.
 
    procedure Set_Current_Priority
      (Oak_Kernel : in Kernel_Id;
-      Priority   : in Any_Priority);
+      Priority   : in Any_Priority) with Inline;
    --  Sets the current priority that the kernel is running at.
 
    procedure Set_Current_Timer
      (Oak_Kernel : in Kernel_Id;
-      Timer      : in Oak_Timer_Id);
+      Timer      : in Oak_Timer_Id) with Inline;
    --  Set the currently active timer.
 
    procedure Set_Entry_Exit_Stamp
      (Oak_Kernel : in Kernel_Id;
-      Time       : in Oak_Time.Time);
+      Time       : in Oak_Time.Time) with Inline;
    --  Set the time for the kernel's Entry/Exit time stamp.
 
    --  Protected object handling code
@@ -149,7 +149,7 @@ package Oak.Agent.Kernel with Preelaborate is
       Broker     : in Protected_Id);
 
    function Next_Protected_Agent_To_Run
-     (Oak_Kernel : in Kernel_Id) return Protected_Id_With_No;
+     (Oak_Kernel : in Kernel_Id) return Protected_Id_With_No with Inline;
 
 private
 

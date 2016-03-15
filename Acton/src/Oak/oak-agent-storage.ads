@@ -37,19 +37,19 @@ package Oak.Agent.Storage is
    --  Storage used to store Agents.
 
    procedure Allocate_An_Agent (Agent : out Agent_Id_Type)
-     with Pre => Has_Space and Is_Storage_Ready;
+     with Pre => Has_Space and Is_Storage_Ready, Inline;
    --  Allocates space in the pool for a new Agent and returns the Agent Id.
    --  Callers should ensure that there is space free in the pool before
    --  calling otherwise Agent_Pool_Capacity_Error will be raised.
 
    procedure Allocate_An_Agent_With_Id (Id : in Agent_Id_Type)
-     with Pre => Is_Storage_Ready;
+     with Pre => Is_Storage_Ready, Inline;
    --  Like above, but this time the subprogram allocates the node associated
    --  with the provided Id. No check is made to see if this will clobber
    --  another agent. Used so that id's in this pool match those of the parent
    --  pools.
 
-   procedure Deallocate_Agent (Id : in Agent_Id_Type);
+   procedure Deallocate_Agent (Id : in Agent_Id_Type) with Inline;
    --  Dellocates the storage associated with the Id.
 
    function Has_Agent (Agent_Id : Agent_Id_Type) return Boolean

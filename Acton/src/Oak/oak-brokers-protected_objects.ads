@@ -39,13 +39,13 @@ package Oak.Brokers.Protected_Objects with Preelaborate is
 
    procedure Add_Contending_Task
      (PO : in Protected_Id;
-      T  : in Oak.Agent.Task_Id);
+      T  : in Oak.Agent.Task_Id) with Inline;
    --  Add a task to the contending task list.
 
    procedure Add_Task_To_Entry_Queue
      (PO       : in Protected_Id;
       T        : in Oak.Agent.Task_Id;
-      Entry_Id : Entry_Index);
+      Entry_Id : Entry_Index) with Inline;
    --  Add a task to the entry queue identified by the entry id.
 
    procedure Add_Task_To_Protected_Object
@@ -76,7 +76,7 @@ package Oak.Brokers.Protected_Objects with Preelaborate is
 
    procedure Get_And_Remove_Next_Contending_Task
      (PO        : in Protected_Id;
-      Next_Task : out Oak.Agent.Task_Id_With_No);
+      Next_Task : out Oak.Agent.Task_Id_With_No) with Inline;
    --  Remove and return the first task on the contending task list.
 
    procedure Get_And_Remove_Next_Task_From_Entry_Queue
@@ -100,7 +100,7 @@ package Oak.Brokers.Protected_Objects with Preelaborate is
    function Is_Task_Inside_Protect_Object
      (PO : in Protected_Id;
       T  : in Oak.Agent.Task_Id)
-      return Boolean;
+      return Boolean with Inline;
    --  Returns whether or not the task is inside the protected object.
 
    procedure New_Protected_Agent
@@ -112,7 +112,8 @@ package Oak.Brokers.Protected_Objects with Preelaborate is
    --  Creates a new Protected Agent with the given prameters. Allocates the
    --  storage for the Protected Agent data structure and any dependents.
 
-   procedure Set_Next_Broker (PO : Protected_Id; Next : Protected_Id_With_No);
+   procedure Set_Next_Broker (PO : Protected_Id; Next : Protected_Id_With_No)
+     with Inline;
    function Next_Broker (PO : Protected_Id) return Protected_Id_With_No;
 
    function Name (PO : in Protected_Id) return Agent_Name;
@@ -140,7 +141,7 @@ package Oak.Brokers.Protected_Objects with Preelaborate is
 
    procedure Set_State
      (PO    : in Protected_Id;
-      State : in Agent_State);
+      State : in Agent_State) with Inline;
    --  Set the state of the agent.
 
    function Task_Within

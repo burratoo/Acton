@@ -26,13 +26,13 @@ package Oak.Scheduler with Preelaborate is
    --  Adds the specified Agent to its scheduler agent (which the Agent
    --  contains a reference to).
 
-   procedure Add_Agents_To_Scheduler (Agents : in Oak_Agent_Id);
+   procedure Add_Agents_To_Scheduler (Agents : in Oak_Agent_Id) with Inline;
    --  Adds a list of Agents to their respective scheduler agents. List is
    --  linked through agents' Next_Agent link.
 
    procedure Check_Sechduler_Agents_For_Next_Agent_To_Run
      (Next_Agent_To_Run : out Oak_Agent_Id;
-      Top_Priority      : out Any_Priority);
+      Top_Priority      : out Any_Priority) with Inline;
    --  Queries the system's scheduler agents for the next task to run. Does not
    --  run the scheduler agents themselves, instead it relies on the cached
    --  results of the last run. Checks the scheduler agents for the next agent
@@ -43,11 +43,11 @@ package Oak.Scheduler with Preelaborate is
    function Find_Scheduler_For_System_Priority
      (Priority : Any_Priority;
       CPU      : System.Multiprocessors.CPU_Range)
-      return Scheduler_Id_With_No;
+      return Scheduler_Id_With_No with Inline;
    --  Finds the scheduler agent responsible for the givin Ada priority.
 
    procedure Inform_Scheduler_Agent_Has_Changed_State
-     (Changed_Agent : in Oak_Agent_Id);
+     (Changed_Agent : in Oak_Agent_Id) with Inline;
    --  Notifies the scheduler responsible for the given task that the task has
    --  changed state.
 
@@ -60,7 +60,7 @@ package Oak.Scheduler with Preelaborate is
    --  Perform kernel-level scheduler operations as a result of running a
    --  scheduler agent.
 
-   procedure Remove_Agent_From_Scheduler (Agent : in Oak_Agent_Id);
+   procedure Remove_Agent_From_Scheduler (Agent : in Oak_Agent_Id) with Inline;
    --  Removes the agent from its scheduler.
 
    procedure Service_Scheduler_Agent_Timer

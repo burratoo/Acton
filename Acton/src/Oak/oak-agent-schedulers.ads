@@ -90,23 +90,23 @@ package Oak.Agent.Schedulers with Preelaborate is
 
    procedure Set_Agent_To_Run
      (For_Agent    : in Scheduler_Id;
-      Agent_To_Run : in Oak_Agent_Id);
+      Agent_To_Run : in Oak_Agent_Id) with Inline;
    --  Stores the Agent that the Scheduler Agent's has nominated to run.
 
    procedure Set_Next_Cycle_Start_Time
      (Scheduler  : in Scheduler_Id;
-      Start_Time : in Oak_Time.Time);
+      Start_Time : in Oak_Time.Time) with Inline;
    --  Sets the time that the next cycle will commmence.
 
    procedure Set_Priority_Range
      (Agent : in Scheduler_Id;
       From  : in Any_Priority;
-      To    : in Any_Priority);
+      To    : in Any_Priority) with Inline;
    --  Stores the priority range that the Scheduler Agent is responisble for.
 
    procedure Set_Is_Scheduler_Active
      (Scheduler : in Scheduler_Id;
-      Active    : in Boolean);
+      Active    : in Boolean) with Inline;
    --  Sets whether the scheduler agent is active and is able to dispatch
    --  tasks or not.
 

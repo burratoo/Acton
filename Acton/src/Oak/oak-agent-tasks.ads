@@ -106,12 +106,12 @@ package Oak.Agent.Tasks with Preelaborate is
    procedure Set_Cycle_Period
      (For_Task     : in Task_Id;
       Cycle_Period : in Oak_Time.Time_Span)
-     with Pre => Has_Task (For_Task);
+     with Pre => Has_Task (For_Task), Inline;
    --  Set the cycle period or minimum release time of the task.
 
    procedure Set_Id_Of_Entry
      (For_Task : Task_Id;
-      Entry_Id : Entry_Index);
+      Entry_Id : Entry_Index) with Inline;
    --  Set the id of the entry the task is either queued on or is in.
 
    procedure Set_Next_Deadline_For_Task
@@ -123,19 +123,19 @@ package Oak.Agent.Tasks with Preelaborate is
 
    procedure Set_Next_Queue
      (For_Task   : Task_Id;
-      Next_Queue : Task_Id_With_No);
+      Next_Queue : Task_Id_With_No) with Inline;
    --  Set the task that represents the next queue.
 
    procedure Set_Relative_Deadline
      (For_Task          : in Task_Id;
       Relative_Deadline : in Oak_Time.Time_Span)
-     with Pre => Has_Task (For_Task);
+     with Pre => Has_Task (For_Task), Inline;
    --  Set the relative deadline of the task.
 
    procedure Update_Task_Property
      (For_Task           : in Task_Id;
       Property_To_Update : in Task_Property)
-     with Pre => Has_Task (For_Task);
+     with Pre => Has_Task (For_Task), Inline;
    --  Update a properity of the task.
 
    ---------------------
