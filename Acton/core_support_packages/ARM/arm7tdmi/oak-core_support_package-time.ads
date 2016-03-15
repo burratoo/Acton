@@ -13,7 +13,7 @@ package Oak.Core_Support_Package.Time with Pure is
 
    Oak_Tick : constant := 1;
 
-   Ticks_Per_Second : constant := 10_000;
+   Ticks_Per_Second : constant := 1000;
 
    function Get_Clock return Oak_Time
      with Import,

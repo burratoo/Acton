@@ -71,7 +71,8 @@ package Oak.Core_Support_Package.Task_Support with Preelaborate is
    procedure Enter_Barrier_Function with Inline_Always;
    procedure Exit_Barrier_Function with Inline_Always;
 
-   procedure Set_Oak_Wake_Up_Timer (Wake_Up_At : Oak.Oak_Time.Time);
+   procedure Set_Oak_Wake_Up_Timer (Wake_Up_At : Oak.Oak_Time.Time)
+     with Inline;
 
    procedure Sleep_Agent_Run_Loop;
 

@@ -58,44 +58,44 @@ package body Oak.Core_Support_Package.Task_Support is
       --  Setup SWO and debug tracing
 
       --  Enable access to SWO registers
-      DCB.Debug_Exception_And_Monitor_Control_Register.Trace := Enable;
-      ITM.Lock_Access_Register := 16#C5AC_CE55#;
-
-      --  Disable ITM and stimulus port to ensure nothing is transmitted
-      --  over SWO while setting it up
-
-      ITM.Stimulus_Port_Enable_Register := (others => Disable);
-      ITM.Trace_Control_Register.ITM := Disable;
-
-      --  Setup SWO, DWT and ITM
-
-      TPIU.Selected_Pin_Protocol_Register := (Transmit_Mode => SWO_NRZ);
-      TPIU.Asynchronous_Clock_Prescaler_Register := (SWO_Prescaler => 16#1B#);
-
-      ITM.Trace_Privilege_Register := (others => Unprivileged_Allowed);
-      DWT.Control_Register :=
-        (Number_Of_Comparitors => 4,
-         Exception_Trace       => Disable,
-         Sync_Counter_Tap_At   => Clock_Divide_By_256M,
-         Cycle_Count           => Enable);
-
-      TPIU.Formatter_And_Flush_Control_Register :=
-        (Triggers_Inserted     => True,
-         Continuous_Formatting => Disable);
-
-      ITM.Trace_Control_Register :=
-        (ITM_Busy                   => False,
-         Trace_Bus_Id               => 1,
-         Global_Timestamp_Frequency => Disable,
-         Local_Timestamp_Prescaler  => None,
-         Timestamp_Clock_Source     => System_Clock,
-         Forward_DWT_Packets        => Disable,
-         Synchronization_Packets    => Disable,
-         Local_Timestamp_Generation => Enable,
-         ITM                        => Enable);
-
-      ITM.Stimulus_Port_Enable_Register (Kernel_Entry_Stimulus_Port) := Enable;
-      ITM.Stimulus_Port_Enable_Register (Kernel_Exit_Stimulus_Port) := Enable;
+--        DCB.Debug_Exception_And_Monitor_Control_Register.Trace := Enable;
+--        ITM.Lock_Access_Register := 16#C5AC_CE55#;
+--
+--        --  Disable ITM and stimulus port to ensure nothing is transmitted
+--        --  over SWO while setting it up
+--
+--        ITM.Stimulus_Port_Enable_Register := (others => Disable);
+--        ITM.Trace_Control_Register.ITM := Disable;
+--
+--        --  Setup SWO, DWT and ITM
+--
+--        TPIU.Selected_Pin_Protocol_Register := (Transmit_Mode => SWO_NRZ);
+--     TPIU.Asynchronous_Clock_Prescaler_Register := (SWO_Prescaler => 16#1B#);
+--
+--        ITM.Trace_Privilege_Register := (others => Unprivileged_Allowed);
+--        DWT.Control_Register :=
+--          (Number_Of_Comparitors => 4,
+--           Exception_Trace       => Disable,
+--           Sync_Counter_Tap_At   => Clock_Divide_By_256M,
+--           Cycle_Count           => Enable);
+--
+--        TPIU.Formatter_And_Flush_Control_Register :=
+--          (Triggers_Inserted     => True,
+--           Continuous_Formatting => Disable);
+--
+--        ITM.Trace_Control_Register :=
+--          (ITM_Busy                   => False,
+--           Trace_Bus_Id               => 1,
+--           Global_Timestamp_Frequency => Disable,
+--           Local_Timestamp_Prescaler  => None,
+--           Timestamp_Clock_Source     => System_Clock,
+--           Forward_DWT_Packets        => Disable,
+--           Synchronization_Packets    => Disable,
+--           Local_Timestamp_Generation => Enable,
+--           ITM                        => Enable);
+--
+--    ITM.Stimulus_Port_Enable_Register (Kernel_Entry_Stimulus_Port) := Enable;
+--    ITM.Stimulus_Port_Enable_Register (Kernel_Exit_Stimulus_Port) := Enable;
    end Initialise_Task_Enviroment;
 
    --------------------

@@ -139,8 +139,9 @@ package body Oak.Core_Support_Package.Task_Support is
 
    procedure Enter_Barrier_Function is
    begin
-      Context_Switch_Will_Switch_In_Place;
-      Context_Switch_Save_Callee_Registers;
+      --  Context_Switch_Will_Switch_In_Place;
+      --  Context_Switch_Save_Callee_Registers;
+      null;
    end Enter_Barrier_Function;
 
    ---------------------------
@@ -149,7 +150,8 @@ package body Oak.Core_Support_Package.Task_Support is
 
    procedure Exit_Barrier_Function is
    begin
-      Context_Switch;
+--        Context_Switch;
+      null;
    end Exit_Barrier_Function;
 
    ---------------------------
@@ -161,6 +163,8 @@ package body Oak.Core_Support_Package.Task_Support is
       Decrementer_Value : Oak_Time.Time_Span;
    begin
       --  Do have a problem when the TBL overflows into the TBU
+
+      --  Set decrementer to minimum value if clock is less than zero.
       Decrementer_Value := Wake_Up_At - Oak_Time.Clock;
       if Decrementer_Value <= Oak_Time.Time_Span_Zero then
          Decrementer_Value := Oak_Time.Time_Span_Unit;

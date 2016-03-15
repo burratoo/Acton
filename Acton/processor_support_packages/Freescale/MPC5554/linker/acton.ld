@@ -33,10 +33,20 @@ MEMORY
 }
 
 /* MPC5554 4K of internal cache used for stack. */
-/* Stack Address Parameters */
+/* Kernel Stack Address Parameters */
+/*__SP_END     = 0x40040000;
+ *__STACK_SIZE = 0x1000;
+ *__SP_INIT    = __SP_END + __STACK_SIZE;*/
+
 __SP_END     = 0x40000000;
 __STACK_SIZE = 0x10000;
 __SP_INIT    = __SP_END + __STACK_SIZE;
+
+
+/* Task Address Store */
+__TASK_SP_END     = 0x40000000;
+__TASK_STACK_SIZE = 0x10000;
+__TASK_SP_INIT    = __TASK_SP_END + __TASK_STACK_SIZE;
 
 /*
 Optionally define this variable with the address of heap
@@ -136,9 +146,9 @@ __heap_start   =
  * |                         | > int_sram
  * +-------------------------+
  * .                         .
- * . __SP_END                .
+ * . __TASK_SP_END           .
  * .                         .
- * | __SP_INIT               | Top of stack
+ * | __TASK_SP_INIT          | Top of stack
  * +-------------------------+
  */
 
@@ -274,6 +284,7 @@ SECTIONS
     *(.data.*)
     *(.gnu.linkonce.d*)
     CONSTRUCTORS
+    . = ALIGN(4);
   } > int_sram
 
   NEXT_LOAD_ADDR = NEXT_LOAD_ADDR + SIZEOF(.data);

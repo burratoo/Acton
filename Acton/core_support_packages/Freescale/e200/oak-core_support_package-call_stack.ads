@@ -26,11 +26,11 @@ package Oak.Core_Support_Package.Call_Stack with Pure is
    --  only a memory address is attached.
    Stack_Pointer_Init : constant System.Storage_Elements.Storage_Element
    with Import, Convention => Assembler,
-     External_Name => "__SP_INIT";
+     External_Name => "__TASK_SP_INIT";
 
    Stack_Pointer_End  : constant System.Storage_Elements.Storage_Element
      with Import, Convention => Assembler,
-     External_Name => "__SP_END";
+     External_Name => "__TASK_SP_END";
 
    --
    --  SPRG0 -> Kernel stack pointer

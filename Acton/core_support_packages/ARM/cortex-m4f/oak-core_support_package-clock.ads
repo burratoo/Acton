@@ -7,7 +7,7 @@ package Oak.Core_Support_Package.Clock with Preelaborate is
    -- INTERNAL PACKAGE COMPONENTS --
    ---------------------------------
 
-   procedure Update_Alarm (To : in Oak_Time);
+   procedure Update_Alarm (To : in Oak_Time) with Inline;
 
    Time_Base_Update : constant := 1_000; -- 1 ms
    Time_Base_Tick   : constant := Clock_Speed / Time_Base_Update;
