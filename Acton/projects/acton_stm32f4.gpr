@@ -40,7 +40,7 @@ project Acton_STM32F4 is
    Target_Debugger_Command := Target & "gdb";
 
    --  Builder Switches
-   Target_Ada_Switches := Acton_Common.Ada_Switches & ("-mcpu=cortex-m4", "-mthumb", "-mfloat-abi=hard", "-mfpu=fpv4-sp-d16", "-flto");
+   Target_Ada_Switches := Acton_Common.Ada_Switches & ("-mcpu=cortex-m4", "-mthumb", "-mfloat-abi=hard", "-mfpu=fpv4-sp-d16"); --, "-flto");
    Target_Asm_Switches := Acton_Common.Asm_Switches & ("-mcpu=cortex-m4", "-mthumb", "-mfloat-abi=hard", "-mfpu=fpv4-sp-d16");
 
 

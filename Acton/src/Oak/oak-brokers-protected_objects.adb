@@ -336,12 +336,12 @@ package body Oak.Brokers.Protected_Objects is
       return Current_Task /= No_Agent;
    end Is_Task_Inside_Protect_Object;
 
-   -------------------------
-   -- New_Protected_Agent --
-   -------------------------
+   --------------------------
+   -- New_Protected_Broker --
+   --------------------------
 
-   procedure New_Protected_Agent
-     (Agent                 : out Protected_Id;
+   procedure New_Protected_Broker
+     (Broker                : out Protected_Id;
       Name                  : in String;
       Ceiling_Priority      : in Integer;
       Barriers_Function     : in Address;
@@ -349,7 +349,7 @@ package body Oak.Brokers.Protected_Objects is
    is
       Prior  : Any_Priority;
    begin
-      Allocate_An_Agent (Agent);
+      Allocate_An_Agent (Broker);
 
       if Ceiling_Priority in Any_Priority then
          Prior := System.Any_Priority (Ceiling_Priority);
@@ -360,9 +360,9 @@ package body Oak.Brokers.Protected_Objects is
       end if;
 
       Setup_Protected_Agent : declare
-         P : Protected_Broker_Record renames Agent_Pool (Agent);
+         P : Protected_Broker_Record renames Agent_Pool (Broker);
       begin
-         Set_Name (Agent, Name);
+         Set_Name (Broker, Name);
          P.Ceiling_Priority       := Prior;
          P.State                  := Inactive;
          P.Object_Record          := Object_Record_Address;
@@ -372,7 +372,7 @@ package body Oak.Brokers.Protected_Objects is
          P.Tasks_Within           := Empty_List;
          P.Contending_Tasks       := Empty_List;
       end Setup_Protected_Agent;
-   end New_Protected_Agent;
+   end New_Protected_Broker;
 
    ------------------------
    -- Purge_Entry_Queues --

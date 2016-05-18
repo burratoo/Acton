@@ -42,7 +42,7 @@ package Oak.Storage.Generic_Pool is
    --  Returns true if there is room in the pool.
 
    function Is_Storage_Ready return Boolean
-     with Convention => Ghost;
+     with Ghost;
    --  Returns true if the Item pool has been setup.
 
    procedure Setup_Storage

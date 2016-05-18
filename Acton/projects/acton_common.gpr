@@ -45,8 +45,8 @@ abstract project Acton_Common is
 --                           "Acton.Scheduler_Agents.FIFO_Within_Priorities_GNATBB"
 );
 
-   Ada_Switches := ("-gnatwa.Xl", "-O2", "-g", "-ffunction-sections", "-fdata-sections", "-gnatn", "-gnatg", "-gnatp", "-fcallgraph-info=su", "-gnatct"); -- , "-flto");
-   Asm_Switches := ("-fcallgraph-info=su");
+   Ada_Switches := ("-gnatwa.Xl", "-O2", "-g", "-ffunction-sections", "-fdata-sections", "-gnatn", "-gnatg", "-gnatp"); -- , "-flto");
+   Asm_Switches := ();
 
    Documentation_Dir := "../doc/";
 

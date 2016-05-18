@@ -73,7 +73,7 @@ package Oak.Agent.Oak_Agent with Preelaborate is
    --  the sleep agent as part of the setup routine.
 
    function Is_Storage_Ready return Boolean
-     with Convention => Ghost;
+     with Ghost;
 
    ------------------------
    -- Access Subprograms --
@@ -255,7 +255,7 @@ package Oak.Agent.Oak_Agent with Preelaborate is
    procedure Set_Stack_Pointer
      (For_Agent     : in Oak_Agent_Id;
       Stack_Pointer : in System.Address)
-     with Pre => Has_Agent (For_Agent), Inline_Always;
+     with Inline_Always;
    --  Sets the call stack pointer for the agent. Note that this procedure
    --  should always be inlined since it is called from within the core
    --  interrupt routines.
@@ -300,7 +300,7 @@ package Oak.Agent.Oak_Agent with Preelaborate is
    ---------------------
 
    function Has_Agent (Agent : Oak_Agent_Id) return Boolean
-     with Convention => Ghost;
+     with Ghost;
    --  Check whether the Agent existing in the store.
 
 private

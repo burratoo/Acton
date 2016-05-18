@@ -103,14 +103,14 @@ package Oak.Brokers.Protected_Objects with Preelaborate is
       return Boolean with Inline;
    --  Returns whether or not the task is inside the protected object.
 
-   procedure New_Protected_Agent
-     (Agent                 : out Protected_Id;
+   procedure New_Protected_Broker
+     (Broker                : out Protected_Id;
       Name                  : in String;
       Ceiling_Priority      : in Integer;
       Barriers_Function     : in Address;
       Object_Record_Address : in Address);
-   --  Creates a new Protected Agent with the given prameters. Allocates the
-   --  storage for the Protected Agent data structure and any dependents.
+   --  Creates a new Protected Broker with the given prameters. Allocates the
+   --  storage for the Protected Broker data structure and any dependents.
 
    procedure Set_Next_Broker (PO : Protected_Id; Next : Protected_Id_With_No)
      with Inline;

@@ -142,7 +142,7 @@ package Oak.Agent.Tasks with Preelaborate is
    -- Ghost Functions --
    ---------------------
 
-   function Has_Task (T : Task_Id) return Boolean with Convention => Ghost;
+   function Has_Task (T : Task_Id) return Boolean with Ghost;
    --  Does the storage have a valid task associated with the id.
 
 private
