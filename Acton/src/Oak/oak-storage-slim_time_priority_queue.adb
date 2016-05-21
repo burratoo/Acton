@@ -53,7 +53,7 @@ package body Oak.Storage.Slim_Time_Priority_Queue is
    end Enqueue_Item;
 
    -----------------------
-   -- Find_Earlest_Item --
+   -- Find_Earliest_Item --
    -----------------------
 
    function Find_Earliest_Item
@@ -64,7 +64,7 @@ package body Oak.Storage.Slim_Time_Priority_Queue is
       N             : Node_Array renames In_Queue.Nodes;
 
       Current_Node  : Item_Type := In_Queue.Root;
-      Selected_Node : Item_Type;
+      Selected_Node : Item_Type := No_Node;
 
    begin
       while Current_Node /= No_Node loop
