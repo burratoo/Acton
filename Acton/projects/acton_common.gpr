@@ -33,7 +33,7 @@ abstract project Acton_Common is
                          "Oak.Core",
                          "Interfaces.C",
                          "Oak.Agent.Interrupts",
-                         "Oak.Agent.Tasks.Cycle",
+                         "Oak.Agent.Tasks.Cyclic",
                          "Oak.Core_Support_Package.Interrupts",
                          "Oak.Core_Support_Package.Task_Support",
                          "Oak.Memory.Ops",
@@ -65,6 +65,5 @@ abstract project Acton_Common is
    package Pretty_Printer is
       for Default_Switches ("ada") use ("-c3", "-c4", "-c5", "-M79");
    end Pretty_Printer;
-
 end Acton_Common;
 
