@@ -1,7 +1,7 @@
 --                                                                          --
 --                              OAK COMPONENTS                              --
 --                                                                          --
---                           OAK.AGENT.TASKS.CYCLE                          --
+--                          OAK.AGENT.TASKS.CYCLIC                          --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
@@ -17,7 +17,7 @@ with Oak.Scheduler;       use Oak.Scheduler;
 with Oak.States;          use Oak.States;
 with Oak.Timers;          use Oak.Timers;
 
-package body Oak.Agent.Tasks.Cycle is
+package body Oak.Agent.Tasks.Cyclic is
 
    ----------------
    -- Body Types --
@@ -222,4 +222,4 @@ package body Oak.Agent.Tasks.Cycle is
       Deactivate_Timer (T.Deadline_Timer);
    end Setup_Cyclic_Section;
 
-end Oak.Agent.Tasks.Cycle;
+end Oak.Agent.Tasks.Cyclic;

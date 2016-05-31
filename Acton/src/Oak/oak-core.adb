@@ -18,7 +18,7 @@ with Oak.Agent.Kernel;            use Oak.Agent.Kernel;
 with Oak.Agent.Oak_Agent;         use Oak.Agent.Oak_Agent;
 with Oak.Agent.Schedulers;        use Oak.Agent.Schedulers;
 with Oak.Agent.Tasks;             use Oak.Agent.Tasks;
-with Oak.Agent.Tasks.Cycle;       use Oak.Agent.Tasks.Cycle;
+with Oak.Agent.Tasks.Cyclic;      use Oak.Agent.Tasks.Cyclic;
 with Oak.Agent.Tasks.Activation;  use Oak.Agent.Tasks.Activation;
 
 with Oak.Brokers;                   use Oak.Brokers;

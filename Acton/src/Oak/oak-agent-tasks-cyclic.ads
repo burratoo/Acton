@@ -1,7 +1,7 @@
 --                                                                          --
 --                              OAK COMPONENTS                              --
 --                                                                          --
---                           OAK.AGENT.TASKS.CYCLE                          --
+--                          OAK.AGENT.TASKS.CYCLIC                          --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
@@ -10,7 +10,7 @@
 
 --  This package handles the cyclic aspect of tasks in Oak.
 
-package Oak.Agent.Tasks.Cycle with Preelaborate is
+package Oak.Agent.Tasks.Cyclic with Preelaborate is
 
    procedure New_Cycle (For_Task : in Task_Id);
    --  Causes the Agent to commence a new cycle. Recalculates new timing
@@ -27,4 +27,4 @@ package Oak.Agent.Tasks.Cycle with Preelaborate is
    --  Setup the cyclic section for a task. This prepares the Agent structures
    --  for cyclic operations.
 
-end Oak.Agent.Tasks.Cycle;
+end Oak.Agent.Tasks.Cyclic;
