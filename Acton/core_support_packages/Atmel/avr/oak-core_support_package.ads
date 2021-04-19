@@ -1,3 +1,14 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                               OAK CORE SUPPORT PACKAGE                               --
+--                                      ATMEL AVR                                       --
+--                                                                                      --
+--                               OAK.CORE_SUPPORT_PACKAGE                               --
+--                                                                                      --
+--                       Copyright (C) 2012-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 package Oak.Core_Support_Package with Pure is
 
    Number_Of_Processors : constant := 1;

@@ -1,15 +1,14 @@
-------------------------------------------------------------------------------
---                                                                          --
---                              OAK COMPONENTS                              --
---                                                                          --
---                           OAK.AGENT.OAK_AGENT                            --
---                                                                          --
---                                 S p e c                                  --
---                                                                          --
---                 Copyright (C) 2013-2014, Patrick Bernardi                --
-------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                                    OAK COMPONENTS                                    --
+--                                                                                      --
+--                                 OAK.AGENT.OAK_AGENT                                  --
+--                                                                                      --
+--                       Copyright (C) 2013-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
 
---  This package defines Oak's primative agent â€“ Oak Agent â€“ from which all
+--  This package defines Oak's primative agent Ð Oak Agent Ð from which all
 --  agents are derived. An Oak Agent is one of Oak's three main data
 --  structures: the other two being Oak Timers and Oak Messages. Every agent in
 --  Oak possess an Oak Agent record, in fact except for the sleep agent, no

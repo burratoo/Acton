@@ -1,3 +1,14 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                            OAK PROCESSOR SUPPORT PACKAGE                             --
+--                                   ATMEL ATMEGA128P                                   --
+--                                                                                      --
+--                                        AVR.IO                                        --
+--                                                                                      --
+--                       Copyright (C) 2012-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 with System.Storage_Elements; use System.Storage_Elements;
 
 package AVR.IO with Preelaborate is

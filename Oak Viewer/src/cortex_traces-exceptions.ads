@@ -1,3 +1,13 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                                      OAK VIEWER                                      --
+--                                                                                      --
+--                               CORTEX_TRACES.EXCEPTIONS                               --
+--                                                                                      --
+--                       Copyright (C) 2014-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 with ISA.ARM.Cortex_M4.Exceptions; use ISA.ARM.Cortex_M4.Exceptions;
 with DWT_ITM_Packets;              use DWT_ITM_Packets;
 

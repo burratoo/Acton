@@ -1,13 +1,12 @@
-------------------------------------------------------------------------------
---                                                                          --
---                              OAK COMPONENTS                              --
---                                                                          --
---                                OAK.AGENT                                 --
---                                                                          --
---                                 S p e c                                  --
---                                                                          --
---                 Copyright (C) 2010-2014, Patrick Bernardi                --
-------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                                    OAK COMPONENTS                                    --
+--                                                                                      --
+--                                       OAK.AGENT                                      --
+--                                                                                      --
+--                       Copyright (C) 2011-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
 
 --  This package defines the types that define Oak's agents. They are housed
 --  together in this package together to prevent circular dependencies

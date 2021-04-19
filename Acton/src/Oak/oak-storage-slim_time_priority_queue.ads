@@ -1,13 +1,12 @@
-------------------------------------------------------------------------------
---                                                                          --
---                              OAK COMPONENTS                              --
---                                                                          --
---                   OAK.STORAGE.SLIM_TIME_PRIORITY_QUEUE                   --
---                                                                          --
---                                 S p e c                                  --
---                                                                          --
---                 Copyright (C) 2014-2014, Patrick Bernardi                --
-------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                                    OAK COMPONENTS                                    --
+--                                                                                      --
+--                         OAK.STORAGE.SLIM_TIME_PRIORITY_QUEUE                         --
+--                                                                                      --
+--                       Copyright (C) 2014-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
 
 --  This is a slim priority queue since it doesn't store anything. Instead
 --  the Item_Type is used to point not only to the node inside the queue, but

@@ -1,3 +1,13 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                                  OAKLAND COMPONENTS                                  --
+--                                                                                      --
+--                         ADA.EXECUTION_SERVER.PRIORITY_SERVER                         --
+--                                                                                      --
+--                       Copyright (C) 2014-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 with System;
 
 package Ada.Execution_Server.Priority_Server is

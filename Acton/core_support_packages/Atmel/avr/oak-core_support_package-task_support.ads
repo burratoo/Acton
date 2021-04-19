@@ -1,3 +1,14 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                               OAK CORE SUPPORT PACKAGE                               --
+--                                      ATMEL AVR                                       --
+--                                                                                      --
+--                        OAK.CORE_SUPPORT_PACKAGE.TASK_SUPPORT                         --
+--                                                                                      --
+--                       Copyright (C) 2012-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 --
 --  Processor Support Package for the e200z6 PowerPC Core.
 --

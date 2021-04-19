@@ -1,3 +1,14 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                            OAK PROCESSOR SUPPORT PACKAGE                             --
+--                                      ST STM32F4                                      --
+--                                                                                      --
+--                                          ST                                          --
+--                                                                                      --
+--                       Copyright (C) 2014-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 package ST with Pure is
    type Enable_Type is (Disable, Enable);
    for Enable_Type use (Disable => 0, Enable => 1);

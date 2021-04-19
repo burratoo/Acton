@@ -1,3 +1,14 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                            OAK PROCESSOR SUPPORT PACKAGE                             --
+--                                      ST STM32F4                                      --
+--                                                                                      --
+--                                    ST.STM32F4.RCC                                    --
+--                                                                                      --
+--                       Copyright (C) 2014-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 with System; use System;
 
 package ST.STM32F4.RCC with Preelaborate is

@@ -1,13 +1,12 @@
-------------------------------------------------------------------------------
---                                                                          --
---                              OAK COMPONENTS                              --
---                                                                          --
---                         OAK.STORAGE.GENERIC_POOL                         --
---                                                                          --
---                                 S p e c                                  --
---                                                                          --
---                 Copyright (C) 2014-2014, Patrick Bernardi                --
-------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                                    OAK COMPONENTS                                    --
+--                                                                                      --
+--                                OAK.STORAGE.GENERIC_POOL                              --
+--                                                                                      --
+--                       Copyright (C) 2014-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
 
 --  This package provides a generic storage pool built around an array. Each
 --  instantiation creates a new storage pool (or table) to store the specific

@@ -1,3 +1,14 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                            OAK PROCESSOR SUPPORT PACKAGE                             --
+--                                   ATMEL ATMEGA128P                                   --
+--                                                                                      --
+--                       OAK.PROCESSOR_SUPPORT_PACKAGE.INTERRUPTS                       --
+--                                                                                      --
+--                       Copyright (C) 2012-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 with Oak.Agent.Tasks;
 with Oak.Core_Support_Package.Task_Support;
 use Oak.Core_Support_Package.Task_Support;

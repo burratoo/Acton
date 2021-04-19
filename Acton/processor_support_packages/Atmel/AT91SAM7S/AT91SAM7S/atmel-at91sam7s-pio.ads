@@ -1,3 +1,13 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                            ACTON PROCESSOR SUPPORT PACKAGE                           --
+--                                                                                      --
+--                                  ATMEL.AT91SAM7S.PIO                                 --
+--                                                                                      --
+--                       Copyright (C) 2014-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 with Interfaces; use Interfaces;
 with System;     use System;
 

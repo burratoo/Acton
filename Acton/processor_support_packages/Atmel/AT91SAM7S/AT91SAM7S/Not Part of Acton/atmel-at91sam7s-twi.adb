@@ -1,3 +1,13 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                            ACTON PROCESSOR SUPPORT PACKAGE                           --
+--                                                                                      --
+--                                  ATMEL.AT91SAM7S.TWI                                 --
+--                                                                                      --
+--                       Copyright (C) 2014-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 with Ada.Unchecked_Conversion;
 with System.Address_To_Access_Conversions;
 

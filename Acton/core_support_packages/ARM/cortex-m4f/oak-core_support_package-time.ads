@@ -1,3 +1,14 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                               OAK CORE SUPPORT PACKAGE                               --
+--                                    ARM CORTEX M4F                                    --
+--                                                                                      --
+--                             OAK.CORE_SUPPORT_PACKAGE.TIME                            --
+--                                                                                      --
+--                       Copyright (C) 2014-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 with Oak.Project_Support_Package; use Oak.Project_Support_Package;
 
 package Oak.Core_Support_Package.Time with Pure is

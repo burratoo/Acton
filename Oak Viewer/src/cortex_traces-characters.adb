@@ -1,3 +1,13 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                                      OAK VIEWER                                      --
+--                                                                                      --
+--                               CORTEX_TRACES.CHARACTERS                               --
+--                                                                                      --
+--                       Copyright (C) 2014-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 with DWT_ITM_Packets; use DWT_ITM_Packets;
 
 package body Cortex_Traces.Characters is

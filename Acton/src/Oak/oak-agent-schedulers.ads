@@ -1,13 +1,12 @@
-------------------------------------------------------------------------------
---                                                                          --
---                              OAK COMPONENTS                              --
---                                                                          --
---                           OAK.AGENT.SCHEDULERS                           --
---                                                                          --
---                                 S p e c                                  --
---                                                                          --
---                 Copyright (C) 2010-2014, Patrick Bernardi                --
-------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                                    OAK COMPONENTS                                    --
+--                                                                                      --
+--                                 OAK.AGENT.SCHEDULERS                                 --
+--                                                                                      --
+--                       Copyright (C) 2010-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
 
 --  This package provides Oak's Scheduler Agents, the agents that that provide
 --  Oak's scheduling services. The Agent extends the Oak Agent data structure

@@ -1,3 +1,13 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                            ACTON PROCESSOR SUPPORT PACKAGE                           --
+--                                                                                      --
+--                                   ATMEL AT91SAM7S                                    --
+--                                                                                      --
+--                       Copyright (C) 2014-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 package Atmel.AT91SAM7S with Pure is
 
    Register_Size : constant := 32;

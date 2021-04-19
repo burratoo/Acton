@@ -1,3 +1,14 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                            OAK PROCESSOR SUPPORT PACKAGE                             --
+--                                  FREESCALE MPC5544                                   --
+--                                                                                      --
+--                                     MPC5554.XBAR                                     --
+--                                                                                      --
+--                       Copyright (C) 2010-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 with System.Storage_Elements; use System.Storage_Elements;
 
 package MPC5554.XBAR with Preelaborate is

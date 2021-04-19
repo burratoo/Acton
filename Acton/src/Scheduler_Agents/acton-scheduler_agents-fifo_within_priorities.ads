@@ -1,13 +1,12 @@
-------------------------------------------------------------------------------
---                                                                          --
---                           ACTON SCHEDULER AGENT                          --
---                                                                          --
---               ACTON.SCHEDULER_AGENTS.FIFO_WITHIN_PRIORITIES              --
---                                                                          --
---                                 S p e c                                  --
---                                                                          --
---                 Copyright (C) 2010-2014, Patrick Bernardi                --
-------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                                ACTON SCHEDULER AGENT                                 --
+--                                                                                      --
+--                      ACTON.SCHEDULER_AGENTS.FIFO_WITHIN_PRIORITIES                   --
+--                                                                                      --
+--                       Copyright (C) 2010-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
 
 pragma Restrictions (No_Elaboration_Code);
 

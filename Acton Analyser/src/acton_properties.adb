@@ -1,3 +1,13 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                                    ACTON ANALYSER                                    --
+--                                                                                      --
+--                                   ACTON_PROPERTIES                                   --
+--                                                                                      --
+--                       Copyright (C) 2016-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 with Asis.Compilation_Units;
 with Asis.Declarations;
 with Asis.Definitions;

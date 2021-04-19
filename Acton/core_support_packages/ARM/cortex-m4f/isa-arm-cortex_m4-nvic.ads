@@ -1,3 +1,14 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                               OAK CORE SUPPORT PACKAGE                               --
+--                                    ARM CORTEX M4F                                    --
+--                                                                                      --
+--                                ISA.ARM.CORTEX_M4.NVIC                                --
+--                                                                                      --
+--                       Copyright (C) 2014-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 with ISA.ARM.Cortex_M4.Exceptions; use ISA.ARM.Cortex_M4.Exceptions;
 
 with System; use System;

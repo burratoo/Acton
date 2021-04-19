@@ -1,3 +1,13 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                                  OAKLAND COMPONENTS                                  --
+--                                                                                      --
+--                                ADA.TASK_IDENTIFICATION                               --
+--                                                                                      --
+--                       Copyright (C) 2014-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 with Oak.Agent;           use Oak.Agent;
 with Oak.Agent.Kernel;    use Oak.Agent.Kernel;
 with Oak.Agent.Oak_Agent; use Oak.Agent.Oak_Agent;

@@ -1,3 +1,13 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                                    OAK COMPONENTS                                    --
+--                                                                                      --
+--                                OAK.STORAGE.BINARY_HEAP                               --
+--                                                                                      --
+--                       Copyright (C) 2014-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 package body Oak.Storage.Binary_Heap is
 
    procedure Add_Item (To_Heap : in out Heap_Type;

@@ -1,3 +1,14 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                            OAK PROCESSOR SUPPORT PACKAGE                             --
+--                                   ATMEL ATMEGA128P                                   --
+--                                                                                      --
+--                                      AVR.TIMERS                                      --
+--                                                                                      --
+--                       Copyright (C) 2012-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 with Interfaces; use Interfaces;
 with System.Storage_Elements; use System.Storage_Elements;
 

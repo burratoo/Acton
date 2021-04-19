@@ -1,3 +1,14 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                            ACTON PROCESSOR SUPPORT PACKAGE                           --
+--                                      ST STM32F4                                      --
+--                                                                                      --
+--                                    GNAT_EXCEPTION                                    --
+--                                                                                      --
+--                       Copyright (C) 2014-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 with System;
 
 package GNAT_Exception with Pure is

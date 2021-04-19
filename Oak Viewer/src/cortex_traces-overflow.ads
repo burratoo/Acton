@@ -1,3 +1,13 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                                      OAK VIEWER                                      --
+--                                                                                      --
+--                                CORTEX_TRACES.OVERFLOW                                --
+--                                                                                      --
+--                       Copyright (C) 2014-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 package Cortex_Traces.Overflow is
 
    type Overflow_Event is new Cortex_Event with null record;

@@ -1,3 +1,13 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                            ACTON PROCESSOR SUPPORT PACKAGE                           --
+--                                                                                      --
+--                                  ATMEL.AT91SAM7S.ADC                                 --
+--                                                                                      --
+--                       Copyright (C) 2014-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 with Atmel.AT91SAM7S.PMC;
 
 package body Atmel.AT91SAM7S.ADC is

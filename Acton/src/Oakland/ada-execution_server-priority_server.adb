@@ -1,3 +1,13 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                                  OAKLAND COMPONENTS                                  --
+--                                                                                      --
+--                            ADA.EXECUTION_SERVER.OPERATIONS                           --
+--                                                                                      --
+--                       Copyright (C) 2014-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 with Acton.Scheduler_Agents.Priority_Server;
 
 with Oak.Scheduler;            use Oak.Scheduler;

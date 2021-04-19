@@ -1,3 +1,14 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                               OAK CORE SUPPORT PACKAGE                               --
+--                                    FREESCALE e200                                    --
+--                                                                                      --
+--                             OAK.CORE_SUPPORT_PACKAGE.TIME                            --
+--                                                                                      --
+--                       Copyright (C) 2010-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 --
 --  The e200z6 core in the MPC5554 has a 64 bit Time Base register that we can
 --  used to base the clock on. Since all timing events are based off this

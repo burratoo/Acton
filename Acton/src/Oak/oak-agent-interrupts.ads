@@ -1,13 +1,12 @@
-------------------------------------------------------------------------------
---                                                                          --
---                              OAK COMPONENTS                              --
---                                                                          --
---                           OAK.AGENT.INTERRUPTS                           --
---                                                                          --
---                                 S p e c                                  --
---                                                                          --
---                 Copyright (C) 2013-2014, Patrick Bernardi                --
-------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                                    OAK COMPONENTS                                    --
+--                                                                                      --
+--                                 OAK.AGENT.INTERRUPTS                                 --
+--                                                                                      --
+--                       Copyright (C) 2013-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
 
 --  This package provides Oak's Interrupt Agents, the agent that executes
 --  interrupt handlers in Oak. An Interrupt Agent exists for each interrupt

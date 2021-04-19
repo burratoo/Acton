@@ -1,3 +1,14 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                               OAK CORE SUPPORT PACKAGE                               --
+--                                         ARM                                          --
+--                                                                                      --
+--                                       ISA.ARM                                        --
+--                                                                                      --
+--                       Copyright (C) 2014-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 package ISA.ARM with Pure is
 
    type Enable_No_Change_Type is (No_Change, Enable);

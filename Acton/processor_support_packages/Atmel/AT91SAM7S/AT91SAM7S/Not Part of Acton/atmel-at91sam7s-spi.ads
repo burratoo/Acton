@@ -1,3 +1,13 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                            ACTON PROCESSOR SUPPORT PACKAGE                           --
+--                                                                                      --
+--                                  ATMEL.AT91SAM7S.PDC                                 --
+--                                                                                      --
+--                       Copyright (C) 2014-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 with Ada.Interrupts; use Ada.Interrupts;
 with Interfaces;     use Interfaces;
 with System;         use System;

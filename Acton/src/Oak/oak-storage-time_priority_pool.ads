@@ -1,13 +1,12 @@
-------------------------------------------------------------------------------
---                                                                          --
---                              OAK COMPONENTS                              --
---                                                                          --
---                      OAK.STORAGE.TIME_PRIORITY_POOL                      --
---                                                                          --
---                                 S p e c                                  --
---                                                                          --
---                 Copyright (C) 2013-2014, Patrick Bernardi                --
-------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                                    OAK COMPONENTS                                    --
+--                                                                                      --
+--                            OAK.STORAGE.TIME_PRIORITY_POOL                            --
+--                                                                                      --
+--                       Copyright (C) 2013-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
 
 --  This package implements Oak's Time-Priority Pool. It is actually a set that
 --  in the first instance stores elements by increasing time (though the set is

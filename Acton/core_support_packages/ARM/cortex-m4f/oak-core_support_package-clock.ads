@@ -1,3 +1,14 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                               OAK CORE SUPPORT PACKAGE                               --
+--                                    ARM CORTEX M4F                                    --
+--                                                                                      --
+--                            OAK.CORE_SUPPORT_PACKAGE.CLOCK                            --
+--                                                                                      --
+--                       Copyright (C) 2014-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 with Oak.Core_Support_Package.Time; use Oak.Core_Support_Package.Time;
 with Oak.Project_Support_Package;   use Oak.Project_Support_Package;
 

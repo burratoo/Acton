@@ -1,13 +1,12 @@
-------------------------------------------------------------------------------
---                                                                          --
---                           ACTON SCHEDULER AGENT                          --
---                                                                          --
---              ACTON.SCHEDULER_AGENTS.FIFO_WITHIN_PRIORITIES               --
---                                                                          --
---                                 B o d y                                  --
---                                                                          --
---                 Copyright (C) 2010-2014, Patrick Bernardi                --
-------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                                ACTON SCHEDULER AGENT                                 --
+--                                                                                      --
+--                      ACTON.SCHEDULER_AGENTS.FIFO_WITHIN_PRIORITIES                   --
+--                                                                                      --
+--                       Copyright (C) 2010-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
 
 with Oak.Message;  use Oak.Message;
 with Oak.Oak_Time; use Oak.Oak_Time;

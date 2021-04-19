@@ -1,19 +1,18 @@
-------------------------------------------------------------------------------
---                                                                          --
---                         OAK CORE SUPPORT PACKAGE                         --
---                              FREESCALE e200                              --
---                                                                          --
---                    OAK.CORE_SUPPORT_PACKAGE.INTERRUPTS                   --
---                                                                          --
---                                 S p e c                                  --
---                                                                          --
---                 Copyright (C) 2010-2014, Patrick Bernardi                --
-------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                               OAK CORE SUPPORT PACKAGE                               --
+--                                     ARM ARM7TDMI                                     --
+--                                                                                      --
+--                          OAK.CORE_SUPPORT_PACKAGE.INTERRUPTS                         --
+--                                                                                      --
+--                       Copyright (C) 2014-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
 
 --  This package provides the core-level interrupt support, including
 --  interrupts that occur at the core level.
 
---  This is the Freescal e200 version.
+--  This is the ARM Arm7TDMI version
 
 with System; use System;
 

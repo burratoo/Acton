@@ -1,3 +1,14 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                               OAK CORE SUPPORT PACKAGE                               --
+--                                    ARM CORTEX M4F                                    --
+--                                                                                      --
+--                            OAK.CORE_SUPPORT_PACKAGE.TRACE                            --
+--                                                                                      --
+--                       Copyright (C) 2014-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 with Oak.Agent;   use Oak.Agent;
 with Oak.Core;    use Oak.Core;
 with Oak.States;  use Oak.States;

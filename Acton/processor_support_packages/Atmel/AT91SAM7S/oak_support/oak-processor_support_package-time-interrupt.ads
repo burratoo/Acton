@@ -1,3 +1,14 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                            OAK PROCESSOR SUPPORT PACKAGE                             --
+--                                   ATMEL AT91SAM7S                                    --
+--                                                                                      --
+--                     OAK.PROCESSOR_SUPPORT_PACKAGE.TIME.INTERRUPT                     --
+--                                                                                      --
+--                       Copyright (C) 2014-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 --  In a seperate file so register restrictions can be placed on the FIQ
 --  handler.
 

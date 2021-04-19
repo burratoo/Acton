@@ -1,3 +1,14 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                            OAK PROCESSOR SUPPORT PACKAGE                             --
+--                                  FREESCALE MPC5544                                   --
+--                                                                                      --
+--                       OAK.PROCESSOR_SUPPORT_PACKAGE.INTERRUPTS                       --
+--                                                                                      --
+--                       Copyright (C) 2010-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 with Interfaces; use Interfaces;
 with System; use System;
 with MPC5554; use MPC5554;

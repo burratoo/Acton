@@ -1,3 +1,13 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                                      OAK VIEWER                                      --
+--                                                                                      --
+--                                     CORTEX_TRACES                                    --
+--                                                                                      --
+--                       Copyright (C) 2014-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 with Cortex_Trace_Tags; use Cortex_Trace_Tags;
 with GNAT.Sockets;      use GNAT.Sockets;
 

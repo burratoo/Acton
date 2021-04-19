@@ -1,3 +1,13 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                                    ACTON ANALYSER                                    --
+--                                                                                      --
+--                                  PROGRAM_STATISTICS                                  --
+--                                                                                      --
+--                       Copyright (C) 2016-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 with Acton_Properties;  use Acton_Properties;
 with Analyser_Support;  use Analyser_Support;
 with Protected_Objects; use Protected_Objects;

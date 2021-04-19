@@ -1,8 +1,17 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                                    OAK COMPONENTS                                    --
+--                                                                                      --
+--                                    OAK.MEMORY.OPS                                    --
+--                                                                                      --
+--                       Copyright (C) 2012-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
+
 with Ada.Unchecked_Conversion;
 with System.Storage_Elements; use System.Storage_Elements;
 with Interfaces; use Interfaces;
-
---  From AdaCore's website I think.
 
 package body Oak.Memory.Ops is
    pragma Suppress (All_Checks);

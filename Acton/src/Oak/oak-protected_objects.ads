@@ -1,12 +1,12 @@
---                                                                          --
---                              OAK COMPONENTS                              --
---                                                                          --
---                           OAK.PROTECTED_OBJECTS                          --
---                                                                          --
---                                 S p e c                                  --
---                                                                          --
---                 Copyright (C) 2011-2014, Patrick Bernardi                --
-------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                                    OAK COMPONENTS                                    --
+--                                                                                      --
+--                                 OAK.PROTECTED_OBJECTS                                --
+--                                                                                      --
+--                       Copyright (C) 2012-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
 
 with Oak.Agent;   use Oak.Agent;
 with Oak.Brokers; use Oak.Brokers;

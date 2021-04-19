@@ -1,3 +1,13 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                                      OAK VIEWER                                      --
+--                                                                                      --
+--                                      OAK_VIEWER                                      --
+--                                                                                      --
+--                       Copyright (C) 2014-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 with GNAT.Sockets; use GNAT.Sockets;
 with Ada.Streams;
 with Ada.Text_IO;
@@ -6,6 +16,7 @@ with Interfaces; use Interfaces;
 with Cortex_Traces; use Cortex_Traces;
 with Cortex_Traces.Exceptions; use Cortex_Traces.Exceptions;
 with ISA.ARM.Cortex_M4.Exceptions; use ISA.ARM.Cortex_M4.Exceptions;
+
 procedure Oak_Viewer is
 
    SWO_Server_Name : constant String := Host_Name;

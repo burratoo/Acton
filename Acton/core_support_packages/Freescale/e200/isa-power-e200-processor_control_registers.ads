@@ -1,3 +1,14 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                               OAK CORE SUPPORT PACKAGE                               --
+--                                    FREESCALE e200                                    --
+--                                                                                      --
+--                     ISA.POWER.E200.Z6.PROCESSOR_CONTROL_REGISTERS                    --
+--                                                                                      --
+--                       Copyright (C) 2010-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 package ISA.Power.e200.Processor_Control_Registers with Pure is
 
    ---------------

@@ -1,3 +1,14 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                               OAK CORE SUPPORT PACKAGE                               --
+--                                    ARM CORTEX M4F                                    --
+--                                                                                      --
+--                       OAK.CORE_SUPPORT_PACKAGE.CLOCK.INTERRUPT                       --
+--                                                                                      --
+--                       Copyright (C) 2014-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 with ISA.ARM.Cortex_M4;            use ISA.ARM.Cortex_M4;
 with ISA.ARM.Cortex_M4.NVIC;       use ISA.ARM.Cortex_M4.NVIC;
 with ISA.ARM.Cortex_M4.SysTick;    use ISA.ARM.Cortex_M4.SysTick;

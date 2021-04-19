@@ -1,3 +1,14 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                            OAK PROCESSOR SUPPORT PACKAGE                             --
+--                                  FREESCALE MPC5544                                   --
+--                                                                                      --
+--                                  MPC5554.EQADC.ADC                                   --
+--                                                                                      --
+--                       Copyright (C) 2010-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 with Ada.Unchecked_Conversion;
 
 package MPC5554.eQADC.ADC with Preelaborate is

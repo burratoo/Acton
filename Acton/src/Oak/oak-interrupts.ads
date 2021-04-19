@@ -1,12 +1,12 @@
---                                                                          --
---                              OAK COMPONENTS                              --
---                                                                          --
---                              OAK.INTERRUPTS                              --
---                                                                          --
---                                 S p e c                                  --
---                                                                          --
---                 Copyright (C) 2012-2014, Patrick Bernardi                --
-------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                                    OAK COMPONENTS                                    --
+--                                                                                      --
+--                                    OAK.INTERRUPTS                                    --
+--                                                                                      --
+--                       Copyright (C) 2012-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
 
 --  This package provides Oak's platform independent interrupt services.
 

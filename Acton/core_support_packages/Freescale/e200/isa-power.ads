@@ -1,3 +1,14 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                               OAK CORE SUPPORT PACKAGE                               --
+--                                    FREESCALE e200                                    --
+--                                                                                      --
+--                                      ISA.POWER                                       --
+--                                                                                      --
+--                       Copyright (C) 2010-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 package ISA.Power with Pure is
 
    procedure Memory_Barrier with Inline_Always;

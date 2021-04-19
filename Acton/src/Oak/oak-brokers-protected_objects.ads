@@ -1,13 +1,12 @@
-------------------------------------------------------------------------------
---                                                                          --
---                              OAK COMPONENTS                              --
---                                                                          --
---                       OAK.BROKERS.PROTECTED_OBJECTS                      --
---                                                                          --
---                                 S p e c                                  --
---                                                                          --
---                 Copyright (C) 2011-2014, Patrick Bernardi                --
-------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                                    OAK COMPONENTS                                    --
+--                                                                                      --
+--                             OAK.BROKERS.PROTECTED_OBJECTS                            --
+--                                                                                      --
+--                       Copyright (C) 2011-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
 
 --  This package provides Oak's Protected Agents, the agent that represents
 --  protected objects in Oak. The Agent extends the Oak Agent data structure to

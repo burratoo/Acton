@@ -1,3 +1,13 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                                  OAKLAND COMPONENTS                                  --
+--                                                                                      --
+--                                   ADA.CYCLIC_TASKS                                   --
+--                                                                                      --
+--                       Copyright (C) 2013-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 with Ada.Unchecked_Conversion;
 
 with Ada.Task_Identification; use Ada.Task_Identification;

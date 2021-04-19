@@ -1,3 +1,14 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                              OAK PROJECT SUPPORT PACKAGE                             --
+--                                      ST STM32F4                                      --
+--                                                                                      --
+--                     OAK.PROJECT_SUPPORT_PACKAGE.MICROCONTROLLER                      --
+--                                                                                      --
+--                       Copyright (C) 2014-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 with ST;               use ST;
 with ST.STM32F4;       use ST.STM32F4;
 with ST.STM32F4.Flash; use ST.STM32F4.Flash;

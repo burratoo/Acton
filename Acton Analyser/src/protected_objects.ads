@@ -1,3 +1,13 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                                    ACTON ANALYSER                                    --
+--                                                                                      --
+--                                  PROTECTED_OBJECTS                                   --
+--                                                                                      --
+--                       Copyright (C) 2016-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 with Ada.Containers;
 with Ada.Containers.Hashed_Maps;
 with Ada.Strings.Wide_Unbounded.Wide_Hash;

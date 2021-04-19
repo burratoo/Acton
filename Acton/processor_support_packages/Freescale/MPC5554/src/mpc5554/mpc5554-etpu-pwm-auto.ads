@@ -1,3 +1,14 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                            OAK PROCESSOR SUPPORT PACKAGE                             --
+--                                  FREESCALE MPC5544                                   --
+--                                                                                      --
+--                                MPC5554.ETPU.PWM.AUTO                                 --
+--                                                                                      --
+--                       Copyright (C) 2010-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 with MPC5554;           use MPC5554;
 with MPC5554.eTPU;      use MPC5554.eTPU;
 with MPC5554.eTPU.Util; use MPC5554.eTPU.Util;

@@ -1,3 +1,14 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                            OAK PROCESSOR SUPPORT PACKAGE                             --
+--                                      ST STM32F4                                      --
+--                                                                                      --
+--                       OAK.PROCESSOR_SUPPORT_PACKAGE.INTERRUPTS                       --
+--                                                                                      --
+--                       Copyright (C) 2014-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 with Oak.Brokers.Protected_Objects; use Oak.Brokers.Protected_Objects;
 
 with ISA.ARM;                use ISA.ARM;

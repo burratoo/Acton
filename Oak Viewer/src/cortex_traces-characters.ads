@@ -1,4 +1,15 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                                      OAK VIEWER                                      --
+--                                                                                      --
+--                               CORTEX_TRACES.CHARACTERS                               --
+--                                                                                      --
+--                       Copyright (C) 2014-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 package Cortex_Traces.Characters is
+
    type Character_Event is new Cortex_Event with record
       C : Character;
    end record;

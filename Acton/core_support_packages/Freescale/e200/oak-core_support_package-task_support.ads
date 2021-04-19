@@ -1,14 +1,13 @@
-------------------------------------------------------------------------------
---                                                                          --
---                         OAK CORE SUPPORT PACKAGE                         --
---                              FREESCALE e200                              --
---                                                                          --
---                  OAK.CORE_SUPPORT_PACKAGE.TASK_SUPPORT                   --
---                                                                          --
---                                 S p e c                                  --
---                                                                          --
---                 Copyright (C) 2010-2014, Patrick Bernardi                --
-------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                               OAK CORE SUPPORT PACKAGE                               --
+--                                    FREESCALE e200                                    --
+--                                                                                      --
+--                        OAK.CORE_SUPPORT_PACKAGE.TASK_SUPPORT                         --
+--                                                                                      --
+--                       Copyright (C) 2010-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
 
 --
 --  Core Support Package for the e200z6 PowerPC Core.

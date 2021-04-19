@@ -1,14 +1,13 @@
-------------------------------------------------------------------------------
---                                                                          --
---                         OAK CORE SUPPORT PACKAGE                         --
---                              FREESCALE e200                              --
---                                                                          --
---                  OAK.CORE_SUPPORT_PACKAGE.TASK_SUPPORT                   --
---                                                                          --
---                                 B o d y                                  --
---                                                                          --
---                 Copyright (C) 2010-2014, Patrick Bernardi                --
-------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                               OAK CORE SUPPORT PACKAGE                               --
+--                                    FREESCALE e200                                    --
+--                                                                                      --
+--                        OAK.CORE_SUPPORT_PACKAGE.TASK_SUPPORT                         --
+--                                                                                      --
+--                       Copyright (C) 2010-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
 
 with System.Machine_Code; use System.Machine_Code;
 

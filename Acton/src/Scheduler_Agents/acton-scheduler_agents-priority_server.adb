@@ -1,13 +1,12 @@
-------------------------------------------------------------------------------
---                                                                          --
---                           ACTON SCHEDULER AGENT                          --
---                                                                          --
---                  ACTON.SCHEDULER_AGENTS.PRIORITY_SERVER                  --
---                                                                          --
---                                 B o d y                                  --
---                                                                          --
---                 Copyright (C) 2013-2014, Patrick Bernardi                --
-------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                                ACTON SCHEDULER AGENT                                 --
+--                                                                                      --
+--                          ACTON.SCHEDULER_AGENTS.PRIORITY_SERVER                      --
+--                                                                                      --
+--                       Copyright (C) 2010-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
 
 with Oak.Message;  use Oak.Message;
 with Oak.States;   use Oak.States;

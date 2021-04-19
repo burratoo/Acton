@@ -1,3 +1,14 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                            OAK PROCESSOR SUPPORT PACKAGE                             --
+--                                   ATMEL AT91SAM7S                                    --
+--                                                                                      --
+--                     OAK.PROCESSOR_SUPPORT_PACKAGE.TIME.INTERRUPT                     --
+--                                                                                      --
+--                       Copyright (C) 2014-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 with Atmel.AT91SAM7S;     use Atmel.AT91SAM7S;
 with Atmel.AT91SAM7S.AIC; use Atmel.AT91SAM7S.AIC;
 with Atmel.AT91SAM7S.PIT; use Atmel.AT91SAM7S.PIT;

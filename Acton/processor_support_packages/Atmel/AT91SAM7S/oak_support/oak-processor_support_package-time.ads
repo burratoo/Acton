@@ -1,3 +1,14 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                            OAK PROCESSOR SUPPORT PACKAGE                             --
+--                                   ATMEL AT91SAM7S                                    --
+--                                                                                      --
+--                          OAK.PROCESSOR_SUPPORT_PACKAGE.TIME                          --
+--                                                                                      --
+--                       Copyright (C) 2014-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 --  Only exists on platforms where a processor specific timing source is used
 
 with Oak.Core_Support_Package.Time; use Oak.Core_Support_Package.Time;

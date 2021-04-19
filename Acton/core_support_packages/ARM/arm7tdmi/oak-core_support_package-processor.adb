@@ -1,3 +1,14 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                               OAK CORE SUPPORT PACKAGE                               --
+--                                     ARM ARM7TDMI                                     --
+--                                                                                      --
+--                          OAK.CORE_SUPPORT_PACKAGE.PROCESSOR                          --
+--                                                                                      --
+--                       Copyright (C) 2014-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 package body Oak.Core_Support_Package.Processor is
 
    -----------------------

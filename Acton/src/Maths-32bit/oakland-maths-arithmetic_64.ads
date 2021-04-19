@@ -1,3 +1,13 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                                  OAKLAND COMPONENTS                                  --
+--                                                                                      --
+--                             OAKLAND.MATHS.ARITHMETIC_64                              --
+--                                                                                      --
+--                       Copyright (C) 2011-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 with Interfaces;
 
 package Oakland.Maths.Arithmetic_64 with Pure is

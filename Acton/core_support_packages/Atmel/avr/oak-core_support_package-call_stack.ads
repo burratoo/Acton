@@ -1,3 +1,14 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                               OAK CORE SUPPORT PACKAGE                               --
+--                                      ATMEL AVR                                       --
+--                                                                                      --
+--                          OAK.CORE_SUPPORT_PACKAGE.CALL_STACK                         --
+--                                                                                      --
+--                       Copyright (C) 2012-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 with System.Storage_Elements;
 
 package Oak.Core_Support_Package.Call_Stack with Pure is

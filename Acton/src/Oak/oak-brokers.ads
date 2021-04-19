@@ -1,13 +1,12 @@
-------------------------------------------------------------------------------
---                                                                          --
---                              OAK COMPONENTS                              --
---                                                                          --
---                                OAK.BROKERS                               --
---                                                                          --
---                                 S p e c                                  --
---                                                                          --
---                 Copyright (C) 2014-2014, Patrick Bernardi                --
-------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                                    OAK COMPONENTS                                    --
+--                                                                                      --
+--                                      OAK.BROKERS                                     --
+--                                                                                      --
+--                       Copyright (C) 2014-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
 
 --  This package defines the types that define Oak's brokers. They are housed
 --  together in this package together to prevent circular dependencies

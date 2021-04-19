@@ -1,4 +1,14 @@
---  From llvm I think. Or the reference inside it.
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                                  OAKLAND COMPONENTS                                  --
+--                                                                                      --
+--                             OAKLAND.MATHS.ARITHMETIC_64                              --
+--                                                                                      --
+--                       Copyright (C) 2011-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
+--  Based on The PowerPC Compiler Writer's Guide
 
 with Interfaces; use Interfaces;
 with Ada.Unchecked_Conversion;

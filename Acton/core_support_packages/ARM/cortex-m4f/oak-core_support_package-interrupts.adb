@@ -1,13 +1,13 @@
-------------------------------------------------------------------------------
---                                                                          --
---                         OAK CORE SUPPORT PACKAGE                         --
---                                                                          --
---                    OAK.CORE_SUPPORT_PACKAGE.INTERRUPTS                   --
---                                                                          --
---                                 B o d y                                  --
---                                                                          --
---                 Copyright (C) 2010-2014, Patrick Bernardi                --
-------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                               OAK CORE SUPPORT PACKAGE                               --
+--                                    ARM CORTEX M4F                                    --
+--                                                                                      --
+--                          OAK.CORE_SUPPORT_PACKAGE.INTERRUPTS                         --
+--                                                                                      --
+--                       Copyright (C) 2014-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
 
 with Oak.Agent;           use Oak.Agent;
 with Oak.Agent.Kernel;    use Oak.Agent.Kernel;

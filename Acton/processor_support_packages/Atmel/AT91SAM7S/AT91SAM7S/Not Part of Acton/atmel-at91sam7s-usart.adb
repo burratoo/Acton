@@ -1,3 +1,13 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                            ACTON PROCESSOR SUPPORT PACKAGE                           --
+--                                                                                      --
+--                                ATMEL.AT91SAM7S.USART                                 --
+--                                                                                      --
+--                       Copyright (C) 2014-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 with Atmel.AT91SAM7S.AIC;
 with Atmel.AT91SAM7S.PIO; use Atmel.AT91SAM7S.PIO;
 with Atmel.AT91SAM7S.PMC; use Atmel.AT91SAM7S.PMC;

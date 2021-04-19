@@ -1,3 +1,14 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                            OAK PROCESSOR SUPPORT PACKAGE                             --
+--                                      ST STM32F4                                      --
+--                                                                                      --
+--                            OAK.PROCESSOR_SUPPORT_PACKAGE                             --
+--                                                                                      --
+--                       Copyright (C) 2014-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 package Oak.Processor_Support_Package with Pure is
    Number_Of_Processors : constant := 1;
    type Processors is range 1 .. Number_Of_Processors;

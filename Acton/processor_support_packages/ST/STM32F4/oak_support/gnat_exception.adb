@@ -1,3 +1,14 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                            ACTON PROCESSOR SUPPORT PACKAGE                           --
+--                                      ST STM32F4                                      --
+--                                                                                      --
+--                                    GNAT_EXCEPTION                                    --
+--                                                                                      --
+--                       Copyright (C) 2014-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 package body GNAT_Exception is
    procedure Last_Chance_Handler (Msg : System.Address; Line : Integer) is
       pragma Unreferenced (Msg, Line);

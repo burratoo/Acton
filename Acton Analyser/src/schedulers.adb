@@ -1,3 +1,13 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                                    ACTON ANALYSER                                    --
+--                                                                                      --
+--                                      SCHEDULERS                                      --
+--                                                                                      --
+--                       Copyright (C) 2016-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 with Ada.Wide_Text_IO; use Ada.Wide_Text_IO;
 with Ada.Strings.Wide_Unbounded.Wide_Text_IO; use Ada.Strings.Wide_Unbounded.Wide_Text_IO;
 

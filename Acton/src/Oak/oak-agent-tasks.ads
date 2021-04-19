@@ -1,13 +1,12 @@
-------------------------------------------------------------------------------
---                                                                          --
---                              OAK COMPONENTS                              --
---                                                                          --
---                           OAK.AGENT.TASK_AGENT                           --
---                                                                          --
---                                 S p e c                                  --
---                                                                          --
---                 Copyright (C) 2010-2014, Patrick Bernardi                --
-------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                                    OAK COMPONENTS                                    --
+--                                                                                      --
+--                                    OAK.AGENT.TASKS                                   --
+--                                                                                      --
+--                       Copyright (C) 2011-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
 
 --  This package defines Oak's Task Agents, the agent that represents tasks in
 --  Oak. It functions with an Oak Agent as the task's control block. The Agent

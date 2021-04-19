@@ -1,3 +1,13 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                                    ACTON ANALYSER                                    --
+--                                                                                      --
+--                                  PROGRAM_STATISTICS                                  --
+--                                                                                      --
+--                       Copyright (C) 2016-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 package Program_Statistics is
    procedure Calculate_Statistics;
    procedure Print_Statistics;

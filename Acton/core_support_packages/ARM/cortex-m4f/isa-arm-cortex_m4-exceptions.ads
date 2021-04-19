@@ -1,3 +1,14 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                               OAK CORE SUPPORT PACKAGE                               --
+--                                    ARM CORTEX M4F                                    --
+--                                                                                      --
+--                             ISA.ARM.CORTEX_M4.EXCEPTIONS                             --
+--                                                                                      --
+--                       Copyright (C) 2014-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 package ISA.ARM.Cortex_M4.Exceptions with Pure is
 
    type Exception_Id is mod 2 ** 9 with Size => 9;

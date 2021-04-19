@@ -1,13 +1,12 @@
-------------------------------------------------------------------------------
---                                                                          --
---                            OAKLAND COMPONENTS                            --
---                                                                          --
---                      ADA.EXECUTION_SERVER.OPERATIONS                     --
---                                                                          --
---                                 S p e c                                  --
---                                                                          --
---                 Copyright (C) 2014-2014, Patrick Bernardi                --
-------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                                  OAKLAND COMPONENTS                                  --
+--                                                                                      --
+--                            ADA.EXECUTION_SERVER.OPERATIONS                           --
+--                                                                                      --
+--                       Copyright (C) 2014-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
 
 package Ada.Execution_Server.Operations is
    function Scheduler_Id_For_Server

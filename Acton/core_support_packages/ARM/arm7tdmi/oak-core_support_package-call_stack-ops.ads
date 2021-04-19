@@ -1,14 +1,13 @@
-------------------------------------------------------------------------------
---                                                                          --
---                         OAK CORE SUPPORT PACKAGE                         --
---                              FREESCALE e200                              --
---                                                                          --
---                 OAK.CORE_SUPPORT_PACKAGE.CALL_STACK.OPS                  --
---                                                                          --
---                                 S p e c                                  --
---                                                                          --
---                 Copyright (C) 2010-2014, Patrick Bernardi                --
-------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                               OAK CORE SUPPORT PACKAGE                               --
+--                                     ARM ARM7TDMI                                     --
+--                                                                                      --
+--                        OAK.CORE_SUPPORT_PACKAGE.CALL_STACK.OPS                       --
+--                                                                                      --
+--                       Copyright (C) 2014-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
 
 with Oak.Memory.Call_Stack; use Oak.Memory.Call_Stack;
 

@@ -1,13 +1,12 @@
-------------------------------------------------------------------------------
---                                                                          --
---                              OAK COMPONENTS                              --
---                                                                          --
---                             OAK.AGENT.KERNEL                             --
---                                                                          --
---                                 S p e c                                  --
---                                                                          --
---                 Copyright (C) 2014-2014, Patrick Bernardi                --
-------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                                    OAK COMPONENTS                                    --
+--                                                                                      --
+--                                   OAK.AGENT.KERNEL                                   --
+--                                                                                      --
+--                       Copyright (C) 2014-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
 
 --  This package provides Oak's Kernel Agents, the agent that represents
 --  an instance of Oak. The Agent extends the Oak Agent data structure to

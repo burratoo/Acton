@@ -1,12 +1,12 @@
---                                                                          --
---                              OAK COMPONENTS                              --
---                                                                          --
---                          OAK.MEMORY.CALL_STACK                           --
---                                                                          --
---                                 S p e c                                  --
---                                                                          --
---                 Copyright (C) 2010-2014, Patrick Bernardi                --
-------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                                    OAK COMPONENTS                                    --
+--                                                                                      --
+--                                 OAK.MEMORY.CALL_STACK                                --
+--                                                                                      --
+--                       Copyright (C) 2010-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
 
 --  This package defines the types and platform independent constants
 --  associated with Oak's call stacks.

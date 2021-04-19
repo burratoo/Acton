@@ -1,3 +1,13 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                              OAK PROJECT SUPPORT PACKAGE                             --
+--                                                                                      --
+--                              OAK.PROJECT_SUPPORT_PACKAGE                             --
+--                                                                                      --
+--                       Copyright (C) 2013-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 with System; use System;
 
 package Oak.Project_Support_Package with Pure is

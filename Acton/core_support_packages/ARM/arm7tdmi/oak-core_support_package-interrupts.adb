@@ -1,13 +1,13 @@
-------------------------------------------------------------------------------
---                                                                          --
---                         OAK CORE SUPPORT PACKAGE                         --
---                                                                          --
---                    OAK.CORE_SUPPORT_PACKAGE.INTERRUPTS                   --
---                                                                          --
---                                 B o d y                                  --
---                                                                          --
---                 Copyright (C) 2010-2014, Patrick Bernardi                --
-------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                               OAK CORE SUPPORT PACKAGE                               --
+--                                     ARM ARM7TDMI                                     --
+--                                                                                      --
+--                          OAK.CORE_SUPPORT_PACKAGE.INTERRUPTS                         --
+--                                                                                      --
+--                       Copyright (C) 2014-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
 
 with ISA;
 with ISA.ARM.ARM7TDMI; use ISA.ARM.ARM7TDMI;

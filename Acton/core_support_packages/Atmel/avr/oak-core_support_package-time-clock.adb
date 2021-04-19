@@ -1,3 +1,14 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                               OAK CORE SUPPORT PACKAGE                               --
+--                                      ATMEL AVR                                       --
+--                                                                                      --
+--                          OAK.CORE_SUPPORT_PACKAGE.TIME.CLOCK                         --
+--                                                                                      --
+--                       Copyright (C) 2012-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 --  with Oak.Core_Support_Package.Task_Interrupts;
 --  use  Oak.Core_Support_Package.Task_Interrupts;
 with System; use System;

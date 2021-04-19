@@ -1,3 +1,14 @@
+------------------------------------------------------------------------------------------
+--                                                                                      --
+--                               OAK CORE SUPPORT PACKAGE                               --
+--                                    FREESCALE e200                                    --
+--                                                                                      --
+--                         ISA.POWER.E200.Z6.L1_CACHE_REGISTERS                         --
+--                                                                                      --
+--                       Copyright (C) 2010-2021, Patrick Bernardi                      --
+--                                                                                      --
+------------------------------------------------------------------------------------------
+
 package ISA.Power.e200.L1_Cache_Registers with Pure is
 
    type Cache_Write_Type is (Write_Through, Copy_Back);
